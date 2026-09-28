@@ -10,6 +10,8 @@ import AuthModal from './components/AuthModal';
 import SubmitProjectModal from './components/SubmitProjectModal';
 import ApplyGigModal from './components/ApplyGigModal';
 import ToastNotification from './components/ToastNotification';
+import AboutModal from './components/AboutModal';
+import TermsModal from './components/TermsModal';
 
 import { 
   initialUser, 
@@ -37,6 +39,8 @@ export default function App() {
   const [isSubmitOpen, setIsSubmitOpen] = useState(false);
   const [isApplyOpen, setIsApplyOpen] = useState(false);
   const [activeGigToApply, setActiveGigToApply] = useState(null);
+  const [isAboutOpen, setIsAboutOpen] = useState(false);
+  const [isTermsOpen, setIsTermsOpen] = useState(false);
 
   // Toast
   const [toast, setToast] = useState(null);
@@ -199,6 +203,8 @@ export default function App() {
         onLogout={handleLogout}
         theme={theme}
         onToggleTheme={handleToggleTheme}
+        onOpenAbout={() => setIsAboutOpen(true)}
+        onOpenTerms={() => setIsTermsOpen(true)}
       />
 
       {/* Main View Area - Default Dashboard on visit */}
@@ -259,11 +265,11 @@ export default function App() {
             <p className="opacity-75 mt-1">Empowering women across India to learn skills, build portfolios, and earn income.</p>
           </div>
           <div className="flex items-center gap-6 font-semibold">
-            <button onClick={() => setActiveTab('profile')} className="hover:text-indigo-500">Dashboard</button>
-            <button onClick={() => setActiveTab('home')} className="hover:text-indigo-500">Overview</button>
-            <button onClick={() => setActiveTab('learn')} className="hover:text-indigo-500">Learn Case</button>
-            <button onClick={() => setActiveTab('portfolio')} className="hover:text-indigo-500">Show Skill</button>
-            <button onClick={() => setActiveTab('gigs')} className="hover:text-indigo-500">Opportunity</button>
+            <button onClick={() => setActiveTab('profile')} className="hover:text-indigo-500 cursor-pointer">Dashboard</button>
+            <button onClick={() => setActiveTab('home')} className="hover:text-indigo-500 cursor-pointer">Overview</button>
+            <button onClick={() => setIsAboutOpen(true)} className="hover:text-indigo-500 cursor-pointer">About Us</button>
+            <button onClick={() => setIsTermsOpen(true)} className="hover:text-indigo-500 cursor-pointer">Terms & Conditions</button>
+            <button onClick={() => setActiveTab('gigs')} className="hover:text-indigo-500 cursor-pointer">Opportunity</button>
           </div>
         </div>
       </footer>
@@ -288,6 +294,16 @@ export default function App() {
         gig={activeGigToApply}
         userPortfolios={userPortfolios}
         onConfirmApply={handleConfirmApply}
+      />
+
+      <AboutModal 
+        isOpen={isAboutOpen}
+        onClose={() => setIsAboutOpen(false)}
+      />
+
+      <TermsModal 
+        isOpen={isTermsOpen}
+        onClose={() => setIsTermsOpen(false)}
       />
 
       <ToastNotification 

@@ -202,7 +202,7 @@
                   </button>
 
                   {isMenuOpen && (
-                    <div className="absolute right-0 mt-3 w-60 rounded-2xl bg-slate-950 border border-purple-500/40 shadow-2xl p-2 z-50 text-white">
+                    <div className="absolute right-0 mt-3 w-64 rounded-2xl bg-slate-950 border border-purple-500/40 shadow-2xl p-2 z-50 text-white space-y-1">
                       <p className="px-3 py-1 text-[10px] font-bold text-purple-300 uppercase">Explore Modules</p>
                       <button onClick={() => { setActiveTab('learn'); setIsMenuOpen(false); }} className="w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold hover:bg-purple-900/40 flex items-center justify-between">
                         <span>Learn Case</span>
@@ -215,6 +215,18 @@
                       <button onClick={() => { setActiveTab('gigs'); setIsMenuOpen(false); }} className="w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold hover:bg-purple-900/40 flex items-center justify-between">
                         <span>Opportunity</span>
                         <span className="text-[10px] bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded-full font-bold">3 Gigs</span>
+                      </button>
+
+                      <div className="border-t border-purple-500/20 pt-1 mt-1">
+                        <p className="px-3 py-1 text-[10px] font-bold text-purple-300 uppercase">Information & Policies</p>
+                      </div>
+                      <button onClick={() => { alert('HerEarn About Platform\n\nProblem Statement: Millions of skilled women face barriers to financial independence. HerEarn creates a Learn -> Showcase -> Earn loop to empower 100,000+ women to achieve sustainable income.'); setIsMenuOpen(false); }} className="w-full text-left px-3.5 py-2 rounded-xl text-xs font-bold hover:bg-purple-900/40 flex items-center justify-between cursor-pointer">
+                        <span>About Us</span>
+                        <span className="text-[10px] bg-purple-500/20 text-purple-300 px-2 py-0.5 rounded-full font-bold">Mission</span>
+                      </button>
+                      <button onClick={() => { alert('HerEarn Terms & Conditions\n\n1. Profile Integrity & Verified Credentials\n2. Portfolio Ownership & Showcase Licensing\n3. Client Micro-Gig & Payment Guarantees\n4. Code of Conduct & Zero Discrimination Policy.'); setIsMenuOpen(false); }} className="w-full text-left px-3.5 py-2 rounded-xl text-xs font-bold hover:bg-purple-900/40 flex items-center justify-between cursor-pointer">
+                        <span>Terms & Conditions</span>
+                        <span className="text-[10px] bg-pink-500/20 text-pink-300 px-2 py-0.5 rounded-full font-bold">Policy</span>
                       </button>
                     </div>
                   )}
@@ -232,23 +244,23 @@
                 {/* HERO SECTION */}
                 <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid lg:grid-cols-12 gap-12 items-center">
                   <div className="lg:col-span-6 space-y-6 text-center lg:text-left">
-                    <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-purple-500/15 border border-purple-400/30 text-purple-300 text-xs font-bold uppercase tracking-wider">
+                    <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-purple-100 dark:bg-purple-500/15 border border-purple-300 dark:border-purple-400/30 text-purple-900 dark:text-purple-300 text-xs font-bold uppercase tracking-wider shadow-xs">
                       ✨ Women Empowerment & Career Platform
                     </span>
-                    <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-tight">
+                    <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-tight text-slate-900 dark:text-white">
                       Turn Skills Into <br />
-                      <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-amber-300 bg-clip-text text-transparent">
+                      <span className="bg-gradient-to-r from-purple-600 via-pink-600 to-amber-500 bg-clip-text text-transparent">
                         Sustainable Income
                       </span>
                     </h1>
-                    <p className="text-base text-slate-300 max-w-xl leading-relaxed">
+                    <p className="text-base sm:text-lg text-slate-700 dark:text-slate-200 max-w-xl leading-relaxed font-semibold">
                       Learn in-demand skills, build your portfolio, connect with clients, and start earning through jobs, freelancing, and entrepreneurship.
                     </p>
                     <div className="flex flex-wrap items-center justify-center lg:justify-start gap-4 pt-2">
                       <button onClick={() => setActiveTab('learn')} className="btn-gradient-award text-sm py-3.5 px-7 rounded-xl flex items-center gap-2">
                         Start Learning →
                       </button>
-                      <button onClick={() => setActiveTab('gigs')} className="px-7 py-3.5 rounded-xl font-bold text-sm border border-purple-500/30 bg-slate-900/80 text-white hover:bg-slate-800">
+                      <button onClick={() => setActiveTab('gigs')} className="px-7 py-3.5 rounded-xl font-bold text-sm border border-slate-300 dark:border-purple-500/30 bg-white dark:bg-slate-900/80 text-slate-900 dark:text-white hover:bg-slate-100 dark:hover:bg-slate-800 shadow-sm">
                         Explore Opportunities
                       </button>
                     </div>
@@ -256,17 +268,17 @@
 
                   {/* Hero Visual Card */}
                   <div className="lg:col-span-6">
-                    <div className="glass-card-award rounded-3xl p-6 space-y-5">
-                      <div className="flex items-center justify-between border-b border-purple-500/20 pb-3">
-                        <span className="text-xs font-bold text-purple-300">HerEarn Career Hub</span>
-                        <span className="text-[10px] bg-pink-500/20 text-pink-300 font-extrabold px-2.5 py-0.5 rounded-full">Live Dashboard</span>
+                    <div className="bg-white/95 dark:bg-slate-900/90 border border-purple-200 dark:border-purple-500/40 rounded-3xl p-6 space-y-5 shadow-xl text-slate-900 dark:text-white">
+                      <div className="flex items-center justify-between border-b border-purple-100 dark:border-purple-500/20 pb-3">
+                        <span className="text-xs font-bold text-purple-900 dark:text-purple-300">HerEarn Career Hub</span>
+                        <span className="text-[10px] bg-pink-100 dark:bg-pink-500/20 text-pink-800 dark:text-pink-300 font-extrabold px-2.5 py-0.5 rounded-full border border-pink-300 dark:border-pink-500/30">Live Dashboard</span>
                       </div>
-                      <div className="bg-slate-950 p-5 rounded-2xl space-y-3">
-                        <span className="text-[10px] text-slate-400 uppercase">Monthly Income Tracker</span>
-                        <p className="text-3xl font-extrabold text-emerald-400">₹18,500 <span className="text-xs text-purple-300 font-normal">+34% this month</span></p>
+                      <div className="bg-slate-50 dark:bg-slate-950 p-5 rounded-2xl space-y-3 border border-purple-100 dark:border-purple-500/20">
+                        <span className="text-[10px] text-slate-600 dark:text-slate-400 uppercase font-extrabold">Monthly Income Tracker</span>
+                        <p className="text-3xl font-extrabold text-emerald-600 dark:text-emerald-400">₹18,500 <span className="text-xs text-purple-700 dark:text-purple-300 font-bold">+34% this month</span></p>
                         <div className="space-y-2 pt-2">
-                          <div className="flex justify-between text-xs text-slate-300"><span>Digital Marketing Gig</span><span className="text-purple-400">₹8,500</span></div>
-                          <div className="w-full bg-slate-800 h-2 rounded-full overflow-hidden"><div className="bg-gradient-to-r from-purple-500 to-pink-500 h-full w-4/5"></div></div>
+                          <div className="flex justify-between text-xs text-slate-800 dark:text-slate-300 font-bold"><span>Digital Marketing Gig</span><span className="text-purple-700 dark:text-purple-400 font-extrabold">₹8,500</span></div>
+                          <div className="w-full bg-slate-200 dark:bg-slate-800 h-2 rounded-full overflow-hidden"><div className="bg-gradient-to-r from-purple-500 to-pink-500 h-full w-4/5"></div></div>
                         </div>
                       </div>
                     </div>
@@ -274,23 +286,23 @@
                 </section>
 
                 {/* STATISTICS SECTION */}
-                <section className="bg-slate-900/90 border-y border-purple-500/20 py-12">
+                <section className="bg-slate-100/90 dark:bg-slate-900/90 border-y border-purple-200 dark:border-purple-500/20 py-12">
                   <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
                     <div>
-                      <p className="text-3xl font-extrabold text-purple-400">10,000+</p>
-                      <p className="text-xs font-bold text-slate-400 uppercase mt-1">Women Learners</p>
+                      <p className="text-3xl font-extrabold text-purple-700 dark:text-purple-400">10,000+</p>
+                      <p className="text-xs font-bold text-slate-700 dark:text-slate-400 uppercase mt-1">Women Learners</p>
                     </div>
                     <div>
-                      <p className="text-3xl font-extrabold text-pink-400">500+</p>
-                      <p className="text-xs font-bold text-slate-400 uppercase mt-1">Skill Courses</p>
+                      <p className="text-3xl font-extrabold text-pink-700 dark:text-pink-400">500+</p>
+                      <p className="text-xs font-bold text-slate-700 dark:text-slate-400 uppercase mt-1">Skill Courses</p>
                     </div>
                     <div>
-                      <p className="text-3xl font-extrabold text-amber-400">2,000+</p>
-                      <p className="text-xs font-bold text-slate-400 uppercase mt-1">Income Opportunities</p>
+                      <p className="text-3xl font-extrabold text-amber-700 dark:text-amber-400">2,000+</p>
+                      <p className="text-xs font-bold text-slate-700 dark:text-slate-400 uppercase mt-1">Income Opportunities</p>
                     </div>
                     <div>
-                      <p className="text-3xl font-extrabold text-emerald-400">95%</p>
-                      <p className="text-xs font-bold text-slate-400 uppercase mt-1">Career Growth Support</p>
+                      <p className="text-3xl font-extrabold text-emerald-700 dark:text-emerald-400">95%</p>
+                      <p className="text-xs font-bold text-slate-700 dark:text-slate-400 uppercase mt-1">Career Growth Support</p>
                     </div>
                   </div>
                 </section>
@@ -298,8 +310,8 @@
                 {/* FEATURES SECTION */}
                 <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
                   <div className="text-center max-w-2xl mx-auto space-y-2">
-                    <span className="text-xs font-extrabold text-pink-400 uppercase tracking-widest">Core Features</span>
-                    <h2 className="text-3xl font-extrabold text-white">Everything You Need to Succeed</h2>
+                    <span className="text-xs font-extrabold text-pink-700 dark:text-pink-400 uppercase tracking-widest">Core Features</span>
+                    <h2 className="text-3xl font-extrabold text-slate-900 dark:text-white">Everything You Need to Succeed</h2>
                   </div>
 
                   <div className="grid md:grid-cols-3 gap-8">
@@ -310,11 +322,11 @@
                       { title: "4. AI Career Guidance", items: ["Skill Assessment", "Personalized Learning Path", "Income Recommendations"] },
                       { title: "5. Community Support", items: ["Women Mentors", "Success Stories", "Networking Groups"] }
                     ].map((feat, idx) => (
-                      <div key={idx} className="glass-card-award rounded-3xl p-6 space-y-4">
-                        <h3 className="text-lg font-bold text-white">{feat.title}</h3>
-                        <div className="space-y-2 pt-2 border-t border-purple-500/20">
+                      <div key={idx} className="bg-white dark:bg-slate-900/90 border border-purple-200 dark:border-purple-500/30 rounded-3xl p-6 space-y-4 shadow-lg text-slate-900 dark:text-white">
+                        <h3 className="text-lg font-bold text-slate-900 dark:text-white">{feat.title}</h3>
+                        <div className="space-y-2 pt-2 border-t border-purple-100 dark:border-purple-500/20">
                           {feat.items.map((it, i) => (
-                            <p key={i} className="text-xs text-slate-300 flex items-center gap-2">✓ {it}</p>
+                            <p key={i} className="text-xs text-slate-700 dark:text-slate-300 font-semibold flex items-center gap-2">✓ {it}</p>
                           ))}
                         </div>
                       </div>
@@ -323,12 +335,12 @@
                 </section>
 
                 {/* HOW IT WORKS */}
-                <section className="bg-slate-900/60 py-16 border-y border-purple-500/20">
+                <section className="bg-slate-100 dark:bg-slate-900/60 py-16 border-y border-purple-200 dark:border-purple-500/20">
                   <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
-                    <h2 className="text-3xl font-extrabold text-white text-center">How It Works</h2>
+                    <h2 className="text-3xl font-extrabold text-slate-900 dark:text-white text-center">How It Works</h2>
                     <div className="grid md:grid-cols-5 gap-4">
                       {["Step 1 → Choose a Skill", "Step 2 → Interactive Courses", "Step 3 → Build Portfolio", "Step 4 → Connect Opportunities", "Step 5 → Start Earning"].map((st, idx) => (
-                        <div key={idx} className="glass-card-award rounded-2xl p-4 text-center font-bold text-xs text-purple-300">
+                        <div key={idx} className="bg-white dark:bg-slate-900 border border-purple-200 dark:border-purple-500/30 rounded-2xl p-4 text-center font-bold text-xs text-purple-900 dark:text-purple-300 shadow-md">
                           {st}
                         </div>
                       ))}
@@ -338,9 +350,9 @@
 
                 {/* IMPACT */}
                 <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                  <div className="glass-card-award rounded-3xl p-10 text-center space-y-4">
-                    <h2 className="text-3xl font-extrabold text-white">From Learning to Financial Independence</h2>
-                    <p className="text-xs text-slate-300 max-w-xl mx-auto">Financial Empowerment • Career Development • Entrepreneurship Support • Flexible Income • Digital Literacy</p>
+                  <div className="bg-white dark:bg-slate-900 border border-purple-200 dark:border-purple-500/30 rounded-3xl p-10 text-center space-y-4 shadow-lg text-slate-900 dark:text-white">
+                    <h2 className="text-3xl font-extrabold text-slate-900 dark:text-white">From Learning to Financial Independence</h2>
+                    <p className="text-xs text-slate-700 dark:text-slate-300 font-semibold max-w-xl mx-auto">Financial Empowerment • Career Development • Entrepreneurship Support • Flexible Income • Digital Literacy</p>
                   </div>
                 </section>
 
