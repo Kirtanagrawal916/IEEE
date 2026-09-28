@@ -211,6 +211,7 @@ export default function App() {
             onOpenAuth={handleOpenAuth}
             onOpenSubmitModal={() => setIsSubmitOpen(true)}
             onUpdateProfile={handleUpdateProfile}
+            onNavigate={setActiveTab}
           />
         )}
 
