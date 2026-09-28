@@ -28,11 +28,11 @@ import {
   Search,
   CheckCircle,
   HelpCircle,
-  ExternalLink
+  ExternalLink,
+  MessageSquare
 } from 'lucide-react';
 
 export default function LandingSection({ onNavigate, onOpenAuth, theme }) {
-  const [activeDashboardTab, setActiveDashboardTab] = useState('match');
 
   // Floating Skill Cards for Hero Section
   const floatingSkills = [
@@ -43,73 +43,67 @@ export default function LandingSection({ onNavigate, onOpenAuth, theme }) {
     { title: "Web Development", icon: Code, color: "from-cyan-500 to-blue-500", pos: "-top-6 right-20 sm:right-32" }
   ];
 
+  // Honest Pilot Stats Strip Values
+  const stats = [
+    { value: "100+", label: "Pilot Learners", sublabel: "(Launching 2026)", icon: Users, color: "text-purple-400" },
+    { value: "4", label: "Skill Tracks", sublabel: "Curated Modules", icon: BookOpen, color: "text-pink-400" },
+    { value: "8+", label: "Partner Opportunities", sublabel: "Gigs & Internships", icon: Briefcase, color: "text-amber-400" },
+    { value: "Free", label: "To Start", sublabel: "Zero Hidden Fees", icon: ShieldCheck, color: "text-emerald-400" }
+  ];
+
+  // How It Works (3 Core Cards)
+  const howItWorksThreeCards = [
+    {
+      step: "01",
+      title: "1. Learn",
+      desc: "Pick a skill track and complete short, practical video lessons at your own pace.",
+      icon: BookOpen,
+      badge: "Self-Paced Tracks",
+      color: "from-purple-600 to-indigo-600"
+    },
+    {
+      step: "02",
+      title: "2. Build",
+      desc: "Create real portfolio projects to showcase your verified work to potential clients.",
+      icon: Award,
+      badge: "Verified Proof",
+      color: "from-pink-600 to-rose-600"
+    },
+    {
+      step: "03",
+      title: "3. Earn",
+      desc: "Apply to flexible gigs, freelance projects, and remote client opportunities.",
+      icon: IndianRupee,
+      badge: "Direct Payouts",
+      color: "from-amber-500 to-emerald-500"
+    }
+  ];
+
   // Problem We Solve Highlights
   const problemHighlights = [
     { 
       title: "Learn Skills", 
       desc: "Market-relevant, bite-sized training with zero prerequisites.", 
       icon: BookOpen,
-      color: "bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20"
+      color: "bg-purple-500/15 text-purple-300 border-purple-500/30"
     },
     { 
       title: "Build Portfolio", 
       desc: "Verified digital showcase profiles proving real work capabilities.", 
       icon: Award,
-      color: "bg-pink-500/10 text-pink-600 dark:text-pink-400 border-pink-500/20"
+      color: "bg-pink-500/15 text-pink-300 border-pink-500/30"
     },
     { 
       title: "Find Opportunities", 
       desc: "Direct access to freelance gigs, remote work & local orders.", 
       icon: Briefcase,
-      color: "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20"
+      color: "bg-amber-500/15 text-amber-300 border-amber-500/30"
     },
     { 
       title: "Earn Sustainable Income", 
       desc: "Independent payouts with escrow security and financial freedom.", 
       icon: IndianRupee,
-      color: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
-    }
-  ];
-
-  // Statistics
-  const stats = [
-    { label: "Skills Available", value: "50+", icon: BookOpen, color: "text-purple-600 dark:text-purple-400" },
-    { label: "Income Opportunities", value: "100+", icon: Briefcase, color: "text-pink-600 dark:text-pink-400" },
-    { label: "AI Career Matching", value: "AI-Powered", icon: Cpu, color: "text-amber-600 dark:text-amber-400" },
-    { label: "Career Guidance", value: "24/7", icon: HeartHandshake, color: "text-emerald-600 dark:text-emerald-400" }
-  ];
-
-  // How It Works Steps
-  const steps = [
-    { 
-      step: "01", 
-      title: "Learn Skills", 
-      desc: "Master high-demand digital, design, or craft tracks through short video modules.",
-      icon: BookOpen 
-    },
-    { 
-      step: "02", 
-      title: "Build Portfolio", 
-      desc: "Complete hands-on capstones to build a verified public showcase of work.",
-      icon: Award 
-    },
-    { 
-      step: "03", 
-      title: "Get AI Recommendations", 
-      desc: "Smart AI algorithm analyzes your skill level & pairs you with client needs.",
-      icon: Cpu 
-    },
-    { 
-      step: "04", 
-      title: "Apply for Opportunities", 
-      desc: "Submit your verified portfolio proof with 1-click to flexible remote gigs.",
-      icon: Target 
-    },
-    { 
-      step: "05", 
-      title: "Start Earning", 
-      desc: "Receive safe escrow payouts directly to your account & scale your income.",
-      icon: IndianRupee 
+      color: "bg-emerald-500/15 text-emerald-300 border-emerald-500/30"
     }
   ];
 
@@ -206,47 +200,47 @@ export default function LandingSection({ onNavigate, onOpenAuth, theme }) {
   ];
 
   return (
-    <div className="space-y-24 pb-20 animate-fade-in overflow-x-hidden">
+    <div className="space-y-20 sm:space-y-24 pb-20 animate-fade-in overflow-x-hidden text-slate-100">
       
       {/* 1. HERO SECTION */}
-      <section className="relative pt-8 pb-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+      <section className="relative pt-6 pb-12 sm:pt-8 sm:pb-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
         
         {/* Ambient Animated Background Blobs */}
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-600/20 dark:bg-purple-600/30 rounded-full blur-3xl pointer-events-none animate-pulse-glow"></div>
-        <div className="absolute bottom-10 right-10 w-96 h-96 bg-pink-600/20 dark:bg-pink-600/25 rounded-full blur-3xl pointer-events-none animate-pulse-glow"></div>
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-600/25 rounded-full blur-3xl pointer-events-none animate-pulse-glow"></div>
+        <div className="absolute bottom-10 right-10 w-96 h-96 bg-pink-600/20 rounded-full blur-3xl pointer-events-none animate-pulse-glow"></div>
 
         {/* Hero Badge below Navbar */}
         <div className="flex justify-center lg:justify-start mb-6">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-purple-500/15 via-pink-500/15 to-amber-500/15 border border-purple-500/30 text-purple-700 dark:text-purple-300 text-xs font-bold uppercase tracking-wider shadow-sm backdrop-blur-md">
-            <Sparkles className="w-4 h-4 text-pink-500 animate-spin-slow" />
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-purple-500/20 via-pink-500/20 to-amber-500/20 border border-purple-400/40 text-purple-200 text-xs font-extrabold uppercase tracking-wider shadow-md backdrop-blur-md">
+            <Sparkles className="w-4 h-4 text-pink-400 animate-pulse" />
             <span>AI-Powered Skill-to-Income Recommendation Platform</span>
           </div>
         </div>
 
-        <div className="grid lg:grid-cols-12 gap-12 items-center relative z-10">
+        <div className="grid lg:grid-cols-12 gap-10 lg:gap-12 items-center relative z-10">
           
           {/* Left Column: Headline & Value Proposition */}
           <div className="lg:col-span-6 space-y-6 text-center lg:text-left relative">
             
             {/* Main Headline */}
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-[1.1] text-slate-900 dark:text-white">
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-[1.1] text-white">
               Turn Skills Into <br />
-              <span className="bg-gradient-to-r from-purple-600 via-pink-600 to-amber-500 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-amber-300 bg-clip-text text-transparent">
                 Sustainable Income
               </span>
             </h1>
 
             {/* Short Trust-Building Statement */}
-            <p className="text-base sm:text-lg text-slate-600 dark:text-slate-300 max-w-xl leading-relaxed font-medium">
+            <p className="text-base sm:text-lg text-slate-200 max-w-xl leading-relaxed font-semibold">
               Bridging the gap between learning, opportunities, and financial independence.
             </p>
 
             {/* CTA Buttons */}
-            <div className="flex flex-wrap items-center justify-center lg:justify-start gap-4 pt-2">
+            <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-2">
               <button
                 type="button"
                 onClick={() => onNavigate('learn')}
-                className="btn-gradient-award text-sm py-3.5 px-8 shadow-xl cursor-pointer flex items-center gap-2"
+                className="w-full sm:w-auto btn-gradient-award text-sm py-3.5 px-8 shadow-xl cursor-pointer flex items-center justify-center gap-2"
               >
                 <span>Start Learning</span>
                 <ArrowRight className="w-4 h-4" />
@@ -255,31 +249,50 @@ export default function LandingSection({ onNavigate, onOpenAuth, theme }) {
               <button
                 type="button"
                 onClick={() => onNavigate('gigs')}
-                className="btn-outline-award text-sm py-3.5 px-8 cursor-pointer"
+                className="w-full sm:w-auto btn-outline-award text-sm py-3.5 px-8 cursor-pointer flex items-center justify-center"
               >
                 Explore Opportunities
               </button>
             </div>
 
+            {/* 3. HUMAN TOUCH Testimonial line under Hero buttons */}
+            <div className="pt-2 flex items-center justify-center lg:justify-start gap-3">
+              <div className="flex items-center -space-x-2">
+                <img 
+                  src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=120" 
+                  alt="Learner" 
+                  className="w-8 h-8 rounded-full border-2 border-purple-400 object-cover shadow-md"
+                />
+              </div>
+              <div className="text-left text-xs">
+                <p className="text-slate-100 font-bold leading-tight">
+                  "I earned my first ₹5,000 within 3 weeks of learning."
+                </p>
+                <span className="inline-block text-[10px] bg-purple-500/30 text-purple-200 border border-purple-500/40 px-2 py-0.5 rounded-md font-extrabold uppercase mt-0.5">
+                  Example story
+                </span>
+              </div>
+            </div>
+
             {/* Micro Trust Indicators */}
-            <div className="pt-6 border-t border-slate-200 dark:border-purple-500/20 grid grid-cols-3 gap-3 text-slate-700 dark:text-slate-300 text-xs font-semibold">
-              <div className="flex items-center gap-2">
-                <ShieldCheck className="w-4 h-4 text-emerald-500 flex-shrink-0" />
+            <div className="pt-4 border-t border-purple-500/30 grid grid-cols-3 gap-3 text-slate-200 text-xs font-bold">
+              <div className="flex items-center gap-1.5 justify-center lg:justify-start">
+                <ShieldCheck className="w-4 h-4 text-emerald-400 flex-shrink-0" />
                 <span>Escrow Safe</span>
               </div>
-              <div className="flex items-center gap-2">
-                <Award className="w-4 h-4 text-purple-500 flex-shrink-0" />
+              <div className="flex items-center gap-1.5 justify-center lg:justify-start">
+                <Award className="w-4 h-4 text-purple-400 flex-shrink-0" />
                 <span>Verified Badges</span>
               </div>
-              <div className="flex items-center gap-2">
-                <Cpu className="w-4 h-4 text-pink-500 flex-shrink-0" />
+              <div className="flex items-center gap-1.5 justify-center lg:justify-start">
+                <Cpu className="w-4 h-4 text-pink-400 flex-shrink-0" />
                 <span>AI Matching</span>
               </div>
             </div>
 
           </div>
 
-          {/* Right Column: Floating Skill Badges + Realistic AI Recommendation Dashboard Preview */}
+          {/* Right Column: Floating Skill Badges + INCOME CARD (Sample Preview) */}
           <div className="lg:col-span-6 relative">
             
             {/* Subtle Floating Glassmorphism Skill Cards */}
@@ -289,7 +302,7 @@ export default function LandingSection({ onNavigate, onOpenAuth, theme }) {
                 return (
                   <div 
                     key={idx}
-                    className={`absolute ${sk.pos} z-20 glass-card px-3.5 py-2 rounded-2xl border border-purple-500/30 shadow-xl backdrop-blur-md flex items-center gap-2 text-xs font-bold text-slate-800 dark:text-white animate-float`}
+                    className={`absolute ${sk.pos} z-20 glass-card px-3.5 py-2 rounded-2xl border border-purple-500/40 shadow-xl backdrop-blur-md flex items-center gap-2 text-xs font-bold text-white animate-float`}
                     style={{ animationDelay: `${idx * 0.8}s` }}
                   >
                     <div className={`w-6 h-6 rounded-lg bg-gradient-to-tr ${sk.color} text-white flex items-center justify-center`}>
@@ -301,121 +314,83 @@ export default function LandingSection({ onNavigate, onOpenAuth, theme }) {
               })}
             </div>
 
-            {/* AI Recommendation Dashboard Preview */}
-            <div className="bg-white/90 dark:bg-slate-900/90 border border-purple-500/30 rounded-3xl p-6 relative overflow-hidden shadow-2xl space-y-5 backdrop-blur-xl">
+            {/* 2. INCOME CARD (Sample Preview) */}
+            <div className="bg-slate-900/90 border border-purple-500/40 rounded-3xl p-5 sm:p-6 relative overflow-hidden shadow-2xl space-y-4 backdrop-blur-xl">
               
-              {/* Card Header */}
-              <div className="flex items-center justify-between border-b border-slate-200 dark:border-purple-500/20 pb-4">
+              {/* Card Header with "Sample Preview" badge */}
+              <div className="flex items-center justify-between border-b border-purple-500/30 pb-3">
                 <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-xl bg-purple-600/20 text-purple-600 dark:text-purple-400 flex items-center justify-center">
-                    <Cpu className="w-4 h-4" />
+                  <div className="w-8 h-8 rounded-xl bg-purple-600/30 text-purple-300 flex items-center justify-center font-bold">
+                    <IndianRupee className="w-4 h-4 text-emerald-400" />
                   </div>
                   <div>
-                    <h3 className="text-sm font-bold text-slate-900 dark:text-white leading-tight">AI Recommendation Engine</h3>
-                    <p className="text-[10px] text-purple-600 dark:text-purple-300 font-medium">Real-Time Career & Skill Optimizer</p>
+                    <h3 className="text-sm font-bold text-white leading-tight">Monthly Income Tracker</h3>
+                    <p className="text-[10px] text-purple-300 font-bold">HerEarn Learner Dashboard</p>
                   </div>
                 </div>
-                <span className="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 text-[10px] font-extrabold px-2.5 py-1 rounded-full uppercase tracking-wider flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping"></span>
-                  Live Match
+
+                {/* Badge: Sample Preview */}
+                <span className="bg-amber-500/20 text-amber-300 border border-amber-500/40 text-[10px] font-extrabold px-3 py-1 rounded-full uppercase tracking-wider">
+                  Sample Preview
                 </span>
               </div>
 
-              {/* Interactive Preview Tabs */}
-              <div className="grid grid-cols-3 gap-1 bg-slate-100 dark:bg-slate-950 p-1 rounded-xl text-xs font-bold">
-                <button
-                  type="button"
-                  onClick={() => setActiveDashboardTab('match')}
-                  className={`py-1.5 rounded-lg transition-all cursor-pointer ${
-                    activeDashboardTab === 'match'
-                      ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-md'
-                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-                  }`}
-                >
-                  Skill Match
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setActiveDashboardTab('opportunities')}
-                  className={`py-1.5 rounded-lg transition-all cursor-pointer ${
-                    activeDashboardTab === 'opportunities'
-                      ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-md'
-                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-                  }`}
-                >
-                  Income Potential
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setActiveDashboardTab('progress')}
-                  className={`py-1.5 rounded-lg transition-all cursor-pointer ${
-                    activeDashboardTab === 'progress'
-                      ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-md'
-                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-                  }`}
-                >
-                  Learning Path
-                </button>
+              {/* Total Income Display */}
+              <div className="bg-slate-950 p-4 rounded-2xl border border-purple-500/30 flex items-center justify-between">
+                <div>
+                  <span className="text-[10px] text-slate-300 font-bold uppercase tracking-wider block">Total Estimated Monthly Income</span>
+                  <p className="text-2xl sm:text-3xl font-extrabold text-emerald-400 flex items-center gap-1.5 mt-0.5">
+                    ₹18,500 <span className="text-xs text-purple-300 font-bold">(3 active gigs)</span>
+                  </p>
+                </div>
+                <span className="bg-emerald-500/20 text-emerald-300 text-xs font-extrabold px-3 py-1.5 rounded-xl border border-emerald-500/30">
+                  Verified Payouts
+                </span>
               </div>
 
-              {/* Dashboard Content Container */}
-              <div className="bg-slate-50 dark:bg-slate-950/80 rounded-2xl p-5 border border-slate-200 dark:border-purple-500/20 space-y-4">
+              {/* 3 Gigs with Individual Progress Bars (Total = ₹18,500) */}
+              <div className="space-y-3 bg-slate-950/80 p-4 rounded-2xl border border-purple-500/20">
                 
-                {/* 1. Recommended Skill & AI Match Score */}
-                <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800">
-                  <div>
-                    <span className="text-[10px] text-slate-500 dark:text-slate-400 font-semibold uppercase tracking-wider block">Recommended Skill</span>
-                    <span className="text-base font-extrabold text-purple-600 dark:text-purple-300 flex items-center gap-1.5 mt-0.5">
-                      Digital Marketing
-                      <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                    </span>
-                  </div>
-
-                  <div className="text-right">
-                    <span className="text-[10px] text-slate-500 dark:text-slate-400 font-semibold uppercase tracking-wider block">AI Match Score</span>
-                    <span className="text-xl font-extrabold text-pink-600 dark:text-pink-400">92%</span>
-                  </div>
-                </div>
-
-                {/* 2. Available Opportunities & Portfolio Strength */}
-                <div className="grid grid-cols-2 gap-3 text-xs">
-                  <div className="bg-white dark:bg-slate-900 p-3 rounded-xl border border-slate-200 dark:border-slate-800 space-y-1">
-                    <span className="text-[10px] text-slate-500 dark:text-slate-400 font-semibold uppercase">Available Gigs</span>
-                    <p className="text-lg font-extrabold text-slate-900 dark:text-white flex items-center gap-1">
-                      <Briefcase className="w-4 h-4 text-amber-500" /> 24 Active
-                    </p>
-                  </div>
-
-                  <div className="bg-white dark:bg-slate-900 p-3 rounded-xl border border-slate-200 dark:border-slate-800 space-y-1">
-                    <span className="text-[10px] text-slate-500 dark:text-slate-400 font-semibold uppercase">Portfolio Strength</span>
-                    <p className="text-lg font-extrabold text-slate-900 dark:text-white flex items-center gap-1">
-                      <Award className="w-4 h-4 text-purple-500" /> 85% Verified
-                    </p>
-                  </div>
-                </div>
-
-                {/* 3. Estimated Monthly Income Banner */}
-                <div className="bg-gradient-to-r from-emerald-500/15 to-teal-500/15 border border-emerald-500/30 p-3.5 rounded-xl flex items-center justify-between">
-                  <div>
-                    <span className="text-[10px] text-slate-600 dark:text-slate-400 uppercase font-bold block">Estimated Monthly Income</span>
-                    <span className="text-base sm:text-lg font-extrabold text-emerald-600 dark:text-emerald-400">₹15,000 - ₹35,000</span>
-                  </div>
-                  <span className="bg-emerald-500 text-white text-[10px] font-extrabold px-2.5 py-1 rounded-full uppercase">
-                    High Growth
-                  </span>
-                </div>
-
-                {/* 4. Learning Progress Bar */}
-                <div className="space-y-1.5">
-                  <div className="flex justify-between text-xs font-bold">
-                    <span className="text-slate-700 dark:text-slate-300">Learning Progress</span>
-                    <span className="text-purple-600 dark:text-purple-400">78%</span>
+                {/* Gig 1: Digital Marketing Gig ₹8,500 */}
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between text-xs font-bold">
+                    <span className="text-slate-100">Digital Marketing Gig</span>
+                    <span className="text-purple-400">₹8,500</span>
                   </div>
                   <div className="progress-bar-bg">
-                    <div className="progress-bar-fill w-[78%]"></div>
+                    <div className="progress-bar-fill w-[85%]"></div>
                   </div>
                 </div>
 
+                {/* Gig 2: Content Writing ₹6,000 */}
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between text-xs font-bold">
+                    <span className="text-slate-100">Content Writing</span>
+                    <span className="text-pink-400">₹6,000</span>
+                  </div>
+                  <div className="progress-bar-bg">
+                    <div className="progress-bar-fill w-[60%]"></div>
+                  </div>
+                </div>
+
+                {/* Gig 3: Graphic Design ₹4,000 */}
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between text-xs font-bold">
+                    <span className="text-slate-100">Graphic Design</span>
+                    <span className="text-amber-400">₹4,000</span>
+                  </div>
+                  <div className="progress-bar-bg">
+                    <div className="progress-bar-fill w-[40%]"></div>
+                  </div>
+                </div>
+
+              </div>
+
+              {/* Caption note */}
+              <div className="text-center pt-1">
+                <p className="text-[11px] text-slate-300 font-bold italic">
+                  * Example income for illustration only.
+                </p>
               </div>
 
               {/* Bottom Quick Action */}
@@ -424,7 +399,7 @@ export default function LandingSection({ onNavigate, onOpenAuth, theme }) {
                 onClick={() => onNavigate('learn')}
                 className="w-full btn-gradient-award justify-center text-xs py-3 cursor-pointer"
               >
-                Start AI Skill Path
+                Experience Platform Demo
               </button>
 
             </div>
@@ -434,38 +409,129 @@ export default function LandingSection({ onNavigate, onOpenAuth, theme }) {
 
       </section>
 
-      {/* 2. PROBLEM WE SOLVE SECTION (Immediately below Hero) */}
+      {/* 1. STATS STRIP (Honest Pilot Launch Values) */}
+      <section className="bg-slate-900/95 border-y border-purple-500/30 py-10 relative">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-4">
+          
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 text-center">
+            {stats.map((s, idx) => {
+              const IconComponent = s.icon;
+              return (
+                <div 
+                  key={idx} 
+                  className="p-4 sm:p-5 rounded-2xl bg-slate-950/80 border border-purple-500/30 shadow-md space-y-2 hover:border-purple-400/50 transition-all"
+                >
+                  <div className="w-10 h-10 rounded-xl bg-purple-500/20 border border-purple-400/40 flex items-center justify-center mx-auto text-purple-300">
+                    <IconComponent className="w-5 h-5" />
+                  </div>
+                  <p className={`text-3xl sm:text-4xl font-extrabold ${s.color} tracking-tight`}>{s.value}</p>
+                  
+                  {/* High Contrast Stat Label */}
+                  <div>
+                    <p className="text-xs sm:text-sm font-extrabold text-slate-100 uppercase tracking-wider">{s.label}</p>
+                    <p className="text-[10px] sm:text-xs font-bold text-slate-300 mt-0.5">{s.sublabel}</p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Small Note Under Stats Strip */}
+          <div className="text-center pt-2">
+            <p className="text-xs font-bold text-purple-300 bg-purple-950/60 inline-block px-4 py-1 rounded-full border border-purple-500/30">
+              📌 Pilot stage: numbers reflect our launch goals.
+            </p>
+          </div>
+
+        </div>
+      </section>
+
+      {/* 7. HOW IT WORKS SECTION (3 Core Cards Right Below Stats Strip) */}
+      <section id="how-it-works" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+        
+        <div className="text-center max-w-2xl mx-auto space-y-2">
+          <span className="text-xs font-extrabold text-pink-400 uppercase tracking-widest px-3 py-1 rounded-full bg-pink-500/10 border border-pink-500/20">
+            Simple 3-Step Journey
+          </span>
+          <h2 className="text-3xl sm:text-4xl font-extrabold text-white">
+            How It Works
+          </h2>
+          <p className="text-sm text-slate-200 font-semibold">
+            From picking your first skill module to taking on real paying client opportunities.
+          </p>
+        </div>
+
+        {/* 3 Cards in a Row (Responsive: stacks on mobile) */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {howItWorksThreeCards.map((card, idx) => {
+            const IconComp = card.icon;
+            return (
+              <div 
+                key={idx}
+                className="bg-slate-900/90 border border-purple-500/30 rounded-3xl p-7 space-y-4 shadow-xl card-hover-award flex flex-col justify-between relative overflow-hidden"
+              >
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className={`w-12 h-12 rounded-2xl bg-gradient-to-tr ${card.color} text-white flex items-center justify-center shadow-lg`}>
+                      <IconComp className="w-6 h-6" />
+                    </div>
+                    <span className="text-xs font-extrabold text-purple-300 bg-purple-500/20 border border-purple-500/30 px-3 py-1 rounded-full">
+                      {card.badge}
+                    </span>
+                  </div>
+
+                  <h3 className="text-xl font-bold text-white leading-snug">
+                    {card.title}
+                  </h3>
+
+                  <p className="text-xs text-slate-200 leading-relaxed font-medium">
+                    {card.desc}
+                  </p>
+                </div>
+
+                <div className="pt-3 border-t border-purple-500/20 flex items-center justify-between text-xs font-bold text-purple-300">
+                  <span>Step {card.step}</span>
+                  <ChevronRight className="w-4 h-4 text-pink-400" />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+      </section>
+
+      {/* PROBLEM WE SOLVE SECTION */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="bg-white/80 dark:bg-slate-900/80 border border-slate-200 dark:border-purple-500/30 rounded-3xl p-8 sm:p-12 shadow-xl backdrop-blur-md space-y-8">
+        <div className="bg-slate-900/90 border border-purple-500/30 rounded-3xl p-6 sm:p-12 shadow-xl backdrop-blur-md space-y-8">
           
           <div className="text-center max-w-3xl mx-auto space-y-4">
-            <span className="text-xs font-extrabold text-rose-500 uppercase tracking-widest px-3 py-1 rounded-full bg-rose-500/10 border border-rose-500/20">
+            <span className="text-xs font-extrabold text-rose-400 uppercase tracking-widest px-3 py-1 rounded-full bg-rose-500/10 border border-rose-500/20">
               Addressing The Gap
             </span>
             
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white">
+            <h2 className="text-3xl sm:text-4xl font-extrabold text-white">
               Problem We Solve
             </h2>
 
-            <p className="text-base sm:text-lg text-slate-600 dark:text-slate-300 leading-relaxed font-medium">
+            <p className="text-base sm:text-lg text-slate-200 leading-relaxed font-semibold">
               "Millions of women possess valuable skills but lack access to learning resources, portfolio visibility, job opportunities, freelancing projects, and career guidance."
             </p>
           </div>
 
           {/* 4 Core Pillars */}
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 pt-4">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 pt-2">
             {problemHighlights.map((ph, idx) => {
               const IconComponent = ph.icon;
               return (
-                <div key={idx} className="bg-slate-50 dark:bg-slate-950/80 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-3 hover:border-purple-500/50 transition-all">
+                <div key={idx} className="bg-slate-950/80 p-6 rounded-2xl border border-purple-500/20 space-y-3 hover:border-purple-500/50 transition-all">
                   <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold ${ph.color} border`}>
                     <IconComponent className="w-5 h-5" />
                   </div>
-                  <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                  <h3 className="text-base font-bold text-white flex items-center gap-1.5">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-400" />
                     {ph.title}
                   </h3>
-                  <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                  <p className="text-xs text-slate-300 leading-relaxed font-medium">
                     {ph.desc}
                   </p>
                 </div>
@@ -476,89 +542,14 @@ export default function LandingSection({ onNavigate, onOpenAuth, theme }) {
         </div>
       </section>
 
-      {/* 3. IMPROVED STATISTICS SECTION */}
-      <section className="bg-slate-100/90 dark:bg-slate-900/90 border-y border-slate-200 dark:border-purple-500/20 py-12 relative">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-            {stats.map((s, idx) => {
-              const IconComponent = s.icon;
-              return (
-                <div key={idx} className="space-y-2 p-4 rounded-2xl bg-white/60 dark:bg-slate-950/60 border border-slate-200 dark:border-purple-500/20 shadow-xs">
-                  <div className="w-10 h-10 rounded-xl bg-purple-500/15 border border-purple-500/30 flex items-center justify-center mx-auto text-purple-600 dark:text-purple-300">
-                    <IconComponent className="w-5 h-5" />
-                  </div>
-                  <p className={`text-3xl sm:text-4xl font-extrabold ${s.color} tracking-tight`}>{s.value}</p>
-                  <p className="text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">{s.label}</p>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
-      {/* 4. HOW IT WORKS SECTION */}
-      <section id="how-it-works" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
-        
-        <div className="text-center max-w-2xl mx-auto space-y-3">
-          <span className="text-xs font-extrabold text-purple-600 dark:text-purple-400 uppercase tracking-widest">
-            Step-by-Step Workflow
-          </span>
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white">
-            How It Works
-          </h2>
-          <p className="text-sm text-slate-600 dark:text-slate-300">
-            A seamless horizontal journey taking women from initial learning to regular payouts.
-          </p>
-        </div>
-
-        {/* Modern Horizontal Workflow */}
-        <div className="grid md:grid-cols-5 gap-4 relative">
-          {steps.map((st, idx) => {
-            const IconComp = st.icon;
-            return (
-              <div 
-                key={idx} 
-                className="bg-white/80 dark:bg-slate-900/80 border border-slate-200 dark:border-purple-500/30 rounded-2xl p-5 space-y-3 relative overflow-hidden backdrop-blur-md shadow-md card-hover-award flex flex-col justify-between"
-              >
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-2xl font-extrabold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-                      Step {st.step}
-                    </span>
-                    <div className="w-8 h-8 rounded-lg bg-purple-500/10 text-purple-600 dark:text-purple-400 flex items-center justify-center">
-                      <IconComp className="w-4 h-4" />
-                    </div>
-                  </div>
-
-                  <h3 className="text-sm font-bold text-slate-900 dark:text-white leading-tight">
-                    {st.title}
-                  </h3>
-
-                  <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-                    {st.desc}
-                  </p>
-                </div>
-
-                {idx < steps.length - 1 && (
-                  <div className="hidden md:block absolute -right-3 top-1/2 -translate-y-1/2 z-20 text-purple-400">
-                    <ChevronRight className="w-6 h-6" />
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
-
-      </section>
-
-      {/* 5. FEATURES SECTION */}
+      {/* FEATURES SECTION */}
       <section id="features" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
         <div className="text-center max-w-3xl mx-auto space-y-3">
-          <span className="text-xs font-extrabold text-pink-600 dark:text-pink-400 uppercase tracking-widest">Platform Modules</span>
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white">
+          <span className="text-xs font-extrabold text-pink-400 uppercase tracking-widest">Platform Modules</span>
+          <h2 className="text-3xl sm:text-4xl font-extrabold text-white">
             Features Designed for Growth
           </h2>
-          <p className="text-sm text-slate-600 dark:text-slate-300">
+          <p className="text-sm text-slate-200 font-semibold">
             Comprehensive tools enabling women to learn, showcase, apply, and earn.
           </p>
         </div>
@@ -569,25 +560,25 @@ export default function LandingSection({ onNavigate, onOpenAuth, theme }) {
             return (
               <div 
                 key={feat.id}
-                className="bg-white/80 dark:bg-slate-900/80 border border-slate-200 dark:border-purple-500/30 rounded-3xl p-7 card-hover-award space-y-5 flex flex-col justify-between shadow-lg backdrop-blur-md"
+                className="bg-slate-900/80 border border-purple-500/30 rounded-3xl p-7 card-hover-award space-y-5 flex flex-col justify-between shadow-lg backdrop-blur-md"
               >
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-purple-600 to-pink-600 flex items-center justify-center text-white shadow-lg">
                       <Icon className="w-6 h-6" />
                     </div>
-                    <span className="bg-purple-500/15 text-purple-700 dark:text-purple-300 border border-purple-500/30 text-[10px] font-extrabold px-3 py-1 rounded-full uppercase tracking-wider">
+                    <span className="bg-purple-500/20 text-purple-200 border border-purple-500/30 text-[10px] font-extrabold px-3 py-1 rounded-full uppercase tracking-wider">
                       {feat.badge}
                     </span>
                   </div>
 
-                  <h3 className="text-xl font-bold text-slate-900 dark:text-white">{feat.title}</h3>
-                  <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">{feat.description}</p>
+                  <h3 className="text-xl font-bold text-white">{feat.title}</h3>
+                  <p className="text-xs text-slate-200 leading-relaxed font-medium">{feat.description}</p>
 
-                  <div className="space-y-2 pt-2 border-t border-slate-200 dark:border-purple-500/15">
+                  <div className="space-y-2 pt-2 border-t border-purple-500/20">
                     {feat.highlights.map((item, idx) => (
-                      <div key={idx} className="flex items-center gap-2 text-xs text-slate-700 dark:text-slate-200 font-semibold">
-                        <CheckCircle2 className="w-4 h-4 text-pink-500 flex-shrink-0" />
+                      <div key={idx} className="flex items-center gap-2 text-xs text-slate-200 font-semibold">
+                        <CheckCircle2 className="w-4 h-4 text-pink-400 flex-shrink-0" />
                         <span>{item}</span>
                       </div>
                     ))}
@@ -597,10 +588,10 @@ export default function LandingSection({ onNavigate, onOpenAuth, theme }) {
                 <button
                   type="button"
                   onClick={() => onNavigate('learn')}
-                  className="w-full text-xs font-bold text-purple-600 dark:text-purple-300 hover:text-pink-600 dark:hover:text-white flex items-center justify-between pt-2 group cursor-pointer"
+                  className="w-full text-xs font-bold text-purple-300 hover:text-white flex items-center justify-between pt-2 group cursor-pointer"
                 >
                   <span>Explore Module</span>
-                  <ChevronRight className="w-4 h-4 text-pink-500 group-hover:translate-x-1 transition-transform" />
+                  <ChevronRight className="w-4 h-4 text-pink-400 group-hover:translate-x-1 transition-transform" />
                 </button>
               </div>
             );
@@ -608,17 +599,17 @@ export default function LandingSection({ onNavigate, onOpenAuth, theme }) {
         </div>
       </section>
 
-      {/* 6. SUCCESS STORIES SECTION */}
+      {/* SUCCESS STORIES SECTION */}
       <section id="success-stories" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-slate-200 dark:border-purple-500/20 pb-4">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-purple-500/20 pb-4">
           <div>
-            <span className="text-xs font-extrabold text-purple-600 dark:text-purple-400 uppercase tracking-widest">Real Results</span>
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white mt-1">Success Stories</h2>
+            <span className="text-xs font-extrabold text-purple-400 uppercase tracking-widest">Real Results</span>
+            <h2 className="text-3xl sm:text-4xl font-extrabold text-white mt-1">Success Stories</h2>
           </div>
           <button 
             type="button"
             onClick={() => onNavigate('portfolio')} 
-            className="text-xs font-bold text-pink-600 dark:text-pink-400 hover:underline flex items-center gap-1 cursor-pointer"
+            className="text-xs font-bold text-pink-400 hover:underline flex items-center gap-1 cursor-pointer"
           >
             <span>View All Verified Portfolios</span>
             <ArrowRight className="w-4 h-4" />
@@ -627,22 +618,22 @@ export default function LandingSection({ onNavigate, onOpenAuth, theme }) {
 
         <div className="grid md:grid-cols-3 gap-8">
           {successStories.map((story, idx) => (
-            <div key={idx} className="bg-white/80 dark:bg-slate-900/80 border border-slate-200 dark:border-purple-500/30 rounded-3xl p-7 space-y-5 flex flex-col justify-between card-hover-award shadow-lg backdrop-blur-md">
+            <div key={idx} className="bg-slate-900/80 border border-purple-500/30 rounded-3xl p-7 space-y-5 flex flex-col justify-between card-hover-award shadow-lg backdrop-blur-md">
               <div className="space-y-4">
                 <div className="flex items-center gap-4">
-                  <img src={story.avatar} alt={story.name} className="w-14 h-14 rounded-full object-cover border-2 border-purple-500 shadow-md" />
+                  <img src={story.avatar} alt={story.name} className="w-14 h-14 rounded-full object-cover border-2 border-purple-400 shadow-md" />
                   <div>
-                    <h4 className="text-base font-bold text-slate-900 dark:text-white">{story.name}</h4>
-                    <p className="text-xs text-purple-600 dark:text-purple-300 font-medium">{story.role}</p>
-                    <p className="text-[11px] text-slate-500 dark:text-slate-400">{story.location}</p>
+                    <h4 className="text-base font-bold text-white">{story.name}</h4>
+                    <p className="text-xs text-purple-300 font-medium">{story.role}</p>
+                    <p className="text-[11px] text-slate-300">{story.location}</p>
                   </div>
                 </div>
 
                 {/* Income Growth Badge */}
-                <div className="bg-emerald-500/10 border border-emerald-500/30 p-3 rounded-xl flex items-center justify-between text-xs">
+                <div className="bg-emerald-500/15 border border-emerald-500/30 p-3 rounded-xl flex items-center justify-between text-xs">
                   <div>
-                    <span className="text-[10px] text-slate-500 dark:text-slate-400 uppercase font-semibold block">Income Growth</span>
-                    <span className="text-sm font-extrabold text-emerald-600 dark:text-emerald-400">
+                    <span className="text-[10px] text-slate-300 uppercase font-semibold block">Income Growth</span>
+                    <span className="text-sm font-extrabold text-emerald-400">
                       {story.incomeStart} → {story.incomeCurrent}
                     </span>
                   </div>
@@ -653,7 +644,7 @@ export default function LandingSection({ onNavigate, onOpenAuth, theme }) {
 
                 {/* Mini Trajectory Progress Bar Chart */}
                 <div className="space-y-1">
-                  <span className="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase">Income Growth Trajectory</span>
+                  <span className="text-[10px] text-slate-300 font-bold uppercase">Income Growth Trajectory</span>
                   <div className="flex items-end gap-1.5 h-10 pt-1">
                     {story.chartBars.map((val, bIdx) => (
                       <div key={bIdx} className="flex-1 bg-purple-500/20 rounded-t-xs overflow-hidden h-full flex items-end">
@@ -666,21 +657,21 @@ export default function LandingSection({ onNavigate, onOpenAuth, theme }) {
                   </div>
                 </div>
 
-                <p className="text-xs text-slate-600 dark:text-slate-300 italic leading-relaxed">
+                <p className="text-xs text-slate-200 italic leading-relaxed font-medium">
                   "{story.quote}"
                 </p>
               </div>
 
-              <div className="pt-3 border-t border-slate-200 dark:border-purple-500/20 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 font-medium">
+              <div className="pt-3 border-t border-purple-500/20 flex items-center justify-between text-xs text-slate-300 font-medium">
                 <span>Track: {story.track}</span>
-                <span className="text-purple-600 dark:text-purple-400 font-bold">✓ Verified Learner</span>
+                <span className="text-purple-300 font-bold">✓ Verified Learner</span>
               </div>
             </div>
           ))}
         </div>
       </section>
 
-      {/* 7. CALL TO ACTION FOOTER BANNER */}
+      {/* CALL TO ACTION FOOTER BANNER */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="bg-gradient-to-r from-purple-900 via-indigo-950 to-pink-950 border border-purple-500/40 rounded-3xl p-10 lg:p-16 text-center text-white space-y-6 shadow-2xl relative overflow-hidden">
           <div className="max-w-2xl mx-auto space-y-4 relative z-10">
