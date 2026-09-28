@@ -27,30 +27,23 @@ export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNaviga
     e.preventDefault();
     setError('');
 
-    if (!email.trim() || !email.includes('@')) {
-      setError('Please enter a valid email address.');
-      return;
-    }
-
-    if (!password || password.length < 4) {
-      setError('Password must be at least 4 characters long.');
-      return;
-    }
+    const targetEmail = email.trim() || 'ananya@example.com';
+    const cleanEmail = targetEmail.includes('@') ? targetEmail : `${targetEmail}@example.com`;
 
     setIsLoading(true);
 
     setTimeout(() => {
       setIsLoading(false);
-      const handle = email.split('@')[0];
+      const handle = cleanEmail.split('@')[0];
       const displayName = handle.charAt(0).toUpperCase() + handle.slice(1);
 
       onLoginSuccess({
-        name: displayName,
-        email: email,
+        name: displayName || 'Ananya Sharma',
+        email: cleanEmail,
         skillInterest: 'Digital Marketing',
         isSignUp: false
       });
-    }, 600);
+    }, 200);
   };
 
   const handleQuickDemoLogin = () => {
@@ -63,7 +56,7 @@ export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNaviga
         skillInterest: 'Digital Marketing & Social Media',
         isSignUp: false
       });
-    }, 400);
+    }, 200);
   };
 
   const handleForgotPassword = () => {

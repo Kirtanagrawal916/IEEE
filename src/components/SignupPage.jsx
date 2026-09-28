@@ -31,43 +31,22 @@ export default function SignupPage({ onLoginSuccess, onNavigateToLogin, onNaviga
     e.preventDefault();
     setError('');
 
-    if (!name.trim()) {
-      setError('Please enter your full name.');
-      return;
-    }
-
-    if (!email.trim() || !email.includes('@')) {
-      setError('Please enter a valid email address.');
-      return;
-    }
-
-    if (!password || password.length < 6) {
-      setError('Password must be at least 6 characters long.');
-      return;
-    }
-
-    if (password !== confirmPassword) {
-      setError('Passwords do not match. Please verify your password.');
-      return;
-    }
-
-    if (!agreeTerms) {
-      setError('Please agree to the Terms of Service & Privacy Policy.');
-      return;
-    }
+    const displayName = name.trim() || 'Priya Patel';
+    const targetEmail = email.trim() || 'priya@example.com';
+    const cleanEmail = targetEmail.includes('@') ? targetEmail : `${targetEmail}@example.com`;
 
     setIsLoading(true);
 
     setTimeout(() => {
       setIsLoading(false);
       onLoginSuccess({
-        name: name.trim(),
-        email: email.trim(),
+        name: displayName,
+        email: cleanEmail,
         skillInterest,
         isSignUp: true,
         role
       });
-    }, 600);
+    }, 200);
   };
 
   const handleQuickDemoSignup = () => {
@@ -81,7 +60,7 @@ export default function SignupPage({ onLoginSuccess, onNavigateToLogin, onNaviga
         isSignUp: true,
         role: 'learner'
       });
-    }, 400);
+    }, 200);
   };
 
   return (
