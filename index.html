@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>NariShakti Skills | Skill-to-Income Platform for Women</title>
-  <meta name="description" content="Empowering women across India to learn market-relevant digital skills, build verified portfolios, and earn sustainable income through micro-gigs.">
+  <title>NariShakti Skills | Skill to Income Platform for Women</title>
+  <meta name="description" content="Turn Skills Into Sustainable Income. Empowering women across India to learn market-relevant skills, showcase their work, and connect with real income opportunities.">
   
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -14,14 +14,18 @@
       theme: {
         extend: {
           colors: {
-            brand: {
-              500: '#6366f1',
-              600: '#4f46e5',
-              700: '#4338ca',
+            purpleBrand: {
+              500: '#8b5cf6',
+              600: '#7C3AED',
+              700: '#6d28d9',
+            },
+            pinkBrand: {
+              500: '#ec4899',
+              600: '#EC4899',
             }
           },
           fontFamily: {
-            sans: ['Outfit', 'system-ui', 'sans-serif'],
+            sans: ['Outfit', 'Plus Jakarta Sans', 'system-ui', 'sans-serif'],
           }
         }
       }
@@ -31,7 +35,7 @@
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
   <!-- React 18 & Babel CDN -->
   <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
@@ -45,30 +49,39 @@
       transition: background-color 0.3s ease, color 0.3s ease;
     }
     .dark body {
-      background-color: #090d16;
+      background-color: #0a0518;
       color: #f8fafc;
     }
     .light body {
-      background-color: #f8fafc;
-      color: #0f172a;
+      background-color: #faf5ff;
+      color: #1e1b4b;
     }
     .glass-header-dark {
-      background: rgba(15, 23, 42, 0.9);
+      background: rgba(10, 5, 24, 0.88);
       backdrop-filter: blur(16px);
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      border-bottom: 1px solid rgba(192, 132, 252, 0.18);
     }
     .glass-header-light {
       background: rgba(255, 255, 255, 0.9);
       backdrop-filter: blur(16px);
-      border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+      border-bottom: 1px solid rgba(124, 58, 237, 0.2);
     }
-    .btn-gradient-primary {
-      background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #e11d48 100%);
+    .glass-card-award {
+      background: rgba(21, 13, 42, 0.75);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(192, 132, 252, 0.2);
+      box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.6);
+    }
+    .btn-gradient-award {
+      background: linear-gradient(135deg, #7C3AED 0%, #C084FC 50%, #EC4899 100%);
+      color: white;
+      font-weight: 700;
       transition: all 0.3s ease;
+      box-shadow: 0 8px 25px rgba(124, 58, 237, 0.35);
     }
-    .btn-gradient-primary:hover {
+    .btn-gradient-award:hover {
       transform: translateY(-2px);
-      box-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.4);
+      box-shadow: 0 12px 35px rgba(236, 72, 153, 0.35);
     }
   </style>
 </head>
@@ -78,39 +91,17 @@
   <script type="text/babel">
     const { useState, useEffect } = React;
 
-    const initialGigsData = [
-      {
-        id: "g1",
-        title: "Social Media Manager for Handcrafted Spices",
-        company: "Desi Flavors India",
-        logo: "https://images.unsplash.com/photo-1596040033229-a9821ebd058d?auto=format&fit=crop&q=80&w=150",
-        stipend: "₹8,500 / month",
-        type: "Remote Part-time",
-        skillsRequired: ["Digital Marketing", "Canva Graphics"],
-        description: "Manage Instagram account, post 4 Canva banners per week, and handle customer DMs.",
-        applied: false,
-        applicantsCount: 16
-      }
-    ];
-
     function App() {
-      // 1. Default page on visit is Dashboard ('profile')
-      const [activeTab, setActiveTab] = useState('profile');
+      const [activeTab, setActiveTab] = useState('home');
       const [theme, setTheme] = useState('dark');
-      
-      // 2. User state defaults to null (unauthenticated guest mode) or loads from localStorage
       const [user, setUser] = useState(() => {
         const saved = localStorage.getItem('narishakti_user');
         return saved ? JSON.parse(saved) : null;
       });
 
-      const [portfolios, setPortfolios] = useState([]);
-      const [gigs, setGigs] = useState(initialGigsData);
-
       const [isMenuOpen, setIsMenuOpen] = useState(false);
       const [isAuthOpen, setIsAuthOpen] = useState(false);
       const [authMode, setAuthMode] = useState('login');
-      const [isEditOpen, setIsEditOpen] = useState(false);
 
       useEffect(() => {
         document.body.className = theme;
@@ -119,317 +110,265 @@
 
       const saveUser = (u) => {
         setUser(u);
-        if (u) {
-          localStorage.setItem('narishakti_user', JSON.stringify(u));
-        } else {
-          localStorage.removeItem('narishakti_user');
-        }
-      };
-
-      const handleSignOut = () => {
-        saveUser(null);
-        setActiveTab('profile'); // Return to guest dashboard view
-      };
-
-      const handleLoginSubmit = (name, title) => {
-        const newUserObj = {
-          name: name || "Ananya Sharma",
-          title: title || "Digital Marketing Creator",
-          location: "Jaipur, Rajasthan",
-          bio: "Building skills and taking on local client micro-gigs.",
-          avatar: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=300",
-          earnings: 12500,
-          skills: ["Digital Marketing", "Canva Design", "Instagram Ads"],
-          completedLessons: ["m1-l1", "m1-l2"]
-        };
-        saveUser(newUserObj);
-        setIsAuthOpen(false);
-        setActiveTab('profile');
+        if (u) localStorage.setItem('narishakti_user', JSON.stringify(u));
+        else localStorage.removeItem('narishakti_user');
       };
 
       return (
-        <div className={`min-h-screen flex flex-col ${theme === 'dark' ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-900'}`}>
+        <div className={`min-h-screen flex flex-col ${theme === 'dark' ? 'bg-[#0a0518] text-slate-100' : 'bg-[#faf5ff] text-slate-900'}`}>
           
-          {/* NAVIGATION BAR */}
+          {/* TOP NAVBAR */}
           <header className={`sticky top-0 z-50 ${theme === 'dark' ? 'glass-header-dark' : 'glass-header-light'}`}>
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
               
               {/* Logo */}
               <div onClick={() => setActiveTab('home')} className="flex items-center gap-3 cursor-pointer">
-                <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-indigo-600 via-purple-600 to-rose-500 flex items-center justify-center text-white shadow-lg">
+                <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-purple-600 via-pink-600 to-amber-500 flex items-center justify-center text-white shadow-lg">
                   <i data-lucide="sparkles" className="w-6 h-6"></i>
                 </div>
                 <div>
-                  <span className="text-xl font-extrabold bg-gradient-to-r from-indigo-500 via-purple-500 to-rose-500 bg-clip-text text-transparent">
-                    NariShakti<span className="text-rose-500">Skills</span>
+                  <span className="text-xl font-extrabold bg-gradient-to-r from-purple-400 via-pink-400 to-amber-300 bg-clip-text text-transparent">
+                    NariShakti<span className="text-pink-400">Skills</span>
                   </span>
-                  <p className="text-[11px] opacity-70 font-medium">Learn • Showcase • Earn</p>
+                  <p className="text-[11px] opacity-75 font-medium">Skill to Income Platform</p>
                 </div>
               </div>
 
-              {/* Clean Direct Navigation (Dashboard & Overview) */}
-              <div className="hidden md:flex items-center gap-2 p-1.5 rounded-2xl border border-slate-700/40 bg-slate-900/60">
-                <button
-                  onClick={() => setActiveTab('profile')}
-                  className={`px-5 py-2 rounded-xl text-xs font-bold transition-all ${
-                    activeTab === 'profile' ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white' : 'text-slate-400 hover:text-white'
-                  }`}
-                >
-                  Dashboard
-                </button>
+              {/* Direct Navigation */}
+              <div className="hidden md:flex items-center gap-2 p-1.5 rounded-2xl border border-purple-500/20 bg-slate-900/60">
                 <button
                   onClick={() => setActiveTab('home')}
                   className={`px-5 py-2 rounded-xl text-xs font-bold transition-all ${
-                    activeTab === 'home' ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white' : 'text-slate-400 hover:text-white'
+                    activeTab === 'home' ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white' : 'text-slate-400 hover:text-white'
                   }`}
                 >
                   Overview
+                </button>
+                <button
+                  onClick={() => setActiveTab('profile')}
+                  className={`px-5 py-2 rounded-xl text-xs font-bold transition-all ${
+                    activeTab === 'profile' ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white' : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  Dashboard
                 </button>
               </div>
 
               {/* Right Section: Theme Toggle, Login/Sign Up, & 3-Dot Menu */}
               <div className="flex items-center gap-3">
-                
-                {/* Theme Switcher Toggle */}
                 <button
                   onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-                  className="p-2.5 rounded-xl border border-slate-700/60 bg-slate-800 text-amber-400 hover:scale-105 transition-all"
+                  className="p-2.5 rounded-xl border border-purple-500/20 bg-slate-900 text-amber-400"
                   title="Toggle Light / Dark Mode"
                 >
                   <i data-lucide={theme === 'dark' ? 'sun' : 'moon'} className="w-4 h-4"></i>
                 </button>
 
-                {/* Login & Sign Up / Sign Out */}
                 {user ? (
                   <div className="flex items-center gap-2">
-                    <div onClick={() => setActiveTab('profile')} className="flex items-center gap-2 bg-slate-900 border border-indigo-500/30 px-3 py-1.5 rounded-xl cursor-pointer">
-                      <img src={user.avatar} alt={user.name} className="w-8 h-8 rounded-full border border-indigo-400" />
+                    <div onClick={() => setActiveTab('profile')} className="flex items-center gap-2 bg-slate-900 border border-purple-500/30 px-3 py-1.5 rounded-xl cursor-pointer">
+                      <img src={user.avatar} alt={user.name} className="w-8 h-8 rounded-full border border-purple-400" />
                       <div className="hidden sm:block text-xs">
                         <p className="font-bold">{user.name}</p>
                         <p className="text-emerald-400 font-extrabold text-[10px]">₹{(user.earnings || 0).toLocaleString()}</p>
                       </div>
                     </div>
-                    
-                    {/* Working Sign Out Button */}
-                    <button 
-                      onClick={handleSignOut} 
-                      className="p-2.5 rounded-xl bg-slate-800 border border-slate-700 text-slate-400 hover:text-rose-400 hover:border-rose-500 transition-colors"
-                      title="Sign Out"
-                    >
+                    <button onClick={() => saveUser(null)} className="p-2 text-slate-400 hover:text-pink-400">
                       <i data-lucide="log-out" className="w-4 h-4"></i>
                     </button>
                   </div>
                 ) : (
                   <div className="flex items-center gap-2">
-                    <button 
-                      onClick={() => { setAuthMode('login'); setIsAuthOpen(true); }}
-                      className="px-3.5 py-2 rounded-xl text-xs font-bold border border-slate-700 hover:border-indigo-500"
-                    >
+                    <button onClick={() => { setAuthMode('login'); setIsAuthOpen(true); }} className="px-3.5 py-2 rounded-xl text-xs font-bold border border-purple-500/30 text-white">
                       Login
                     </button>
-                    <button 
-                      onClick={() => { setAuthMode('signup'); setIsAuthOpen(true); }}
-                      className="btn-gradient-primary px-4 py-2 rounded-xl text-xs font-bold text-white shadow-md"
-                    >
+                    <button onClick={() => { setAuthMode('signup'); setIsAuthOpen(true); }} className="btn-gradient-award px-4 py-2 rounded-xl text-xs font-bold text-white shadow-md">
                       Sign Up
                     </button>
                   </div>
                 )}
 
-                {/* 3-DOT MENU DROPDOWN */}
+                {/* 3-Dot Menu Dropdown */}
                 <div className="relative">
                   <button
                     onClick={() => setIsMenuOpen(!isMenuOpen)}
                     className={`p-2.5 rounded-xl border transition-all ${
                       isMenuOpen || ['learn', 'portfolio', 'gigs'].includes(activeTab)
-                        ? 'bg-indigo-600 text-white border-indigo-500'
-                        : 'bg-slate-800 border-slate-700/60 text-slate-300'
+                        ? 'bg-purple-600 text-white border-pink-500'
+                        : 'bg-slate-900 border-purple-500/20 text-slate-300'
                     }`}
                   >
                     <i data-lucide="more-vertical" className="w-5 h-5"></i>
                   </button>
 
                   {isMenuOpen && (
-                    <div className="absolute right-0 mt-3 w-60 rounded-2xl bg-slate-900 border border-slate-700/80 shadow-2xl p-2 z-50 text-white">
-                      <p className="px-3 py-1 text-[10px] font-bold text-slate-400 uppercase">Explore Sections</p>
-                      <button onClick={() => { setActiveTab('learn'); setIsMenuOpen(false); }} className="w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold hover:bg-slate-800 flex items-center justify-between">
+                    <div className="absolute right-0 mt-3 w-60 rounded-2xl bg-slate-950 border border-purple-500/40 shadow-2xl p-2 z-50 text-white">
+                      <p className="px-3 py-1 text-[10px] font-bold text-purple-300 uppercase">Explore Modules</p>
+                      <button onClick={() => { setActiveTab('learn'); setIsMenuOpen(false); }} className="w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold hover:bg-purple-900/40 flex items-center justify-between">
                         <span>Learn Case</span>
-                        <span className="text-[10px] bg-indigo-500/20 text-indigo-300 px-2 py-0.5 rounded-full">5 Lessons</span>
+                        <span className="text-[10px] bg-purple-500/20 text-purple-300 px-2 py-0.5 rounded-full font-bold">5 Lessons</span>
                       </button>
-                      <button onClick={() => { setActiveTab('portfolio'); setIsMenuOpen(false); }} className="w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold hover:bg-slate-800 flex items-center justify-between">
+                      <button onClick={() => { setActiveTab('portfolio'); setIsMenuOpen(false); }} className="w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold hover:bg-purple-900/40 flex items-center justify-between">
                         <span>Show Skill</span>
-                        <span className="text-[10px] bg-purple-500/20 text-purple-300 px-2 py-0.5 rounded-full">Verified</span>
+                        <span className="text-[10px] bg-pink-500/20 text-pink-300 px-2 py-0.5 rounded-full font-bold">Verified</span>
                       </button>
-                      <button onClick={() => { setActiveTab('gigs'); setIsMenuOpen(false); }} className="w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold hover:bg-slate-800 flex items-center justify-between">
+                      <button onClick={() => { setActiveTab('gigs'); setIsMenuOpen(false); }} className="w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold hover:bg-purple-900/40 flex items-center justify-between">
                         <span>Opportunity</span>
-                        <span className="text-[10px] bg-rose-500/20 text-rose-300 px-2 py-0.5 rounded-full">3 Gigs</span>
+                        <span className="text-[10px] bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded-full font-bold">3 Gigs</span>
                       </button>
                     </div>
                   )}
                 </div>
-
               </div>
 
             </div>
           </header>
 
-          {/* MAIN DASHBOARD & PAGES */}
-          <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
-            
-            {/* DASHBOARD PAGE (Default Visit Page) */}
-            {activeTab === 'profile' && (
-              user ? (
-                /* Authenticated User Dashboard */
-                <div className="space-y-8">
-                  <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 flex flex-col md:flex-row items-center md:items-start gap-6">
-                    <img src={user.avatar} alt={user.name} className="w-28 h-28 rounded-full border-4 border-indigo-500 shadow-2xl object-cover" />
-                    <div className="space-y-3 text-center md:text-left flex-1">
-                      <div className="flex flex-col sm:flex-row items-center justify-between gap-2">
-                        <h1 className="text-2xl font-bold text-white">{user.name} ✓</h1>
-                        <button onClick={() => setIsEditOpen(true)} className="px-3.5 py-1.5 rounded-xl text-xs font-bold border border-slate-700 bg-slate-800 text-indigo-300 hover:bg-slate-700">
-                          Edit Profile
-                        </button>
-                      </div>
-                      <p className="text-xs text-indigo-300">{user.title} • {user.location}</p>
-                      <p className="text-xs text-slate-300 max-w-xl">{user.bio}</p>
-                      <div className="flex flex-wrap gap-2 pt-1">
-                        {(user.skills || []).map((s, idx) => (
-                          <span key={idx} className="bg-indigo-500/20 text-indigo-300 text-xs px-3 py-1 rounded-full font-bold">✓ {s}</span>
-                        ))}
-                      </div>
-                    </div>
-                    <div className="bg-slate-800/80 border border-slate-700 p-4 rounded-2xl text-center space-y-1">
-                      <span className="text-[10px] text-slate-400 uppercase font-semibold">Total Income</span>
-                      <p className="text-2xl font-extrabold text-emerald-400">₹{(user.earnings || 0).toLocaleString()}</p>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div className="bg-slate-900 border border-slate-800 p-4 rounded-2xl">
-                      <span className="text-[10px] text-slate-400 uppercase block">Completed Lessons</span>
-                      <p className="text-2xl font-bold text-indigo-400">3</p>
-                    </div>
-                    <div className="bg-slate-900 border border-slate-800 p-4 rounded-2xl">
-                      <span className="text-[10px] text-slate-400 uppercase block">Published Portfolios</span>
-                      <p className="text-2xl font-bold text-purple-400">{portfolios.length}</p>
-                    </div>
-                    <div className="bg-slate-900 border border-slate-800 p-4 rounded-2xl">
-                      <span className="text-[10px] text-slate-400 uppercase block">Applied Gigs</span>
-                      <p className="text-2xl font-bold text-rose-400">1</p>
-                    </div>
-                    <div className="bg-slate-900 border border-slate-800 p-4 rounded-2xl">
-                      <span className="text-[10px] text-slate-400 uppercase block">Credentials</span>
-                      <p className="text-2xl font-bold text-emerald-400">Verified</p>
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                /* Unauthenticated Guest Dashboard View */
-                <div className="space-y-8">
-                  <div className="bg-gradient-to-r from-indigo-950 via-slate-900 to-slate-950 border border-indigo-500/30 rounded-3xl p-8 md:p-12 text-center md:text-left space-y-4">
-                    <span className="px-3.5 py-1.5 rounded-full bg-indigo-500/20 text-indigo-300 text-xs font-bold uppercase">Welcome to Learner Dashboard</span>
-                    <h1 className="text-3xl md:text-4xl font-extrabold text-white">Start Your Journey from Skill Learning to Earning.</h1>
-                    <p className="text-slate-300 text-xs md:text-sm max-w-2xl">Create your profile or login to access your custom dashboard, track skill courses, publish portfolio work, and apply for paid micro-gigs.</p>
-                    <div className="flex flex-wrap justify-center md:justify-start gap-4 pt-2">
-                      <button onClick={() => { setAuthMode('signup'); setIsAuthOpen(true); }} className="btn-gradient-primary px-6 py-3 rounded-xl font-bold text-xs text-white">Create Free Account</button>
-                      <button onClick={() => { setAuthMode('login'); setIsAuthOpen(true); }} className="px-6 py-3 rounded-xl font-bold text-xs border border-slate-700 bg-slate-900 text-white">Login to Dashboard</button>
-                    </div>
-                  </div>
-
-                  {/* Guest Setup Form */}
-                  <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 space-y-4">
-                    <h3 className="text-sm font-bold text-white">Quick Instant Profile Setup</h3>
-                    <form onSubmit={(e) => {
-                      e.preventDefault();
-                      handleLoginSubmit(e.target.gName.value, e.target.gTitle.value);
-                    }} className="grid sm:grid-cols-2 gap-4 text-xs">
-                      <input name="gName" required placeholder="Full Name (e.g. Priya Sharma)" className="bg-slate-800 text-white p-3 rounded-xl border border-slate-700" />
-                      <input name="gTitle" required placeholder="Skill Focus (e.g. Graphic Designer)" className="bg-slate-800 text-white p-3 rounded-xl border border-slate-700" />
-                      <button type="submit" className="sm:col-span-2 btn-gradient-primary py-3 rounded-xl font-bold text-xs text-white">Setup Profile Now</button>
-                    </form>
-                  </div>
-                </div>
-              )
-            )}
-
+          {/* MAIN PAGE */}
+          <main className="flex-1">
             {activeTab === 'home' && (
-              <div className="space-y-6">
-                <h1 className="text-3xl font-bold">NariShakti Overview</h1>
-                <p className="text-xs text-slate-300">Empowering women from skill learning to verified work.</p>
+              <div className="space-y-24 py-12">
+                
+                {/* HERO SECTION */}
+                <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid lg:grid-cols-12 gap-12 items-center">
+                  <div className="lg:col-span-6 space-y-6 text-center lg:text-left">
+                    <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-purple-500/15 border border-purple-400/30 text-purple-300 text-xs font-bold uppercase tracking-wider">
+                      ✨ Women Empowerment & Career Platform
+                    </span>
+                    <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-tight">
+                      Turn Skills Into <br />
+                      <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-amber-300 bg-clip-text text-transparent">
+                        Sustainable Income
+                      </span>
+                    </h1>
+                    <p className="text-base text-slate-300 max-w-xl leading-relaxed">
+                      Learn in-demand skills, build your portfolio, connect with clients, and start earning through jobs, freelancing, and entrepreneurship.
+                    </p>
+                    <div className="flex flex-wrap items-center justify-center lg:justify-start gap-4 pt-2">
+                      <button onClick={() => setActiveTab('learn')} className="btn-gradient-award text-sm py-3.5 px-7 rounded-xl flex items-center gap-2">
+                        Start Learning →
+                      </button>
+                      <button onClick={() => setActiveTab('gigs')} className="px-7 py-3.5 rounded-xl font-bold text-sm border border-purple-500/30 bg-slate-900/80 text-white hover:bg-slate-800">
+                        Explore Opportunities
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Hero Visual Card */}
+                  <div className="lg:col-span-6">
+                    <div className="glass-card-award rounded-3xl p-6 space-y-5">
+                      <div className="flex items-center justify-between border-b border-purple-500/20 pb-3">
+                        <span className="text-xs font-bold text-purple-300">NariShakti Career Hub</span>
+                        <span className="text-[10px] bg-pink-500/20 text-pink-300 font-extrabold px-2.5 py-0.5 rounded-full">Live Dashboard</span>
+                      </div>
+                      <div className="bg-slate-950 p-5 rounded-2xl space-y-3">
+                        <span className="text-[10px] text-slate-400 uppercase">Monthly Income Tracker</span>
+                        <p className="text-3xl font-extrabold text-emerald-400">₹18,500 <span className="text-xs text-purple-300 font-normal">+34% this month</span></p>
+                        <div className="space-y-2 pt-2">
+                          <div className="flex justify-between text-xs text-slate-300"><span>Digital Marketing Gig</span><span className="text-purple-400">₹8,500</span></div>
+                          <div className="w-full bg-slate-800 h-2 rounded-full overflow-hidden"><div className="bg-gradient-to-r from-purple-500 to-pink-500 h-full w-4/5"></div></div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </section>
+
+                {/* STATISTICS SECTION */}
+                <section className="bg-slate-900/90 border-y border-purple-500/20 py-12">
+                  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+                    <div>
+                      <p className="text-3xl font-extrabold text-purple-400">10,000+</p>
+                      <p className="text-xs font-bold text-slate-400 uppercase mt-1">Women Learners</p>
+                    </div>
+                    <div>
+                      <p className="text-3xl font-extrabold text-pink-400">500+</p>
+                      <p className="text-xs font-bold text-slate-400 uppercase mt-1">Skill Courses</p>
+                    </div>
+                    <div>
+                      <p className="text-3xl font-extrabold text-amber-400">2,000+</p>
+                      <p className="text-xs font-bold text-slate-400 uppercase mt-1">Income Opportunities</p>
+                    </div>
+                    <div>
+                      <p className="text-3xl font-extrabold text-emerald-400">95%</p>
+                      <p className="text-xs font-bold text-slate-400 uppercase mt-1">Career Growth Support</p>
+                    </div>
+                  </div>
+                </section>
+
+                {/* FEATURES SECTION */}
+                <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+                  <div className="text-center max-w-2xl mx-auto space-y-2">
+                    <span className="text-xs font-extrabold text-pink-400 uppercase tracking-widest">Core Features</span>
+                    <h2 className="text-3xl font-extrabold text-white">Everything You Need to Succeed</h2>
+                  </div>
+
+                  <div className="grid md:grid-cols-3 gap-8">
+                    {[
+                      { title: "1. Learn Market-Relevant Skills", items: ["Digital Marketing", "Graphic Design", "Content Writing", "Tailoring & Handicrafts", "Coding & Technology"] },
+                      { title: "2. Portfolio Showcase", items: ["Upload Projects", "Display Certifications", "Showcase Products & Services"] },
+                      { title: "3. Income Opportunities", items: ["Freelancing Projects", "Part-Time Jobs", "Remote Work", "Local Business Opportunities"] },
+                      { title: "4. AI Career Guidance", items: ["Skill Assessment", "Personalized Learning Path", "Income Recommendations"] },
+                      { title: "5. Community Support", items: ["Women Mentors", "Success Stories", "Networking Groups"] }
+                    ].map((feat, idx) => (
+                      <div key={idx} className="glass-card-award rounded-3xl p-6 space-y-4">
+                        <h3 className="text-lg font-bold text-white">{feat.title}</h3>
+                        <div className="space-y-2 pt-2 border-t border-purple-500/20">
+                          {feat.items.map((it, i) => (
+                            <p key={i} className="text-xs text-slate-300 flex items-center gap-2">✓ {it}</p>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </section>
+
+                {/* HOW IT WORKS */}
+                <section className="bg-slate-900/60 py-16 border-y border-purple-500/20">
+                  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+                    <h2 className="text-3xl font-extrabold text-white text-center">How It Works</h2>
+                    <div className="grid md:grid-cols-5 gap-4">
+                      {["Step 1 → Choose a Skill", "Step 2 → Interactive Courses", "Step 3 → Build Portfolio", "Step 4 → Connect Opportunities", "Step 5 → Start Earning"].map((st, idx) => (
+                        <div key={idx} className="glass-card-award rounded-2xl p-4 text-center font-bold text-xs text-purple-300">
+                          {st}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </section>
+
+                {/* IMPACT */}
+                <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                  <div className="glass-card-award rounded-3xl p-10 text-center space-y-4">
+                    <h2 className="text-3xl font-extrabold text-white">From Learning to Financial Independence</h2>
+                    <p className="text-xs text-slate-300 max-w-xl mx-auto">Financial Empowerment • Career Development • Entrepreneurship Support • Flexible Income • Digital Literacy</p>
+                  </div>
+                </section>
+
+                {/* FOOTER TAGLINE */}
+                <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                  <div className="bg-gradient-to-r from-purple-900 via-slate-900 to-pink-950 rounded-3xl p-12 text-center text-white space-y-4 border border-purple-500/30">
+                    <h2 className="text-3xl font-extrabold">Ready to Start Earning?</h2>
+                    <p className="text-sm text-purple-300 font-semibold">"Empowering Women. Creating Opportunities. Building Futures."</p>
+                    <button onClick={() => setActiveTab('learn')} className="btn-gradient-award px-8 py-3.5 rounded-xl font-bold text-xs">Start Learning Now</button>
+                  </div>
+                </section>
+
               </div>
             )}
 
-            {activeTab === 'learn' && (
-              <div className="space-y-6">
-                <h1 className="text-2xl font-bold">Learn Case • Skill Track</h1>
-                <p className="text-xs text-slate-400">Master Canva, Instagram Marketing & Meta Ads.</p>
+            {activeTab === 'profile' && (
+              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-6">
+                <h1 className="text-3xl font-bold">Learner Dashboard</h1>
+                <p className="text-xs text-purple-300">Track skill courses, portfolio showcase, and active micro-gigs.</p>
               </div>
             )}
-
-            {activeTab === 'portfolio' && (
-              <div className="space-y-6">
-                <h1 className="text-2xl font-bold">Show Skill • Public Gallery</h1>
-                <p className="text-xs text-slate-400">Browse capstone projects from women learners.</p>
-              </div>
-            )}
-
-            {activeTab === 'gigs' && (
-              <div className="space-y-6">
-                <h1 className="text-2xl font-bold">Opportunity Board</h1>
-                <p className="text-xs text-slate-400">Apply to paid micro-gigs with verified portfolio proof.</p>
-              </div>
-            )}
-
           </main>
 
-          {/* AUTH MODAL */}
-          {isAuthOpen && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
-              <div className="bg-slate-900 border border-slate-800 rounded-3xl max-w-sm w-full p-6 text-white space-y-4 text-xs">
-                <h2 className="text-lg font-bold text-center">{authMode === 'login' ? 'Login to Dashboard' : 'Create Free Account'}</h2>
-                <form onSubmit={(e) => {
-                  e.preventDefault();
-                  handleLoginSubmit(e.target.uName.value, e.target.uTitle.value);
-                }} className="space-y-3">
-                  <input name="uName" required placeholder="Full Name" className="w-full bg-slate-800 text-white p-3 rounded-xl border border-slate-700" />
-                  <input name="uTitle" placeholder="Skill / Role Title" className="w-full bg-slate-800 text-white p-3 rounded-xl border border-slate-700" />
-                  <button type="submit" className="w-full btn-gradient-primary py-3 rounded-xl font-bold text-xs text-white">
-                    {authMode === 'login' ? 'Login Now' : 'Create Account'}
-                  </button>
-                </form>
-                <button onClick={() => setIsAuthOpen(false)} className="w-full text-center text-xs text-slate-400 hover:text-white">Cancel</button>
-              </div>
-            </div>
-          )}
-
-          {/* EDIT PROFILE MODAL */}
-          {isEditOpen && user && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
-              <div className="bg-slate-900 border border-slate-800 rounded-3xl max-w-sm w-full p-6 text-white space-y-3 text-xs">
-                <h3 className="text-lg font-bold">Edit Profile</h3>
-                <form onSubmit={(e) => {
-                  e.preventDefault();
-                  saveUser({
-                    ...user,
-                    name: e.target.eName.value || user.name,
-                    title: e.target.eTitle.value || user.title,
-                    bio: e.target.eBio.value || user.bio
-                  });
-                  setIsEditOpen(false);
-                }} className="space-y-3">
-                  <input name="eName" defaultValue={user.name} placeholder="Full Name" className="w-full bg-slate-800 p-3 rounded-xl border border-slate-700" />
-                  <input name="eTitle" defaultValue={user.title} placeholder="Title" className="w-full bg-slate-800 p-3 rounded-xl border border-slate-700" />
-                  <textarea name="eBio" defaultValue={user.bio} placeholder="Bio" rows="3" className="w-full bg-slate-800 p-3 rounded-xl border border-slate-700"></textarea>
-                  <button type="submit" className="w-full btn-gradient-primary py-3 rounded-xl font-bold text-xs text-white">Save Profile</button>
-                </form>
-                <button onClick={() => setIsEditOpen(false)} className="w-full text-center text-xs text-slate-400 hover:text-white">Cancel</button>
-              </div>
-            </div>
-          )}
-
-          <footer className="border-t border-slate-800 py-6 text-center text-xs text-slate-400">
-            NariShakti Skills • Empowering Women from Skill to Income
+          {/* FOOTER */}
+          <footer className="border-t border-purple-500/20 py-8 text-center text-xs text-slate-400">
+            <p className="font-bold text-white">NariShakti Skills • Empowering Women. Creating Opportunities. Building Futures.</p>
           </footer>
+
         </div>
       );
     }
