@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Navbar from './components/Navbar';
 import LandingSection from './components/LandingSection';
 import LearnSection from './components/LearnSection';
@@ -22,9 +22,11 @@ export default function App() {
   const [user, setUser] = useState(initialUser);
   const [portfolios, setPortfolios] = useState(initialPortfolios);
   const [opportunities, setOpportunities] = useState(initialOpportunities);
+  const [theme, setTheme] = useState('dark');
 
   // Modals
   const [isAuthOpen, setIsAuthOpen] = useState(false);
+  const [authMode, setAuthMode] = useState('login');
   const [isSubmitOpen, setIsSubmitOpen] = useState(false);
   const [isApplyOpen, setIsApplyOpen] = useState(false);
   const [activeGigToApply, setActiveGigToApply] = useState(null);
@@ -32,14 +34,35 @@ export default function App() {
   // Toast
   const [toast, setToast] = useState(null);
 
+  useEffect(() => {
+    document.body.className = theme;
+  }, [theme]);
+
+  const handleToggleTheme = () => {
+    setTheme(prev => prev === 'dark' ? 'light' : 'dark');
+  };
+
   const showToast = (title, message) => {
     setToast({ title, message });
     setTimeout(() => setToast(null), 4000);
   };
 
+  const handleOpenAuth = (mode = 'login') => {
+    setAuthMode(mode);
+    setIsAuthOpen(true);
+  };
+
+  const handleLogout = () => {
+    setUser(null);
+    showToast("Signed Out", "You have logged out.");
+  };
+
   // Lesson Completion Action
   const handleCompleteLesson = (lessonId) => {
-    if (!user) return;
+    if (!user) {
+      handleOpenAuth('login');
+      return;
+    }
     const currentCompleted = user.completedLessons || [];
     let updatedLessons;
 
@@ -77,7 +100,7 @@ export default function App() {
   // Apply to Gig Trigger
   const handleOpenApplyGig = (gig) => {
     if (!user) {
-      setIsAuthOpen(true);
+      handleOpenAuth('login');
       return;
     }
     setActiveGigToApply(gig);
@@ -111,24 +134,29 @@ export default function App() {
   const handleLoginSuccess = (userData) => {
     setUser({
       ...initialUser,
-      name: userData.name,
+      name: userData.name || 'Ananya Sharma',
       title: `${userData.skillInterest || 'Digital Marketing'} Specialist`
     });
-    showToast("Welcome Back!", `Signed in as ${userData.name}`);
+    showToast("Welcome!", `Logged in as ${userData.name || 'Ananya Sharma'}`);
   };
 
   const userPortfolios = portfolios.filter(p => p.authorName === (user?.name || "Ananya Sharma"));
   const userAppliedGigs = opportunities.filter(g => (user?.appliedGigIds || []).includes(g.id));
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-100 font-sans selection:bg-indigo-500 selection:text-white">
+    <div className={`min-h-screen flex flex-col font-sans transition-colors duration-300 ${
+      theme === 'dark' ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-900'
+    }`}>
       
-      {/* Sticky Navigation Header */}
+      {/* Redesigned Sticky Navigation Header */}
       <Navbar 
         activeTab={activeTab} 
         setActiveTab={setActiveTab}
         user={user}
-        onOpenAuth={() => setIsAuthOpen(true)}
+        onOpenAuth={handleOpenAuth}
+        onLogout={handleLogout}
+        theme={theme}
+        onToggleTheme={handleToggleTheme}
       />
 
       {/* Main View Area */}
@@ -136,7 +164,7 @@ export default function App() {
         {activeTab === 'home' && (
           <LandingSection 
             onNavigate={setActiveTab}
-            onOpenAuth={() => setIsAuthOpen(true)}
+            onOpenAuth={() => handleOpenAuth('signup')}
           />
         )}
 
@@ -175,24 +203,27 @@ export default function App() {
       </main>
 
       {/* Footer */}
-      <footer className="bg-slate-900 border-t border-slate-800 text-slate-400 py-10 text-xs">
+      <footer className={`border-t py-10 text-xs transition-colors ${
+        theme === 'dark' ? 'bg-slate-900 border-slate-800 text-slate-400' : 'bg-white border-slate-200 text-slate-600'
+      }`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-4 text-center md:text-left">
           <div>
-            <p className="font-bold text-white text-sm">NariShakti Skills • Skill-to-Income Platform for Women</p>
-            <p className="text-slate-400 mt-1">Working prototype for 24-Hour Hackathon / Prototype Demo.</p>
+            <p className="font-bold text-sm">NariShakti Skills • Skill-to-Income Platform for Women</p>
+            <p className="opacity-75 mt-1">Empowering women across India to learn skills, build portfolios, and earn income.</p>
           </div>
           <div className="flex items-center gap-6 font-semibold">
-            <button onClick={() => setActiveTab('home')} className="hover:text-white">Overview</button>
-            <button onClick={() => setActiveTab('learn')} className="hover:text-white">Learn</button>
-            <button onClick={() => setActiveTab('portfolio')} className="hover:text-white">Portfolio</button>
-            <button onClick={() => setActiveTab('gigs')} className="hover:text-white">Gigs</button>
+            <button onClick={() => setActiveTab('home')} className="hover:text-indigo-500">Overview</button>
+            <button onClick={() => setActiveTab('learn')} className="hover:text-indigo-500">Learn Case</button>
+            <button onClick={() => setActiveTab('portfolio')} className="hover:text-indigo-500">Show Skill</button>
+            <button onClick={() => setActiveTab('gigs')} className="hover:text-indigo-500">Opportunity</button>
           </div>
         </div>
       </footer>
 
       {/* Modals & Toasts */}
       <AuthModal 
-        isOpen={isAuthOpen} 
+        isOpen={isAuthOpen}
+        initialMode={authMode} 
         onClose={() => setIsAuthOpen(false)} 
         onLoginSuccess={handleLoginSuccess}
       />
