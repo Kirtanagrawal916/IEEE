@@ -41,7 +41,7 @@ export default function ProfileSection({
       name: editName || 'My Profile',
       title: editTitle || 'Skill Learner',
       location: editLocation || 'India',
-      bio: editBio || 'Learning skills & building portfolio on NariShakti.',
+      bio: editBio || 'Learning skills & building portfolio on HerEarn.',
       avatar: editAvatar || 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=300'
     });
     setIsEditOpen(false);
@@ -234,7 +234,7 @@ export default function ProfileSection({
             </div>
 
             <p className="text-xs text-slate-300 max-w-2xl leading-relaxed">
-              {user.bio || 'Building skills and publishing portfolio projects on NariShakti.'}
+              {user.bio || 'Building skills and publishing portfolio projects on HerEarn.'}
             </p>
 
             <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 text-xs text-slate-400 font-medium pt-1">

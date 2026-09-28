@@ -64,7 +64,7 @@ export default function AuthModal({ isOpen, initialMode = 'login', onClose, onLo
           </h2>
           <p className="text-xs text-slate-400">
             {isSignUp 
-              ? 'Join NariShakti to start learning market skills & earning income' 
+              ? 'Join HerEarn to start learning market skills & earning income' 
               : 'Sign in to access your learning tracks & micro-gig applications'}
           </p>
         </div>

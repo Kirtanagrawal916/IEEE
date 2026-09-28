@@ -23,7 +23,7 @@ export default function App() {
   
   // Persisted user state - defaults to null if not logged in
   const [user, setUser] = useState(() => {
-    const saved = localStorage.getItem('narishakti_user');
+    const saved = localStorage.getItem('herearn_user');
     return saved ? JSON.parse(saved) : null;
   });
 
@@ -49,9 +49,9 @@ export default function App() {
   const saveUserData = (userData) => {
     setUser(userData);
     if (userData) {
-      localStorage.setItem('narishakti_user', JSON.stringify(userData));
+      localStorage.setItem('herearn_user', JSON.stringify(userData));
     } else {
-      localStorage.removeItem('narishakti_user');
+      localStorage.removeItem('herearn_user');
     }
   };
 
@@ -254,7 +254,7 @@ export default function App() {
       }`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-4 text-center md:text-left">
           <div>
-            <p className="font-bold text-sm">NariShakti Skills • Skill-to-Income Platform for Women</p>
+            <p className="font-bold text-sm">HerEarn • Skill-to-Income Platform for Women</p>
             <p className="opacity-75 mt-1">Empowering women across India to learn skills, build portfolios, and earn income.</p>
           </div>
           <div className="flex items-center gap-6 font-semibold">

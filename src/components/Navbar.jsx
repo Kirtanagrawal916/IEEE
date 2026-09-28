@@ -78,7 +78,7 @@ export default function Navbar({
             </div>
             <div>
               <span className="text-xl font-extrabold tracking-tight bg-gradient-to-r from-purple-400 via-pink-400 to-amber-300 bg-clip-text text-transparent">
-                NariShakti<span className="text-pink-400">Skills</span>
+                Her<span className="text-pink-400">Earn</span>
               </span>
               <p className="text-[11px] opacity-75 font-medium tracking-wide">
                 Skill to Income Platform
