@@ -241,7 +241,11 @@ export default function Navbar({
                 <button
                   type="button"
                   onClick={() => onOpenAuth('login')}
-                  className="px-3.5 py-2 rounded-xl text-xs font-bold border border-purple-500/30 hover:border-pink-500 transition-all text-white cursor-pointer"
+                  className={`px-3.5 py-2 rounded-xl text-xs font-bold border transition-all text-white cursor-pointer ${
+                    activeTab === 'login'
+                      ? 'bg-purple-600 border-purple-500 shadow-md ring-2 ring-purple-400'
+                      : 'border-purple-500/30 hover:border-pink-500'
+                  }`}
                 >
                   Login
                 </button>
@@ -249,7 +253,11 @@ export default function Navbar({
                 <button
                   type="button"
                   onClick={() => onOpenAuth('signup')}
-                  className="btn-gradient-award text-xs py-2 px-3.5 shadow-md flex items-center gap-1.5 cursor-pointer"
+                  className={`text-xs py-2 px-3.5 shadow-md flex items-center gap-1.5 cursor-pointer rounded-xl transition-all ${
+                    activeTab === 'signup'
+                      ? 'bg-gradient-to-r from-pink-600 to-purple-600 text-white font-bold ring-2 ring-pink-400'
+                      : 'btn-gradient-award'
+                  }`}
                 >
                   <UserPlus className="w-3.5 h-3.5" />
                   <span className="hidden sm:inline">Sign Up</span>
