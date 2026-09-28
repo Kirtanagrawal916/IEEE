@@ -14,7 +14,10 @@ import {
   LogOut,
   ChevronDown,
   Globe,
-  Check
+  Check,
+  Info,
+  Scale,
+  FileText
 } from 'lucide-react';
 
 export default function Navbar({ 
@@ -24,7 +27,9 @@ export default function Navbar({
   onOpenAuth, 
   onLogout,
   theme, 
-  onToggleTheme 
+  onToggleTheme,
+  onOpenAbout,
+  onOpenTerms
 }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [lang, setLang] = useState('en');
@@ -269,8 +274,8 @@ export default function Navbar({
 
               {/* Dropdown Menu Popup */}
               {isMenuOpen && (
-                <div className="absolute right-0 mt-3 w-64 rounded-2xl bg-slate-950 border border-purple-500/40 shadow-2xl p-2 z-50 animate-fade-in text-white">
-                  <div className="px-3 py-2 border-b border-purple-500/20 mb-1">
+                <div className="absolute right-0 mt-3 w-64 rounded-2xl bg-slate-950 border border-purple-500/40 shadow-2xl p-2 z-50 animate-fade-in text-white space-y-1">
+                  <div className="px-3 py-1.5 border-b border-purple-500/20">
                     <p className="text-[11px] font-extrabold text-purple-300 uppercase tracking-wider">Explore Modules</p>
                   </div>
 
@@ -323,7 +328,7 @@ export default function Navbar({
                     <button
                       type="button"
                       onClick={() => handleSelectTab('profile')}
-                      className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2.5 mt-1 border-t border-purple-500/20 pt-2 transition-colors ${
+                      className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2.5 transition-colors ${
                         activeTab === 'profile' ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white' : 'hover:bg-purple-900/40 text-slate-200'
                       }`}
                     >
@@ -331,6 +336,42 @@ export default function Navbar({
                       <span>My Dashboard</span>
                     </button>
                   )}
+
+                  <div className="px-3 pt-2 border-t border-purple-500/20">
+                    <p className="text-[11px] font-extrabold text-purple-300 uppercase tracking-wider">Information & Policies</p>
+                  </div>
+
+                  {/* About Us */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsMenuOpen(false);
+                      if (onOpenAbout) onOpenAbout();
+                    }}
+                    className="w-full text-left px-3.5 py-2 rounded-xl text-xs font-bold flex items-center justify-between hover:bg-purple-900/40 text-slate-200 transition-colors cursor-pointer"
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <Info className="w-4 h-4 text-purple-400" />
+                      <span>About Us</span>
+                    </div>
+                    <span className="text-[10px] bg-purple-500/20 text-purple-300 px-2 py-0.5 rounded-full font-extrabold">Mission</span>
+                  </button>
+
+                  {/* Terms & Conditions */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsMenuOpen(false);
+                      if (onOpenTerms) onOpenTerms();
+                    }}
+                    className="w-full text-left px-3.5 py-2 rounded-xl text-xs font-bold flex items-center justify-between hover:bg-purple-900/40 text-slate-200 transition-colors cursor-pointer"
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <Scale className="w-4 h-4 text-pink-400" />
+                      <span>Terms & Conditions</span>
+                    </div>
+                    <span className="text-[10px] bg-pink-500/20 text-pink-300 px-2 py-0.5 rounded-full font-extrabold">Policy</span>
+                  </button>
 
                 </div>
               )}

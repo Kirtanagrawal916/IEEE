@@ -202,7 +202,7 @@
                   </button>
 
                   {isMenuOpen && (
-                    <div className="absolute right-0 mt-3 w-60 rounded-2xl bg-slate-950 border border-purple-500/40 shadow-2xl p-2 z-50 text-white">
+                    <div className="absolute right-0 mt-3 w-64 rounded-2xl bg-slate-950 border border-purple-500/40 shadow-2xl p-2 z-50 text-white space-y-1">
                       <p className="px-3 py-1 text-[10px] font-bold text-purple-300 uppercase">Explore Modules</p>
                       <button onClick={() => { setActiveTab('learn'); setIsMenuOpen(false); }} className="w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold hover:bg-purple-900/40 flex items-center justify-between">
                         <span>Learn Case</span>
@@ -215,6 +215,18 @@
                       <button onClick={() => { setActiveTab('gigs'); setIsMenuOpen(false); }} className="w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold hover:bg-purple-900/40 flex items-center justify-between">
                         <span>Opportunity</span>
                         <span className="text-[10px] bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded-full font-bold">3 Gigs</span>
+                      </button>
+
+                      <div className="border-t border-purple-500/20 pt-1 mt-1">
+                        <p className="px-3 py-1 text-[10px] font-bold text-purple-300 uppercase">Information & Policies</p>
+                      </div>
+                      <button onClick={() => { alert('HerEarn About Platform\n\nProblem Statement: Millions of skilled women face barriers to financial independence. HerEarn creates a Learn -> Showcase -> Earn loop to empower 100,000+ women to achieve sustainable income.'); setIsMenuOpen(false); }} className="w-full text-left px-3.5 py-2 rounded-xl text-xs font-bold hover:bg-purple-900/40 flex items-center justify-between cursor-pointer">
+                        <span>About Us</span>
+                        <span className="text-[10px] bg-purple-500/20 text-purple-300 px-2 py-0.5 rounded-full font-bold">Mission</span>
+                      </button>
+                      <button onClick={() => { alert('HerEarn Terms & Conditions\n\n1. Profile Integrity & Verified Credentials\n2. Portfolio Ownership & Showcase Licensing\n3. Client Micro-Gig & Payment Guarantees\n4. Code of Conduct & Zero Discrimination Policy.'); setIsMenuOpen(false); }} className="w-full text-left px-3.5 py-2 rounded-xl text-xs font-bold hover:bg-purple-900/40 flex items-center justify-between cursor-pointer">
+                        <span>Terms & Conditions</span>
+                        <span className="text-[10px] bg-pink-500/20 text-pink-300 px-2 py-0.5 rounded-full font-bold">Policy</span>
                       </button>
                     </div>
                   )}
