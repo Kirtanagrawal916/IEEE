@@ -12,7 +12,10 @@ import {
   LogIn, 
   UserPlus, 
   LogOut,
-  ChevronDown
+  ChevronDown,
+  Zap,
+  Rocket,
+  Star
 } from 'lucide-react';
 
 export default function Navbar({ 
@@ -42,6 +45,24 @@ export default function Navbar({
     setIsMenuOpen(false);
   };
 
+  const handleNavSection = (sectionId) => {
+    if (sectionId === 'top') {
+      setActiveTab('home');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+    if (activeTab !== 'home') {
+      setActiveTab('home');
+      setTimeout(() => {
+        const el = document.getElementById(sectionId);
+        if (el) el.scrollIntoView({ behavior: 'smooth' });
+      }, 100);
+    } else {
+      const el = document.getElementById(sectionId);
+      if (el) el.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   return (
     <nav className="glass-nav sticky top-0 z-50 shadow-md transition-colors">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -66,28 +87,57 @@ export default function Navbar({
           </div>
 
           {/* Clean Main Direct Navigation */}
-          <div className="hidden md:flex items-center gap-2 bg-slate-900/60 p-1.5 rounded-2xl border border-purple-500/20">
+          <div className="hidden lg:flex items-center gap-1.5 bg-slate-900/80 dark:bg-slate-900/80 light:bg-white/90 p-1.5 rounded-2xl border border-purple-500/30 backdrop-blur-md shadow-lg">
             <button
-              onClick={() => setActiveTab('home')}
-              className={`flex items-center gap-2 px-5 py-2 rounded-xl text-xs font-bold transition-all ${
+              type="button"
+              onClick={() => handleNavSection('top')}
+              className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                 activeTab === 'home'
                   ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-md'
-                  : 'text-slate-400 hover:text-white hover:bg-purple-900/40'
+                  : 'text-slate-300 hover:text-white hover:bg-purple-900/40'
               }`}
             >
-              <Compass className="w-4 h-4" />
+              <Compass className="w-3.5 h-3.5" />
               <span>Overview</span>
             </button>
 
             <button
+              type="button"
+              onClick={() => handleNavSection('features')}
+              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all text-slate-300 hover:text-white hover:bg-purple-900/40 cursor-pointer"
+            >
+              <Zap className="w-3.5 h-3.5 text-amber-400" />
+              <span>Features</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => handleNavSection('how-it-works')}
+              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all text-slate-300 hover:text-white hover:bg-purple-900/40 cursor-pointer"
+            >
+              <Rocket className="w-3.5 h-3.5 text-pink-400" />
+              <span>How It Works</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => handleNavSection('success-stories')}
+              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all text-slate-300 hover:text-white hover:bg-purple-900/40 cursor-pointer"
+            >
+              <Star className="w-3.5 h-3.5 text-purple-400" />
+              <span>Success Stories</span>
+            </button>
+
+            <button
+              type="button"
               onClick={() => setActiveTab('profile')}
-              className={`flex items-center gap-2 px-5 py-2 rounded-xl text-xs font-bold transition-all ${
+              className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                 activeTab === 'profile'
                   ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-md'
-                  : 'text-slate-400 hover:text-white hover:bg-purple-900/40'
+                  : 'text-slate-300 hover:text-white hover:bg-purple-900/40'
               }`}
             >
-              <User className="w-4 h-4" />
+              <User className="w-3.5 h-3.5" />
               <span>Dashboard</span>
             </button>
           </div>
@@ -133,15 +183,17 @@ export default function Navbar({
             ) : (
               <div className="flex items-center gap-2">
                 <button
+                  type="button"
                   onClick={() => onOpenAuth('login')}
-                  className="px-4 py-2 rounded-xl text-xs font-bold border border-purple-500/30 hover:border-pink-500 transition-all text-white"
+                  className="px-4 py-2 rounded-xl text-xs font-bold border border-purple-500/30 hover:border-pink-500 transition-all text-white cursor-pointer"
                 >
                   Login
                 </button>
 
                 <button
+                  type="button"
                   onClick={() => onOpenAuth('signup')}
-                  className="btn-gradient-award text-xs py-2 px-4 shadow-md flex items-center gap-1.5"
+                  className="btn-gradient-award text-xs py-2 px-4 shadow-md flex items-center gap-1.5 cursor-pointer"
                 >
                   <UserPlus className="w-3.5 h-3.5" />
                   Sign Up
