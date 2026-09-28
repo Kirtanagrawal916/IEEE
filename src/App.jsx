@@ -18,8 +18,15 @@ import {
 } from './data/mockData';
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState('home');
-  const [user, setUser] = useState(initialUser);
+  // Default to 'profile' (Dashboard) tab as requested
+  const [activeTab, setActiveTab] = useState('profile');
+  
+  // Persisted user state - defaults to null if not logged in
+  const [user, setUser] = useState(() => {
+    const saved = localStorage.getItem('narishakti_user');
+    return saved ? JSON.parse(saved) : null;
+  });
+
   const [portfolios, setPortfolios] = useState(initialPortfolios);
   const [opportunities, setOpportunities] = useState(initialOpportunities);
   const [theme, setTheme] = useState('dark');
@@ -38,6 +45,16 @@ export default function App() {
     document.body.className = theme;
   }, [theme]);
 
+  // Persist user when updated
+  const saveUserData = (userData) => {
+    setUser(userData);
+    if (userData) {
+      localStorage.setItem('narishakti_user', JSON.stringify(userData));
+    } else {
+      localStorage.removeItem('narishakti_user');
+    }
+  };
+
   const handleToggleTheme = () => {
     setTheme(prev => prev === 'dark' ? 'light' : 'dark');
   };
@@ -52,9 +69,21 @@ export default function App() {
     setIsAuthOpen(true);
   };
 
+  // Sign Out Handler
   const handleLogout = () => {
-    setUser(null);
-    showToast("Signed Out", "You have logged out.");
+    saveUserData(null);
+    setActiveTab('profile'); // Keep on Dashboard in guest view
+    showToast("Signed Out", "You have successfully logged out.");
+  };
+
+  // Profile Update Handler
+  const handleUpdateProfile = (profileData) => {
+    const updated = {
+      ...(user || initialUser),
+      ...profileData
+    };
+    saveUserData(updated);
+    showToast("✨ Profile Updated!", "Your dashboard profile has been saved.");
   };
 
   // Lesson Completion Action
@@ -74,7 +103,7 @@ export default function App() {
       showToast("🎉 Lesson Mastered!", "Your skill track progress has increased!");
     }
 
-    setUser({
+    saveUserData({
       ...user,
       completedLessons: updatedLessons
     });
@@ -84,9 +113,9 @@ export default function App() {
   const handleSubmitProject = (newProject) => {
     const createdItem = {
       id: `p-${Date.now()}`,
-      authorName: user ? user.name : "Ananya Sharma",
+      authorName: user ? user.name : "Guest Learner",
       authorAvatar: user ? user.avatar : "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=300",
-      location: user ? user.location : "Jaipur",
+      location: user ? user.location : "India",
       skillTrack: newProject.category,
       likes: 1,
       date: "Just now",
@@ -94,7 +123,7 @@ export default function App() {
     };
 
     setPortfolios([createdItem, ...portfolios]);
-    showToast("✨ Portfolio Published!", "Your project is now live on the public showcase gallery.");
+    showToast("✨ Portfolio Published!", "Your project is live on the public showcase gallery.");
   };
 
   // Apply to Gig Trigger
@@ -121,26 +150,37 @@ export default function App() {
     }));
 
     if (user) {
-      setUser({
+      saveUserData({
         ...user,
         appliedGigIds: [...(user.appliedGigIds || []), gigId]
       });
     }
 
-    showToast("🚀 Application Sent!", "The client has received your application with attached portfolio proof.");
+    showToast("🚀 Application Sent!", "Client received your application with attached portfolio proof.");
   };
 
   // User Login Handler
   const handleLoginSuccess = (userData) => {
-    setUser({
-      ...initialUser,
-      name: userData.name || 'Ananya Sharma',
-      title: `${userData.skillInterest || 'Digital Marketing'} Specialist`
-    });
-    showToast("Welcome!", `Logged in as ${userData.name || 'Ananya Sharma'}`);
+    const loggedInUser = {
+      id: `u-${Date.now()}`,
+      name: userData.name || 'New Learner',
+      title: `${userData.skillInterest || 'Digital Marketing'} Specialist`,
+      location: 'Jaipur, Rajasthan',
+      bio: 'Passionate about building digital skills and delivering quality micro-gigs.',
+      avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=300',
+      verified: true,
+      skills: ["Digital Marketing", "Canva Design", "Instagram Ads"],
+      earnings: 12500,
+      completedLessons: ["m1-l1", "m1-l2", "m1-l3"],
+      appliedGigIds: ["g1"]
+    };
+
+    saveUserData(loggedInUser);
+    setActiveTab('profile'); // Switch to Dashboard view
+    showToast("Welcome!", `Signed in as ${loggedInUser.name}`);
   };
 
-  const userPortfolios = portfolios.filter(p => p.authorName === (user?.name || "Ananya Sharma"));
+  const userPortfolios = portfolios.filter(p => p.authorName === (user?.name || "Guest Learner"));
   const userAppliedGigs = opportunities.filter(g => (user?.appliedGigIds || []).includes(g.id));
 
   return (
@@ -148,7 +188,7 @@ export default function App() {
       theme === 'dark' ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-900'
     }`}>
       
-      {/* Redesigned Sticky Navigation Header */}
+      {/* Sticky Navigation Header */}
       <Navbar 
         activeTab={activeTab} 
         setActiveTab={setActiveTab}
@@ -159,8 +199,19 @@ export default function App() {
         onToggleTheme={handleToggleTheme}
       />
 
-      {/* Main View Area */}
+      {/* Main View Area - Default Dashboard on visit */}
       <main className="flex-1 pb-16">
+        {activeTab === 'profile' && (
+          <ProfileSection 
+            user={user}
+            userPortfolios={userPortfolios}
+            userAppliedGigs={userAppliedGigs}
+            onOpenAuth={handleOpenAuth}
+            onOpenSubmitModal={() => setIsSubmitOpen(true)}
+            onUpdateProfile={handleUpdateProfile}
+          />
+        )}
+
         {activeTab === 'home' && (
           <LandingSection 
             onNavigate={setActiveTab}
@@ -192,14 +243,6 @@ export default function App() {
             onApplyGig={handleOpenApplyGig}
           />
         )}
-
-        {activeTab === 'profile' && (
-          <ProfileSection 
-            user={user}
-            userPortfolios={userPortfolios}
-            userAppliedGigs={userAppliedGigs}
-          />
-        )}
       </main>
 
       {/* Footer */}
@@ -212,6 +255,7 @@ export default function App() {
             <p className="opacity-75 mt-1">Empowering women across India to learn skills, build portfolios, and earn income.</p>
           </div>
           <div className="flex items-center gap-6 font-semibold">
+            <button onClick={() => setActiveTab('profile')} className="hover:text-indigo-500">Dashboard</button>
             <button onClick={() => setActiveTab('home')} className="hover:text-indigo-500">Overview</button>
             <button onClick={() => setActiveTab('learn')} className="hover:text-indigo-500">Learn Case</button>
             <button onClick={() => setActiveTab('portfolio')} className="hover:text-indigo-500">Show Skill</button>
