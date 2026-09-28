@@ -13,9 +13,8 @@ import {
   UserPlus, 
   LogOut,
   ChevronDown,
-  Zap,
-  Rocket,
-  Star
+  Globe,
+  Check
 } from 'lucide-react';
 
 export default function Navbar({ 
@@ -28,12 +27,25 @@ export default function Navbar({
   onToggleTheme 
 }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [lang, setLang] = useState('en');
+  const [isLangOpen, setIsLangOpen] = useState(false);
+
   const menuRef = useRef(null);
+  const langRef = useRef(null);
+
+  const languages = [
+    { code: 'en', label: 'English' },
+    { code: 'hi', label: 'हिंदी' },
+    { code: 'gu', label: 'ગુજરાતી' }
+  ];
 
   useEffect(() => {
     function handleClickOutside(event) {
       if (menuRef.current && !menuRef.current.contains(event.target)) {
         setIsMenuOpen(false);
+      }
+      if (langRef.current && !langRef.current.contains(event.target)) {
+        setIsLangOpen(false);
       }
     }
     document.addEventListener('mousedown', handleClickOutside);
@@ -78,78 +90,116 @@ export default function Navbar({
             </div>
             <div>
               <span className="text-xl font-extrabold tracking-tight bg-gradient-to-r from-purple-400 via-pink-400 to-amber-300 bg-clip-text text-transparent">
-                NariShakti<span className="text-pink-400">Skills</span>
+                Her<span className="text-pink-400">Earn</span>
               </span>
-              <p className="text-[11px] opacity-75 font-medium tracking-wide">
+              <p className="text-[11px] text-slate-200 dark:text-slate-200 font-bold tracking-wide opacity-95">
                 Skill to Income Platform
               </p>
             </div>
           </div>
 
-          {/* Clean Main Direct Navigation */}
-          <div className="hidden lg:flex items-center gap-1.5 bg-slate-900/80 dark:bg-slate-900/80 light:bg-white/90 p-1.5 rounded-2xl border border-purple-500/30 backdrop-blur-md shadow-lg">
+          {/* Clean Navigation: Home | Courses | Opportunities | Dashboard (If Logged In) */}
+          <div className="hidden md:flex items-center gap-1.5 bg-slate-900/80 dark:bg-slate-900/80 light:bg-white/90 p-1.5 rounded-2xl border border-purple-500/30 backdrop-blur-md shadow-lg">
             <button
               type="button"
               onClick={() => handleNavSection('top')}
-              className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                 activeTab === 'home'
                   ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-md'
-                  : 'text-slate-300 hover:text-white hover:bg-purple-900/40'
+                  : 'text-slate-200 hover:text-white hover:bg-purple-900/40'
               }`}
             >
-              <Compass className="w-3.5 h-3.5" />
-              <span>Overview</span>
+              <Compass className="w-4 h-4" />
+              <span>Home</span>
             </button>
 
             <button
               type="button"
-              onClick={() => handleNavSection('features')}
-              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all text-slate-300 hover:text-white hover:bg-purple-900/40 cursor-pointer"
-            >
-              <Zap className="w-3.5 h-3.5 text-amber-400" />
-              <span>Features</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => handleNavSection('how-it-works')}
-              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all text-slate-300 hover:text-white hover:bg-purple-900/40 cursor-pointer"
-            >
-              <Rocket className="w-3.5 h-3.5 text-pink-400" />
-              <span>How It Works</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => handleNavSection('success-stories')}
-              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all text-slate-300 hover:text-white hover:bg-purple-900/40 cursor-pointer"
-            >
-              <Star className="w-3.5 h-3.5 text-purple-400" />
-              <span>Success Stories</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setActiveTab('profile')}
-              className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                activeTab === 'profile'
+              onClick={() => setActiveTab('learn')}
+              className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                activeTab === 'learn'
                   ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-md'
-                  : 'text-slate-300 hover:text-white hover:bg-purple-900/40'
+                  : 'text-slate-200 hover:text-white hover:bg-purple-900/40'
               }`}
             >
-              <User className="w-3.5 h-3.5" />
-              <span>Dashboard</span>
+              <BookOpen className="w-4 h-4 text-purple-400" />
+              <span>Courses</span>
             </button>
+
+            <button
+              type="button"
+              onClick={() => setActiveTab('gigs')}
+              className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                activeTab === 'gigs'
+                  ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-md'
+                  : 'text-slate-200 hover:text-white hover:bg-purple-900/40'
+              }`}
+            >
+              <Briefcase className="w-4 h-4 text-amber-400" />
+              <span>Opportunities</span>
+            </button>
+
+            {/* Dashboard Link - Hidden until user is logged in */}
+            {user && (
+              <button
+                type="button"
+                onClick={() => setActiveTab('profile')}
+                className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                  activeTab === 'profile'
+                    ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-md'
+                    : 'text-slate-200 hover:text-white hover:bg-purple-900/40'
+                }`}
+              >
+                <User className="w-4 h-4" />
+                <span>Dashboard</span>
+              </button>
+            )}
           </div>
 
-          {/* Right Section: Theme Toggle, Login/Sign Up, & 3-Dot Menu */}
-          <div className="flex items-center gap-3">
+          {/* Right Section: Language Toggle, Theme Toggle, Login/Sign Up, & Mobile Menu */}
+          <div className="flex items-center gap-2 sm:gap-3">
             
+            {/* Language Select Dropdown */}
+            <div className="relative" ref={langRef}>
+              <button
+                type="button"
+                onClick={() => setIsLangOpen(!isLangOpen)}
+                className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-900/80 border border-purple-500/20 text-xs font-bold text-slate-200 hover:text-white hover:border-purple-500/40 transition-all cursor-pointer"
+                title="Select Language"
+              >
+                <Globe className="w-4 h-4 text-purple-400" />
+                <span>{languages.find(l => l.code === lang)?.label}</span>
+                <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
+              </button>
+
+              {isLangOpen && (
+                <div className="absolute right-0 mt-2 w-36 rounded-xl bg-slate-950 border border-purple-500/40 shadow-2xl p-1.5 z-50 text-white animate-fade-in text-xs">
+                  {languages.map((l) => (
+                    <button
+                      key={l.code}
+                      type="button"
+                      onClick={() => {
+                        setLang(l.code);
+                        setIsLangOpen(false);
+                      }}
+                      className={`w-full text-left px-3 py-2 rounded-lg font-semibold flex items-center justify-between transition-colors ${
+                        lang === l.code ? 'bg-purple-600 text-white' : 'hover:bg-purple-900/40 text-slate-300'
+                      }`}
+                    >
+                      <span>{l.label}</span>
+                      {lang === l.code && <Check className="w-3.5 h-3.5 text-white" />}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
             {/* Light / Dark Mode Switch */}
             <button
+              type="button"
               onClick={onToggleTheme}
               title={`Switch to ${theme === 'dark' ? 'Light' : 'Dark'} Mode`}
-              className="p-2.5 rounded-xl bg-slate-900/80 border border-purple-500/20 text-amber-400 hover:scale-105 transition-all shadow-xs"
+              className="p-2.5 rounded-xl bg-slate-900/80 border border-purple-500/20 text-amber-400 hover:scale-105 transition-all shadow-xs cursor-pointer"
             >
               {theme === 'dark' ? (
                 <Sun className="w-4 h-4 text-amber-400" />
@@ -173,9 +223,10 @@ export default function Navbar({
                 </div>
 
                 <button 
+                  type="button"
                   onClick={onLogout}
                   title="Sign Out"
-                  className="p-2 rounded-xl text-slate-400 hover:text-pink-400 hover:bg-slate-800/50 transition-colors"
+                  className="p-2 rounded-xl text-slate-400 hover:text-pink-400 hover:bg-slate-800/50 transition-colors cursor-pointer"
                 >
                   <LogOut className="w-4 h-4" />
                 </button>
@@ -185,7 +236,7 @@ export default function Navbar({
                 <button
                   type="button"
                   onClick={() => onOpenAuth('login')}
-                  className="px-4 py-2 rounded-xl text-xs font-bold border border-purple-500/30 hover:border-pink-500 transition-all text-white cursor-pointer"
+                  className="px-3.5 py-2 rounded-xl text-xs font-bold border border-purple-500/30 hover:border-pink-500 transition-all text-white cursor-pointer"
                 >
                   Login
                 </button>
@@ -193,19 +244,20 @@ export default function Navbar({
                 <button
                   type="button"
                   onClick={() => onOpenAuth('signup')}
-                  className="btn-gradient-award text-xs py-2 px-4 shadow-md flex items-center gap-1.5 cursor-pointer"
+                  className="btn-gradient-award text-xs py-2 px-3.5 shadow-md flex items-center gap-1.5 cursor-pointer"
                 >
                   <UserPlus className="w-3.5 h-3.5" />
-                  Sign Up
+                  <span className="hidden sm:inline">Sign Up</span>
                 </button>
               </div>
             )}
 
-            {/* Upper Right 3-Dot Menu Dropdown */}
+            {/* Upper Right 3-Dot Menu Dropdown for Mobile / Explore */}
             <div className="relative" ref={menuRef}>
               <button
+                type="button"
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
-                className={`p-2.5 rounded-xl border transition-all flex items-center justify-center ${
+                className={`p-2.5 rounded-xl border transition-all flex items-center justify-center cursor-pointer ${
                   isMenuOpen || ['learn', 'portfolio', 'gigs'].includes(activeTab)
                     ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white border-pink-500 shadow-md'
                     : 'bg-slate-900/80 border-purple-500/20 text-slate-300 hover:text-white'
@@ -222,8 +274,9 @@ export default function Navbar({
                     <p className="text-[11px] font-extrabold text-purple-300 uppercase tracking-wider">Explore Modules</p>
                   </div>
 
-                  {/* 1. Learn Case */}
+                  {/* 1. Courses */}
                   <button
+                    type="button"
                     onClick={() => handleSelectTab('learn')}
                     className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold flex items-center justify-between transition-colors ${
                       activeTab === 'learn' ? 'bg-purple-600 text-white' : 'hover:bg-purple-900/40 text-slate-200'
@@ -231,13 +284,14 @@ export default function Navbar({
                   >
                     <div className="flex items-center gap-2.5">
                       <BookOpen className="w-4 h-4 text-purple-400" />
-                      <span>Learn Case</span>
+                      <span>Courses</span>
                     </div>
-                    <span className="text-[10px] bg-purple-500/20 text-purple-300 px-2 py-0.5 rounded-full font-extrabold">5 Lessons</span>
+                    <span className="text-[10px] bg-purple-500/20 text-purple-300 px-2 py-0.5 rounded-full font-extrabold">4 Tracks</span>
                   </button>
 
                   {/* 2. Show Skill */}
                   <button
+                    type="button"
                     onClick={() => handleSelectTab('portfolio')}
                     className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold flex items-center justify-between transition-colors ${
                       activeTab === 'portfolio' ? 'bg-pink-600 text-white' : 'hover:bg-purple-900/40 text-slate-200'
@@ -245,13 +299,14 @@ export default function Navbar({
                   >
                     <div className="flex items-center gap-2.5">
                       <Award className="w-4 h-4 text-pink-400" />
-                      <span>Show Skill</span>
+                      <span>Portfolios</span>
                     </div>
                     <span className="text-[10px] bg-pink-500/20 text-pink-300 px-2 py-0.5 rounded-full font-extrabold">Verified</span>
                   </button>
 
-                  {/* 3. Opportunity */}
+                  {/* 3. Opportunities */}
                   <button
+                    type="button"
                     onClick={() => handleSelectTab('gigs')}
                     className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold flex items-center justify-between transition-colors ${
                       activeTab === 'gigs' ? 'bg-amber-600 text-white' : 'hover:bg-purple-900/40 text-slate-200'
@@ -259,10 +314,23 @@ export default function Navbar({
                   >
                     <div className="flex items-center gap-2.5">
                       <Briefcase className="w-4 h-4 text-amber-400" />
-                      <span>Opportunity</span>
+                      <span>Opportunities</span>
                     </div>
-                    <span className="text-[10px] bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded-full font-extrabold">3 Gigs</span>
+                    <span className="text-[10px] bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded-full font-extrabold">8+ Gigs</span>
                   </button>
+
+                  {user && (
+                    <button
+                      type="button"
+                      onClick={() => handleSelectTab('profile')}
+                      className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2.5 mt-1 border-t border-purple-500/20 pt-2 transition-colors ${
+                        activeTab === 'profile' ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white' : 'hover:bg-purple-900/40 text-slate-200'
+                      }`}
+                    >
+                      <User className="w-4 h-4 text-emerald-400" />
+                      <span>My Dashboard</span>
+                    </button>
+                  )}
 
                 </div>
               )}
