@@ -5,20 +5,38 @@ export default function AuthModal({ isOpen, initialMode = 'login', onClose, onLo
   const [isSignUp, setIsSignUp] = useState(initialMode === 'signup');
   const [email, setEmail] = useState('');
   const [name, setName] = useState('');
+  const [password, setPassword] = useState('');
   const [skillInterest, setSkillInterest] = useState('Digital Marketing');
 
   useEffect(() => {
-    setIsSignUp(initialMode === 'signup');
+    if (isOpen) {
+      setIsSignUp(initialMode === 'signup');
+      setEmail('');
+      setName('');
+      setPassword('');
+    }
   }, [initialMode, isOpen]);
 
   if (!isOpen) return null;
 
   const handleSubmit = (e) => {
     e.preventDefault();
+
+    let displayName = name.trim();
+    if (!displayName) {
+      if (email.trim()) {
+        const handle = email.split('@')[0];
+        displayName = handle.charAt(0).toUpperCase() + handle.slice(1);
+      } else {
+        displayName = isSignUp ? 'New Learner' : 'Ananya Sharma';
+      }
+    }
+
     onLoginSuccess({
-      name: name || 'Ananya Sharma',
+      name: displayName,
       email: email || 'ananya@example.com',
-      skillInterest
+      skillInterest,
+      isSignUp
     });
     onClose();
   };
@@ -29,8 +47,9 @@ export default function AuthModal({ isOpen, initialMode = 'login', onClose, onLo
         
         {/* Close Button */}
         <button 
+          type="button"
           onClick={onClose}
-          className="absolute top-4 right-4 p-2 text-slate-400 hover:text-white rounded-full bg-slate-800/80 hover:bg-slate-800"
+          className="absolute top-4 right-4 p-2 text-slate-400 hover:text-white rounded-full bg-slate-800/80 hover:bg-slate-800 cursor-pointer"
         >
           <X className="w-5 h-5" />
         </button>
@@ -54,11 +73,17 @@ export default function AuthModal({ isOpen, initialMode = 'login', onClose, onLo
         <div className="bg-indigo-950/60 border border-indigo-500/30 p-3 rounded-xl mb-6 text-center">
           <p className="text-xs text-indigo-300 font-semibold mb-2">⚡ Quick 1-Click Sign In</p>
           <button
+            type="button"
             onClick={() => {
-              onLoginSuccess({ name: 'Ananya Sharma', skillInterest: 'Digital Marketing' });
+              onLoginSuccess({ 
+                name: 'Ananya Sharma', 
+                email: 'ananya@example.com',
+                skillInterest: 'Digital Marketing',
+                isSignUp: false
+              });
               onClose();
             }}
-            className="w-full btn-primary justify-center text-xs py-2"
+            className="w-full btn-primary justify-center text-xs py-2 cursor-pointer"
           >
             Sign In as Ananya Sharma
           </button>
@@ -106,6 +131,8 @@ export default function AuthModal({ isOpen, initialMode = 'login', onClose, onLo
                 type="password"
                 required
                 placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 className="w-full bg-slate-800 text-white text-xs pl-10 pr-4 py-3 rounded-xl border border-slate-700 focus:outline-none focus:border-indigo-500"
               />
             </div>
@@ -128,7 +155,7 @@ export default function AuthModal({ isOpen, initialMode = 'login', onClose, onLo
 
           <button
             type="submit"
-            className="w-full btn-accent justify-center py-3 text-xs font-bold mt-2"
+            className="w-full btn-accent justify-center py-3 text-xs font-bold mt-2 cursor-pointer"
           >
             {isSignUp ? 'Create Account' : 'Login'}
           </button>
@@ -137,8 +164,9 @@ export default function AuthModal({ isOpen, initialMode = 'login', onClose, onLo
         {/* Toggle sign up / sign in */}
         <div className="text-center pt-4 border-t border-slate-800 mt-6">
           <button
+            type="button"
             onClick={() => setIsSignUp(!isSignUp)}
-            className="text-xs text-indigo-400 hover:underline font-semibold"
+            className="text-xs text-indigo-400 hover:underline font-semibold cursor-pointer"
           >
             {isSignUp ? 'Already have an account? Login' : 'Need an account? Sign Up'}
           </button>
@@ -148,3 +176,4 @@ export default function AuthModal({ isOpen, initialMode = 'login', onClose, onLo
     </div>
   );
 }
+

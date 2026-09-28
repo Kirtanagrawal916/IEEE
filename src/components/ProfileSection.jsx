@@ -73,16 +73,18 @@ export default function ProfileSection({
 
             <div className="flex flex-wrap items-center justify-center md:justify-start gap-4 pt-2">
               <button
+                type="button"
                 onClick={() => onOpenAuth('signup')}
-                className="btn-primary text-sm py-3 px-6 font-bold flex items-center gap-2"
+                className="btn-primary text-sm py-3 px-6 font-bold flex items-center gap-2 cursor-pointer"
               >
                 <UserPlus className="w-4 h-4" />
                 Create Free Profile
               </button>
 
               <button
+                type="button"
                 onClick={() => onOpenAuth('login')}
-                className="btn-secondary text-sm py-3 px-6 bg-slate-800 text-white border-slate-700 hover:bg-slate-700 flex items-center gap-2"
+                className="btn-secondary text-sm py-3 px-6 bg-slate-800 text-white border-slate-700 hover:bg-slate-700 flex items-center gap-2 cursor-pointer"
               >
                 <LogIn className="w-4 h-4 text-indigo-400" />
                 Login to Dashboard

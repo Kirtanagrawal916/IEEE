@@ -161,23 +161,25 @@ export default function App() {
 
   // User Login Handler
   const handleLoginSuccess = (userData) => {
+    const isNewSignUp = userData.isSignUp;
     const loggedInUser = {
       id: `u-${Date.now()}`,
-      name: userData.name || 'New Learner',
+      name: userData.name || (isNewSignUp ? 'New Learner' : 'Ananya Sharma'),
+      email: userData.email || 'user@example.com',
       title: `${userData.skillInterest || 'Digital Marketing'} Specialist`,
       location: 'Jaipur, Rajasthan',
       bio: 'Passionate about building digital skills and delivering quality micro-gigs.',
       avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=300',
       verified: true,
       skills: ["Digital Marketing", "Canva Design", "Instagram Ads"],
-      earnings: 12500,
-      completedLessons: ["m1-l1", "m1-l2", "m1-l3"],
-      appliedGigIds: ["g1"]
+      earnings: isNewSignUp ? 0 : 12500,
+      completedLessons: isNewSignUp ? [] : ["m1-l1", "m1-l2", "m1-l3"],
+      appliedGigIds: isNewSignUp ? [] : ["g1"]
     };
 
     saveUserData(loggedInUser);
     setActiveTab('profile'); // Switch to Dashboard view
-    showToast("Welcome!", `Signed in as ${loggedInUser.name}`);
+    showToast(isNewSignUp ? "Account Created! 🎉" : "Welcome Back! ✨", `Signed in as ${loggedInUser.name}`);
   };
 
   const userPortfolios = portfolios.filter(p => p.authorName === (user?.name || "Guest Learner"));
@@ -216,6 +218,7 @@ export default function App() {
           <LandingSection 
             onNavigate={setActiveTab}
             onOpenAuth={() => handleOpenAuth('signup')}
+            theme={theme}
           />
         )}
 
