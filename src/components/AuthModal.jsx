@@ -1,11 +1,15 @@
-import React, { useState } from 'react';
-import { X, Sparkles, Lock, Mail, User, ShieldCheck } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { X, Sparkles, Lock, Mail, User } from 'lucide-react';
 
-export default function AuthModal({ isOpen, onClose, onLoginSuccess }) {
-  const [isSignUp, setIsSignUp] = useState(false);
+export default function AuthModal({ isOpen, initialMode = 'login', onClose, onLoginSuccess }) {
+  const [isSignUp, setIsSignUp] = useState(initialMode === 'signup');
   const [email, setEmail] = useState('');
   const [name, setName] = useState('');
   const [skillInterest, setSkillInterest] = useState('Digital Marketing');
+
+  useEffect(() => {
+    setIsSignUp(initialMode === 'signup');
+  }, [initialMode, isOpen]);
 
   if (!isOpen) return null;
 
@@ -37,18 +41,18 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }) {
             <Sparkles className="w-6 h-6" />
           </div>
           <h2 className="text-2xl font-bold text-white">
-            {isSignUp ? 'Join NariShakti Platform' : 'Welcome Back'}
+            {isSignUp ? 'Create Free Account' : 'Welcome Back'}
           </h2>
           <p className="text-xs text-slate-400">
             {isSignUp 
-              ? 'Create your free account to start learning skills & earning income' 
-              : 'Sign in to access your learning track & micro-gig applications'}
+              ? 'Join NariShakti to start learning market skills & earning income' 
+              : 'Sign in to access your learning tracks & micro-gig applications'}
           </p>
         </div>
 
         {/* Quick Demo Login Option */}
         <div className="bg-indigo-950/60 border border-indigo-500/30 p-3 rounded-xl mb-6 text-center">
-          <p className="text-xs text-indigo-300 font-semibold mb-2">⚡ 1-Click Prototype Demo Sign In</p>
+          <p className="text-xs text-indigo-300 font-semibold mb-2">⚡ Quick 1-Click Sign In</p>
           <button
             onClick={() => {
               onLoginSuccess({ name: 'Ananya Sharma', skillInterest: 'Digital Marketing' });
@@ -56,7 +60,7 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }) {
             }}
             className="w-full btn-primary justify-center text-xs py-2"
           >
-            Demo Sign In as Ananya Sharma
+            Sign In as Ananya Sharma
           </button>
         </div>
 
@@ -126,7 +130,7 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }) {
             type="submit"
             className="w-full btn-accent justify-center py-3 text-xs font-bold mt-2"
           >
-            {isSignUp ? 'Create Free Account' : 'Sign In'}
+            {isSignUp ? 'Create Account' : 'Login'}
           </button>
         </form>
 
@@ -136,7 +140,7 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }) {
             onClick={() => setIsSignUp(!isSignUp)}
             className="text-xs text-indigo-400 hover:underline font-semibold"
           >
-            {isSignUp ? 'Already have an account? Sign In' : 'New here? Create a free account'}
+            {isSignUp ? 'Already have an account? Login' : 'Need an account? Sign Up'}
           </button>
         </div>
 
