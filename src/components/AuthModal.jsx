@@ -28,13 +28,13 @@ export default function AuthModal({ isOpen, initialMode = 'login', onClose, onLo
         const handle = email.split('@')[0];
         displayName = handle.charAt(0).toUpperCase() + handle.slice(1);
       } else {
-        displayName = isSignUp ? 'New Learner' : 'Ananya Sharma';
+        displayName = isSignUp ? 'New Learner' : 'Learner';
       }
     }
 
     onLoginSuccess({
       name: displayName,
-      email: email || 'ananya@example.com',
+      email: email || 'user@herearn.org',
       skillInterest,
       isSignUp
     });
@@ -69,26 +69,6 @@ export default function AuthModal({ isOpen, initialMode = 'login', onClose, onLo
           </p>
         </div>
 
-        {/* Quick Demo Login Option */}
-        <div className="bg-purple-50 dark:bg-purple-950/60 border border-purple-200 dark:border-purple-500/30 p-3 rounded-xl mb-6 text-center">
-          <p className="text-xs text-purple-900 dark:text-purple-300 font-bold mb-2">⚡ Quick 1-Click Sign In</p>
-          <button
-            type="button"
-            onClick={() => {
-              onLoginSuccess({ 
-                name: 'Ananya Sharma', 
-                email: 'ananya@example.com',
-                skillInterest: 'Digital Marketing',
-                isSignUp: false
-              });
-              onClose();
-            }}
-            className="w-full btn-gradient-award justify-center text-xs py-2 cursor-pointer"
-          >
-            Sign In as Ananya Sharma
-          </button>
-        </div>
-
         {/* Auth Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
           {isSignUp && (
@@ -99,7 +79,7 @@ export default function AuthModal({ isOpen, initialMode = 'login', onClose, onLo
                 <input
                   type="text"
                   required
-                  placeholder="e.g. Ananya Sharma"
+                  placeholder="e.g. Priya Sharma"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   className="w-full bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white text-xs pl-10 pr-4 py-3 rounded-xl border border-slate-300 dark:border-slate-700 focus:outline-none focus:border-purple-500"

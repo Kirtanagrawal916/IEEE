@@ -162,7 +162,7 @@ export default function LandingSection({ onNavigate, onOpenAuth, theme }) {
   // Success Stories (3 Cards)
   const successStories = [
     {
-      name: "Ananya Sharma",
+      name: "Aarti Sharma",
       role: "Digital Marketing Specialist",
       location: "Jaipur, Rajasthan",
       incomeStart: "₹5,000",

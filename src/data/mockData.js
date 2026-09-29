@@ -1,17 +1,4 @@
-export const initialUser = {
-  id: "u1",
-  name: "Ananya Sharma",
-  title: "Aspiring Digital Marketer & Content Creator",
-  location: "Jaipur, Rajasthan",
-  bio: "Passionate about creating engaging social media content and helping small businesses grow online.",
-  avatar: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=300",
-  verified: true,
-  skills: ["Digital Marketing", "Canva Design", "Instagram Management", "Content Writing"],
-  earnings: 12500,
-  completedLessons: ["m1-l1", "m1-l2", "m1-l3"],
-  appliedGigIds: ["g1"],
-  enrolledTrackId: "track-1"
-};
+export const initialUser = null;
 
 export const skillTracks = [
   {
@@ -142,7 +129,7 @@ export const skillTracks = [
 export const initialPortfolios = [
   {
     id: "p1",
-    authorName: "Ananya Sharma",
+    authorName: "Divya Sharma",
     authorAvatar: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=300",
     location: "Jaipur",
     skillTrack: "Digital Marketing",
