@@ -32,9 +32,7 @@ export default function SignupPage({ onLoginSuccess, onNavigateToLogin, onNaviga
     e.preventDefault();
     setError('');
 
-    const displayName = name.trim() || 'Priya Patel';
-    const targetEmail = email.trim() || 'priya@herearn.org';
-    const targetPassword = password.trim() || 'password123';
+
 
     setIsLoading(true);
 
@@ -63,30 +61,6 @@ export default function SignupPage({ onLoginSuccess, onNavigateToLogin, onNaviga
       });
     }
   };
-
-  const handleQuickDemoSignup = async () => {
-    setIsLoading(true);
-    try {
-      const res = await api.register({
-        name: 'Priya Patel',
-        email: `priya_${Date.now()}@herearn.org`,
-        password: 'password123',
-        skills: ['Graphic Design & Canva'],
-      });
-      setIsLoading(false);
-      onLoginSuccess({
-        ...res.user,
-        isSignUp: true,
-        role: 'learner',
-      });
-    } catch (err) {
-      setIsLoading(false);
-      onLoginSuccess({
-        isSignUp: true,
-      });
-    }
-  };
-
   return (
     <div className="min-h-[calc(100vh-5rem)] flex items-center justify-center p-4 sm:p-6 lg:p-8 animate-fade-in">
       <div className="max-w-5xl w-full grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
@@ -189,24 +163,6 @@ export default function SignupPage({ onLoginSuccess, onNavigateToLogin, onNaviga
               </span>
             </div>
 
-            {/* Quick 1-Click Demo Sign Up */}
-            <div className="bg-purple-50 dark:bg-purple-950/60 border border-purple-200 dark:border-purple-500/30 p-3.5 rounded-2xl mb-6">
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-2 text-purple-900 dark:text-purple-200 text-xs font-extrabold">
-                  <Zap className="w-4 h-4 text-amber-500 fill-amber-500" />
-                  <span>Quick 1-Click Sign Up (Demo Account)</span>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={handleQuickDemoSignup}
-                disabled={isLoading}
-                className="w-full btn-gradient-award justify-center text-xs py-2 cursor-pointer shadow-md"
-              >
-                Create Account as Priya Patel
-              </button>
-            </div>
-
             {/* Role Selection Toggle */}
             <div className="mb-5">
               <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-2">I want to:</label>
@@ -257,7 +213,7 @@ export default function SignupPage({ onLoginSuccess, onNavigateToLogin, onNaviga
                   <input
                     type="text"
                     required
-                    placeholder="e.g. Ananya Sharma"
+                    placeholder="Enter your full name"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     className="w-full bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white text-xs pl-10 pr-4 py-3 rounded-xl border border-slate-300 dark:border-slate-700 focus:outline-none focus:border-purple-500"

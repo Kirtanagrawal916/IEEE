@@ -28,8 +28,7 @@ export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNaviga
     e.preventDefault();
     setError('');
 
-    const targetEmail = email.trim() || 'ananya@herearn.org';
-    const targetPassword = password.trim() || 'password123';
+
 
     setIsLoading(true);
 
@@ -158,10 +157,10 @@ export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNaviga
             <div className="flex items-center gap-2 mt-2">
               <img 
                 src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=150" 
-                alt="Ananya Sharma"
+                alt="Aditi S."
                 className="w-6 h-6 rounded-full object-cover border border-purple-400"
               />
-              <span className="text-[11px] font-bold text-white">Ananya Sharma • Digital Specialist</span>
+              <span className="text-[11px] font-bold text-white">Aditi S. • Digital Specialist</span>
             </div>
           </div>
         </div>
@@ -180,36 +179,6 @@ export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNaviga
               </div>
               <span className="text-xs bg-purple-100 dark:bg-purple-950 text-purple-700 dark:text-purple-300 px-3 py-1 rounded-full font-bold border border-purple-300 dark:border-purple-700">
                 Secure SSL 🔒
-              </span>
-            </div>
-
-            {/* Quick 1-Click Demo Login */}
-            <div className="bg-purple-50 dark:bg-purple-950/60 border border-purple-200 dark:border-purple-500/30 p-4 rounded-2xl mb-6">
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-2 text-purple-900 dark:text-purple-200 text-xs font-extrabold">
-                  <Zap className="w-4 h-4 text-amber-500 fill-amber-500" />
-                  <span>Quick 1-Click Sign In (Demo Mode)</span>
-                </div>
-                <span className="text-[10px] bg-amber-500/20 text-amber-700 dark:text-amber-300 px-2 py-0.5 rounded-md font-bold">Fastest</span>
-              </div>
-              <button
-                type="button"
-                onClick={handleQuickDemoLogin}
-                disabled={isLoading}
-                className="w-full btn-gradient-award justify-center text-xs py-2.5 cursor-pointer shadow-md"
-              >
-                <UserCheck className="w-4 h-4" />
-                <span>Sign In as Ananya Sharma</span>
-              </button>
-            </div>
-
-            {/* Divider */}
-            <div className="relative my-6 text-center">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-slate-200 dark:border-slate-800"></div>
-              </div>
-              <span className="relative bg-white dark:bg-slate-900 px-4 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                or sign in with email
               </span>
             </div>
 
@@ -241,7 +210,7 @@ export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNaviga
                   <input
                     type="email"
                     required
-                    placeholder="e.g. ananya@example.com"
+                    placeholder="you@example.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="w-full bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white text-xs pl-10 pr-4 py-3.5 rounded-xl border border-slate-300 dark:border-slate-700 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all"
