@@ -2340,4 +2340,3 @@ Courses, lessons, users, portfolios, opportunities and applications should be pe
 
 Only genuinely static UI information should remain hardcoded.
 
-This keeps the prototype simple enough to finish quickly while giving HerEarn a proper architecture that can be extended after the demo.
