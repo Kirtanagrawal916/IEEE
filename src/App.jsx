@@ -128,14 +128,6 @@ export default function App() {
     showToast("Signed Out", "You have successfully logged out.");
   };
 
-  // Continue as Guest Handler
-  const handleContinueAsGuest = () => {
-    saveUserData(null);
-    setActiveTab('profile');
-    setIsAuthOpen(false);
-    showToast("Guest Mode Active 👤", "Exploring HerEarn in Guest Mode.");
-  };
-
   // Profile Update Handler with API integration
   const handleUpdateProfile = async (profileData) => {
     try {
