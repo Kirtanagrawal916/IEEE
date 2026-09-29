@@ -1,0 +1,27 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Environment Variables
+.env
+.env.local
+.env.production
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Prisma generated artifacts & local SQLite database files (if tested locally)
+dev.db
+dev.db-journal
+
+# Operating System Files
+.DS_Store
+Thumbs.db
+
+# Testing
+coverage/
