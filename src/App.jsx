@@ -297,6 +297,17 @@ export default function App() {
     showToast("Guest Mode Active 👤", "Exploring HerEarn in Guest Mode.");
   };
 
+  const handleUpdateUserSkills = (newSkills) => {
+    const updatedUser = user ? { ...user, skills: newSkills } : {
+      name: 'Guest Learner',
+      isGuest: true,
+      skills: newSkills
+    };
+    setUser(updatedUser);
+    localStorage.setItem('herearn_user', JSON.stringify(updatedUser));
+    showToast("🎯 Skills Updated!", `Skill profile updated (${newSkills.length} skills active). Opportunity match percentages updated.`);
+  };
+
   const userPortfolios = portfolios.filter(p => p.authorName === (user?.name || "Guest Learner"));
   const userAppliedGigs = opportunities.filter(g => (user?.appliedGigIds || []).includes(g.id));
 
@@ -329,6 +340,7 @@ export default function App() {
             onOpenAuth={handleOpenAuth}
             onOpenSubmitModal={() => setIsSubmitOpen(true)}
             onUpdateProfile={handleUpdateProfile}
+            onUpdateUserSkills={handleUpdateUserSkills}
             onNavigate={setActiveTab}
           />
         )}
@@ -362,7 +374,9 @@ export default function App() {
         {activeTab === 'gigs' && (
           <OpportunitiesSection 
             opportunities={opportunities}
+            user={user}
             onApplyGig={handleOpenApplyGig}
+            onUpdateUserSkills={handleUpdateUserSkills}
           />
         )}
 
