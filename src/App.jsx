@@ -35,7 +35,9 @@ export default function App() {
 
   const [portfolios, setPortfolios] = useState(initialPortfolios);
   const [opportunities, setOpportunities] = useState(initialOpportunities);
-  const [theme, setTheme] = useState('dark');
+  const [theme, setTheme] = useState(() => {
+    return localStorage.getItem('herearn_theme') || 'light';
+  });
 
   // Modals
   const [isAuthOpen, setIsAuthOpen] = useState(false);
@@ -51,6 +53,7 @@ export default function App() {
 
   useEffect(() => {
     document.body.className = theme;
+    localStorage.setItem('herearn_theme', theme);
   }, [theme]);
 
   // Initial Data Fetching from Express Backend API
