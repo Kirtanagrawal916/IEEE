@@ -14,18 +14,21 @@ import {
   Check,
   AlertCircle,
   Loader2,
-  LockKeyhole
+  LockKeyhole,
+  CheckSquare,
+  Square
 } from 'lucide-react';
 
-export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNavigateHome }) {
+export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNavigateHome, onNavigate }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [termsError, setTermsError] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [forgotSent, setForgotSent] = useState(false);
-  const [isIncorrectPassword, setIsIncorrectPassword] = useState(false);
 
   // Google Email OTP Modal States
   const [showGoogleModal, setShowGoogleModal] = useState(false);
@@ -41,6 +44,7 @@ export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNaviga
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setTermsError('');
 
     const targetEmail = email.trim();
     const targetPassword = password.trim();
@@ -60,19 +64,22 @@ export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNaviga
       return;
     }
 
+    if (!acceptedTerms) {
+      setTermsError('You must agree to the Terms of Service and Privacy Policy to log in.');
+      return;
+    }
+
     setIsLoading(true);
 
     try {
       const res = await api.login({ email: targetEmail, password: targetPassword });
       setIsLoading(false);
-      setIsIncorrectPassword(false);
       onLoginSuccess({
         ...res.user,
         isSignUp: false,
       });
     } catch (err) {
       setIsLoading(false);
-      setIsIncorrectPassword(true);
       if (err.status === 401) {
         setError('Incorrect Password or User Not Found: Please check your credentials and try again.');
       } else if (err.status === 404) {
@@ -169,6 +176,12 @@ export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNaviga
     setTimeout(() => setForgotSent(false), 6000);
   };
 
+  const handleNavigatePage = (target) => {
+    if (onNavigate) {
+      onNavigate(target);
+    }
+  };
+
   const benefitsList = [
     { title: "Free Skill Development", desc: "100% free courses & practical tracks" },
     { title: "Build Industry Portfolio", desc: "Verified project showcases for clients" },
@@ -178,7 +191,7 @@ export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNaviga
   ];
 
   return (
-    <div className="min-h-[calc(100vh-5rem)] flex items-center justify-center p-4 sm:p-6 lg:p-10 animate-fade-in relative overflow-hidden">
+    <div className="min-h-[calc(100vh-5rem)] flex items-center justify-center p-4 sm:p-6 lg:p-10 animate-fade-in relative overflow-hidden bg-[#0B0F19]">
       
       {/* Background Animated Floating Ambient Shapes */}
       <div className="absolute top-10 left-10 w-96 h-96 bg-purple-600/15 rounded-full blur-3xl pointer-events-none animate-pulse"></div>
@@ -246,7 +259,7 @@ export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNaviga
               </div>
             </div>
 
-            {/* Modern Illustrated Visual Card with Floating Badges */}
+            {/* Modern Illustrated Visual Card */}
             <div className="bg-slate-950/80 rounded-2xl p-4 border border-purple-500/30 relative overflow-hidden shadow-inner flex items-center justify-between gap-4">
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 rounded-xl bg-gradient-to-tr from-purple-600 to-pink-600 flex items-center justify-center text-white font-bold shadow-md">
@@ -289,7 +302,7 @@ export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNaviga
            ======================================================== */}
         <div className="lg:col-span-6 flex flex-col justify-center">
           
-          <div className="bg-white/95 dark:bg-slate-900/95 rounded-3xl p-7 sm:p-10 border border-purple-200 dark:border-purple-500/30 shadow-2xl space-y-6 text-slate-900 dark:text-white backdrop-blur-xl relative">
+          <div className="bg-white/95 dark:bg-slate-900/95 rounded-3xl p-7 sm:p-10 border border-purple-200 dark:border-purple-500/30 shadow-2xl space-y-5 text-slate-900 dark:text-white backdrop-blur-xl relative">
             
             {/* Form Headline & Subheading */}
             <div className="space-y-1.5">
@@ -302,20 +315,20 @@ export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNaviga
                 </span>
               </div>
               <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 font-medium">
-                Sign in to continue your learning and earning journey.
+                Sign in to access your dashboard, courses, and opportunities.
               </p>
             </div>
 
             {/* Alert Message Box */}
             {error && (
-              <div className="p-4 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-700 dark:text-rose-300 text-xs font-bold flex items-start gap-3 animate-shake">
+              <div className="p-3.5 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-700 dark:text-rose-300 text-xs font-bold flex items-start gap-3 animate-shake">
                 <AlertCircle className="w-4 h-4 text-rose-500 flex-shrink-0 mt-0.5" />
                 <span className="leading-relaxed">{error}</span>
               </div>
             )}
 
             {forgotSent && (
-              <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-700 dark:text-emerald-300 text-xs font-bold flex items-center gap-3">
+              <div className="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-700 dark:text-emerald-300 text-xs font-bold flex items-center gap-3">
                 <CheckCircle2 className="w-4 h-4 text-emerald-500 flex-shrink-0" />
                 <span>Reset instructions sent! Check your email inbox.</span>
               </div>
@@ -326,7 +339,7 @@ export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNaviga
                ==================================== */}
             <form onSubmit={handleSubmit} className="space-y-4">
               
-              {/* Email Address Field */}
+              {/* 1. EMAIL ADDRESS */}
               <div className="space-y-1.5">
                 <label className="text-xs font-extrabold text-slate-800 dark:text-slate-200 block uppercase tracking-wider">
                   Email Address
@@ -347,7 +360,7 @@ export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNaviga
                 </div>
               </div>
 
-              {/* Password Field */}
+              {/* 2. PASSWORD & FORGOT PASSWORD BELOW */}
               <div className="space-y-1.5">
                 <label className="text-xs font-extrabold text-slate-800 dark:text-slate-200 block uppercase tracking-wider">
                   Password
@@ -374,23 +387,20 @@ export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNaviga
                   </button>
                 </div>
 
-                {/* FORGOT PASSWORD (POSITIONED TO THE LEFT BELOW PASSWORD FIELD & APPEARS ON INCORRECT PASSWORD) */}
-                {isIncorrectPassword && (
-                  <div className="pt-1.5 text-left animate-fade-in">
-                    <button
-                      type="button"
-                      onClick={handleForgotPassword}
-                      className="text-xs font-bold text-purple-600 dark:text-purple-400 hover:text-pink-500 hover:underline cursor-pointer flex items-center gap-1.5"
-                    >
-                      <AlertCircle className="w-3.5 h-3.5 text-amber-500" />
-                      <span>Forgot Password? Click here to reset</span>
-                    </button>
-                  </div>
-                )}
+                {/* 3. FORGOT PASSWORD (POSITIONED DIRECTLY BELOW PASSWORD INPUT, RIGHT-ALIGNED) */}
+                <div className="text-right pt-1">
+                  <button
+                    type="button"
+                    onClick={handleForgotPassword}
+                    className="text-xs font-bold text-purple-600 dark:text-purple-400 hover:text-pink-500 hover:underline cursor-pointer"
+                  >
+                    Forgot Password?
+                  </button>
+                </div>
               </div>
 
-              {/* Controls: Remember Me */}
-              <div className="flex items-center justify-between pt-1">
+              {/* 4. REMEMBER ME */}
+              <div className="flex items-center justify-between pt-0.5">
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input
                     type="checkbox"
@@ -399,16 +409,52 @@ export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNaviga
                     className="w-4 h-4 rounded border-slate-300 text-purple-600 focus:ring-purple-500 accent-purple-600 cursor-pointer"
                   />
                   <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
-                    Remember Me on this device
+                    Remember Me
                   </span>
                 </label>
               </div>
 
-              {/* PRIMARY GRADIENT LOGIN BUTTON */}
+              {/* 5. TERMS & CONDITIONS REQUIRED CHECKBOX */}
+              <div className="space-y-1 pt-1">
+                <label className="flex items-start gap-2.5 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={acceptedTerms}
+                    onChange={(e) => {
+                      setAcceptedTerms(e.target.checked);
+                      if (termsError) setTermsError('');
+                    }}
+                    className="w-4 h-4 mt-0.5 rounded border-slate-300 text-purple-600 focus:ring-purple-500 accent-purple-600 cursor-pointer"
+                  />
+                  <span className="text-xs font-medium text-slate-700 dark:text-slate-300 leading-snug">
+                    I agree to the{' '}
+                    <button
+                      type="button"
+                      onClick={() => handleNavigatePage('terms')}
+                      className="text-purple-600 dark:text-purple-400 font-bold hover:underline cursor-pointer"
+                    >
+                      Terms of Service
+                    </button>{' '}
+                    and{' '}
+                    <button
+                      type="button"
+                      onClick={() => handleNavigatePage('privacy')}
+                      className="text-purple-600 dark:text-purple-400 font-bold hover:underline cursor-pointer"
+                    >
+                      Privacy Policy
+                    </button>
+                  </span>
+                </label>
+                {termsError && (
+                  <p className="text-[11px] font-bold text-rose-500 pt-0.5">{termsError}</p>
+                )}
+              </div>
+
+              {/* 6. PRIMARY GRADIENT LOGIN BUTTON */}
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-purple-600 via-indigo-600 to-pink-600 hover:from-purple-500 hover:via-indigo-500 hover:to-pink-500 text-white font-extrabold text-sm sm:text-base shadow-xl hover:shadow-2xl transition-all duration-300 flex items-center justify-center gap-2.5 cursor-pointer disabled:opacity-50"
+                className="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-purple-600 via-indigo-600 to-pink-600 hover:from-purple-500 hover:via-indigo-500 hover:to-pink-500 text-white font-extrabold text-sm sm:text-base shadow-xl hover:shadow-2xl transition-all duration-300 flex items-center justify-center gap-2.5 cursor-pointer disabled:opacity-50 mt-2"
               >
                 {isLoading ? (
                   <>
@@ -425,7 +471,7 @@ export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNaviga
 
             </form>
 
-            {/* DIVIDER: OR */}
+            {/* 7. DIVIDER: OR */}
             <div className="relative flex items-center justify-center my-2">
               <div className="border-t border-slate-200 dark:border-slate-800 w-full"></div>
               <span className="bg-white dark:bg-slate-900 px-3 text-[11px] font-extrabold text-slate-400 uppercase tracking-widest absolute">
@@ -433,7 +479,7 @@ export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNaviga
               </span>
             </div>
 
-            {/* GOOGLE SIGN IN BUTTON (OPENS EMAIL OTP VERIFICATION FLOW) */}
+            {/* 8. GOOGLE SIGN IN BUTTON (STAYS BELOW PRIMARY LOGIN BUTTON) */}
             <button
               type="button"
               onClick={handleOpenGoogleModal}
@@ -450,39 +496,48 @@ export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNaviga
               <span>Continue with Google</span>
             </button>
 
-            {/* Bottom Signup Prompt */}
-            <div className="pt-4 border-t border-slate-200 dark:border-slate-800 text-center space-y-1">
-              <p className="text-xs text-slate-600 dark:text-slate-400 font-semibold">
+            {/* 9. SECURITY TRUST SECTION */}
+            <div className="pt-2 flex flex-col gap-1 text-[11px] text-slate-500 dark:text-slate-400 font-semibold border-t border-slate-100 dark:border-slate-800/80">
+              <span className="flex items-center gap-1.5">
+                <LockKeyhole className="w-3.5 h-3.5 text-emerald-500 flex-shrink-0" />
+                🔒 Secure Authentication
+              </span>
+              <span className="flex items-center gap-1.5">
+                <ShieldCheck className="w-3.5 h-3.5 text-purple-500 flex-shrink-0" />
+                🔒 Encrypted Password Storage
+              </span>
+              <span className="flex items-center gap-1.5">
+                <Globe className="w-3.5 h-3.5 text-pink-500 flex-shrink-0" />
+                🔒 Privacy Protected
+              </span>
+            </div>
+
+            {/* 10. HELPER TEXT SECTION */}
+            <div className="bg-slate-100 dark:bg-slate-950/70 p-3.5 rounded-2xl border border-slate-200 dark:border-purple-500/20 text-xs text-slate-600 dark:text-slate-300 space-y-1">
+              <p className="font-extrabold text-slate-800 dark:text-slate-200">By signing in, you can access:</p>
+              <div className="grid grid-cols-2 gap-x-2 gap-y-1 text-[11px] font-medium text-slate-600 dark:text-slate-400 pt-0.5">
+                <span>• Learning Tracks</span>
+                <span>• Portfolio Projects</span>
+                <span>• Verified Opportunities</span>
+                <span>• Application Dashboard</span>
+              </div>
+            </div>
+
+            {/* 11. CREATE ACCOUNT LINK */}
+            <div className="pt-2 border-t border-slate-200 dark:border-slate-800 text-center space-y-0.5">
+              <p className="text-xs text-slate-700 dark:text-slate-300 font-semibold">
                 Don't have an account?{' '}
                 <button
                   type="button"
                   onClick={onNavigateToSignup}
                   className="font-extrabold text-pink-600 dark:text-pink-400 hover:underline cursor-pointer ml-1"
                 >
-                  Create Free Account →
+                  Create Free Account
                 </button>
               </p>
               <p className="text-[11px] text-slate-400 dark:text-slate-500 font-medium">
-                "Join HerEarn and start learning for free."
+                Start learning and building your portfolio for free.
               </p>
-            </div>
-
-            {/* TRUST & SECURITY SECTION */}
-            <div className="pt-3 flex flex-wrap items-center justify-center gap-4 text-[11px] text-slate-500 dark:text-slate-400 font-bold border-t border-slate-100 dark:border-slate-900">
-              <span className="flex items-center gap-1">
-                <LockKeyhole className="w-3 h-3 text-emerald-500" />
-                Secure Authentication
-              </span>
-              <span>•</span>
-              <span className="flex items-center gap-1">
-                <ShieldCheck className="w-3 h-3 text-purple-500" />
-                Password Encrypted
-              </span>
-              <span>•</span>
-              <span className="flex items-center gap-1">
-                <Globe className="w-3 h-3 text-pink-500" />
-                Privacy Protected
-              </span>
             </div>
 
           </div>
@@ -652,5 +707,6 @@ export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNaviga
     </div>
   );
 }
+
 
 

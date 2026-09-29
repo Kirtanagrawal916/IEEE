@@ -7,13 +7,14 @@ import OpportunitiesSection from './components/OpportunitiesSection';
 import ProfileSection from './components/ProfileSection';
 import LoginPage from './components/LoginPage';
 import SignupPage from './components/SignupPage';
+import AboutPage from './components/AboutPage';
+import TermsPage from './components/TermsPage';
+import PrivacyPage from './components/PrivacyPage';
 
 import AuthModal from './components/AuthModal';
 import SubmitProjectModal from './components/SubmitProjectModal';
 import ApplyGigModal from './components/ApplyGigModal';
 import ToastNotification from './components/ToastNotification';
-import AboutModal from './components/AboutModal';
-import TermsModal from './components/TermsModal';
 
 import { 
   initialUser, 
@@ -43,8 +44,6 @@ export default function App() {
   const [isSubmitOpen, setIsSubmitOpen] = useState(false);
   const [isApplyOpen, setIsApplyOpen] = useState(false);
   const [activeGigToApply, setActiveGigToApply] = useState(null);
-  const [isAboutOpen, setIsAboutOpen] = useState(false);
-  const [isTermsOpen, setIsTermsOpen] = useState(false);
 
   // Toast
   const [toast, setToast] = useState(null);
@@ -297,14 +296,23 @@ export default function App() {
       {/* Sticky Navigation Header */}
       <Navbar 
         activeTab={activeTab} 
-        setActiveTab={setActiveTab}
+        setActiveTab={(tab) => {
+          setActiveTab(tab);
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }}
         user={user}
         onOpenAuth={handleOpenAuth}
         onLogout={handleLogout}
         theme={theme}
         onToggleTheme={handleToggleTheme}
-        onOpenAbout={() => setIsAboutOpen(true)}
-        onOpenTerms={() => setIsTermsOpen(true)}
+        onOpenAbout={() => {
+          setActiveTab('about');
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }}
+        onOpenTerms={() => {
+          setActiveTab('terms');
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }}
       />
 
       {/* Main View Area */}
@@ -326,6 +334,33 @@ export default function App() {
             onNavigate={setActiveTab}
             onOpenAuth={() => handleOpenAuth('signup')}
             theme={theme}
+          />
+        )}
+
+        {activeTab === 'about' && (
+          <AboutPage 
+            onNavigate={(tab) => {
+              setActiveTab(tab);
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
+          />
+        )}
+
+        {activeTab === 'terms' && (
+          <TermsPage 
+            onNavigate={(tab) => {
+              setActiveTab(tab);
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
+          />
+        )}
+
+        {activeTab === 'privacy' && (
+          <PrivacyPage 
+            onNavigate={(tab) => {
+              setActiveTab(tab);
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
           />
         )}
 
@@ -362,6 +397,10 @@ export default function App() {
               window.scrollTo({ top: 0, behavior: 'smooth' });
             }}
             onNavigateHome={() => setActiveTab('home')}
+            onNavigate={(tab) => {
+              setActiveTab(tab);
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
           />
         )}
 
@@ -387,13 +426,14 @@ export default function App() {
             <p className="opacity-75 mt-1">Empowering women across India to learn skills, build portfolios, and earn income.</p>
           </div>
           <div className="flex flex-wrap items-center justify-center md:justify-end gap-5 font-semibold">
-            <button onClick={() => setActiveTab('profile')} className="hover:text-indigo-400 cursor-pointer">Dashboard</button>
-            <button onClick={() => setActiveTab('home')} className="hover:text-indigo-400 cursor-pointer">Overview</button>
-            <button onClick={() => setActiveTab('learn')} className="hover:text-indigo-400 cursor-pointer">Learn Case</button>
-            <button onClick={() => setActiveTab('portfolio')} className="hover:text-indigo-400 cursor-pointer">Show Skill</button>
-            <button onClick={() => setActiveTab('gigs')} className="hover:text-indigo-400 cursor-pointer">Opportunity</button>
-            <button onClick={() => setIsAboutOpen(true)} className="hover:text-indigo-400 cursor-pointer">About Us</button>
-            <button onClick={() => setIsTermsOpen(true)} className="hover:text-indigo-400 cursor-pointer">Terms & Conditions</button>
+            <button onClick={() => { setActiveTab('profile'); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="hover:text-indigo-400 cursor-pointer">Dashboard</button>
+            <button onClick={() => { setActiveTab('home'); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="hover:text-indigo-400 cursor-pointer">Overview</button>
+            <button onClick={() => { setActiveTab('about'); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="hover:text-indigo-400 cursor-pointer text-purple-400 font-bold">About Us</button>
+            <button onClick={() => { setActiveTab('learn'); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="hover:text-indigo-400 cursor-pointer">Learn Case</button>
+            <button onClick={() => { setActiveTab('portfolio'); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="hover:text-indigo-400 cursor-pointer">Show Skill</button>
+            <button onClick={() => { setActiveTab('gigs'); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="hover:text-indigo-400 cursor-pointer">Opportunity</button>
+            <button onClick={() => { setActiveTab('terms'); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="hover:text-indigo-400 cursor-pointer">Terms & Conditions</button>
+            <button onClick={() => { setActiveTab('privacy'); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="hover:text-indigo-400 cursor-pointer">Privacy Policy</button>
             {!user && (
               <>
                 <button onClick={() => handleOpenAuth('login')} className="hover:text-indigo-400 cursor-pointer font-bold text-purple-400">Log In</button>
@@ -426,16 +466,6 @@ export default function App() {
         onConfirmApply={handleConfirmApply}
       />
 
-      <AboutModal 
-        isOpen={isAboutOpen}
-        onClose={() => setIsAboutOpen(false)}
-      />
-
-      <TermsModal 
-        isOpen={isTermsOpen}
-        onClose={() => setIsTermsOpen(false)}
-      />
-
       <ToastNotification 
         toast={toast} 
         onClose={() => setToast(null)} 
@@ -443,4 +473,4 @@ export default function App() {
 
     </div>
   );
-}
+}
