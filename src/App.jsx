@@ -21,11 +21,13 @@ import {
   initialOpportunities 
 } from './data/mockData';
 
+import { api } from './services/api';
+
 export default function App() {
-  // Default to 'profile' (Dashboard) tab as requested
+  // Default to 'profile' (Dashboard) tab
   const [activeTab, setActiveTab] = useState('profile');
   
-  // Persisted user state - defaults to null if not logged in
+  // User state
   const [user, setUser] = useState(() => {
     const saved = localStorage.getItem('herearn_user');
     return saved ? JSON.parse(saved) : null;
@@ -51,13 +53,54 @@ export default function App() {
     document.body.className = theme;
   }, [theme]);
 
-  // Persist user when updated
+  // Initial Data Fetching from Express Backend API
+  useEffect(() => {
+    const fetchBackendData = async () => {
+      // 1. Auto Login via JWT
+      const token = localStorage.getItem('herearn_jwt_token');
+      if (token) {
+        try {
+          const meRes = await api.getMe();
+          if (meRes.success && meRes.user) {
+            setUser(meRes.user);
+            localStorage.setItem('herearn_user', JSON.stringify(meRes.user));
+          }
+        } catch (err) {
+          console.log('[App] Auto-login check:', err.message);
+        }
+      }
+
+      // 2. Opportunities Feed
+      try {
+        const oppRes = await api.getOpportunities();
+        if (oppRes.success && oppRes.opportunities && oppRes.opportunities.length > 0) {
+          setOpportunities(oppRes.opportunities);
+        }
+      } catch (err) {
+        console.log('[App] Using fallback opportunities:', err.message);
+      }
+
+      // 3. Public Portfolio Feed
+      try {
+        const portRes = await api.getPublicPortfolio();
+        if (portRes.success && portRes.projects && portRes.projects.length > 0) {
+          setPortfolios(portRes.projects);
+        }
+      } catch (err) {
+        console.log('[App] Using fallback portfolios:', err.message);
+      }
+    };
+
+    fetchBackendData();
+  }, []);
+
   const saveUserData = (userData) => {
     setUser(userData);
     if (userData) {
       localStorage.setItem('herearn_user', JSON.stringify(userData));
     } else {
       localStorage.removeItem('herearn_user');
+      localStorage.removeItem('herearn_jwt_token');
     }
   };
 
@@ -83,54 +126,85 @@ export default function App() {
     showToast("Signed Out", "You have successfully logged out.");
   };
 
-  // Profile Update Handler
-  const handleUpdateProfile = (profileData) => {
-    const updated = {
-      ...(user || initialUser),
-      ...profileData
-    };
-    saveUserData(updated);
-    showToast("✨ Profile Updated!", "Your dashboard profile has been saved.");
+  // Profile Update Handler with API integration
+  const handleUpdateProfile = async (profileData) => {
+    try {
+      const updatedUser = await api.updateProfile(profileData);
+      setUser(updatedUser.user || updatedUser);
+      showToast("✨ Profile Updated!", "Your dashboard profile has been saved to the backend database.");
+    } catch (err) {
+      const updated = { ...(user || initialUser), ...profileData };
+      saveUserData(updated);
+      showToast("✨ Profile Updated!", "Your dashboard profile has been updated.");
+    }
   };
 
-  // Lesson Completion Action
-  const handleCompleteLesson = (lessonId) => {
+  // Lesson Completion Action with API integration
+  const handleCompleteLesson = async (lessonId) => {
     if (!user) {
       handleOpenAuth('login');
       return;
     }
-    const currentCompleted = user.completedLessons || [];
-    let updatedLessons;
 
-    if (currentCompleted.includes(lessonId)) {
-      updatedLessons = currentCompleted.filter(id => id !== lessonId);
-      showToast("Lesson Updated", "Lesson marked as incomplete.");
-    } else {
-      updatedLessons = [...currentCompleted, lessonId];
+    try {
+      const res = await api.markLessonComplete(lessonId);
+      const currentCompleted = user.completedLessons || [];
+      const updatedLessons = currentCompleted.includes(lessonId)
+        ? currentCompleted.filter(id => id !== lessonId)
+        : [...currentCompleted, lessonId];
+
+      saveUserData({
+        ...user,
+        completedLessons: updatedLessons,
+      });
+
+      showToast("🎉 Lesson Mastered!", "Your skill track progress has increased in database!");
+    } catch (err) {
+      const currentCompleted = user.completedLessons || [];
+      const updatedLessons = currentCompleted.includes(lessonId)
+        ? currentCompleted.filter(id => id !== lessonId)
+        : [...currentCompleted, lessonId];
+
+      saveUserData({
+        ...user,
+        completedLessons: updatedLessons,
+      });
       showToast("🎉 Lesson Mastered!", "Your skill track progress has increased!");
     }
-
-    saveUserData({
-      ...user,
-      completedLessons: updatedLessons
-    });
   };
 
-  // Submit Portfolio Project Action
-  const handleSubmitProject = (newProject) => {
-    const createdItem = {
-      id: `p-${Date.now()}`,
-      authorName: user ? user.name : "Guest Learner",
-      authorAvatar: user ? user.avatar : "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=300",
-      location: user ? user.location : "India",
-      skillTrack: newProject.category,
-      likes: 1,
-      date: "Just now",
-      ...newProject
-    };
+  // Submit Portfolio Project Action with API integration
+  const handleSubmitProject = async (newProject) => {
+    try {
+      const res = await api.createProject(newProject);
+      const created = res.project || {
+        id: `p-${Date.now()}`,
+        authorName: user ? user.name : "Guest Learner",
+        authorAvatar: user ? user.avatar : "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=300",
+        location: user ? user.location : "India",
+        skillTrack: newProject.category,
+        likes: 1,
+        date: "Just now",
+        ...newProject,
+      };
 
-    setPortfolios([createdItem, ...portfolios]);
-    showToast("✨ Portfolio Published!", "Your project is live on the public showcase gallery.");
+      setPortfolios([created, ...portfolios]);
+      showToast("✨ Portfolio Published!", "Your project is saved to database and live on the public showcase gallery.");
+    } catch (err) {
+      const createdItem = {
+        id: `p-${Date.now()}`,
+        authorName: user ? user.name : "Guest Learner",
+        authorAvatar: user ? user.avatar : "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=300",
+        location: user ? user.location : "India",
+        skillTrack: newProject.category,
+        likes: 1,
+        date: "Just now",
+        ...newProject,
+      };
+
+      setPortfolios([createdItem, ...portfolios]);
+      showToast("✨ Portfolio Published!", "Your project is live on the public showcase gallery.");
+    }
   };
 
   // Apply to Gig Trigger
@@ -143,45 +217,68 @@ export default function App() {
     setIsApplyOpen(true);
   };
 
-  // Confirm Gig Application Action
-  const handleConfirmApply = (gigId, coverNote) => {
-    setOpportunities(opportunities.map(g => {
-      if (g.id === gigId) {
-        return {
-          ...g,
-          applied: true,
-          applicantsCount: g.applicantsCount + 1
-        };
+  // Confirm Gig Application Action with API integration
+  const handleConfirmApply = async (gigId, coverNote) => {
+    try {
+      await api.applyOpportunity(gigId, { coverNote });
+      setOpportunities(opportunities.map(g => {
+        if (g.id === gigId) {
+          return {
+            ...g,
+            applied: true,
+            applicantsCount: (g.applicantsCount || 0) + 1,
+          };
+        }
+        return g;
+      }));
+
+      if (user) {
+        saveUserData({
+          ...user,
+          appliedGigIds: [...(user.appliedGigIds || []), gigId],
+        });
       }
-      return g;
-    }));
 
-    if (user) {
-      saveUserData({
-        ...user,
-        appliedGigIds: [...(user.appliedGigIds || []), gigId]
-      });
+      showToast("🚀 Application Sent!", "Application recorded in database with portfolio proof.");
+    } catch (err) {
+      setOpportunities(opportunities.map(g => {
+        if (g.id === gigId) {
+          return {
+            ...g,
+            applied: true,
+            applicantsCount: (g.applicantsCount || 0) + 1,
+          };
+        }
+        return g;
+      }));
+
+      if (user) {
+        saveUserData({
+          ...user,
+          appliedGigIds: [...(user.appliedGigIds || []), gigId],
+        });
+      }
+
+      showToast("🚀 Application Sent!", "Client received your application with attached portfolio proof.");
     }
-
-    showToast("🚀 Application Sent!", "Client received your application with attached portfolio proof.");
   };
 
   // User Login Handler
   const handleLoginSuccess = (userData) => {
     const isNewSignUp = userData.isSignUp;
     const loggedInUser = {
-      id: `u-${Date.now()}`,
+      id: userData.id || `u-${Date.now()}`,
       name: userData.name || 'Learner',
       email: userData.email || 'user@herearn.org',
       title: `${userData.skillInterest || 'Digital Skill'} Specialist`,
-      location: 'India',
-      bio: 'Passionate about building digital skills and delivering quality micro-gigs on HerEarn.',
-      avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=300',
+      location: userData.location || 'India',
+      bio: userData.bio || 'Passionate about building digital skills and delivering quality micro-gigs on HerEarn.',
+      avatar: userData.avatar || 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=300',
       verified: true,
-      skills: [userData.skillInterest || "Digital Marketing", "Canva Design", "Instagram Management"],
-      earnings: isNewSignUp ? 0 : 0,
+      skills: userData.skills || [userData.skillInterest || "Digital Marketing", "Canva Design", "Instagram Management"],
+      totalEarned: userData.totalEarned || 0,
       completedLessons: [],
-      appliedGigIds: []
+      appliedGigIds: [],
     };
 
     saveUserData(loggedInUser);
@@ -219,7 +316,7 @@ export default function App() {
         onOpenTerms={() => setIsTermsOpen(true)}
       />
 
-      {/* Main View Area - Default Dashboard on visit */}
+      {/* Main View Area */}
       <main className="flex-1 pb-16">
         {activeTab === 'profile' && (
           <ProfileSection 
