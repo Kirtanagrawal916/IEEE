@@ -25,8 +25,8 @@ import {
 import { api } from './services/api';
 
 export default function App() {
-  // Default to 'home' (Landing Page) tab when visiting website
-  const [activeTab, setActiveTab] = useState('home');
+  // Default to 'about' (About Page) tab when visiting website
+  const [activeTab, setActiveTab] = useState('about');
   
   // User state
   const [user, setUser] = useState(() => {
