@@ -1,4 +1,5 @@
 import express from 'express';
+import jwt from 'jsonwebtoken';
 import { prisma } from '../config/db.js';
 
 const router = express.Router();
@@ -66,9 +67,27 @@ router.get('/tracks/:trackId/lessons', async (req, res) => {
       orderBy: { orderIndex: 'asc' },
     });
 
+    let completedLessonIds = [];
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      try {
+        const token = authHeader.split(' ')[1];
+        const secret = process.env.JWT_SECRET || 'her_earn_jwt_secret_key_2026_prototype';
+        const decoded = jwt.verify(token, secret);
+        const userProgress = await prisma.lessonProgress.findMany({
+          where: { userId: decoded.userId },
+          select: { lessonId: true },
+        });
+        completedLessonIds = userProgress.map((p) => p.lessonId);
+      } catch (err) {
+        // invalid token ignored for public listing
+      }
+    }
+
     const formattedLessons = lessons.map((lesson) => ({
       ...lesson,
       keyTakeaways: JSON.parse(lesson.keyTakeaways || '[]'),
+      isCompleted: completedLessonIds.includes(lesson.id),
     }));
 
     res.json({ success: true, lessons: formattedLessons });

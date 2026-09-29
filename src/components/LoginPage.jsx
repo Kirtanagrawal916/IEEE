@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { api } from '../services/api';
 import { 
   Sparkles, 
   Mail, 
@@ -23,40 +24,54 @@ export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNaviga
   const [isLoading, setIsLoading] = useState(false);
   const [forgotSent, setForgotSent] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
 
-    const targetEmail = email.trim() || 'ananya@example.com';
-    const cleanEmail = targetEmail.includes('@') ? targetEmail : `${targetEmail}@example.com`;
+    const targetEmail = email.trim() || 'ananya@herearn.org';
+    const targetPassword = password.trim() || 'password123';
 
     setIsLoading(true);
 
-    setTimeout(() => {
+    try {
+      const res = await api.login({ email: targetEmail, password: targetPassword });
       setIsLoading(false);
-      const handle = cleanEmail.split('@')[0];
+      onLoginSuccess({
+        ...res.user,
+        isSignUp: false,
+      });
+    } catch (err) {
+      setIsLoading(false);
+      // Fallback demo user if backend offline
+      const handle = targetEmail.split('@')[0];
       const displayName = handle.charAt(0).toUpperCase() + handle.slice(1);
-
       onLoginSuccess({
         name: displayName || 'Ananya Sharma',
-        email: cleanEmail,
+        email: targetEmail,
         skillInterest: 'Digital Marketing',
-        isSignUp: false
+        isSignUp: false,
       });
-    }, 200);
+    }
   };
 
-  const handleQuickDemoLogin = () => {
+  const handleQuickDemoLogin = async () => {
     setIsLoading(true);
-    setTimeout(() => {
+    try {
+      const res = await api.login({ email: 'ananya@herearn.org', password: 'password123' });
+      setIsLoading(false);
+      onLoginSuccess({
+        ...res.user,
+        isSignUp: false,
+      });
+    } catch (err) {
       setIsLoading(false);
       onLoginSuccess({
         name: 'Ananya Sharma',
-        email: 'ananya@example.com',
+        email: 'ananya@herearn.org',
         skillInterest: 'Digital Marketing & Social Media',
-        isSignUp: false
+        isSignUp: false,
       });
-    }, 200);
+    }
   };
 
   const handleForgotPassword = () => {

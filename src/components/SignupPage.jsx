@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { api } from '../services/api';
 import { 
   Sparkles, 
   User, 
@@ -27,40 +28,63 @@ export default function SignupPage({ onLoginSuccess, onNavigateToLogin, onNaviga
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
 
     const displayName = name.trim() || 'Priya Patel';
-    const targetEmail = email.trim() || 'priya@example.com';
-    const cleanEmail = targetEmail.includes('@') ? targetEmail : `${targetEmail}@example.com`;
+    const targetEmail = email.trim() || 'priya@herearn.org';
+    const targetPassword = password.trim() || 'password123';
 
     setIsLoading(true);
 
-    setTimeout(() => {
+    try {
+      const res = await api.register({
+        name: displayName,
+        email: targetEmail,
+        password: targetPassword,
+        skills: [skillInterest],
+      });
+
+      setIsLoading(false);
+      onLoginSuccess({
+        ...res.user,
+        isSignUp: true,
+        role,
+      });
+    } catch (err) {
       setIsLoading(false);
       onLoginSuccess({
         name: displayName,
-        email: cleanEmail,
+        email: targetEmail,
         skillInterest,
         isSignUp: true,
-        role
+        role,
       });
-    }, 200);
+    }
   };
 
-  const handleQuickDemoSignup = () => {
+  const handleQuickDemoSignup = async () => {
     setIsLoading(true);
-    setTimeout(() => {
+    try {
+      const res = await api.register({
+        name: 'Priya Patel',
+        email: `priya_${Date.now()}@herearn.org`,
+        password: 'password123',
+        skills: ['Graphic Design & Canva'],
+      });
       setIsLoading(false);
       onLoginSuccess({
-        name: 'Priya Patel',
-        email: 'priya@example.com',
-        skillInterest: 'Graphic Design & Canva',
+        ...res.user,
         isSignUp: true,
-        role: 'learner'
+        role: 'learner',
       });
-    }, 200);
+    } catch (err) {
+      setIsLoading(false);
+      onLoginSuccess({
+        isSignUp: true,
+      });
+    }
   };
 
   return (

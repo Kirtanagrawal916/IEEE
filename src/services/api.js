@@ -27,11 +27,14 @@ const request = async (endpoint, options = {}) => {
     const res = await fetch(`${API_BASE}${endpoint}`, config);
     const data = await res.json();
     if (!res.ok) {
-      throw new Error(data.message || `HTTP ${res.status} Error`);
+      const error = new Error(data.message || `HTTP ${res.status} Error`);
+      error.status = res.status;
+      error.data = data;
+      throw error;
     }
     return data;
   } catch (err) {
-    console.warn(`[API] ${endpoint} request error:`, err.message);
+    console.warn(`[API Error] ${endpoint}:`, err.message);
     throw err;
   }
 };
@@ -42,7 +45,7 @@ export const api = {
   login: (credentials) => request('/api/auth/login', { method: 'POST', body: JSON.stringify(credentials) }),
   getMe: () => request('/api/auth/me'),
 
-  // Profile APIs
+  // User Profile APIs
   getProfile: () => request('/api/users/me'),
   updateProfile: (profileData) => request('/api/users/me', { method: 'PATCH', body: JSON.stringify(profileData) }),
 
@@ -55,12 +58,14 @@ export const api = {
   // Enrollment & Progress APIs
   enrollTrack: (trackId) => request(`/api/tracks/${trackId}/enroll`, { method: 'POST' }),
   getEnrollments: () => request('/api/enrollments'),
+  getTrackEnrollment: (trackId) => request(`/api/enrollments/${trackId}`),
   markLessonComplete: (lessonId) => request(`/api/lessons/${lessonId}/complete`, { method: 'POST' }),
   getTrackProgress: (trackId) => request(`/api/progress/${trackId}`),
 
   // Portfolio APIs
   getMyPortfolio: () => request('/api/portfolio/me'),
   getPublicPortfolio: () => request('/api/portfolio'),
+  getProject: (id) => request(`/api/portfolio/${id}`),
   createProject: (projectData) => request('/api/portfolio', { method: 'POST', body: JSON.stringify(projectData) }),
   updateProject: (id, projectData) => request(`/api/portfolio/${id}`, { method: 'PATCH', body: JSON.stringify(projectData) }),
   deleteProject: (id) => request(`/api/portfolio/${id}`, { method: 'DELETE' }),
@@ -75,6 +80,7 @@ export const api = {
   // Application APIs
   applyOpportunity: (opportunityId, appData) => request(`/api/opportunities/${opportunityId}/apply`, { method: 'POST', body: JSON.stringify(appData) }),
   getMyApplications: () => request('/api/applications/me'),
+  getApplicationDetails: (id) => request(`/api/applications/${id}`),
 
   // Dashboard API
   getDashboardMetrics: () => request('/api/dashboard'),

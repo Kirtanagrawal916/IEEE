@@ -74,6 +74,69 @@ router.get('/enrollments', authMiddleware, async (req, res) => {
   }
 });
 
+// GET /api/enrollments/:trackId
+router.get('/enrollments/:trackId', authMiddleware, async (req, res) => {
+  try {
+    const { trackId } = req.params;
+
+    const enrollment = await prisma.enrollment.findUnique({
+      where: {
+        userId_trackId: {
+          userId: req.user.id,
+          trackId,
+        },
+      },
+      include: {
+        track: {
+          include: {
+            lessons: {
+              orderBy: { orderIndex: 'asc' },
+            },
+          },
+        },
+      },
+    });
+
+    if (!enrollment) {
+      return res.status(404).json({ success: false, message: 'Enrollment not found for this track' });
+    }
+
+    const userProgress = await prisma.lessonProgress.findMany({
+      where: { userId: req.user.id },
+      select: { lessonId: true },
+    });
+
+    const completedLessonIds = userProgress.map((p) => p.lessonId);
+    const completedLessons = enrollment.track.lessons.filter((l) => completedLessonIds.includes(l.id));
+    const currentLesson = enrollment.track.lessons.find((l) => !completedLessonIds.includes(l.id)) || enrollment.track.lessons[0] || null;
+
+    res.json({
+      success: true,
+      enrollment: {
+        id: enrollment.id,
+        track: {
+          ...enrollment.track,
+          lessons: enrollment.track.lessons.map((l) => ({
+            ...l,
+            keyTakeaways: JSON.parse(l.keyTakeaways || '[]'),
+            isCompleted: completedLessonIds.includes(l.id),
+          })),
+        },
+        progressPercent: enrollment.progressPercent,
+        completedLessons: completedLessons.map((l) => l.id),
+        currentLesson: currentLesson ? {
+          ...currentLesson,
+          keyTakeaways: JSON.parse(currentLesson.keyTakeaways || '[]'),
+          isCompleted: completedLessonIds.includes(currentLesson.id),
+        } : null,
+        status: enrollment.isCompleted ? 'COMPLETED' : 'IN_PROGRESS',
+      },
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Failed to fetch enrollment details', error: error.message });
+  }
+});
+
 // POST /api/lessons/:lessonId/complete
 router.post('/lessons/:lessonId/complete', authMiddleware, async (req, res) => {
   try {
