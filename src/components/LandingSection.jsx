@@ -55,27 +55,33 @@ export default function LandingSection({ onNavigate, onOpenAuth, theme }) {
   const howItWorksThreeCards = [
     {
       step: "01",
-      title: "1. Learn",
+      title: "1. Learn Market Skills",
       desc: "Pick a skill track and complete short, practical video lessons at your own pace.",
       icon: BookOpen,
       badge: "Self-Paced Tracks",
-      color: "from-purple-600 to-indigo-600"
+      color: "from-purple-600 to-indigo-600",
+      targetTab: "learn",
+      ctaText: "Go to Learning Hub"
     },
     {
       step: "02",
-      title: "2. Build",
+      title: "2. Build & Showcase Portfolio",
       desc: "Create real portfolio projects to showcase your verified work to potential clients.",
       icon: Award,
       badge: "Verified Proof",
-      color: "from-pink-600 to-rose-600"
+      color: "from-pink-600 to-rose-600",
+      targetTab: "portfolio",
+      ctaText: "Go to Skill Showcase"
     },
     {
       step: "03",
-      title: "3. Earn",
+      title: "3. Earn from Real Work",
       desc: "Apply to flexible gigs, freelance projects, and remote client opportunities.",
       icon: IndianRupee,
       badge: "Direct Payouts",
-      color: "from-amber-500 to-emerald-500"
+      color: "from-amber-500 to-emerald-500",
+      targetTab: "gigs",
+      ctaText: "Go to Opportunity Board"
     }
   ];
 
@@ -466,11 +472,12 @@ export default function LandingSection({ onNavigate, onOpenAuth, theme }) {
             return (
               <div 
                 key={idx}
-                className="bg-white/90 dark:bg-slate-900/90 border border-purple-200 dark:border-purple-500/30 rounded-3xl p-7 space-y-4 shadow-xl card-hover-award flex flex-col justify-between relative overflow-hidden text-slate-900 dark:text-white"
+                onClick={() => onNavigate(card.targetTab)}
+                className="bg-white/90 dark:bg-slate-900/90 border border-purple-200 dark:border-purple-500/30 hover:border-purple-500/60 rounded-3xl p-7 space-y-4 shadow-xl card-hover-award flex flex-col justify-between relative overflow-hidden text-slate-900 dark:text-white cursor-pointer group transition-all"
               >
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <div className={`w-12 h-12 rounded-2xl bg-gradient-to-tr ${card.color} text-white flex items-center justify-center shadow-lg`}>
+                    <div className={`w-12 h-12 rounded-2xl bg-gradient-to-tr ${card.color} text-white flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform`}>
                       <IconComp className="w-6 h-6" />
                     </div>
                     <span className="text-xs font-extrabold text-purple-800 dark:text-purple-300 bg-purple-100 dark:bg-purple-500/20 border border-purple-300 dark:border-purple-500/30 px-3 py-1 rounded-full">
@@ -478,7 +485,7 @@ export default function LandingSection({ onNavigate, onOpenAuth, theme }) {
                     </span>
                   </div>
 
-                  <h3 className="text-xl font-bold text-slate-900 dark:text-white leading-snug">
+                  <h3 className="text-xl font-bold text-slate-900 dark:text-white leading-snug group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
                     {card.title}
                   </h3>
 
@@ -487,9 +494,23 @@ export default function LandingSection({ onNavigate, onOpenAuth, theme }) {
                   </p>
                 </div>
 
-                <div className="pt-3 border-t border-purple-100 dark:border-purple-500/20 flex items-center justify-between text-xs font-bold text-purple-700 dark:text-purple-300">
-                  <span>Step {card.step}</span>
-                  <ChevronRight className="w-4 h-4 text-pink-600 dark:text-pink-400" />
+                <div className="pt-3 border-t border-purple-100 dark:border-purple-500/20 space-y-3">
+                  <div className="flex items-center justify-between text-xs font-bold text-purple-700 dark:text-purple-300">
+                    <span>Step {card.step}</span>
+                    <ChevronRight className="w-4 h-4 text-pink-600 dark:text-pink-400 group-hover:translate-x-1 transition-transform" />
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onNavigate(card.targetTab);
+                    }}
+                    className="w-full py-2.5 px-4 rounded-xl font-extrabold text-xs bg-purple-100 hover:bg-purple-600 hover:text-white dark:bg-purple-950/80 dark:hover:bg-purple-600 text-purple-900 dark:text-purple-200 transition-all flex items-center justify-between cursor-pointer border border-purple-300 dark:border-purple-500/40 shadow-sm"
+                  >
+                    <span>{card.ctaText}</span>
+                    <ArrowRight className="w-4 h-4 text-pink-600 dark:text-pink-400 group-hover:text-white transition-colors" />
+                  </button>
                 </div>
               </div>
             );
