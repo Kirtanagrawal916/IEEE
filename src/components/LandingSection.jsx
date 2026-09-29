@@ -399,7 +399,7 @@ export default function LandingSection({ onNavigate, onOpenAuth, theme }) {
                 onClick={() => onNavigate('learn')}
                 className="w-full btn-gradient-award justify-center text-xs py-3 cursor-pointer"
               >
-                Experience Platform Demo
+                Explore Platform Courses
               </button>
 
             </div>

@@ -126,128 +126,13 @@ export const skillTracks = [
   }
 ];
 
-export const initialPortfolios = [
-  {
-    id: "p1",
-    authorName: "Divya Sharma",
-    authorAvatar: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=300",
-    location: "Jaipur",
-    skillTrack: "Digital Marketing",
-    title: "7-Day Instagram Growth Strategy for CraftBoutique Jaipur",
-    description: "Designed 7 high-engagement posts, story templates, and a Reels calendar for a local handloom store. Resulted in 40% increase in WhatsApp inquiries.",
-    category: "Digital Marketing",
-    imageUrl: "https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?auto=format&fit=crop&q=80&w=600",
-    tags: ["Canva", "Instagram Strategy", "Local Business"],
-    likes: 42,
-    verified: true,
-    date: "2 days ago"
-  },
-  {
-    id: "p2",
-    authorName: "Sunita Patel",
-    authorAvatar: "https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&q=80&w=300",
-    location: "Ahmedabad",
-    skillTrack: "Graphic Design",
-    title: "Eco-Friendly Organic Tea Packaging & Branding",
-    description: "Created complete packaging labels, logo design, and promotional flyers for a home-based herbal tea brand.",
-    category: "Design",
-    imageUrl: "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&q=80&w=600",
-    tags: ["Packaging", "Logo Design", "Branding"],
-    likes: 58,
-    verified: true,
-    date: "4 days ago"
-  },
-  {
-    id: "p3",
-    authorName: "Priya Verma",
-    authorAvatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=300",
-    location: "Indore",
-    skillTrack: "E-Commerce",
-    title: "Shopify Store Setup & Catalog Management for Handmade Jewelry",
-    description: "Uploaded 50+ product listings, integrated UPI payments, and optimized mobile product pages for quick checkout.",
-    category: "E-Commerce",
-    imageUrl: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&q=80&w=600",
-    tags: ["Shopify", "Catalog", "Product Listings"],
-    likes: 31,
-    verified: true,
-    date: "1 week ago"
-  }
-];
+export const initialPortfolios = [];
 
-export const initialOpportunities = [
-  {
-    id: "g1",
-    title: "Social Media Manager for Organic Spices Brand",
-    company: "Desi Flavors Handcrafted",
-    logo: "https://images.unsplash.com/photo-1596040033229-a9821ebd058d?auto=format&fit=crop&q=80&w=150",
-    stipend: "₹8,000 / month",
-    type: "Remote Part-time",
-    category: "Digital Marketing",
-    skillsRequired: ["Digital Marketing", "Canva Design", "Instagram Management"],
-    duration: "3 Months (Potential to extend)",
-    description: "Looking for a skilled woman creator to manage our Instagram page, post 4 posts per week, create Canva graphics, and reply to customer DMs.",
-    deliverables: ["16 Instagram posts/month", "Weekly performance report", "DM customer support"],
-    verifiedClient: true,
-    applied: true,
-    applicantsCount: 14,
-    deadline: "In 3 days"
-  },
-  {
-    id: "g2",
-    title: "Canva Banner & Flyer Designer for Event",
-    company: "Women Entrepreneurship Summit",
-    logo: "https://images.unsplash.com/photo-1551836022-d5d88e9218df?auto=format&fit=crop&q=80&w=150",
-    stipend: "₹3,500 (Project Flat)",
-    type: "Micro-Gig",
-    category: "Design",
-    skillsRequired: ["Canva Design", "Graphic Design", "Banner Design"],
-    duration: "1 Week",
-    description: "Need 5 digital banners for social media promotion and 1 printable PDF flyer for an upcoming women founders event.",
-    deliverables: ["5 Social Media Banners", "1 Print-ready PDF Brochure"],
-    verifiedClient: true,
-    applied: false,
-    applicantsCount: 8,
-    deadline: "In 5 days"
-  },
-  {
-    id: "g3",
-    title: "Shopify Product Catalog Assistant",
-    company: "KalaKriti Handloom Collective",
-    logo: "https://images.unsplash.com/photo-1528698827591-e19ccd7bc23d?auto=format&fit=crop&q=80&w=150",
-    stipend: "₹12,000 / month",
-    type: "Remote Internship",
-    category: "E-Commerce",
-    skillsRequired: ["Shopify", "E-Commerce", "Data Entry"],
-    duration: "2 Months",
-    description: "Help our artisan collective upload new saree & dupatta collections onto Shopify, write clear product descriptions, and tag inventory.",
-    deliverables: ["Upload 80+ catalog items", "Write SEO product tags"],
-    verifiedClient: true,
-    applied: false,
-    applicantsCount: 19,
-    deadline: "In 2 days"
-  },
-  {
-    id: "g4",
-    title: "Content Writer for Healthy Snacks Blog",
-    company: "NourishBites Foods",
-    logo: "https://images.unsplash.com/photo-1498837167922-ddd27525d352?auto=format&fit=crop&q=80&w=150",
-    stipend: "₹5,000 / month",
-    type: "Freelance",
-    category: "Digital Marketing",
-    skillsRequired: ["Content Writing", "SEO Basics", "Blog Writing"],
-    duration: "Ongoing",
-    description: "Write 4 engaging blog articles per month (600 words each) on healthy snacking tips for working mothers.",
-    deliverables: ["4 Blog Posts / month", "Basic Keyword Research"],
-    verifiedClient: true,
-    applied: false,
-    applicantsCount: 6,
-    deadline: "In 6 days"
-  }
-];
+export const initialOpportunities = [];
 
 export const platformStats = [
-  { label: "Women Learners Upskilled", value: "12,450+" },
-  { label: "Income Generated for Women", value: "₹1.8 Crore+" },
-  { label: "Partner Small Businesses", value: "650+" },
-  { label: "Average First Gig Earnings", value: "₹6,500/mo" }
+  { label: "Women Learners Upskilled", value: "0+" },
+  { label: "Income Generated for Women", value: "₹0" },
+  { label: "Partner Small Businesses", value: "0+" },
+  { label: "Average First Gig Earnings", value: "₹0/mo" }
 ];
