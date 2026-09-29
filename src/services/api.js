@@ -43,6 +43,8 @@ export const api = {
   // Auth APIs
   register: (userData) => request('/api/auth/register', { method: 'POST', body: JSON.stringify(userData) }),
   login: (credentials) => request('/api/auth/login', { method: 'POST', body: JSON.stringify(credentials) }),
+  sendOtp: (email) => request('/api/auth/send-otp', { method: 'POST', body: JSON.stringify({ email }) }),
+  verifyOtp: (data) => request('/api/auth/verify-otp', { method: 'POST', body: JSON.stringify(data) }),
   getMe: () => request('/api/auth/me'),
 
   // User Profile APIs
