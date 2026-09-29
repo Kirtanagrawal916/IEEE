@@ -295,6 +295,8 @@ export default function App() {
             <button onClick={() => setActiveTab('learn')} className="hover:text-indigo-400 cursor-pointer">Learn Case</button>
             <button onClick={() => setActiveTab('portfolio')} className="hover:text-indigo-400 cursor-pointer">Show Skill</button>
             <button onClick={() => setActiveTab('gigs')} className="hover:text-indigo-400 cursor-pointer">Opportunity</button>
+            <button onClick={() => setIsAboutOpen(true)} className="hover:text-indigo-400 cursor-pointer">About Us</button>
+            <button onClick={() => setIsTermsOpen(true)} className="hover:text-indigo-400 cursor-pointer">Terms & Conditions</button>
             {!user && (
               <>
                 <button onClick={() => handleOpenAuth('login')} className="hover:text-indigo-400 cursor-pointer font-bold text-purple-400">Log In</button>
