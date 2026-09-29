@@ -85,14 +85,14 @@ export default function Navbar({
           </div>
 
           {/* Clean Navigation: Home | Courses | Opportunities | Dashboard (If Logged In) */}
-          <div className="hidden md:flex items-center gap-1.5 bg-white/90 dark:bg-slate-900/80 p-1.5 rounded-2xl border border-purple-300 dark:border-purple-500/30 backdrop-blur-md shadow-lg">
+          <div className="hidden md:flex items-center gap-1.5 bg-white/90 dark:bg-slate-900/80 p-1.5 rounded-2xl border border-purple-200 dark:border-purple-500/30 backdrop-blur-md shadow-lg">
             <button
               type="button"
               onClick={() => handleNavSection('top')}
               className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                 activeTab === 'home'
                   ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-md'
-                  : 'text-slate-700 dark:text-slate-200 hover:text-purple-700 dark:hover:text-white hover:bg-purple-50 dark:hover:bg-purple-900/40'
+                  : 'text-slate-700 dark:text-slate-200 hover:text-purple-700 dark:hover:text-white hover:bg-purple-100/70 dark:hover:bg-purple-900/40'
               }`}
             >
               <Compass className="w-4 h-4" />
@@ -105,7 +105,7 @@ export default function Navbar({
               className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                 activeTab === 'learn'
                   ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-md'
-                  : 'text-slate-700 dark:text-slate-200 hover:text-purple-700 dark:hover:text-white hover:bg-purple-50 dark:hover:bg-purple-900/40'
+                  : 'text-slate-700 dark:text-slate-200 hover:text-purple-700 dark:hover:text-white hover:bg-purple-100/70 dark:hover:bg-purple-900/40'
               }`}
             >
               <BookOpen className="w-4 h-4 text-purple-600 dark:text-purple-400" />
@@ -118,7 +118,7 @@ export default function Navbar({
               className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                 activeTab === 'gigs'
                   ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-md'
-                  : 'text-slate-700 dark:text-slate-200 hover:text-purple-700 dark:hover:text-white hover:bg-purple-50 dark:hover:bg-purple-900/40'
+                  : 'text-slate-700 dark:text-slate-200 hover:text-purple-700 dark:hover:text-white hover:bg-purple-100/70 dark:hover:bg-purple-900/40'
               }`}
             >
               <Briefcase className="w-4 h-4 text-amber-600 dark:text-amber-400" />
@@ -133,7 +133,7 @@ export default function Navbar({
                 className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                   activeTab === 'profile'
                     ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-md'
-                    : 'text-slate-700 dark:text-slate-200 hover:text-purple-700 dark:hover:text-white hover:bg-purple-50 dark:hover:bg-purple-900/40'
+                    : 'text-slate-700 dark:text-slate-200 hover:text-purple-700 dark:hover:text-white hover:bg-purple-100/70 dark:hover:bg-purple-900/40'
                 }`}
               >
                 <User className="w-4 h-4" />
@@ -169,12 +169,12 @@ export default function Navbar({
               <div className="flex items-center gap-2">
                 <div 
                   onClick={() => setActiveTab('profile')}
-                  className="flex items-center gap-2.5 bg-slate-900 dark:bg-slate-900 border border-purple-500/30 px-3 py-1.5 rounded-xl cursor-pointer hover:border-pink-500 transition-all"
+                  className="flex items-center gap-2.5 bg-white dark:bg-slate-900 border border-purple-200 dark:border-purple-500/30 px-3 py-1.5 rounded-xl cursor-pointer hover:border-pink-500 transition-all shadow-xs"
                 >
                   <img src={user.avatar} alt={user.name} className="w-8 h-8 rounded-full object-cover border border-purple-400" />
                   <div className="hidden sm:block text-left text-xs">
-                    <p className="font-bold leading-tight text-white">{user.name}</p>
-                    <p className="text-[10px] text-emerald-400 font-extrabold">₹{(user.earnings || 0).toLocaleString()}</p>
+                    <p className="font-bold leading-tight text-slate-900 dark:text-white">{user.name}</p>
+                    <p className="text-[10px] text-emerald-600 dark:text-emerald-400 font-extrabold">₹{(user.earnings || 0).toLocaleString()}</p>
                   </div>
                 </div>
 
@@ -183,7 +183,7 @@ export default function Navbar({
                   onClick={onLogout}
                   title="Sign Out"
                   aria-label="Sign Out"
-                  className="p-2 rounded-xl text-slate-400 hover:text-pink-400 hover:bg-slate-800/50 transition-colors cursor-pointer"
+                  className="p-2 rounded-xl text-slate-500 dark:text-slate-400 hover:text-pink-600 dark:hover:text-pink-400 hover:bg-purple-100 dark:hover:bg-slate-800/50 transition-colors cursor-pointer"
                 >
                   <LogOut className="w-4 h-4" />
                 </button>
@@ -191,17 +191,18 @@ export default function Navbar({
             ) : (
               <div className="flex items-center gap-2">
                 
-                {/* LOGIN BUTTON (HIGH CONTRAST & SPECIFICATION STYLED) */}
+                {/* GUEST MODE BUTTON */}
                 <button
                   type="button"
                   onClick={onContinueAsGuest}
-                  className="hidden md:flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:text-white bg-slate-900/80 border border-purple-500/30 hover:border-purple-400 transition-all cursor-pointer"
+                  className="hidden md:flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-300 hover:text-purple-700 dark:hover:text-white bg-purple-50 dark:bg-slate-900/80 border border-purple-200 dark:border-purple-500/30 hover:border-purple-400 transition-all cursor-pointer"
                   title="Explore HerEarn as a Guest Learner"
                 >
-                  <User className="w-3.5 h-3.5 text-purple-400" />
+                  <User className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />
                   <span>Guest Mode</span>
                 </button>
 
+                {/* LOGIN BUTTON (HIGH CONTRAST & SPECIFICATION STYLED) */}
                 <button
                   type="button"
                   onClick={() => onOpenAuth('login')}
@@ -246,7 +247,7 @@ export default function Navbar({
                 className={`p-2.5 rounded-xl border transition-all flex items-center justify-center cursor-pointer ${
                   isMenuOpen || ['learn', 'portfolio', 'gigs'].includes(activeTab)
                     ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white border-pink-500 shadow-md'
-                    : 'bg-slate-900/80 border-purple-500/20 text-slate-300 hover:text-white'
+                    : 'bg-white dark:bg-slate-900/80 border-purple-200 dark:border-purple-500/20 text-purple-700 dark:text-slate-300 hover:text-purple-900 dark:hover:text-white'
                 }`}
                 title="Explore Sections"
               >
@@ -255,7 +256,7 @@ export default function Navbar({
 
               {/* Dropdown Menu Popup */}
               {isMenuOpen && (
-                <div className="absolute right-0 mt-3 w-64 rounded-2xl bg-slate-950 border border-purple-500/40 shadow-2xl p-2 z-50 animate-fade-in text-white space-y-1">
+                <div className="absolute right-0 mt-3 w-64 rounded-2xl bg-white dark:bg-slate-950 border border-purple-200 dark:border-purple-500/40 shadow-2xl p-2 z-50 animate-fade-in text-slate-900 dark:text-white space-y-1">
                   <div className="px-3 py-1.5 border-b border-purple-500/20">
                     <p className="text-[11px] font-extrabold text-purple-300 uppercase tracking-wider">Explore Modules</p>
                   </div>
