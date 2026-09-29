@@ -231,20 +231,20 @@ export default function LandingSection({ onNavigate, onOpenAuth, theme }) {
 
 
         {/* Hero Badge below Navbar */}
-        <div className="flex justify-center lg:justify-start mb-6">
+        <div className="flex justify-center mb-6">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-purple-100 dark:bg-purple-900/40 border border-purple-300 dark:border-purple-500/40 text-purple-900 dark:text-purple-200 text-xs font-extrabold uppercase tracking-wider shadow-xs backdrop-blur-md">
             <Sparkles className="w-4 h-4 text-pink-600 dark:text-pink-400 animate-pulse" />
             <span>AI-Powered Skill-to-Income Recommendation Platform</span>
           </div>
         </div>
 
-        <div className="relative z-10">
+        <div className="relative z-10 max-w-5xl mx-auto text-center">
           
-          {/* Full-Width Column: Headline & Value Proposition */}
-          <div className="w-full space-y-8 text-center lg:text-left relative">
+          {/* Centered Hero Content */}
+          <div className="w-full space-y-8 text-center flex flex-col items-center relative">
             
             {/* Main Headline */}
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-[1.1] text-slate-900 dark:text-white max-w-4xl">
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-[1.1] text-slate-900 dark:text-white max-w-4xl mx-auto">
               Turn Skills Into <br className="hidden sm:inline" />
               <span className="bg-gradient-to-r from-purple-600 via-pink-600 to-amber-500 bg-clip-text text-transparent">
                 Sustainable Income
@@ -252,16 +252,16 @@ export default function LandingSection({ onNavigate, onOpenAuth, theme }) {
             </h1>
 
             {/* Short Trust-Building Statement - High Contrast in both light & dark mode */}
-            <p className="text-base sm:text-xl text-slate-700 dark:text-slate-200 max-w-3xl leading-relaxed font-semibold">
+            <p className="text-base sm:text-xl text-slate-700 dark:text-slate-200 max-w-3xl leading-relaxed font-semibold mx-auto">
               Bridging the gap between learning, opportunities, and financial independence.
             </p>
 
-            {/* CTA Buttons & Testimonial story */}
-            <div className="flex flex-col sm:flex-row flex-wrap items-center justify-center lg:justify-start gap-4 pt-2">
+            {/* CTA Buttons */}
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2 w-full">
               <button
                 type="button"
                 onClick={() => onNavigate('learn')}
-                className="w-full sm:w-auto btn-gradient-award text-sm py-4 px-8 shadow-xl cursor-pointer flex items-center justify-center gap-2"
+                className="w-full sm:w-auto btn-gradient-award text-sm py-4 px-9 shadow-xl cursor-pointer flex items-center justify-center gap-2"
               >
                 <span>Start Learning</span>
                 <ArrowRight className="w-4 h-4" />
@@ -270,33 +270,14 @@ export default function LandingSection({ onNavigate, onOpenAuth, theme }) {
               <button
                 type="button"
                 onClick={() => onNavigate('gigs')}
-                className="w-full sm:w-auto btn-outline-award text-sm py-4 px-8 cursor-pointer flex items-center justify-center"
+                className="w-full sm:w-auto btn-outline-award text-sm py-4 px-9 cursor-pointer flex items-center justify-center"
               >
                 Explore Opportunities
               </button>
-
-              {/* Testimonial story under Hero buttons */}
-              <div className="inline-flex items-center gap-3 px-4 py-3 rounded-2xl bg-white/70 dark:bg-white/5 border border-purple-200 dark:border-purple-500/30 backdrop-blur-md shadow-lg">
-                <div className="flex items-center -space-x-2">
-                  <img 
-                    src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=120" 
-                    alt="Learner" 
-                    className="w-8 h-8 rounded-full border-2 border-purple-500 object-cover shadow-md"
-                  />
-                </div>
-                <div className="text-left text-xs">
-                  <p className="text-slate-800 dark:text-slate-100 font-bold leading-tight">
-                    "I earned my first ₹5,000 within 3 weeks of learning."
-                  </p>
-                  <span className="inline-block text-[10px] bg-purple-100 dark:bg-purple-500/30 text-purple-900 dark:text-purple-200 border border-purple-300 dark:border-purple-500/40 px-2 py-0.5 rounded-md font-extrabold uppercase mt-0.5">
-                    Example story
-                  </span>
-                </div>
-              </div>
             </div>
 
             {/* Micro Trust Indicators */}
-            <div className="pt-6 border-t border-purple-200 dark:border-purple-500/30 flex flex-wrap items-center justify-center lg:justify-start gap-8 text-slate-700 dark:text-slate-200 text-xs sm:text-sm font-bold">
+            <div className="pt-6 border-t border-purple-200 dark:border-purple-500/30 flex flex-wrap items-center justify-center gap-8 text-slate-700 dark:text-slate-200 text-xs sm:text-sm font-bold w-full max-w-2xl mx-auto">
               <div className="flex items-center gap-2">
                 <ShieldCheck className="w-5 h-5 text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
                 <span>Escrow Safe Payouts</span>
