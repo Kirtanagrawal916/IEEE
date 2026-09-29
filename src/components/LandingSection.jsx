@@ -200,14 +200,29 @@ export default function LandingSection({ onNavigate, onOpenAuth, theme }) {
   ];
 
   return (
-    <div className="space-y-20 sm:space-y-24 pb-20 animate-fade-in overflow-x-hidden text-slate-900 dark:text-slate-100">
+    <div className="space-y-16 sm:space-y-20 pb-20 animate-fade-in overflow-x-hidden text-slate-900 dark:text-slate-100">
       
       {/* 1. HERO SECTION */}
-      <section className="relative pt-6 pb-12 sm:pt-8 sm:pb-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+      <section className="relative min-h-[calc(100vh-5rem)] flex flex-col justify-center py-8 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
         
         {/* Ambient Animated Background Blobs */}
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-500/15 dark:bg-purple-600/30 rounded-full blur-3xl pointer-events-none animate-pulse-glow"></div>
         <div className="absolute bottom-10 right-10 w-96 h-96 bg-pink-500/15 dark:bg-pink-600/25 rounded-full blur-3xl pointer-events-none animate-pulse-glow"></div>
+
+
+
+
+        <div
+  className="absolute inset-0 pointer-events-none opacity-20"
+  style={{
+    backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(168,85,247,0.7) 1px, transparent 0)',
+    backgroundSize: '28px 28px',
+    maskImage: 'radial-gradient(ellipse at center, black 30%, transparent 75%)',
+    WebkitMaskImage: 'radial-gradient(ellipse at center, black 30%, transparent 75%)'
+  }}
+></div>
+
+
 
         {/* Hero Badge below Navbar */}
         <div className="flex justify-center lg:justify-start mb-6">
@@ -256,7 +271,7 @@ export default function LandingSection({ onNavigate, onOpenAuth, theme }) {
             </div>
 
             {/* Testimonial line under Hero buttons */}
-            <div className="pt-2 flex items-center justify-center lg:justify-start gap-3">
+            <div className="inline-flex items-center gap-3 px-4 py-3 rounded-2xl bg-white/70 dark:bg-white/5 border border-purple-200 dark:border-purple-500/30 backdrop-blur-md shadow-lg">
               <div className="flex items-center -space-x-2">
                 <img 
                   src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=120" 
@@ -295,24 +310,7 @@ export default function LandingSection({ onNavigate, onOpenAuth, theme }) {
           {/* Right Column: Floating Skill Badges + INCOME CARD (Sample Preview) */}
           <div className="lg:col-span-6 relative">
             
-            {/* Subtle Floating Glassmorphism Skill Cards */}
-            <div className="hidden sm:block">
-              {floatingSkills.map((sk, idx) => {
-                const IconComp = sk.icon;
-                return (
-                  <div 
-                    key={idx}
-                    className={`absolute ${sk.pos} z-20 glass-card px-3.5 py-2 rounded-2xl border border-purple-300 dark:border-purple-500/40 shadow-xl backdrop-blur-md flex items-center gap-2 text-xs font-bold text-slate-900 dark:text-white animate-float`}
-                    style={{ animationDelay: `${idx * 0.8}s` }}
-                  >
-                    <div className={`w-6 h-6 rounded-lg bg-gradient-to-tr ${sk.color} text-white flex items-center justify-center`}>
-                      <IconComp className="w-3.5 h-3.5" />
-                    </div>
-                    <span>{sk.title}</span>
-                  </div>
-                );
-              })}
-            </div>
+            <div className="absolute -inset-3 bg-gradient-to-tr from-purple-600/30 via-pink-500/20 to-amber-500/20 blur-2xl rounded-[2rem] -z-10 pointer-events-none"></div>
 
             {/* INCOME CARD (Sample Preview) */}
             <div className="bg-white/95 dark:bg-slate-900/90 border border-purple-200 dark:border-purple-500/40 rounded-3xl p-5 sm:p-6 relative overflow-hidden shadow-2xl space-y-4 backdrop-blur-xl text-slate-900 dark:text-white">
