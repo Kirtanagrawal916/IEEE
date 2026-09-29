@@ -9,15 +9,10 @@ import {
   MoreVertical, 
   Sun, 
   Moon, 
-  LogIn, 
   UserPlus, 
   LogOut,
-  ChevronDown,
-  Globe,
-  Check,
   Info,
-  Scale,
-  FileText
+  Scale
 } from 'lucide-react';
 
 export default function Navbar({ 
@@ -32,25 +27,13 @@ export default function Navbar({
   onOpenTerms
 }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [lang, setLang] = useState('en');
-  const [isLangOpen, setIsLangOpen] = useState(false);
 
   const menuRef = useRef(null);
-  const langRef = useRef(null);
-
-  const languages = [
-    { code: 'en', label: 'English' },
-    { code: 'hi', label: 'हिंदी' },
-    { code: 'gu', label: 'ગુજરાતી' }
-  ];
 
   useEffect(() => {
     function handleClickOutside(event) {
       if (menuRef.current && !menuRef.current.contains(event.target)) {
         setIsMenuOpen(false);
-      }
-      if (langRef.current && !langRef.current.contains(event.target)) {
-        setIsLangOpen(false);
       }
     }
     document.addEventListener('mousedown', handleClickOutside);
@@ -161,43 +144,8 @@ export default function Navbar({
             )}
           </div>
 
-          {/* Right Section: Language Toggle, Theme Toggle, Login/Sign Up, & Mobile Menu */}
+          {/* Right Section: Theme Toggle, Login/Sign Up, & Mobile Menu */}
           <div className="flex items-center gap-2 sm:gap-3">
-            
-            {/* Language Select Dropdown */}
-            <div className="relative" ref={langRef}>
-              <button
-                type="button"
-                onClick={() => setIsLangOpen(!isLangOpen)}
-                className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-900/80 border border-purple-500/20 text-xs font-bold text-slate-200 hover:text-white hover:border-purple-500/40 transition-all cursor-pointer"
-                title="Select Language"
-              >
-                <Globe className="w-4 h-4 text-purple-400" />
-                <span>{languages.find(l => l.code === lang)?.label}</span>
-                <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
-              </button>
-
-              {isLangOpen && (
-                <div className="absolute right-0 mt-2 w-36 rounded-xl bg-slate-950 border border-purple-500/40 shadow-2xl p-1.5 z-50 text-white animate-fade-in text-xs">
-                  {languages.map((l) => (
-                    <button
-                      key={l.code}
-                      type="button"
-                      onClick={() => {
-                        setLang(l.code);
-                        setIsLangOpen(false);
-                      }}
-                      className={`w-full text-left px-3 py-2 rounded-lg font-semibold flex items-center justify-between transition-colors ${
-                        lang === l.code ? 'bg-purple-600 text-white' : 'hover:bg-purple-900/40 text-slate-300'
-                      }`}
-                    >
-                      <span>{l.label}</span>
-                      {lang === l.code && <Check className="w-3.5 h-3.5 text-white" />}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
 
             {/* Light / Dark Mode Switch */}
             <button
@@ -241,7 +189,11 @@ export default function Navbar({
                 <button
                   type="button"
                   onClick={() => onOpenAuth('login')}
-                  className="px-3.5 py-2 rounded-xl text-xs font-bold border border-purple-500/30 hover:border-pink-500 transition-all text-white cursor-pointer"
+                  className={`px-3.5 py-2 rounded-xl text-xs font-bold border transition-all text-white cursor-pointer ${
+                    activeTab === 'login'
+                      ? 'bg-purple-600 border-purple-500 shadow-md ring-2 ring-purple-400'
+                      : 'border-purple-500/30 hover:border-pink-500'
+                  }`}
                 >
                   Login
                 </button>
@@ -249,7 +201,11 @@ export default function Navbar({
                 <button
                   type="button"
                   onClick={() => onOpenAuth('signup')}
-                  className="btn-gradient-award text-xs py-2 px-3.5 shadow-md flex items-center gap-1.5 cursor-pointer"
+                  className={`text-xs py-2 px-3.5 shadow-md flex items-center gap-1.5 cursor-pointer rounded-xl transition-all ${
+                    activeTab === 'signup'
+                      ? 'bg-gradient-to-r from-pink-600 to-purple-600 text-white font-bold ring-2 ring-pink-400'
+                      : 'btn-gradient-award'
+                  }`}
                 >
                   <UserPlus className="w-3.5 h-3.5" />
                   <span className="hidden sm:inline">Sign Up</span>
