@@ -125,6 +125,14 @@ export default function App() {
     showToast("Signed Out", "You have successfully logged out.");
   };
 
+  // Continue as Guest Handler
+  const handleContinueAsGuest = () => {
+    saveUserData(null);
+    setActiveTab('profile');
+    setIsAuthOpen(false);
+    showToast("Guest Mode Active 👤", "Exploring HerEarn in Guest Mode.");
+  };
+
   // Profile Update Handler with API integration
   const handleUpdateProfile = async (profileData) => {
     try {
@@ -303,6 +311,7 @@ export default function App() {
         user={user}
         onOpenAuth={handleOpenAuth}
         onLogout={handleLogout}
+        onContinueAsGuest={handleContinueAsGuest}
         theme={theme}
         onToggleTheme={handleToggleTheme}
         onOpenAbout={() => {
@@ -392,6 +401,7 @@ export default function App() {
         {activeTab === 'login' && (
           <LoginPage 
             onLoginSuccess={handleLoginSuccess}
+            onContinueAsGuest={handleContinueAsGuest}
             onNavigateToSignup={() => {
               setActiveTab('signup');
               window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -407,6 +417,7 @@ export default function App() {
         {activeTab === 'signup' && (
           <SignupPage 
             onLoginSuccess={handleLoginSuccess}
+            onContinueAsGuest={handleContinueAsGuest}
             onNavigateToLogin={() => {
               setActiveTab('login');
               window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -450,6 +461,7 @@ export default function App() {
         initialMode={authMode} 
         onClose={() => setIsAuthOpen(false)} 
         onLoginSuccess={handleLoginSuccess}
+        onContinueAsGuest={handleContinueAsGuest}
       />
 
       <SubmitProjectModal 
@@ -473,4 +485,4 @@ export default function App() {
 
     </div>
   );
-}
+}

@@ -1,23 +1,20 @@
 import React, { useState } from 'react';
 import { api } from '../services/api';
-import { 
-  Sparkles, 
-  Mail, 
-  Lock, 
-  Eye, 
-  EyeOff, 
-  ArrowRight, 
-  CheckCircle2, 
-  ShieldCheck, 
-  Globe,
-  Award,
-  Check,
+import {
+  Sparkles,
+  Mail,
+  Lock,
+  Eye,
+  EyeOff,
+  ArrowRight,
+  CheckCircle2,
   AlertCircle,
   Loader2,
-  LockKeyhole
+  Check,
+  Award,
 } from 'lucide-react';
 
-export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNavigateHome }) {
+export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNavigateHome, onContinueAsGuest }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -406,9 +403,7 @@ export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNaviga
                   </>
                 )}
               </button>
-
             </form>
-
             {/* DIVIDER: OR */}
             <div className="relative flex items-center justify-center my-3">
               <div className="border-t border-slate-800 w-full"></div>
@@ -450,29 +445,8 @@ export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNaviga
                 "Join HerEarn and start learning for free."
               </p>
             </div>
-
-            {/* TRUST & SECURITY SECTION */}
-            <div className="pt-3 flex flex-wrap items-center justify-center gap-4 text-[11px] text-slate-400 font-bold border-t border-slate-800/80">
-              <span className="flex items-center gap-1.5">
-                <LockKeyhole className="w-3.5 h-3.5 text-emerald-400" />
-                Secure Authentication
-              </span>
-              <span>•</span>
-              <span className="flex items-center gap-1.5">
-                <ShieldCheck className="w-3.5 h-3.5 text-purple-400" />
-                Password Encrypted
-              </span>
-              <span>•</span>
-              <span className="flex items-center gap-1.5">
-                <Globe className="w-3.5 h-3.5 text-pink-400" />
-                Privacy Protected
-              </span>
-            </div>
-
           </div>
-
         </div>
-
       </div>
 
       {/* ========================================================

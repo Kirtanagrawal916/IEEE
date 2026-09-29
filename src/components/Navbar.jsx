@@ -23,6 +23,7 @@ export default function Navbar({
   user, 
   onOpenAuth, 
   onLogout,
+  onContinueAsGuest,
   theme, 
   onToggleTheme,
   onOpenAbout,
@@ -191,6 +192,16 @@ export default function Navbar({
               <div className="flex items-center gap-2">
                 
                 {/* LOGIN BUTTON (HIGH CONTRAST & SPECIFICATION STYLED) */}
+                <button
+                  type="button"
+                  onClick={onContinueAsGuest}
+                  className="hidden md:flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:text-white bg-slate-900/80 border border-purple-500/30 hover:border-purple-400 transition-all cursor-pointer"
+                  title="Explore HerEarn as a Guest Learner"
+                >
+                  <User className="w-3.5 h-3.5 text-purple-400" />
+                  <span>Guest Mode</span>
+                </button>
+
                 <button
                   type="button"
                   onClick={() => onOpenAuth('login')}
