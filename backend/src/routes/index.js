@@ -1,11 +1,23 @@
 /**
  * Main API Router Aggregator
- * Mounts the system health endpoint and establishes standard mount paths
- * for feature route controllers implemented by team members.
+ * Mounts system health and all domain feature routers:
+ * /api/auth, /api/users, /api/tracks, /api/lessons, /api/enrollments,
+ * /api/progress, /api/portfolio, /api/opportunities, /api/applications, /api/dashboard
  */
 
 import { Router } from 'express';
 import prisma from '../config/db.js';
+
+import authRoutes from './auth.js';
+import userRoutes from './users.js';
+import trackRoutes from './tracks.js';
+import lessonRoutes from './lessons.js';
+import enrollmentRoutes from './enrollments.js';
+import progressRoutes from './progress.js';
+import portfolioRoutes from './portfolio.js';
+import opportunityRoutes from './opportunities.js';
+import applicationRoutes from './applications.js';
+import dashboardRoutes from './dashboard.js';
 
 const router = Router();
 
@@ -34,35 +46,16 @@ router.get('/health', async (req, res) => {
   });
 });
 
-/**
- * =========================================================================
- * TEAMMATE ROUTE MOUNTING POINTS (Sections 9, 20: BE-03 to BE-09)
- *
- * Import and mount the respective routers here once your teammate creates them:
- *
- * Example:
- * import authRoutes from './authRoutes.js';
- * import userRoutes from './userRoutes.js';
- * import trackRoutes from './trackRoutes.js';
- * import lessonRoutes from './lessonRoutes.js';
- * import enrollmentRoutes from './enrollmentRoutes.js';
- * import progressRoutes from './progressRoutes.js';
- * import portfolioRoutes from './portfolioRoutes.js';
- * import opportunityRoutes from './opportunityRoutes.js';
- * import applicationRoutes from './applicationRoutes.js';
- * import dashboardRoutes from './dashboardRoutes.js';
- *
- * router.use('/auth', authRoutes);
- * router.use('/users', userRoutes);
- * router.use('/tracks', trackRoutes);
- * router.use('/lessons', lessonRoutes);
- * router.use('/enrollments', enrollmentRoutes);
- * router.use('/progress', progressRoutes);
- * router.use('/portfolio', portfolioRoutes);
- * router.use('/opportunities', opportunityRoutes);
- * router.use('/applications', applicationRoutes);
- * router.use('/dashboard', dashboardRoutes);
- * =========================================================================
- */
+// Mount Feature Routers
+router.use('/auth', authRoutes);
+router.use('/users', userRoutes);
+router.use('/tracks', trackRoutes);
+router.use('/lessons', lessonRoutes);
+router.use('/enrollments', enrollmentRoutes);
+router.use('/progress', progressRoutes);
+router.use('/portfolio', portfolioRoutes);
+router.use('/opportunities', opportunityRoutes);
+router.use('/applications', applicationRoutes);
+router.use('/dashboard', dashboardRoutes);
 
 export default router;

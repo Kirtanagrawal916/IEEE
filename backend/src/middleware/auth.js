@@ -24,16 +24,28 @@ export const authenticateToken = async (req, res, next) => {
   }
 
   try {
-    const decoded = verifyToken(token);
+    const userId = decoded.id || decoded.userId;
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid token payload.',
+      });
+    }
 
-    // Optional database verification to ensure user still exists and has not been deactivated
+    // Database verification to ensure user exists and load profile fields
     const user = await prisma.user.findUnique({
-      where: { id: decoded.id },
+      where: { id: userId },
       select: {
         id: true,
         name: true,
         email: true,
         role: true,
+        avatar: true,
+        phone: true,
+        location: true,
+        bio: true,
+        skills: true,
+        totalEarned: true,
       },
     });
 
