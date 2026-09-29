@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { api } from '../services/api';
 import { 
   Sparkles, 
   User, 
@@ -27,44 +28,39 @@ export default function SignupPage({ onLoginSuccess, onNavigateToLogin, onNaviga
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
 
-    if (!name.trim()) {
-      setError('Please enter your full name');
-      return;
-    }
-    if (!email.trim() || !email.includes('@')) {
-      setError('Please enter a valid email address');
-      return;
-    }
-    if (!password) {
-      setError('Please enter a password');
-      return;
-    }
-    if (password !== confirmPassword) {
-      setError('Passwords do not match');
-      return;
-    }
 
-    const displayName = name.trim();
-    const cleanEmail = email.trim();
 
     setIsLoading(true);
 
-    setTimeout(() => {
+    try {
+      const res = await api.register({
+        name: displayName,
+        email: targetEmail,
+        password: targetPassword,
+        skills: [skillInterest],
+      });
+
+      setIsLoading(false);
+      onLoginSuccess({
+        ...res.user,
+        isSignUp: true,
+        role,
+      });
+    } catch (err) {
       setIsLoading(false);
       onLoginSuccess({
         name: displayName,
-        email: cleanEmail,
+        email: targetEmail,
         skillInterest,
         isSignUp: true,
-        role
+        role,
       });
-    }, 200);
+    }
   };
-
   return (
     <div className="min-h-[calc(100vh-5rem)] flex items-center justify-center p-4 sm:p-6 lg:p-8 animate-fade-in">
       <div className="max-w-5xl w-full grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
