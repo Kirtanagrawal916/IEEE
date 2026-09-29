@@ -9,12 +9,8 @@ import {
   ArrowRight, 
   CheckCircle2, 
   ShieldCheck, 
-  Zap,
   Globe,
   Award,
-  BookOpen,
-  Briefcase,
-  Users,
   Check,
   AlertCircle,
   Loader2,
@@ -29,6 +25,16 @@ export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNaviga
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [forgotSent, setForgotSent] = useState(false);
+
+  // Google Email OTP Modal States
+  const [showGoogleModal, setShowGoogleModal] = useState(false);
+  const [googleEmail, setGoogleEmail] = useState('');
+  const [googleOtp, setGoogleOtp] = useState('');
+  const [otpSent, setOtpSent] = useState(false);
+  const [receivedOtp, setReceivedOtp] = useState('');
+  const [googleLoading, setGoogleLoading] = useState(false);
+  const [googleError, setGoogleError] = useState('');
+  const [googleSuccessMsg, setGoogleSuccessMsg] = useState('');
 
   // Form Submission
   const handleSubmit = async (e) => {
@@ -82,51 +88,71 @@ export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNaviga
     }
   };
 
-  // Google Sign In Handler
-  const handleGoogleSignIn = async () => {
-    setIsLoading(true);
-    setError('');
-    try {
-      // Simulate Google OAuth response & authenticating via backend
-      const demoEmail = 'ananya@herearn.org';
-      const res = await api.login({ email: demoEmail, password: 'password123' }).catch(() => null);
-      setIsLoading(false);
+  // Open Google OTP Verification Modal
+  const handleOpenGoogleModal = () => {
+    setShowGoogleModal(true);
+    setGoogleEmail('');
+    setGoogleOtp('');
+    setOtpSent(false);
+    setReceivedOtp('');
+    setGoogleError('');
+    setGoogleSuccessMsg('');
+  };
 
-      if (res && res.user) {
-        onLoginSuccess({ ...res.user, isSignUp: false });
-      } else {
-        onLoginSuccess({
-          name: 'Ananya Sharma (Google)',
-          email: demoEmail,
-          skillInterest: 'Digital Marketing & Social Media',
-          isSignUp: false,
-        });
+  // Step 1: Send OTP to Google Email
+  const handleSendOtp = async (e) => {
+    if (e) e.preventDefault();
+    setGoogleError('');
+    setGoogleSuccessMsg('');
+
+    const cleanEmail = googleEmail.trim();
+    if (!cleanEmail || !cleanEmail.includes('@') || !cleanEmail.includes('.')) {
+      setGoogleError('Please enter a valid Google email address.');
+      return;
+    }
+
+    setGoogleLoading(true);
+    try {
+      const res = await api.sendOtp(cleanEmail);
+      setGoogleLoading(false);
+      setOtpSent(true);
+      if (res.otp) {
+        setReceivedOtp(res.otp);
       }
+      setGoogleSuccessMsg(`Verification code sent to ${cleanEmail}. Enter the 6-digit OTP to verify.`);
     } catch (err) {
-      setIsLoading(false);
-      setError('Server Error: Google Authentication process could not be completed.');
+      setGoogleLoading(false);
+      setGoogleError(err.message || 'Failed to send OTP code to email. Please check connection.');
     }
   };
 
-  // Quick Demo Login Shortcut
-  const handleQuickDemoLogin = async () => {
-    setIsLoading(true);
-    setError('');
+  // Step 2: Verify OTP & Connect to Database for Profile Linkage/Creation
+  const handleVerifyOtp = async (e) => {
+    if (e) e.preventDefault();
+    setGoogleError('');
+    setGoogleSuccessMsg('');
+
+    const cleanOtp = googleOtp.trim();
+    if (!cleanOtp || cleanOtp.length !== 6) {
+      setGoogleError('Please enter the 6-digit OTP code sent to your email.');
+      return;
+    }
+
+    setGoogleLoading(true);
     try {
-      const res = await api.login({ email: 'ananya@herearn.org', password: 'password123' });
-      setIsLoading(false);
+      const res = await api.verifyOtp({ email: googleEmail.trim(), otp: cleanOtp });
+      setGoogleLoading(false);
+      if (res.token) {
+        localStorage.setItem('herearn_jwt_token', res.token);
+      }
+      setShowGoogleModal(false);
       onLoginSuccess({
         ...res.user,
         isSignUp: false,
       });
     } catch (err) {
-      setIsLoading(false);
-      onLoginSuccess({
-        name: 'Ananya Sharma',
-        email: 'ananya@herearn.org',
-        skillInterest: 'Digital Marketing & Social Media',
-        isSignUp: false,
-      });
+      setGoogleLoading(false);
+      setGoogleError(err.message || 'Invalid OTP code. Verification failed. Profile was NOT created.');
     }
   };
 
@@ -149,7 +175,7 @@ export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNaviga
   ];
 
   return (
-    <div className="min-h-[calc(100vh-5rem)] flex items-center justify-center p-4 sm:p-6 lg:p-10 animate-fade-in relative overflow-hidden">
+    <div className="min-h-[calc(100vh-5rem)] flex items-center justify-center p-4 sm:p-6 lg:p-10 animate-fade-in relative overflow-hidden bg-[#0B0F19]">
       
       {/* Background Animated Floating Ambient Shapes */}
       <div className="absolute top-10 left-10 w-96 h-96 bg-purple-600/15 rounded-full blur-3xl pointer-events-none animate-pulse"></div>
@@ -256,138 +282,107 @@ export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNaviga
         </div>
 
         {/* ========================================================
-            RIGHT SIDE: LOGIN FORM CARD SECTION
+            RIGHT SIDE: LOGIN FORM CARD SECTION (MATCHING SCREENSHOT)
            ======================================================== */}
         <div className="lg:col-span-6 flex flex-col justify-center">
           
-          <div className="bg-white/95 dark:bg-slate-900/95 rounded-3xl p-7 sm:p-10 border border-purple-200 dark:border-purple-500/30 shadow-2xl space-y-6 text-slate-900 dark:text-white backdrop-blur-xl relative">
+          <div className="bg-[#0B0F19] dark:bg-slate-900/95 rounded-3xl p-7 sm:p-10 border border-purple-500/30 shadow-2xl space-y-6 text-white backdrop-blur-xl relative">
             
-            {/* Form Headline & Subheading */}
-            <div className="space-y-1.5">
-              <div className="flex items-center justify-between">
-                <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+            {/* Form Headline & Free Upskilling Badge */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between gap-3">
+                <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
                   Account Login
                 </h2>
-                <span className="text-xs font-bold text-purple-600 dark:text-purple-400 bg-purple-100 dark:bg-purple-500/20 px-3 py-1 rounded-full border border-purple-200 dark:border-purple-500/30">
-                  HerEarn SaaS
+                <span className="text-xs font-bold text-purple-200 bg-purple-900/40 border border-purple-500/40 px-3 py-1 rounded-full flex items-center gap-1.5 flex-shrink-0">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                  Free Upskilling Platform
                 </span>
               </div>
-              <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 font-medium">
+              <p className="text-xs sm:text-sm text-slate-300 font-medium">
                 Sign in to continue your learning and earning journey.
               </p>
             </div>
 
             {/* Alert Message Box */}
             {error && (
-              <div className="p-4 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-700 dark:text-rose-300 text-xs font-bold flex items-start gap-3 animate-shake">
-                <AlertCircle className="w-4 h-4 text-rose-500 flex-shrink-0 mt-0.5" />
+              <div className="p-4 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs font-bold flex items-start gap-3 animate-shake">
+                <AlertCircle className="w-4 h-4 text-rose-400 flex-shrink-0 mt-0.5" />
                 <span className="leading-relaxed">{error}</span>
               </div>
             )}
 
             {forgotSent && (
-              <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-700 dark:text-emerald-300 text-xs font-bold flex items-center gap-3">
-                <CheckCircle2 className="w-4 h-4 text-emerald-500 flex-shrink-0" />
+              <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs font-bold flex items-center gap-3">
+                <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0" />
                 <span>Reset instructions sent! Check your email inbox.</span>
               </div>
             )}
 
             {/* ====================================
-                GOOGLE SIGN IN BUTTON (TOP PRIORITY)
-               ==================================== */}
-            <div className="space-y-4">
-              <button
-                type="button"
-                onClick={handleGoogleSignIn}
-                disabled={isLoading}
-                className="w-full py-3.5 px-4 rounded-2xl bg-white hover:bg-slate-50 text-slate-700 font-extrabold text-xs sm:text-sm border border-slate-300 shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-3 cursor-pointer group disabled:opacity-50"
-              >
-                {/* Official Google SVG Icon */}
-                <svg className="w-5 h-5 group-hover:scale-110 transition-transform" viewBox="0 0 24 24">
-                  <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                  <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                  <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
-                  <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
-                </svg>
-                <span>Continue with Google</span>
-              </button>
-
-              {/* Divider: OR */}
-              <div className="relative flex items-center justify-center my-2">
-                <div className="border-t border-slate-200 dark:border-slate-800 w-full"></div>
-                <span className="bg-white dark:bg-slate-900 px-3 text-[11px] font-extrabold text-slate-400 uppercase tracking-widest absolute">
-                  OR
-                </span>
-              </div>
-            </div>
-
-            {/* ====================================
                 MAIN LOGIN FORM
                ==================================== */}
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-5">
               
-              {/* Email Address Field */}
-              <div className="space-y-1.5">
-                <label className="text-xs font-extrabold text-slate-800 dark:text-slate-200 block uppercase tracking-wider">
-                  Email Address
+              {/* EMAIL ADDRESS */}
+              <div className="space-y-2">
+                <label className="text-xs font-extrabold text-slate-200 block uppercase tracking-wider">
+                  EMAIL ADDRESS
                 </label>
                 <div className="relative">
-                  <Mail className="w-4 h-4 text-purple-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                  <Mail className="w-4 h-4 text-purple-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                   <input
                     type="email"
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    onChange={(e) => {
+                      setEmail(e.target.value);
+                      if (error) setError('');
+                    }}
                     placeholder="name@domain.com"
-                    className="w-full pl-10 pr-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-purple-500/30 rounded-2xl text-xs sm:text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-purple-500 text-slate-900 dark:text-white placeholder:text-slate-400 transition-all"
+                    className="w-full pl-10 pr-4 py-3.5 bg-slate-950 border border-purple-500/30 rounded-2xl text-xs sm:text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-purple-500 text-white placeholder:text-slate-500 transition-all"
                     required
                   />
                 </div>
               </div>
 
-              {/* Password Field */}
-              <div className="space-y-1.5">
-                <div className="flex items-center justify-between">
-                  <label className="text-xs font-extrabold text-slate-800 dark:text-slate-200 block uppercase tracking-wider">
-                    Password
-                  </label>
-                  <button
-                    type="button"
-                    onClick={handleForgotPassword}
-                    className="text-xs font-extrabold text-purple-600 dark:text-purple-400 hover:text-pink-500 transition-colors cursor-pointer"
-                  >
-                    Forgot Password?
-                  </button>
-                </div>
+              {/* PASSWORD */}
+              <div className="space-y-2">
+                <label className="text-xs font-extrabold text-slate-200 block uppercase tracking-wider">
+                  PASSWORD
+                </label>
                 <div className="relative">
-                  <Lock className="w-4 h-4 text-purple-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                  <Lock className="w-4 h-4 text-purple-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                   <input
                     type={showPassword ? 'text' : 'password'}
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    onChange={(e) => {
+                      setPassword(e.target.value);
+                      if (error) setError('');
+                    }}
                     placeholder="••••••••••••"
-                    className="w-full pl-10 pr-10 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-purple-500/30 rounded-2xl text-xs sm:text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-purple-500 text-slate-900 dark:text-white placeholder:text-slate-400 transition-all"
+                    className="w-full pl-10 pr-10 py-3.5 bg-slate-950 border border-purple-500/30 rounded-2xl text-xs sm:text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-purple-500 text-white placeholder:text-slate-500 transition-all"
                     required
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-purple-500 transition-colors cursor-pointer"
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-purple-400 transition-colors cursor-pointer"
                   >
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
                 </div>
               </div>
 
-              {/* Controls: Remember Me */}
+              {/* REMEMBER ME ON THIS DEVICE */}
               <div className="flex items-center justify-between pt-1">
-                <label className="flex items-center gap-2 cursor-pointer">
+                <label className="flex items-center gap-2.5 cursor-pointer">
                   <input
                     type="checkbox"
                     checked={rememberMe}
                     onChange={(e) => setRememberMe(e.target.checked)}
-                    className="w-4 h-4 rounded border-slate-300 text-purple-600 focus:ring-purple-500 accent-purple-600 cursor-pointer"
+                    className="w-4 h-4 rounded border-slate-600 text-purple-600 focus:ring-purple-500 accent-purple-600 cursor-pointer"
                   />
-                  <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                  <span className="text-xs font-extrabold text-slate-200">
                     Remember Me on this device
                   </span>
                 </label>
@@ -397,7 +392,7 @@ export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNaviga
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-purple-600 via-indigo-600 to-pink-600 hover:from-purple-500 hover:via-indigo-500 hover:to-pink-500 text-white font-extrabold text-sm sm:text-base shadow-xl hover:shadow-2xl transition-all duration-300 flex items-center justify-center gap-2.5 cursor-pointer disabled:opacity-50"
+                className="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-purple-600 via-indigo-600 to-pink-600 hover:from-purple-500 hover:via-indigo-500 hover:to-pink-500 text-white font-extrabold text-sm sm:text-base shadow-xl hover:shadow-2xl transition-all duration-300 flex items-center justify-center gap-2.5 cursor-pointer disabled:opacity-50 mt-3"
               >
                 {isLoading ? (
                   <>
@@ -414,49 +409,62 @@ export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNaviga
 
             </form>
 
-            {/* Quick Demo Sign In Shortcut */}
-            <div className="pt-2 text-center">
-              <button
-                type="button"
-                onClick={handleQuickDemoLogin}
-                className="w-full py-2.5 px-3 rounded-xl bg-purple-50 dark:bg-purple-950/40 hover:bg-purple-100 dark:hover:bg-purple-900/60 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-500/30 text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer"
-              >
-                <Zap className="w-3.5 h-3.5 text-amber-500" />
-                <span>One-Click Demo Sign In (Ananya Sharma)</span>
-              </button>
+            {/* DIVIDER: OR */}
+            <div className="relative flex items-center justify-center my-3">
+              <div className="border-t border-slate-800 w-full"></div>
+              <span className="bg-[#0B0F19] dark:bg-slate-900 px-3 text-[10px] font-extrabold text-slate-400 uppercase tracking-widest absolute">
+                OR
+              </span>
             </div>
 
-            {/* Bottom Signup Prompt */}
-            <div className="pt-4 border-t border-slate-200 dark:border-slate-800 text-center space-y-1">
-              <p className="text-xs text-slate-600 dark:text-slate-400 font-semibold">
+            {/* GOOGLE LOGIN BUTTON (WHITE BUTTON WITH LOGO) */}
+            <button
+              type="button"
+              onClick={handleOpenGoogleModal}
+              disabled={isLoading}
+              className="w-full py-3.5 px-4 rounded-2xl bg-white hover:bg-slate-100 text-slate-900 font-extrabold text-xs sm:text-sm border border-slate-200 shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-3 cursor-pointer group disabled:opacity-50"
+            >
+              {/* Official Google SVG Icon */}
+              <svg className="w-5 h-5 group-hover:scale-110 transition-transform" viewBox="0 0 24 24">
+                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+              </svg>
+              <span>Continue with Google</span>
+            </button>
+
+            {/* CREATE ACCOUNT LINK */}
+            <div className="pt-3 border-t border-slate-800/80 text-center space-y-1">
+              <p className="text-xs text-slate-300 font-semibold">
                 Don't have an account?{' '}
                 <button
                   type="button"
                   onClick={onNavigateToSignup}
-                  className="font-extrabold text-pink-600 dark:text-pink-400 hover:underline cursor-pointer ml-1"
+                  className="font-extrabold text-pink-400 hover:underline cursor-pointer ml-1"
                 >
                   Create Free Account →
                 </button>
               </p>
-              <p className="text-[11px] text-slate-400 dark:text-slate-500 font-medium">
+              <p className="text-[11px] text-slate-400 font-medium">
                 "Join HerEarn and start learning for free."
               </p>
             </div>
 
             {/* TRUST & SECURITY SECTION */}
-            <div className="pt-3 flex flex-wrap items-center justify-center gap-4 text-[11px] text-slate-500 dark:text-slate-400 font-bold border-t border-slate-100 dark:border-slate-900">
-              <span className="flex items-center gap-1">
-                <LockKeyhole className="w-3 h-3 text-emerald-500" />
+            <div className="pt-3 flex flex-wrap items-center justify-center gap-4 text-[11px] text-slate-400 font-bold border-t border-slate-800/80">
+              <span className="flex items-center gap-1.5">
+                <LockKeyhole className="w-3.5 h-3.5 text-emerald-400" />
                 Secure Authentication
               </span>
               <span>•</span>
-              <span className="flex items-center gap-1">
-                <ShieldCheck className="w-3 h-3 text-purple-500" />
+              <span className="flex items-center gap-1.5">
+                <ShieldCheck className="w-3.5 h-3.5 text-purple-400" />
                 Password Encrypted
               </span>
               <span>•</span>
-              <span className="flex items-center gap-1">
-                <Globe className="w-3 h-3 text-pink-500" />
+              <span className="flex items-center gap-1.5">
+                <Globe className="w-3.5 h-3.5 text-pink-400" />
                 Privacy Protected
               </span>
             </div>
@@ -466,6 +474,164 @@ export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNaviga
         </div>
 
       </div>
+
+      {/* ========================================================
+          GOOGLE EMAIL OTP AUTHENTICATION & VERIFICATION MODAL
+         ======================================================== */}
+      {showGoogleModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-fade-in">
+          <div className="bg-slate-900 border border-purple-500/30 rounded-3xl p-6 sm:p-8 max-w-md w-full text-white shadow-2xl relative space-y-6">
+            
+            {/* Close Modal Button */}
+            <button
+              type="button"
+              onClick={() => setShowGoogleModal(false)}
+              className="absolute top-4 right-4 w-8 h-8 rounded-full bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center transition-colors cursor-pointer"
+            >
+              ✕
+            </button>
+
+            {/* Header */}
+            <div className="space-y-2 text-center">
+              <div className="w-12 h-12 rounded-2xl bg-white flex items-center justify-center mx-auto shadow-lg">
+                <svg className="w-6 h-6" viewBox="0 0 24 24">
+                  <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                  <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                  <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+                  <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+                </svg>
+              </div>
+              <h3 className="text-xl font-extrabold text-white">Continue with Google</h3>
+              <p className="text-xs text-slate-300 font-medium">
+                Enter your Google email address. We will verify your email with an OTP before creating or linking your HerEarn database profile.
+              </p>
+            </div>
+
+            {/* Alert Messages */}
+            {googleError && (
+              <div className="p-3.5 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs font-bold flex items-start gap-2.5">
+                <AlertCircle className="w-4 h-4 text-rose-400 flex-shrink-0 mt-0.5" />
+                <span>{googleError}</span>
+              </div>
+            )}
+
+            {googleSuccessMsg && (
+              <div className="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs font-bold flex items-start gap-2.5">
+                <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" />
+                <span>{googleSuccessMsg}</span>
+              </div>
+            )}
+
+            {/* STEP 1: Enter Email & Send OTP */}
+            {!otpSent ? (
+              <form onSubmit={handleSendOtp} className="space-y-4">
+                <div className="space-y-1.5 text-left">
+                  <label className="text-xs font-extrabold text-slate-300 block uppercase tracking-wider">
+                    Google Email Address
+                  </label>
+                  <div className="relative">
+                    <Mail className="w-4 h-4 text-purple-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                    <input
+                      type="email"
+                      value={googleEmail}
+                      onChange={(e) => setGoogleEmail(e.target.value)}
+                      placeholder="your.email@gmail.com"
+                      className="w-full pl-10 pr-4 py-3 bg-slate-950 border border-purple-500/30 rounded-2xl text-xs sm:text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-purple-500 text-white placeholder:text-slate-500"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={googleLoading}
+                  className="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-purple-600 via-indigo-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-extrabold text-xs sm:text-sm shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                >
+                  {googleLoading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span>Sending OTP...</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>Send Verification OTP</span>
+                      <ArrowRight className="w-4 h-4" />
+                    </>
+                  )}
+                </button>
+              </form>
+            ) : (
+              /* STEP 2: Enter OTP Code & Verify */
+              <form onSubmit={handleVerifyOtp} className="space-y-4">
+                
+                {/* OTP Code Tester Helper Banner */}
+                {receivedOtp && (
+                  <div className="p-3 rounded-xl bg-purple-500/20 border border-purple-400/30 text-purple-200 text-xs font-extrabold flex items-center justify-between">
+                    <span>Verification OTP Code:</span>
+                    <span className="bg-purple-600 text-white font-mono px-2.5 py-1 rounded-lg tracking-widest text-sm font-black">
+                      {receivedOtp}
+                    </span>
+                  </div>
+                )}
+
+                <div className="space-y-1.5 text-left">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-extrabold text-slate-300 block uppercase tracking-wider">
+                      6-Digit OTP Code
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setOtpSent(false);
+                        setGoogleError('');
+                      }}
+                      className="text-[11px] font-bold text-purple-400 hover:underline cursor-pointer"
+                    >
+                      Change Email
+                    </button>
+                  </div>
+                  <div className="relative">
+                    <Lock className="w-4 h-4 text-purple-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                    <input
+                      type="text"
+                      maxLength={6}
+                      value={googleOtp}
+                      onChange={(e) => setGoogleOtp(e.target.value.replace(/\D/g, ''))}
+                      placeholder="123456"
+                      className="w-full pl-10 pr-4 py-3 bg-slate-950 border border-purple-500/30 rounded-2xl text-base font-mono tracking-widest font-extrabold focus:outline-none focus:ring-2 focus:ring-purple-500 text-white placeholder:text-slate-600 text-center"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={googleLoading}
+                  className="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-emerald-600 to-purple-600 hover:from-emerald-500 hover:to-purple-500 text-white font-extrabold text-xs sm:text-sm shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                >
+                  {googleLoading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span>Verifying OTP & Database...</span>
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle2 className="w-4 h-4 text-emerald-300" />
+                      <span>Verify OTP & Link Profile</span>
+                    </>
+                  )}
+                </button>
+              </form>
+            )}
+
+            {/* Security note */}
+            <p className="text-[10px] text-slate-400 font-medium text-center border-t border-slate-800 pt-3">
+              🔒 Database Secured • OTP verification ensures valid email ownership before profile creation.
+            </p>
+
+          </div>
+        </div>
+      )}
 
     </div>
   );
