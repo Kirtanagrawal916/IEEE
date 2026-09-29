@@ -50,19 +50,19 @@ export default function ProfileSection({
   const [isCertModalOpen, setIsCertModalOpen] = useState(false);
   const [selectedCertCourse, setSelectedCertCourse] = useState('Graphic Design with Canva');
 
-  // Active user data or default demo user
+  // Active user data or default guest user
   const currentUser = user || {
-    id: "u-demo",
-    name: "Ananya Sharma",
-    title: "Digital Marketing Specialist & Content Creator",
-    location: "Jaipur, Rajasthan",
-    bio: "Passionate about creating engaging social media campaigns, designing graphics, and helping local businesses scale online.",
-    avatar: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=300",
-    verified: true,
-    skills: ["Digital Marketing", "Canva Design", "Instagram Strategy", "Content Writing"],
-    earnings: 18500,
-    completedLessons: ["m1-l1", "m1-l2", "m1-l3"],
-    appliedGigIds: ["g1"]
+    id: "guest",
+    name: "Guest Learner",
+    title: "Explore Skills, Build Portfolio & Earn Income",
+    location: "India",
+    bio: "You are exploring in Guest Mode. Create an account or log in to customize your profile, complete skill tracks, publish portfolio projects, and apply for income opportunities.",
+    avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=300",
+    verified: false,
+    skills: ["Digital Marketing", "Graphic Design", "Canva", "E-Commerce"],
+    earnings: 0,
+    completedLessons: [],
+    appliedGigIds: []
   };
 
   // Edit profile local state
@@ -79,18 +79,21 @@ export default function ProfileSection({
       title: editTitle || 'Skill Learner',
       location: editLocation || 'India',
       bio: editBio || 'Learning skills & building portfolio on HerEarn.',
-      avatar: editAvatar || 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=300'
+      avatar: editAvatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=300'
     });
     setIsEditOpen(false);
   };
+
+  const completedCount = currentUser.completedLessons ? currentUser.completedLessons.length : 0;
+  const appliedCount = userAppliedGigs ? userAppliedGigs.length : 0;
 
   // --- TOP METRIC STATS DATA ---
   const statsCards = [
     {
       id: "stat-1",
-      title: "Total Courses Enrolled",
-      value: "4",
-      subtext: "2 Active • 2 Completed",
+      title: "Lessons Mastered",
+      value: `${completedCount}`,
+      subtext: completedCount > 0 ? `${completedCount} Lessons Completed` : "No lessons completed yet",
       icon: BookOpen,
       gradient: "from-purple-500/15 via-indigo-500/10 to-purple-600/20 dark:from-purple-600/30 dark:via-indigo-600/20 dark:to-purple-900/40",
       borderColor: "border-purple-300 dark:border-purple-500/40",
@@ -99,9 +102,9 @@ export default function ProfileSection({
     },
     {
       id: "stat-2",
-      title: "Courses Completed",
-      value: "2",
-      subtext: "Certificates Unlocked",
+      title: "Completed Tracks",
+      value: completedCount >= 3 ? "1" : "0",
+      subtext: completedCount >= 3 ? "Certificate Unlocked" : "In Progress",
       icon: CheckCircle2,
       gradient: "from-emerald-500/15 via-teal-500/10 to-emerald-600/20 dark:from-emerald-600/30 dark:via-teal-600/20 dark:to-emerald-900/40",
       borderColor: "border-emerald-300 dark:border-emerald-500/40",
@@ -110,9 +113,9 @@ export default function ProfileSection({
     },
     {
       id: "stat-3",
-      title: "Active Micro Gigs",
-      value: "3",
-      subtext: "2 In Progress • 1 Review",
+      title: "Applied Micro Gigs",
+      value: `${appliedCount}`,
+      subtext: appliedCount > 0 ? `${appliedCount} Active Applications` : "0 Gigs Applied",
       icon: Briefcase,
       gradient: "from-amber-500/15 via-orange-500/10 to-amber-600/20 dark:from-amber-600/30 dark:via-orange-600/20 dark:to-amber-900/40",
       borderColor: "border-amber-300 dark:border-amber-500/40",
@@ -121,9 +124,9 @@ export default function ProfileSection({
     },
     {
       id: "stat-4",
-      title: "Portfolio Views",
-      value: "1,240",
-      subtext: "+18% this week",
+      title: "Portfolio Projects",
+      value: `${userPortfolios.length}`,
+      subtext: userPortfolios.length > 0 ? `${userPortfolios.length} Published Proofs` : "No projects published",
       icon: Eye,
       gradient: "from-blue-500/15 via-cyan-500/10 to-blue-600/20 dark:from-blue-600/30 dark:via-cyan-600/20 dark:to-blue-900/40",
       borderColor: "border-blue-300 dark:border-blue-500/40",
@@ -133,8 +136,8 @@ export default function ProfileSection({
     {
       id: "stat-5",
       title: "Total Earnings",
-      value: `₹${(currentUser.earnings || 18500).toLocaleString()}`,
-      subtext: "+24.5% vs last month",
+      value: `₹${(currentUser.earnings || 0).toLocaleString()}`,
+      subtext: user ? "Verified Payout Balance" : "Login to view balance",
       icon: IndianRupee,
       gradient: "from-pink-500/15 via-rose-500/10 to-pink-600/20 dark:from-pink-600/30 dark:via-rose-600/20 dark:to-pink-900/40",
       borderColor: "border-pink-300 dark:border-pink-500/40",
@@ -382,8 +385,12 @@ export default function ProfileSection({
                 <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
                   {currentUser.name}
                 </h1>
-                <span className="bg-emerald-100 dark:bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 text-xs font-bold px-2.5 py-0.5 rounded-full border border-emerald-300 dark:border-emerald-500/40 flex items-center gap-1">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" /> Verified Learner
+                <span className={`text-xs font-bold px-2.5 py-0.5 rounded-full border flex items-center gap-1 ${
+                  user 
+                    ? 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 border-emerald-300 dark:border-emerald-500/40' 
+                    : 'bg-purple-100 dark:bg-purple-500/20 text-purple-800 dark:text-purple-300 border-purple-300 dark:border-purple-500/40'
+                }`}>
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" /> {user ? 'Verified Account' : 'Guest Mode'}
                 </span>
               </div>
 

@@ -168,17 +168,17 @@ export default function App() {
     const isNewSignUp = userData.isSignUp;
     const loggedInUser = {
       id: `u-${Date.now()}`,
-      name: userData.name || (isNewSignUp ? 'New Learner' : 'Ananya Sharma'),
-      email: userData.email || 'user@example.com',
-      title: `${userData.skillInterest || 'Digital Marketing'} Specialist`,
-      location: 'Jaipur, Rajasthan',
-      bio: 'Passionate about building digital skills and delivering quality micro-gigs.',
+      name: userData.name || 'Learner',
+      email: userData.email || 'user@herearn.org',
+      title: `${userData.skillInterest || 'Digital Skill'} Specialist`,
+      location: 'India',
+      bio: 'Passionate about building digital skills and delivering quality micro-gigs on HerEarn.',
       avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=300',
       verified: true,
-      skills: ["Digital Marketing", "Canva Design", "Instagram Ads"],
-      earnings: isNewSignUp ? 0 : 12500,
-      completedLessons: isNewSignUp ? [] : ["m1-l1", "m1-l2", "m1-l3"],
-      appliedGigIds: isNewSignUp ? [] : ["g1"]
+      skills: [userData.skillInterest || "Digital Marketing", "Canva Design", "Instagram Management"],
+      earnings: isNewSignUp ? 0 : 0,
+      completedLessons: [],
+      appliedGigIds: []
     };
 
     saveUserData(loggedInUser);
