@@ -11,6 +11,7 @@ import {
   Sun, 
   Moon, 
   UserPlus, 
+  LogIn,
   LogOut,
   Info,
   Scale
@@ -71,17 +72,17 @@ export default function Navbar({
         <div className="flex items-center justify-between h-20">
           
           {/* Logo */}
-<div
-  className="flex items-center cursor-pointer group"
-  onClick={() => setActiveTab('home')}
->
-  <img
-    src={logo}
-    alt="HerEarn - Skill to Income Platform"
-    className="h-16 w-auto group-hover:scale-105 transition-transform"
-    style={theme === 'dark' ? { filter: 'contrast(1.4) brightness(1.1)', mixBlendMode: 'screen' } : {}}
-  />
-</div>
+          <div
+            className="flex items-center cursor-pointer group"
+            onClick={() => setActiveTab('home')}
+          >
+            <img
+              src={logo}
+              alt="HerEarn - Skill to Income Platform"
+              className="h-16 w-auto group-hover:scale-105 transition-transform"
+              style={theme === 'dark' ? { filter: 'contrast(1.4) brightness(1.1)', mixBlendMode: 'screen' } : {}}
+            />
+          </div>
 
           {/* Clean Navigation: Home | Courses | Opportunities | Dashboard (If Logged In) */}
           <div className="hidden md:flex items-center gap-1.5 bg-white/90 dark:bg-slate-900/80 p-1.5 rounded-2xl border border-purple-200 dark:border-purple-500/30 backdrop-blur-md shadow-lg">
@@ -149,7 +150,12 @@ export default function Navbar({
               type="button"
               onClick={onToggleTheme}
               title={`Switch to ${theme === 'dark' ? 'Light' : 'Dark'} Mode`}
-              className="p-2.5 rounded-xl bg-purple-100/80 dark:bg-slate-900/80 border border-purple-300 dark:border-purple-500/20 text-purple-700 dark:text-amber-400 hover:scale-105 transition-all shadow-xs cursor-pointer"
+              aria-label={`Switch to ${theme === 'dark' ? 'Light' : 'Dark'} Mode`}
+              className={`p-2.5 rounded-xl border transition-all hover:scale-105 cursor-pointer focus:outline-none focus:ring-2 focus:ring-purple-400 ${
+                theme === 'dark'
+                  ? 'bg-slate-900/80 border-purple-500/30 text-amber-400'
+                  : 'bg-purple-50 border-purple-300 text-purple-700'
+              }`}
             >
               {theme === 'dark' ? (
                 <Sun className="w-4 h-4 text-amber-400" />
@@ -176,6 +182,7 @@ export default function Navbar({
                   type="button"
                   onClick={onLogout}
                   title="Sign Out"
+                  aria-label="Sign Out"
                   className="p-2 rounded-xl text-slate-500 dark:text-slate-400 hover:text-pink-600 dark:hover:text-pink-400 hover:bg-purple-100 dark:hover:bg-slate-800/50 transition-colors cursor-pointer"
                 >
                   <LogOut className="w-4 h-4" />
@@ -183,6 +190,8 @@ export default function Navbar({
               </div>
             ) : (
               <div className="flex items-center gap-2">
+                
+                {/* GUEST MODE BUTTON */}
                 <button
                   type="button"
                   onClick={onContinueAsGuest}
@@ -193,30 +202,40 @@ export default function Navbar({
                   <span>Guest Mode</span>
                 </button>
 
+                {/* LOGIN BUTTON (HIGH CONTRAST & SPECIFICATION STYLED) */}
                 <button
                   type="button"
                   onClick={() => onOpenAuth('login')}
-                  className={`px-3.5 py-2 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
-                    activeTab === 'login'
-                      ? 'bg-purple-600 border-purple-500 text-white shadow-md ring-2 ring-purple-400'
-                      : 'bg-white dark:bg-transparent text-purple-700 dark:text-white border-purple-300 dark:border-purple-500/30 hover:border-pink-500'
+                  aria-label="Login to your account"
+                  className={`px-3.5 py-2 rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#A855F7] ${
+                    theme === 'dark'
+                      ? activeTab === 'login'
+                        ? 'bg-purple-600 border-2 border-purple-400 text-white shadow-lg ring-2 ring-purple-400'
+                        : 'bg-slate-900/90 border-2 border-purple-500/80 text-purple-200 hover:bg-purple-950/80 hover:border-purple-400 hover:text-white hover:shadow-[0_0_15px_rgba(168,85,247,0.30)] active:bg-purple-900'
+                      : activeTab === 'login'
+                        ? 'bg-[#EDE9FE] border-2 border-[#9333EA] text-[#6D28D9] shadow-md ring-2 ring-[#A855F7]'
+                        : 'bg-[#FFFFFF] border-2 border-[#7C3AED] text-[#7C3AED] hover:bg-[#F5EEFF] hover:border-[#9333EA] hover:text-[#6D28D9] hover:shadow-[0_0_15px_rgba(124,58,237,0.20)] active:bg-[#EDE9FE]'
                   }`}
                 >
-                  Login
+                  <LogIn className="w-3.5 h-3.5 flex-shrink-0" />
+                  <span>Login</span>
                 </button>
 
+                {/* SIGN UP BUTTON (PRIMARY CTA GRADIENT) */}
                 <button
                   type="button"
                   onClick={() => onOpenAuth('signup')}
-                  className={`text-xs py-2 px-3.5 shadow-md flex items-center gap-1.5 cursor-pointer rounded-xl transition-all ${
+                  aria-label="Create free account"
+                  className={`px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-all shadow-md focus:outline-none focus:ring-2 focus:ring-pink-400 ${
                     activeTab === 'signup'
-                      ? 'bg-gradient-to-r from-pink-600 to-purple-600 text-white font-bold ring-2 ring-pink-400'
-                      : 'btn-gradient-award'
+                      ? 'bg-gradient-to-r from-pink-600 to-purple-600 text-white ring-2 ring-pink-400 shadow-lg'
+                      : 'bg-gradient-to-r from-purple-600 via-indigo-600 to-pink-600 hover:from-purple-500 hover:via-indigo-500 hover:to-pink-500 text-white hover:shadow-lg'
                   }`}
                 >
-                  <UserPlus className="w-3.5 h-3.5" />
+                  <UserPlus className="w-3.5 h-3.5 flex-shrink-0" />
                   <span className="hidden sm:inline">Sign Up</span>
                 </button>
+
               </div>
             )}
 
