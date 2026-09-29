@@ -1,0 +1,253 @@
+// HerEarn Database Schema - Prisma ORM Definition
+// PostgreSQL Database configuration per implementation plan (Sections 10, 11, 12, 21)
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// ----------------------------------------------------
+// ENUMS
+// ----------------------------------------------------
+
+enum Role {
+  LEARNER
+  EMPLOYER
+  ADMIN
+}
+
+enum CourseLevel {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+}
+
+enum GigType {
+  MICRO_GIG
+  REMOTE_INTERNSHIP
+  FREELANCE
+  FULL_TIME
+}
+
+enum ApplicationStatus {
+  SUBMITTED
+  UNDER_REVIEW
+  SHORTLISTED
+  ACCEPTED
+  REJECTED
+}
+
+enum TransactionStatus {
+  PENDING
+  COMPLETED
+  FAILED
+}
+
+// ----------------------------------------------------
+// MODELS
+// ----------------------------------------------------
+
+/// User entity for learners, employers, and admins
+model User {
+  id                  String               @id @default(uuid())
+  name                String
+  email               String               @unique
+  passwordHash        String
+  role                Role                 @default(LEARNER)
+  avatar              String?
+  phone               String?
+  location            String?
+  bio                 String?
+  skills              String[]             @default([])
+  totalEarned         Float                @default(0.0)
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+
+  enrollments         Enrollment[]
+  lessonProgress      LessonProgress[]
+  portfolios          PortfolioProject[]
+  postedOpportunities Opportunity[]        @relation("PostedOpportunities")
+  applications        Application[]
+  transactions        PaymentTransaction[]
+
+  @@map("users")
+  @@index([email])
+}
+
+/// Curated learning track (e.g., Digital Marketing, Web Development)
+model SkillTrack {
+  id          String       @id @default(uuid())
+  title       String
+  category    String
+  icon        String
+  duration    String
+  level       CourseLevel  @default(BEGINNER)
+  instructor  String
+  description String
+  image       String
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  lessons     Lesson[]
+  enrollments Enrollment[]
+
+  @@map("skill_tracks")
+  @@index([category])
+}
+
+/// Bite-sized video lesson belonging to a SkillTrack
+model Lesson {
+  id              String           @id @default(uuid())
+  trackId         String
+  track           SkillTrack       @relation(fields: [trackId], references: [id], onDelete: Cascade)
+  title           String
+  duration        String
+  videoUrl        String
+  summary         String
+  keyTakeaways    String[]         @default([])
+  orderIndex      Int              @default(0)
+
+  progressRecords LessonProgress[]
+
+  @@map("lessons")
+  @@index([trackId])
+}
+
+/// Course enrollment status for tracking learner progress
+model Enrollment {
+  id              String     @id @default(uuid())
+  userId          String
+  user            User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  trackId         String
+  track           SkillTrack @relation(fields: [trackId], references: [id], onDelete: Cascade)
+  progressPercent Float      @default(0.0)
+  isCompleted     Boolean    @default(false)
+  completedAt     DateTime?
+  lastAccessedAt  DateTime   @default(now())
+  createdAt       DateTime   @default(now())
+
+  @@unique([userId, trackId])
+  @@map("enrollments")
+  @@index([userId])
+  @@index([trackId])
+}
+
+/// Normalized lesson completion tracking per Section 11 of implementation plan
+model LessonProgress {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lessonId    String
+  lesson      Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  completedAt DateTime @default(now())
+
+  @@unique([userId, lessonId])
+  @@map("lesson_progress")
+  @@index([userId])
+  @@index([lessonId])
+}
+
+/// Learner showcase portfolio project
+model PortfolioProject {
+  id                  String               @id @default(uuid())
+  userId              String
+  user                User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title               String
+  category            String
+  description         String
+  imageUrl            String
+  projectUrl          String?
+  tags                String[]             @default([])
+  likesCount          Int                  @default(0)
+  verified            Boolean              @default(false)
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+
+  applicationProjects ApplicationProject[]
+
+  @@map("portfolio_projects")
+  @@index([userId])
+}
+
+/// Micro-gig or internship opportunity listing
+model Opportunity {
+  id              String        @id @default(uuid())
+  postedById      String
+  postedBy        User          @relation("PostedOpportunities", fields: [postedById], references: [id], onDelete: Cascade)
+  title           String
+  company         String
+  logo            String?
+  stipend         String
+  type            GigType       @default(MICRO_GIG)
+  category        String
+  skillsRequired  String[]      @default([])
+  duration        String
+  description     String
+  deliverables    String[]      @default([])
+  verifiedClient  Boolean       @default(true)
+  isOpen          Boolean       @default(true)
+  applicantsCount Int           @default(0)
+  deadline        DateTime
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  applications    Application[]
+
+  @@map("opportunities")
+  @@index([category])
+  @@index([postedById])
+}
+
+/// Opportunity application submitted by a learner
+model Application {
+  id               String               @id @default(uuid())
+  opportunityId    String
+  opportunity      Opportunity          @relation(fields: [opportunityId], references: [id], onDelete: Cascade)
+  userId           String
+  user             User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  coverNote        String
+  status           ApplicationStatus    @default(SUBMITTED)
+  appliedAt        DateTime             @default(now())
+
+  attachedProjects ApplicationProject[]
+
+  @@unique([opportunityId, userId])
+  @@map("applications")
+  @@index([userId])
+  @@index([opportunityId])
+}
+
+/// Junction table connecting applications to attached portfolio projects per Section 12
+model ApplicationProject {
+  id            String           @id @default(uuid())
+  applicationId String
+  application   Application      @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  projectId     String
+  project       PortfolioProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  createdAt     DateTime         @default(now())
+
+  @@unique([applicationId, projectId])
+  @@map("application_projects")
+  @@index([applicationId])
+  @@index([projectId])
+}
+
+/// Transaction record for mock earning payouts
+model PaymentTransaction {
+  id              String            @id @default(uuid())
+  userId          String
+  user            User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  opportunityId   String?
+  amount          Float
+  currency        String            @default("INR")
+  type            String            @default("GIG_PAYOUT")
+  status          TransactionStatus @default(COMPLETED)
+  transactionDate DateTime          @default(now())
+
+  @@map("payment_transactions")
+  @@index([userId])
+}
