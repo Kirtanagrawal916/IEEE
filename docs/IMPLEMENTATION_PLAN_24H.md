@@ -1300,7 +1300,7 @@ The same applies to courses, lessons and users.
 
 ---
 
-# 15. Frontend ↔️ Backend Integration
+# 15. Frontend ↔ Backend Integration
 
 Create a centralized API service.
 
@@ -2340,3 +2340,4 @@ Courses, lessons, users, portfolios, opportunities and applications should be pe
 
 Only genuinely static UI information should remain hardcoded.
 
+This keeps the prototype simple enough to finish quickly while giving HerEarn a proper architecture that can be extended after the demo.

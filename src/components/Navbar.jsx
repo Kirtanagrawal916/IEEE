@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import logo from '../assets/logo.jpg';
 import { 
   Sparkles, 
   Compass, 
@@ -70,22 +71,17 @@ export default function Navbar({
         <div className="flex items-center justify-between h-20">
           
           {/* Logo */}
-          <div 
-            className="flex items-center gap-3 cursor-pointer group"
-            onClick={() => setActiveTab('home')}
-          >
-            <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-purple-600 via-pink-600 to-amber-500 flex items-center justify-center text-white shadow-md group-hover:scale-105 transition-transform">
-              <Sparkles className="w-6 h-6 animate-pulse" />
-            </div>
-            <div>
-              <span className="text-xl font-extrabold tracking-tight bg-gradient-to-r from-purple-400 via-pink-400 to-amber-300 bg-clip-text text-transparent">
-                Her<span className="text-pink-400">Earn</span>
-              </span>
-              <p className="text-[11px] text-slate-200 dark:text-slate-200 font-bold tracking-wide opacity-95">
-                Skill to Income Platform
-              </p>
-            </div>
-          </div>
+<div
+  className="flex items-center cursor-pointer group"
+  onClick={() => setActiveTab('home')}
+>
+  <img
+    src={logo}
+    alt="HerEarn - Skill to Income Platform"
+    className="h-16 w-auto group-hover:scale-105 transition-transform"
+    style={theme === 'dark' ? { filter: 'contrast(1.4) brightness(1.1)', mixBlendMode: 'screen' } : {}}
+  />
+</div>
 
           {/* Clean Navigation: Home | Courses | Opportunities | Dashboard (If Logged In) */}
           <div className="hidden md:flex items-center gap-1.5 bg-slate-900/80 dark:bg-slate-900/80 light:bg-white/90 p-1.5 rounded-2xl border border-purple-500/30 backdrop-blur-md shadow-lg">

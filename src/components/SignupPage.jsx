@@ -32,7 +32,9 @@ export default function SignupPage({ onLoginSuccess, onNavigateToLogin, onNaviga
     e.preventDefault();
     setError('');
 
-
+    const displayName = name.trim() || 'Priya Patel';
+    const targetEmail = email.trim() || 'priya@herearn.org';
+    const targetPassword = password.trim() || 'password123';
 
     setIsLoading(true);
 
