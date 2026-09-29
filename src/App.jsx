@@ -189,6 +189,14 @@ export default function App() {
     showToast(isNewSignUp ? "Account Created! 🎉" : "Welcome Back! ✨", `Signed in as ${loggedInUser.name}`);
   };
 
+  // Continue as Guest Handler
+  const handleContinueAsGuest = () => {
+    saveUserData(null);
+    setActiveTab('profile');
+    setIsAuthOpen(false);
+    showToast("Guest Mode Active 👤", "Exploring HerEarn in Guest Mode.");
+  };
+
   const userPortfolios = portfolios.filter(p => p.authorName === (user?.name || "Guest Learner"));
   const userAppliedGigs = opportunities.filter(g => (user?.appliedGigIds || []).includes(g.id));
 
@@ -204,6 +212,7 @@ export default function App() {
         user={user}
         onOpenAuth={handleOpenAuth}
         onLogout={handleLogout}
+        onContinueAsGuest={handleContinueAsGuest}
         theme={theme}
         onToggleTheme={handleToggleTheme}
         onOpenAbout={() => setIsAboutOpen(true)}
@@ -260,6 +269,7 @@ export default function App() {
         {activeTab === 'login' && (
           <LoginPage 
             onLoginSuccess={handleLoginSuccess}
+            onContinueAsGuest={handleContinueAsGuest}
             onNavigateToSignup={() => {
               setActiveTab('signup');
               window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -271,6 +281,7 @@ export default function App() {
         {activeTab === 'signup' && (
           <SignupPage 
             onLoginSuccess={handleLoginSuccess}
+            onContinueAsGuest={handleContinueAsGuest}
             onNavigateToLogin={() => {
               setActiveTab('login');
               window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -313,6 +324,7 @@ export default function App() {
         initialMode={authMode} 
         onClose={() => setIsAuthOpen(false)} 
         onLoginSuccess={handleLoginSuccess}
+        onContinueAsGuest={handleContinueAsGuest}
       />
 
       <SubmitProjectModal 

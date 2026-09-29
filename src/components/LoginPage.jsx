@@ -11,10 +11,11 @@ import {
   UserCheck, 
   Zap,
   Globe,
-  Award
+  Award,
+  User
 } from 'lucide-react';
 
-export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNavigateHome }) {
+export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNavigateHome, onContinueAsGuest }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -264,8 +265,8 @@ export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNaviga
             </form>
           </div>
 
-          {/* Bottom Switch to Sign Up */}
-          <div className="text-center pt-6 border-t border-slate-200 dark:border-slate-800 mt-6">
+          {/* Bottom Switch to Sign Up & Guest Account Access */}
+          <div className="text-center pt-6 border-t border-slate-200 dark:border-slate-800 mt-6 space-y-4">
             <p className="text-xs text-slate-600 dark:text-slate-400">
               Don't have an account yet?{' '}
               <button
@@ -276,6 +277,15 @@ export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNaviga
                 Create Free Account
               </button>
             </p>
+
+            <button
+              type="button"
+              onClick={onContinueAsGuest}
+              className="w-full py-3 px-4 rounded-xl border border-purple-300 dark:border-purple-500/30 bg-purple-50/60 dark:bg-purple-950/40 hover:bg-purple-100 dark:hover:bg-purple-900/50 text-purple-900 dark:text-purple-200 text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer shadow-xs"
+            >
+              <User className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+              <span>Continue with Guest Account</span>
+            </button>
           </div>
 
         </div>
