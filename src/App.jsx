@@ -289,27 +289,20 @@ export default function App() {
             <p className="font-bold text-sm">HerEarn • Skill-to-Income Platform for Women</p>
             <p className="opacity-75 mt-1">Empowering women across India to learn skills, build portfolios, and earn income.</p>
           </div>
-<<<<<<< HEAD
-          <div className="flex items-center gap-6 font-semibold">
-            <button onClick={() => setActiveTab('profile')} className="hover:text-indigo-500 cursor-pointer">Dashboard</button>
-            <button onClick={() => setActiveTab('home')} className="hover:text-indigo-500 cursor-pointer">Overview</button>
-            <button onClick={() => setIsAboutOpen(true)} className="hover:text-indigo-500 cursor-pointer">About Us</button>
-            <button onClick={() => setIsTermsOpen(true)} className="hover:text-indigo-500 cursor-pointer">Terms & Conditions</button>
-            <button onClick={() => setActiveTab('gigs')} className="hover:text-indigo-500 cursor-pointer">Opportunity</button>
-=======
           <div className="flex flex-wrap items-center justify-center md:justify-end gap-5 font-semibold">
             <button onClick={() => setActiveTab('profile')} className="hover:text-indigo-400 cursor-pointer">Dashboard</button>
             <button onClick={() => setActiveTab('home')} className="hover:text-indigo-400 cursor-pointer">Overview</button>
             <button onClick={() => setActiveTab('learn')} className="hover:text-indigo-400 cursor-pointer">Learn Case</button>
             <button onClick={() => setActiveTab('portfolio')} className="hover:text-indigo-400 cursor-pointer">Show Skill</button>
             <button onClick={() => setActiveTab('gigs')} className="hover:text-indigo-400 cursor-pointer">Opportunity</button>
+            <button onClick={() => setIsAboutOpen(true)} className="hover:text-indigo-400 cursor-pointer">About Us</button>
+            <button onClick={() => setIsTermsOpen(true)} className="hover:text-indigo-400 cursor-pointer">Terms & Conditions</button>
             {!user && (
               <>
                 <button onClick={() => handleOpenAuth('login')} className="hover:text-indigo-400 cursor-pointer font-bold text-purple-400">Log In</button>
                 <button onClick={() => handleOpenAuth('signup')} className="hover:text-pink-400 cursor-pointer font-bold text-pink-400">Sign Up</button>
               </>
             )}
->>>>>>> 8303b7c (feat: Add dedicated login and signup pages)
           </div>
         </div>
       </footer>
