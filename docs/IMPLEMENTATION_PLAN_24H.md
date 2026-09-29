@@ -1,69 +1,248 @@
-# HerEarn: Website Implementation Plan (Prototype)
+# HerEarn – Detailed Implementation Plan
 
-**Project:** A website where women learn market-relevant skills, showcase their work, and connect with real income opportunities.
+## 1. Project Overview
 
-**Core loop:** Learn → Showcase → Earn
+**Project Name:** HerEarn
 
-**Deadline:** tomorrow. The goal is a **live, working website** with a real frontend and a simple real backend, covering one complete user path from sign-up to applying for a gig.
+**Core Idea:**
+HerEarn is a free upskilling and opportunity platform designed to help women learn market-relevant skills, build a credible portfolio, and connect their skills with real income opportunities.
 
-**Status so far:** The landing page and navbar are done (React + Tailwind, pushed to GitHub). The plan below covers everything still to build.
+### Core Loop
 
----
+**Learn → Build → Showcase → Earn**
 
-## 1. Scope
+The platform should not work like a simple course website. The objective is to connect learning with actual employability and income opportunities.
 
-### Must build (the demo path)
+A user should be able to:
 
-| # | Feature | Frontend page | Backend needed |
-|---|---|---|---|
-| 1 | Landing page | Home | No (done) |
-| 2 | Sign up / login | Login, Signup | Yes (auth) |
-| 3 | Profile setup | Profile | Yes |
-| 4 | Learning track with progress | Courses, Lesson | Yes (progress) |
-| 5 | Portfolio: add and view projects | Portfolio, Public Profile | Yes |
-| 6 | Opportunity board + apply | Opportunities | Yes |
-| 7 | User dashboard (progress, applications) | Dashboard | Yes |
-
-### Keep simple or mock
-
-- Lesson videos: embedded YouTube links
-- Opportunities: seeded sample data (8 gigs and internships)
-- Payments: "Coming soon" button only
-- Matching: filter by skill tag and category
-
-### Do NOT build tomorrow (mention in roadmap)
-
-Mentorship, AI matching, real payments and escrow, mobile app, full multilingual translation, admin panel, employer dashboard.
+1. Create an account
+2. Complete her profile
+3. Select relevant skills/interests
+4. Explore free learning tracks
+5. Watch lessons
+6. Track learning progress
+7. Complete a learning track
+8. Add projects to her portfolio
+9. Browse relevant opportunities
+10. Apply using her profile and portfolio
+11. Track application status from the dashboard
 
 ---
 
-## 2. Tech Stack
+# 2. MVP Objective
 
-| Need | Choice | Why |
-|---|---|---|
-| Frontend | React (Vite) + Tailwind CSS | Fast to build, modular, looks great |
-| State & Storage | LocalStorage + React State | Fast, persistent offline prototype loop |
-| Content | Embedded YouTube links | Practical learning tracks |
-| Hosting | Vercel / GitHub Pages | Instant deployment |
+The objective of the current implementation is to deliver a **live, functional prototype** rather than a complete production platform.
+
+The MVP must demonstrate one complete end-to-end user journey:
+
+```text
+Landing Page
+      ↓
+Sign Up / Login
+      ↓
+Profile Setup
+      ↓
+Dashboard
+      ↓
+Choose Skill Track
+      ↓
+View Lessons
+      ↓
+Complete Lessons
+      ↓
+Track Progress
+      ↓
+Create Portfolio Project
+      ↓
+Browse Opportunities
+      ↓
+Filter Opportunity
+      ↓
+View Opportunity Details
+      ↓
+Apply
+      ↓
+Application Appears in Dashboard
+```
+
+The demo should prove that the platform is not only a static UI but has a working frontend, backend, database, authentication, progress tracking, portfolio management, and opportunity application flow.
 
 ---
 
-## 3. Demo Path & End-to-End Loop
+# 3. Product Principles
 
-1. **Sign Up / Login**: Register or 1-click sign in.
-2. **Dashboard**: View enrolled courses, earnings, active gigs, and quick shortcuts.
-3. **Learn Track**: Watch bite-sized video lessons & mark lessons complete to increase track progress.
-4. **Showcase Portfolio**: Submit verified projects (title, category, image/link, description).
-5. **Opportunity Board**: Filter gigs by skill tag/category & submit application with attached portfolio.
+## 3.1 Free Upskilling First
+
+All core learning content available in the MVP should be accessible to women without payment.
+
+There should be no payment requirement for:
+
+* Creating an account
+* Creating a profile
+* Enrolling in a learning track
+* Watching lessons
+* Tracking progress
+* Creating a portfolio
 
 ---
 
-## 4. Checklist & Submission Readiness
+## 3.2 Learning Must Lead to Action
 
-- [x] Clean Vite + React architecture (no hardcoded inline scripts)
-- [x] Fully responsive Light Mode and Dark Mode support
-- [x] Dynamic Dashboard with stats, course progress, active gigs, and modal shortcuts
-- [x] Verified project portfolio submission modal
-- [x] Interactive micro-gig application modal
-- [x] About Us & Terms & Conditions policies in 3-dot dropdown menu
-- [x] Pushed to Git branch `yashi`
+Every learning track should eventually connect with practical work.
+
+For example:
+
+```text
+Digital Marketing Track
+        ↓
+Learn Social Media Marketing
+        ↓
+Complete Lessons
+        ↓
+Create Sample Campaign
+        ↓
+Add Campaign to Portfolio
+        ↓
+Find Marketing Opportunity
+        ↓
+Apply
+```
+
+---
+
+## 3.3 Minimal Hardcoded Data
+
+The frontend should not contain large arrays of:
+
+* Courses
+* Lessons
+* Opportunities
+* Users
+* Applications
+* Portfolio projects
+
+Instead:
+
+```text
+React UI
+   ↓
+API
+   ↓
+Backend
+   ↓
+Database
+```
+
+The frontend should primarily render data received from APIs.
+
+---
+
+# 4. Technology Stack
+
+## Frontend
+
+* React
+* Vite
+* Tailwind CSS
+* React Router
+* Fetch / Axios for API communication
+* React Context or lightweight state management
+
+---
+
+## Backend
+
+* Node.js
+* Express.js
+* REST API architecture
+* JWT-based authentication
+* bcrypt/password hashing
+* Validation middleware
+* Centralized error handling
+
+---
+
+## Database
+
+* PostgreSQL / SQLite
+* Prisma ORM
+
+---
+
+# 5. High-Level Architecture
+
+```text
+                    HER EARN
+                       │
+                       ▼
+              React + Vite Frontend
+                       │
+              REST API / HTTP Requests
+                       │
+                       ▼
+              Node.js + Express Backend
+                       │
+                 Prisma ORM
+                       │
+                       ▼
+            Database (SQLite/PostgreSQL)
+```
+
+---
+
+# 6. Feature Modules & API Endpoints
+
+### Authentication
+- `POST /api/auth/register`
+- `POST /api/auth/login`
+- `GET /api/auth/me`
+
+### User Profile
+- `GET /api/users/me`
+- `PATCH /api/users/me`
+
+### Learning Tracks & Lessons
+- `GET /api/tracks`
+- `GET /api/tracks/:id`
+- `GET /api/tracks/:trackId/lessons`
+- `GET /api/lessons/:id`
+
+### Enrollment & Progress
+- `POST /api/tracks/:trackId/enroll`
+- `GET /api/enrollments`
+- `GET /api/enrollments/:trackId`
+- `POST /api/lessons/:lessonId/complete`
+- `GET /api/progress/:trackId`
+
+### Portfolio
+- `GET /api/portfolio/me`
+- `POST /api/portfolio`
+- `GET /api/portfolio/:id`
+- `PATCH /api/portfolio/:id`
+- `DELETE /api/portfolio/:id`
+
+### Opportunities
+- `GET /api/opportunities`
+- `GET /api/opportunities/:id`
+
+### Applications
+- `POST /api/opportunities/:id/apply`
+- `GET /api/applications/me`
+- `GET /api/applications/:id`
+
+### Dashboard
+- `GET /api/dashboard`
+
+---
+
+# 7. Database Models (Prisma)
+
+- `User`: id, name, email, passwordHash, role, avatar, location, bio, skills, totalEarned
+- `SkillTrack`: id, title, category, icon, duration, level, instructor, description, image
+- `Lesson`: id, trackId, title, duration, videoUrl, summary, keyTakeaways, orderIndex
+- `Enrollment`: id, userId, trackId, progressPercent, isCompleted, lastAccessedAt
+- `LessonProgress`: id, userId, lessonId, completedAt
+- `PortfolioProject`: id, userId, title, category, description, imageUrl, projectUrl, tags, likesCount, verified
+- `Opportunity`: id, title, company, logo, stipend, type, category, skillsRequired, duration, description, deliverables, verifiedClient, isOpen, applicantsCount, deadline
+- `Application`: id, opportunityId, userId, coverNote, status, appliedAt
+- `ApplicationProject`: id, applicationId, projectId
