@@ -76,7 +76,7 @@ export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNaviga
         const handle = targetEmail.split('@')[0];
         const displayName = handle.charAt(0).toUpperCase() + handle.slice(1);
         onLoginSuccess({
-          name: displayName || 'Ananya Sharma',
+          name: displayName || 'Learner',
           email: targetEmail,
           skillInterest: 'Digital Marketing',
           isSignUp: false,
