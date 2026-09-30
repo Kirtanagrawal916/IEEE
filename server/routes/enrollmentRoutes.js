@@ -69,6 +69,11 @@ router.get('/enrollments', authMiddleware, async (req, res) => {
     });
 
     res.json({ success: true, enrollments: formattedEnrollments });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Failed to fetch enrollments', error: error.message });
+  }
+});
+
 // GET /api/progress
 router.get('/progress', authMiddleware, async (req, res) => {
   try {

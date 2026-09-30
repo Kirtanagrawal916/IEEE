@@ -19,6 +19,12 @@ dist-ssr/
 !.env.example
 *.env
 
+# Local Databases
+*.db
+*.db-journal
+dev.db
+dev.db-journal
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
@@ -30,8 +36,5 @@ dist-ssr/
 *.sln
 *.sw?
 
-# Local Databases
-*.db
-*.db-journal
-dev.db
-dev.db-journal
+# Scratch scripts
+scratch/

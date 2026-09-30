@@ -25,7 +25,7 @@ export const authenticateToken = async (req, res, next) => {
 
   try {
     const decoded = verifyToken(token);
-    const userId = decoded.id || decoded.userId;
+    const userId = decoded.userId || decoded.id;
     if (!userId) {
       return res.status(401).json({
         success: false,
