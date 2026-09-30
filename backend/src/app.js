@@ -38,6 +38,19 @@ app.use(
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
+// Welcome Root Endpoint
+app.get('/', (req, res) => {
+  res.status(200).json({
+    success: true,
+    service: 'HerEarn Backend API',
+    message: 'Welcome to HerEarn REST API Server',
+    status: 'operational',
+    documentation: '/api',
+    health: '/api/health',
+    timestamp: new Date().toISOString(),
+  });
+});
+
 // 4. Rate Limiting for API routes
 app.use('/api', apiLimiter);
 
