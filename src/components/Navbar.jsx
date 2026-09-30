@@ -1,5 +1,4 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
 import logo from '../assets/logo.jpg';
 import { 
   Compass, 
@@ -17,17 +16,18 @@ import {
   Scale
 } from 'lucide-react';
 import LogoutModal from './LogoutModal';
+import NotificationCenter from './NotificationCenter';
 
 export default function Navbar({ 
+  activeTab, 
+  setActiveTab, 
   user, 
+  onOpenAuth, 
   onLogout,
+  onContinueAsGuest,
   theme, 
   onToggleTheme
 }) {
-  const location = useLocation();
-  const navigate = useNavigate();
-  const pathname = location.pathname;
-
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
   const menuRef = useRef(null);
@@ -42,12 +42,18 @@ export default function Navbar({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  const handleNav = (tabName) => {
+    if (setActiveTab) {
+      setActiveTab(tabName);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
   const handleConfirmLogout = () => {
     setIsLogoutModalOpen(false);
     if (onLogout) {
       onLogout();
     }
-    navigate('/');
   };
 
   return (
@@ -56,8 +62,8 @@ export default function Navbar({
         <div className="flex items-center justify-between h-20">
           
           {/* Logo */}
-          <Link
-            to="/"
+          <div
+            onClick={() => handleNav('home')}
             className="flex items-center cursor-pointer group"
           >
             <img
@@ -66,76 +72,89 @@ export default function Navbar({
               className="h-16 w-auto group-hover:scale-105 transition-transform"
               style={theme === 'dark' ? { filter: 'contrast(1.4) brightness(1.1)', mixBlendMode: 'screen' } : {}}
             />
-          </Link>
+          </div>
 
           {/* Clean Navigation: Home | Courses | Opportunities | Dashboard (If Logged In) */}
           <div className="hidden md:flex items-center gap-1.5 bg-white/90 dark:bg-slate-900/80 p-1.5 rounded-2xl border border-purple-200 dark:border-purple-500/30 backdrop-blur-md shadow-lg">
-            <Link
-              to="/"
+            <button
+              type="button"
+              onClick={() => handleNav('home')}
               className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                pathname === '/'
+                activeTab === 'home'
                   ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-md'
                   : 'text-slate-700 dark:text-slate-200 hover:text-purple-700 dark:hover:text-white hover:bg-purple-100/70 dark:hover:bg-purple-900/40'
               }`}
             >
               <Compass className="w-4 h-4" />
               <span>Home</span>
-            </Link>
+            </button>
 
-            <Link
-              to="/learn"
+            <button
+              type="button"
+              onClick={() => handleNav('learn')}
               className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                pathname === '/learn'
+                activeTab === 'learn'
                   ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-md'
                   : 'text-slate-700 dark:text-slate-200 hover:text-purple-700 dark:hover:text-white hover:bg-purple-100/70 dark:hover:bg-purple-900/40'
               }`}
             >
               <BookOpen className="w-4 h-4 text-purple-600 dark:text-purple-400" />
               <span>Courses</span>
-            </Link>
+            </button>
 
-            <Link
-              to="/portfolio"
+            <button
+              type="button"
+              onClick={() => handleNav('portfolio')}
               className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                pathname === '/portfolio'
+                activeTab === 'portfolio'
                   ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-md'
                   : 'text-slate-700 dark:text-slate-200 hover:text-purple-700 dark:hover:text-white hover:bg-purple-100/70 dark:hover:bg-purple-900/40'
               }`}
             >
               <Award className="w-4 h-4 text-pink-600 dark:text-pink-400" />
               <span>Portfolios</span>
-            </Link>
+            </button>
 
-            <Link
-              to="/opportunities"
+            <button
+              type="button"
+              onClick={() => handleNav('opportunities')}
               className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                pathname.startsWith('/opportunities') || pathname.startsWith('/opportunity')
+                activeTab === 'opportunities' || activeTab === 'gigs' || activeTab === 'opportunity_detail'
                   ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-md'
                   : 'text-slate-700 dark:text-slate-200 hover:text-purple-700 dark:hover:text-white hover:bg-purple-100/70 dark:hover:bg-purple-900/40'
               }`}
             >
               <Briefcase className="w-4 h-4 text-amber-600 dark:text-amber-400" />
               <span>Opportunities</span>
-            </Link>
+            </button>
 
-            {/* Dashboard Link */}
+            {/* Profile / Dashboard Link */}
             {user && (
-              <Link
-                to="/dashboard"
+              <button
+                type="button"
+                onClick={() => handleNav('profile')}
                 className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                  pathname.startsWith('/dashboard')
+                  activeTab === 'profile'
                     ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-md'
                     : 'text-slate-700 dark:text-slate-200 hover:text-purple-700 dark:hover:text-white hover:bg-purple-100/70 dark:hover:bg-purple-900/40'
                 }`}
               >
                 <User className="w-4 h-4" />
                 <span>Dashboard</span>
-              </Link>
+              </button>
             )}
           </div>
 
-          {/* Right Section: Theme Toggle, Login/Sign Up, & Mobile Menu */}
+          {/* Right Section: Notification Bell, Theme Toggle, Auth */}
           <div className="flex items-center gap-2 sm:gap-3">
+
+            {/* Notification Center Bell */}
+            <NotificationCenter theme={theme} onNavigate={(path) => {
+              if (path.includes('opportunity')) handleNav('opportunities');
+              else if (path.includes('learn')) handleNav('learn');
+              else if (path.includes('portfolio')) handleNav('portfolio');
+              else handleNav('profile');
+            }} />
 
             {/* Light / Dark Mode Switch */}
             <button
@@ -159,8 +178,8 @@ export default function Navbar({
             {/* User Profile / Auth buttons */}
             {user ? (
               <div className="flex items-center gap-2">
-                <Link 
-                  to="/dashboard"
+                <div 
+                  onClick={() => handleNav('profile')}
                   className="flex items-center gap-2.5 bg-white dark:bg-slate-900 border border-purple-200 dark:border-purple-500/30 px-3 py-1.5 rounded-xl cursor-pointer hover:border-pink-500 transition-all shadow-xs"
                 >
                   <img src={user.avatar} alt={user.name} className="w-8 h-8 rounded-full object-cover border border-purple-400" />
@@ -168,13 +187,12 @@ export default function Navbar({
                     <p className="font-bold leading-tight text-slate-900 dark:text-white">{user.name}</p>
                     <p className="text-[10px] text-emerald-600 dark:text-emerald-400 font-extrabold">₹{(user.totalEarned || user.earnings || 0).toLocaleString()}</p>
                   </div>
-                </Link>
+                </div>
 
-                <button 
+                <button
                   type="button"
                   onClick={() => setIsLogoutModalOpen(true)}
-                  title="Log out of HerEarn"
-                  aria-label="Log out"
+                  title="Sign Out"
                   className="p-2 rounded-xl text-slate-500 dark:text-slate-400 hover:text-pink-600 dark:hover:text-pink-400 hover:bg-purple-100 dark:hover:bg-slate-800/50 transition-colors cursor-pointer"
                 >
                   <LogOut className="w-4 h-4" />
@@ -182,33 +200,41 @@ export default function Navbar({
               </div>
             ) : (
               <div className="flex items-center gap-2">
-                <Link
-                  to="/login"
-                  className={`px-3.5 py-2 rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer ${
-                    pathname === '/login'
-                      ? 'bg-purple-600 text-white shadow-md'
-                      : 'bg-white dark:bg-slate-900 border-2 border-purple-500/80 text-purple-600 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-slate-800'
-                  }`}
-                >
-                  <LogIn className="w-3.5 h-3.5" />
-                  <span>Login</span>
-                </Link>
+                {onContinueAsGuest && (
+                  <button
+                    type="button"
+                    onClick={onContinueAsGuest}
+                    className="hidden md:flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-300 hover:text-purple-700 dark:hover:text-white bg-purple-50 dark:bg-slate-900/80 border border-purple-200 dark:border-purple-500/30 hover:border-purple-400 transition-all cursor-pointer"
+                    title="Explore HerEarn as a Guest Learner"
+                  >
+                    <User className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />
+                    <span>Guest Mode</span>
+                  </button>
+                )}
 
-                <Link
-                  to="/signup"
-                  className={`px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-all shadow-md ${
-                    pathname === '/signup'
-                      ? 'bg-gradient-to-r from-pink-600 to-purple-600 text-white ring-2 ring-pink-400'
-                      : 'bg-gradient-to-r from-purple-600 via-indigo-600 to-pink-600 text-white hover:shadow-lg'
+                <button
+                  type="button"
+                  onClick={() => onOpenAuth ? onOpenAuth('login') : handleNav('login')}
+                  className={`px-3.5 py-2 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
+                    activeTab === 'login'
+                      ? 'bg-purple-600 border-purple-500 text-white shadow-md ring-2 ring-purple-400'
+                      : 'bg-white dark:bg-transparent text-purple-700 dark:text-white border-purple-300 dark:border-purple-500/30 hover:border-pink-500'
                   }`}
                 >
-                  <UserPlus className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">Sign Up</span>
-                </Link>
+                  Login
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => onOpenAuth ? onOpenAuth('signup') : handleNav('signup')}
+                  className="hidden sm:flex btn-gradient-award text-xs py-2 px-3.5 cursor-pointer shadow-md"
+                >
+                  Sign Up Free
+                </button>
               </div>
             )}
 
-            {/* Upper Right 3-Dot Menu Dropdown for Mobile / Explore */}
+            {/* Mobile Dropdown Toggle Button */}
             <div className="relative" ref={menuRef}>
               <button
                 type="button"
@@ -220,97 +246,69 @@ export default function Navbar({
                 }`}
                 title="Explore Sections"
               >
-                <MoreVertical className="w-5 h-5" />
+                <MoreVertical className="w-4 h-4" />
               </button>
 
               {/* Dropdown Menu Popup */}
               {isMenuOpen && (
                 <div className="absolute right-0 mt-3 w-64 rounded-2xl bg-white dark:bg-slate-950 border border-purple-200 dark:border-purple-500/40 shadow-2xl p-2 z-50 animate-fade-in text-slate-900 dark:text-white space-y-1">
                   <div className="px-3 py-1.5 border-b border-purple-500/20">
-                    <p className="text-[11px] font-extrabold text-purple-300 uppercase tracking-wider">Explore Modules</p>
+                    <p className="text-[11px] font-extrabold text-purple-600 dark:text-purple-300 uppercase tracking-wider">Explore Platform</p>
                   </div>
 
-                  <Link
-                    to="/learn"
-                    onClick={() => setIsMenuOpen(false)}
-                    className="w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold flex items-center justify-between hover:bg-purple-900/40 text-slate-200 transition-colors"
+                  <button
+                    type="button"
+                    onClick={() => { setIsMenuOpen(false); handleNav('home'); }}
+                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-purple-100 dark:hover:bg-purple-900/40 hover:text-purple-700 dark:hover:text-white transition-colors cursor-pointer text-left"
                   >
-                    <div className="flex items-center gap-2.5">
-                      <BookOpen className="w-4 h-4 text-purple-400" />
-                      <span>Courses</span>
-                    </div>
-                  </Link>
+                    <Compass className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                    <span>Home Landing Page</span>
+                  </button>
 
-                  <Link
-                    to="/portfolio"
-                    onClick={() => setIsMenuOpen(false)}
-                    className="w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold flex items-center justify-between hover:bg-purple-900/40 text-slate-200 transition-colors"
+                  <button
+                    type="button"
+                    onClick={() => { setIsMenuOpen(false); handleNav('learn'); }}
+                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-purple-100 dark:hover:bg-purple-900/40 hover:text-purple-700 dark:hover:text-white transition-colors cursor-pointer text-left"
                   >
-                    <div className="flex items-center gap-2.5">
-                      <Award className="w-4 h-4 text-pink-400" />
-                      <span>Portfolios</span>
-                    </div>
-                  </Link>
+                    <BookOpen className="w-4 h-4 text-pink-600 dark:text-pink-400" />
+                    <span>Skill Courses & Challenges</span>
+                  </button>
 
-                  <Link
-                    to="/opportunities"
-                    onClick={() => setIsMenuOpen(false)}
-                    className="w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold flex items-center justify-between hover:bg-purple-900/40 text-slate-200 transition-colors"
+                  <button
+                    type="button"
+                    onClick={() => { setIsMenuOpen(false); handleNav('portfolio'); }}
+                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-purple-100 dark:hover:bg-purple-900/40 hover:text-purple-700 dark:hover:text-white transition-colors cursor-pointer text-left"
                   >
-                    <div className="flex items-center gap-2.5">
-                      <Briefcase className="w-4 h-4 text-amber-400" />
-                      <span>Opportunities</span>
-                    </div>
-                  </Link>
+                    <Award className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+                    <span>Public Portfolios Showcase</span>
+                  </button>
 
-                  {user && (
-                    <Link
-                      to="/dashboard"
-                      onClick={() => setIsMenuOpen(false)}
-                      className="w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2.5 hover:bg-purple-900/40 text-slate-200 transition-colors"
-                    >
-                      <User className="w-4 h-4 text-emerald-400" />
-                      <span>My Dashboard</span>
-                    </Link>
-                  )}
-
-                  <div className="px-3 pt-2 border-t border-purple-500/20">
-                    <p className="text-[11px] font-extrabold text-purple-300 uppercase tracking-wider">Information & Policies</p>
-                  </div>
-
-                  <Link
-                    to="/about"
-                    onClick={() => setIsMenuOpen(false)}
-                    className="w-full text-left px-3.5 py-2 rounded-xl text-xs font-bold flex items-center justify-between hover:bg-purple-900/40 text-slate-200 transition-colors"
+                  <button
+                    type="button"
+                    onClick={() => { setIsMenuOpen(false); handleNav('opportunities'); }}
+                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-purple-100 dark:hover:bg-purple-900/40 hover:text-purple-700 dark:hover:text-white transition-colors cursor-pointer text-left"
                   >
-                    <div className="flex items-center gap-2.5">
-                      <Info className="w-4 h-4 text-purple-400" />
-                      <span>About Us</span>
-                    </div>
-                  </Link>
+                    <Briefcase className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                    <span>Opportunities Board</span>
+                  </button>
 
-                  <Link
-                    to="/terms"
-                    onClick={() => setIsMenuOpen(false)}
-                    className="w-full text-left px-3.5 py-2 rounded-xl text-xs font-bold flex items-center justify-between hover:bg-purple-900/40 text-slate-200 transition-colors"
+                  <button
+                    type="button"
+                    onClick={() => { setIsMenuOpen(false); handleNav('about'); }}
+                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-purple-100 dark:hover:bg-purple-900/40 hover:text-purple-700 dark:hover:text-white transition-colors cursor-pointer text-left"
                   >
-                    <div className="flex items-center gap-2.5">
-                      <Scale className="w-4 h-4 text-pink-400" />
-                      <span>Terms & Conditions</span>
-                    </div>
-                  </Link>
+                    <Info className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                    <span>About HerEarn Platform</span>
+                  </button>
 
-                  <Link
-                    to="/privacy"
-                    onClick={() => setIsMenuOpen(false)}
-                    className="w-full text-left px-3.5 py-2 rounded-xl text-xs font-bold flex items-center justify-between hover:bg-purple-900/40 text-slate-200 transition-colors"
+                  <button
+                    type="button"
+                    onClick={() => { setIsMenuOpen(false); handleNav('terms'); }}
+                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-purple-100 dark:hover:bg-purple-900/40 hover:text-purple-700 dark:hover:text-white transition-colors cursor-pointer text-left"
                   >
-                    <div className="flex items-center gap-2.5">
-                      <Scale className="w-4 h-4 text-emerald-400" />
-                      <span>Privacy Policy</span>
-                    </div>
-                  </Link>
-
+                    <Scale className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                    <span>Terms & Escrow Policy</span>
+                  </button>
                 </div>
               )}
             </div>
@@ -320,7 +318,6 @@ export default function Navbar({
         </div>
       </div>
 
-      {/* Logout Confirmation Modal */}
       <LogoutModal
         isOpen={isLogoutModalOpen}
         onConfirm={handleConfirmLogout}
