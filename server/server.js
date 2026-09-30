@@ -10,6 +10,7 @@ import portfolioRoutes from './routes/portfolioRoutes.js';
 import opportunityRoutes from './routes/opportunityRoutes.js';
 import applicationRoutes from './routes/applicationRoutes.js';
 import dashboardRoutes from './routes/dashboardRoutes.js';
+import chatRoutes from './routes/chat.js';
 
 dotenv.config();
 
@@ -29,6 +30,7 @@ app.use('/api/portfolio', portfolioRoutes);
 app.use('/api/opportunities', opportunityRoutes);
 app.use('/api', applicationRoutes);
 app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/chat', chatRoutes);
 
 // Health Check
 app.get('/api/health', (req, res) => {

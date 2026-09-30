@@ -84,6 +84,14 @@ export const api = {
   getMyApplications: () => request('/api/applications/me'),
   getApplicationDetails: (id) => request(`/api/applications/${id}`),
 
+  // Dashboard & Specific Mine APIs
+  getProgressMine: () => request('/api/progress'),
+  getApplicationsMine: () => request('/api/applications/mine'),
+  getProjectsMine: () => request('/api/projects/mine'),
+
   // Dashboard API
   getDashboardMetrics: () => request('/api/dashboard'),
+
+  // AI Chatbot API
+  sendChatMessage: (message, sessionId) => request('/api/chat', { method: 'POST', body: JSON.stringify({ message, sessionId }) }),
 };

@@ -34,6 +34,7 @@ export default function OpportunitiesSection({
   opportunities, 
   user, 
   onApplyGig, 
+  onViewDetails,
   onUpdateUserSkills 
 }) {
   const [selectedCategory, setSelectedCategory] = useState('All');
@@ -545,7 +546,13 @@ export default function OpportunitiesSection({
                   <div className="flex items-center gap-2">
                     <button
                       type="button"
-                      onClick={() => setDetailModalGig(gig)}
+                      onClick={() => {
+                        if (onViewDetails) {
+                          onViewDetails(gig);
+                        } else {
+                          setDetailModalGig(gig);
+                        }
+                      }}
                       className="p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:text-purple-600 dark:hover:text-purple-400 hover:bg-purple-50 dark:hover:bg-slate-700 transition-colors cursor-pointer"
                       title="View Full Details & Match Breakdown"
                     >

@@ -75,8 +75,8 @@ router.post('/opportunities/:id/apply', authMiddleware, async (req, res) => {
   }
 });
 
-// GET /api/applications/me
-router.get('/applications/me', authMiddleware, async (req, res) => {
+// GET /api/applications/me or /api/applications/mine
+const getMyApplicationsHandler = async (req, res) => {
   try {
     const applications = await prisma.application.findMany({
       where: { userId: req.user.id },
@@ -111,7 +111,10 @@ router.get('/applications/me', authMiddleware, async (req, res) => {
   } catch (error) {
     res.status(500).json({ success: false, message: 'Failed to fetch applications', error: error.message });
   }
-});
+};
+
+router.get('/applications/me', authMiddleware, getMyApplicationsHandler);
+router.get('/applications/mine', authMiddleware, getMyApplicationsHandler);
 
 // GET /api/applications/:id
 router.get('/applications/:id', authMiddleware, async (req, res) => {

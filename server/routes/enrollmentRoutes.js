@@ -69,8 +69,46 @@ router.get('/enrollments', authMiddleware, async (req, res) => {
     });
 
     res.json({ success: true, enrollments: formattedEnrollments });
+// GET /api/progress
+router.get('/progress', authMiddleware, async (req, res) => {
+  try {
+    const enrollments = await prisma.enrollment.findMany({
+      where: { userId: req.user.id },
+      include: {
+        track: {
+          include: { lessons: { select: { id: true } } },
+        },
+      },
+    });
+
+    const userProgress = await prisma.lessonProgress.findMany({
+      where: { userId: req.user.id },
+      select: { lessonId: true },
+    });
+
+    const completedLessonIds = userProgress.map((p) => p.lessonId);
+
+    const progressList = enrollments.map((e) => {
+      const trackLessonIds = e.track.lessons.map((l) => l.id);
+      const completedCount = trackLessonIds.filter((id) => completedLessonIds.includes(id)).length;
+      const progressPercent = trackLessonIds.length > 0 ? Math.round((completedCount / trackLessonIds.length) * 100) : 0;
+
+      return {
+        id: e.id,
+        trackId: e.trackId,
+        title: e.track.title,
+        category: e.track.category,
+        image: e.track.image,
+        completedCount,
+        totalLessons: trackLessonIds.length,
+        progressPercent,
+        isCompleted: e.isCompleted,
+      };
+    });
+
+    res.json({ success: true, progress: progressList });
   } catch (error) {
-    res.status(500).json({ success: false, message: 'Failed to fetch enrollments', error: error.message });
+    res.status(500).json({ success: false, message: 'Failed to fetch progress', error: error.message });
   }
 });
 
