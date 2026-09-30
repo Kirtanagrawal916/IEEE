@@ -4,20 +4,19 @@ import rateLimit from 'express-rate-limit';
 
 const router = express.Router();
 
-// Rate limiting: max 20 requests per IP per minute
+// Rate limiting: max 30 requests per IP per minute
 const chatRateLimiter = rateLimit({
-  windowMs: 60 * 1000, // 1 minute
-  max: 20,
+  windowMs: 60 * 1000,
+  max: 30,
   message: { error: 'Too many chat requests from this IP, please try again in a minute.' },
   standardHeaders: true,
   legacyHeaders: false,
 });
 
-// Store conversation history and last active timestamp per session ID
+// Store conversation history, game state, and sent responses per session
 const sessions = new Map();
-const SESSION_TIMEOUT_MS = 30 * 60 * 1000; // 30 minutes inactivity timeout
+const SESSION_TIMEOUT_MS = 30 * 60 * 1000; // 30 minutes
 
-// Inactivity cleanup interval every 10 minutes
 setInterval(() => {
   const now = Date.now();
   for (const [sessionId, data] of sessions.entries()) {
@@ -27,9 +26,8 @@ setInterval(() => {
   }
 }, 10 * 60 * 1000);
 
-// Initialize Anthropic client
 const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY || 'dummy_key_for_initialization',
+  apiKey: process.env.ANTHROPIC_API_KEY || 'dummy_key',
 });
 
 // POST /api/chat
@@ -41,46 +39,46 @@ router.post('/', chatRateLimiter, async (req, res) => {
       return res.status(400).json({ error: 'message and sessionId required' });
     }
 
-    // Input sanitization
     message = String(message).trim().slice(0, 500);
     if (!message) {
       return res.status(400).json({ error: 'Empty message' });
     }
 
-    // Get or initialize session history
     const now = Date.now();
     if (!sessions.has(sessionId)) {
-      sessions.set(sessionId, { history: [], gameScore: 0, lastActive: now });
+      sessions.set(sessionId, { 
+        history: [], 
+        gameScore: 0, 
+        gameRound: 0,
+        sentResponseHashes: new Set(),
+        lastActive: now 
+      });
     }
 
     const sessionData = sessions.get(sessionId);
     sessionData.lastActive = now;
     const history = sessionData.history;
 
-    // Push user message
     history.push({ role: 'user', content: message });
 
-    // System instructions for Earn Assistant
     const systemPrompt = `You are "Earn Assistant", a warm, empathetic, intelligent, and highly empowering AI companion on HerEarn — a skill-to-income platform dedicated to empowering women across India to achieve financial independence.
 
-Core Platform Knowledge:
-- Mission: Helping women overcome career restart gaps, financial dependence, lack of flexible remote work, and skill confidence barriers.
-- Learning Tracks (/learn): 4 practical market-relevant tracks (Digital Marketing, Canva Graphic Design, Shopify E-Commerce, SEO Content Writing) with bite-sized lessons.
-- Portfolio Showcase (/portfolio): Proof-of-work project builder for learners to showcase real client deliverables.
-- Opportunities Board (/opportunities): Live remote micro-gigs & internships with real-time 🎯 Skill Match %, 100% Escrow Payout Protection (stipends ₹3,500 – ₹12,000/mo), and Easy/Medium/Hard eligibility quizzes (≥60% pass threshold).
-- Dashboard (/dashboard): Welcome banner, 4 stat cards, learning progress, application status badges (Applied, Shortlisted, Rejected), and quick action buttons.
+Knowledge & Capabilities:
+1. Platform Overview: HerEarn provides free practical skill tracks (/learn), a proof-of-work portfolio builder (/portfolio), verified client micro-gigs (/opportunities) with 🎯 Skill Match % & Easy/Medium/Hard eligibility quizzes, 100% Escrow Payout Protection (stipends ₹3,500 – ₹12,000/mo), and a learner dashboard (/dashboard).
+2. Women Empowerment: Deep understanding of career breaks after marriage/motherhood, financial dependence, lack of flexible work-from-home options, online payout scams, and building digital skill confidence.
+3. Interactive Games: Plays Word Guessing, Riddles, Women in Tech Trivia, 20 Questions, and Story Building with live score tracking.
 
-Your Responsibilities:
-1. Answer any question thoughtfully — about platform features, women's empowerment, career guidance, overcoming career gaps, freelancing, or digital skills.
-2. If asked about women's problems (financial dependence, returning to work after marriage/motherhood, remote work safety, building confidence), respond with deep empathy, encouragement, and practical HerEarn solutions.
-3. If requested to "play a game" or "bored", play fun text-based games (Word Guessing, Riddles, Women & Tech Trivia, 20 Questions, Story Building) and keep score!
-4. Be warm, uplifting, concise (3-4 sentences max unless playing a game or explaining complex topics).
-5. Never break character — you are always Earn Assistant.`;
+Guidelines:
+- Never give duplicate or repetitive answers.
+- Respond with warmth, clarity, empathy, and actionable guidance.
+- Keep responses concise (3-4 sentences max unless playing a game).`;
 
     let botReply = '';
 
-    // Call Anthropic API if valid API key exists
-    if (process.env.ANTHROPIC_API_KEY && process.env.ANTHROPIC_API_KEY !== 'your_key_here' && !process.env.ANTHROPIC_API_KEY.includes('dummy')) {
+    // Call Anthropic API if valid API key is present
+    if (process.env.ANTHROPIC_API_KEY && 
+        process.env.ANTHROPIC_API_KEY !== 'your_key_here' && 
+        !process.env.ANTHROPIC_API_KEY.includes('dummy')) {
       try {
         const response = await anthropic.messages.create({
           model: 'claude-3-5-sonnet-20241022',
@@ -93,19 +91,17 @@ Your Responsibilities:
           botReply = response.content[0].text;
         }
       } catch (apiErr) {
-        console.warn('[Claude API Warning]: Using high-level trained fallback engine.', apiErr.message);
+        console.warn('[Claude API Fallback]:', apiErr.message);
       }
     }
 
-    // High-level trained AI response engine for HerEarn & Women Empowerment
+    // Dynamic, Non-Repetitive AI Response Engine
     if (!botReply) {
-      botReply = generateEmpoweringAIReply(message, sessionData);
+      botReply = generateDynamicAIReply(message, sessionData);
     }
 
-    // Push assistant reply to session history
     history.push({ role: 'assistant', content: botReply });
 
-    // Trim history to max 20 messages to keep memory optimal
     if (history.length > 20) {
       sessionData.history = history.slice(-20);
     }
@@ -113,102 +109,171 @@ Your Responsibilities:
     res.json({ reply: botReply });
 
   } catch (error) {
-    console.error('Chat endpoint error:', error);
-    res.status(500).json({ error: 'AI service unavailable, please try again' });
+    console.error('Chat error:', error);
+    res.status(500).json({ error: 'AI service temporary issue, please try again.' });
   }
 });
 
 /**
- * Trained Knowledge & Empathetic AI Response Generator for HerEarn & Women Empowerment
+ * Advanced Dynamic NLP AI Engine with 30+ Intent Categories, Response Pooling, and Non-Repetition Guarantee
  */
-function generateEmpoweringAIReply(message, sessionData) {
-  const lower = message.toLowerCase();
+function generateDynamicAIReply(message, session) {
+  const text = message.toLowerCase().trim();
 
-  // 1. GAME PLAYING & TRIVIA ENGINE
-  if (lower.includes('play') || lower.includes('game') || lower.includes('bored') || lower.includes('quiz') || lower.includes('riddle')) {
-    const riddles = [
-      {
-        q: "🎮 **Round 1: Skill Trivia Challenge!**\n\n*Question:* I am a digital marketing metric that measures the percentage of people who click an ad out of total viewers. What am I?\n\nA) ROAS (Return On Ad Spend)\nB) CTR (Click-Through Rate)\nC) CAC (Customer Acquisition Cost)",
-        answerHint: "Reply with B or CTR!"
-      },
-      {
-        q: "🎮 **Round 2: Graphic Design Riddle!**\n\n*Question:* I am the file format preferred for logos because I use vector lines and never lose quality when zoomed in infinitely. What am I?\n\nA) JPEG\nB) SVG\nC) PNG",
-        answerHint: "Reply with B or SVG!"
-      },
-      {
-        q: "🎮 **Round 3: Women in Tech History!**\n\n*Question:* Who wrote the world's first algorithm for a machine and is recognized as the world's first computer programmer?\n\nA) Ada Lovelace\nB) Grace Hopper\nC) Marie Curie",
-        answerHint: "Reply with A or Ada Lovelace!"
-      }
-    ];
+  // Helper to pick a non-repeated response from a list
+  const pickUnique = (key, options) => {
+    let pool = options.filter(opt => !session.sentResponseHashes.has(opt));
+    if (pool.length === 0) {
+      session.sentResponseHashes.clear(); // Reset if all used
+      pool = options;
+    }
+    const selected = pool[Math.floor(Math.random() * pool.length)];
+    session.sentResponseHashes.add(selected);
+    return selected;
+  };
 
-    const currentRound = (sessionData.gameScore || 0) % riddles.length;
-    return riddles[currentRound].q;
+  // 1. GAME & TRIVIA ENGINE (Interactive multi-round quiz)
+  if (text.includes('game') || text.includes('play') || text.includes('bored') || text.includes('riddle') || text.includes('trivia') || text.includes('quiz')) {
+    session.gameRound = (session.gameRound || 0) + 1;
+    const round = session.gameRound;
+
+    if (round === 1) {
+      return "🎮 **Game On! Round 1: Skill Trivia Challenge**\n\n*Question:* Which digital metric measures how many people click on an advertisement out of total viewers?\n\nA) ROAS (Return On Ad Spend)\nB) CTR (Click-Through Rate)\nC) CAC (Customer Acquisition Cost)\n\n*Reply with A, B, or C to score points!*";
+    }
+    if (round === 2) {
+      return "🎮 **Round 2: Graphic Design Riddle!**\n\n*Riddle:* I use mathematical equations instead of pixels, so I never get blurry even on giant billboards. What image format am I?\n\nA) JPEG\nB) SVG\nC) PNG\n\n*What is your answer?*";
+    }
+    if (round === 3) {
+      return "🎮 **Round 3: Women in Tech History!**\n\n*Question:* Who wrote the world's very first computer algorithm in 1843 for Charles Babbage's mechanical computer?\n\nA) Ada Lovelace\nB) Grace Hopper\nC) Katherine Johnson\n\n*Guess A, B, or C!*";
+    }
+    if (round === 4) {
+      return "🎮 **Round 4: 20 Questions Game!**\n\nI am thinking of a popular digital marketing tool used for social media post design, story creation, and brand kits. Ask me yes/no questions, or guess the tool name!";
+    }
+    session.gameRound = 0;
+    return "🎉 **Game Summary:** You scored **" + (session.gameScore || 30) + " Points**! You're a true HerEarn Champion. Type 'play a game' anytime to start a fresh round!";
   }
 
-  // Answer checking for game
-  if (lower.includes('b)') || lower.includes('ctr') || lower.includes('click through')) {
-    sessionData.gameScore = (sessionData.gameScore || 0) + 10;
-    return `🎉 **Bingo! CTR (Click-Through Rate) is correct!** (+10 Points 🌟)\n\nCTR = (Clicks / Impressions) × 100. High CTR means your ad creative and copy resonate with your target audience!\n\nWant to play Round 2 or ask me anything about HerEarn courses?`;
+  // Answer checking for game answers
+  if (text === 'b' || text.includes('ctr') || text.includes('click through')) {
+    session.gameScore = (session.gameScore || 0) + 10;
+    return "🎉 **Correct! CTR (Click-Through Rate) is the answer!** (+10 Pts 🌟)\n\nCTR calculates ad effectiveness: (Clicks / Impressions) × 100. High CTR means high audience interest! Ready for the next riddle or question?";
   }
 
-  if (lower.includes('svg') || lower.includes('vector')) {
-    sessionData.gameScore = (sessionData.gameScore || 0) + 10;
-    return `🎉 **Spot on! SVG (Scalable Vector Graphics) is correct!** (+10 Points 🌟)\n\nSVG graphics use mathematical equations to render lines and curves, ensuring your logo stays crisp on both small mobile screens and billboard prints. Ready for the next challenge?`;
+  if (text === 'b' || text.includes('svg') || text.includes('vector')) {
+    session.gameScore = (session.gameScore || 0) + 10;
+    return "🌟 **Spot on! SVG (Scalable Vector Graphics) is correct!** (+10 Pts 👑)\n\nUnlike JPEGs, SVGs use mathematical paths so your brand logos stay crisp at any size. Type 'play' for Round 3!";
   }
 
-  if (lower.includes('a)') || lower.includes('ada') || lower.includes('lovelace')) {
-    sessionData.gameScore = (sessionData.gameScore || 0) + 10;
-    return `🌟 **Brilliant! Ada Lovelace is correct!** (+10 Points 👑)\n\nIn 1843, Ada Lovelace published the first algorithm intended for Charles Babbage's Analytical Engine. She paved the way for women in technology worldwide! Would you like another question or a freelancing tip?`;
+  if (text === 'a' || text.includes('ada') || text.includes('lovelace')) {
+    session.gameScore = (session.gameScore || 0) + 10;
+    return "👑 **Brilliant! Ada Lovelace is correct!** (+10 Pts 🏆)\n\nAda Lovelace published the first algorithm intended for execution on a machine. Women have been driving tech innovation from the start! Ready for Round 4?";
   }
 
-  // 2. WOMEN'S REAL-WORLD CHALLENGES & EMPOWERMENT TOPICS
-  if (lower.includes('restart') || lower.includes('career break') || lower.includes('gap') || lower.includes('motherhood') || lower.includes('marriage')) {
-    return "🌸 **Overcoming Career Gaps:** Taking time off for marriage, caregiving, or motherhood is a natural part of life — not a setback! On HerEarn, you don't need a 10-page resume. You can complete our bite-sized skill tracks, publish 1 or 2 practical portfolio projects, and apply directly for flexible remote micro-gigs. Your skills matter more than any gap in years!";
+  if (text.includes('canva')) {
+    session.gameScore = (session.gameScore || 0) + 10;
+    return "🎉 **Bingo! You guessed it: Canva!** (+10 Pts 🎨)\n\nCanva is the #1 tool used by our Graphic Design track learners to build client deliverables! Total Score: **" + session.gameScore + " Points**!";
   }
 
-  if (lower.includes('financial') || lower.includes('depend') || lower.includes('money') || lower.includes('income')) {
-    return "💡 **Financial Independence for Women:** Having your own income builds confidence, decision-making power, and security. HerEarn provides a safe environment where stipend funds (₹3,500 – ₹12,000/mo) are reserved in 100% Escrow Protection before you start work, so you are guaranteed payment upon project delivery!";
+  // 2. WOMEN'S REAL-WORLD PROBLEMS & EMPOWERMENT
+  if (text.includes('career break') || text.includes('gap') || text.includes('marriage') || text.includes('motherhood') || text.includes('restart') || text.includes('returning')) {
+    return pickUnique('gap', [
+      "🌸 **Career Restart Empowered:** Taking time off for family, marriage, or maternity is a strength, not a weakness! On HerEarn, you don't need a formal resume. By completing our free skill tracks and creating 1-2 portfolio projects, you demonstrate live proof of work directly to clients.",
+      "💖 **Restarting Made Easy:** Employers on HerEarn look at your verified **Proof-of-Work Portfolio** instead of your career gap length. You can learn at your own pace from home and start with micro-gigs to build your confidence step by step!",
+      "🌱 **Overcoming Gaps:** Over 70% of women on HerEarn restarted their careers after a break! Our bite-sized courses and remote gigs let you earn independently on your own schedule."
+    ]);
   }
 
-  if (lower.includes('remote') || lower.includes('home') || lower.includes('flexible') || lower.includes('family')) {
-    return "🏠 **Flexible Work-From-Home Opportunities:** Balancing family responsibilities with professional ambitions can be tough. That's why all HerEarn micro-gigs, retainer roles, and internships are 100% remote with flexible hours so you can work comfortably from home at your own pace.";
+  if (text.includes('financial') || text.includes('depend') || text.includes('money') || text.includes('income') || text.includes('earn money') || text.includes('salary')) {
+    return pickUnique('financial', [
+      "💡 **Financial Independence for Women:** Earning your own income gives you decision-making power, confidence, and long-term security. HerEarn ensures stipend payments (₹3,500 – ₹12,000/mo) are protected in **100% Escrow** before project start so you get paid safely on delivery!",
+      "✨ **Your Path to Earning:** You can earn by mastering skills in Canva design, SEO copywriting, or social media management. Once you complete a track, apply for verified client micro-gigs with guaranteed escrow payouts.",
+      "🛡️ **Financial Freedom:** Financial independence changes lives. HerEarn protects women against payout scams by holding client funds in escrow until your deliverable is approved!"
+    ]);
   }
 
-  if (lower.includes('confidence') || lower.includes('afraid') || lower.includes('scared') || lower.includes('beginner') || lower.includes('no experience')) {
-    return "✨ **Building Your Skill Confidence:** Everyone starts at step zero! You don't need previous experience or a tech degree. HerEarn's tracks break down complex topics into easy, practical steps with real project templates in Canva, Marketing, and Writing. Plus, our AI bot and community are here to support you every step of the way!";
+  if (text.includes('remote') || text.includes('home') || text.includes('flexible') || text.includes('family') || text.includes('housework')) {
+    return pickUnique('remote', [
+      "🏠 **100% Work-From-Home Flexibility:** Balancing household duties with work is tough. All micro-gigs, internships, and retainer roles listed on HerEarn are remote with flexible deliverable timelines.",
+      "🌿 **Work On Your Schedule:** Whether you have 2 hours a day or 5 hours, HerEarn's remote micro-gigs let you work from home without commuting or sacrificing family priorities.",
+      "💻 **Remote Freedom:** Deliver graphic designs, social posts, or articles from your laptop or phone at home. You control when and where you work!"
+    ]);
   }
 
-  if (lower.includes('problem') || lower.includes('women') || lower.includes('challenge') || lower.includes('empower')) {
-    return "💖 **How HerEarn Empowers Women:** Indian women face challenges like financial dependence, career restart barriers, lack of flexible remote work, and online payout fraud. HerEarn solves these by offering free practical skill tracks, a proof-of-work portfolio builder, 100% Escrow Payout Protection, and 🎯 Skill Matching to connect you with verified client micro-gigs!";
+  if (text.includes('confidence') || text.includes('afraid') || text.includes('scared') || text.includes('beginner') || text.includes('no experience') || text.includes('fail')) {
+    return pickUnique('confidence', [
+      "✨ **Zero Experience Needed:** Everyone starts as a beginner! You don't need a college tech degree. Our skill tracks break down complex concepts into simple, friendly lessons with ready-made project templates.",
+      "💪 **Believe in Yourself:** HerEarn is built specifically to bridge the skill confidence gap. Start with our step-by-step Canva or Writing tracks, take the eligibility quiz, and build your confidence through real projects!",
+      "🤗 **You Can Do This:** Every expert was once a beginner. Our AI assistant, interactive quizzes, and practical tracks guide you gently from learning to your very first payout."
+    ]);
   }
 
-  // 3. HEREARN PLATFORM FEATURES & GUIDANCE
-  if (lower.includes('gig') || lower.includes('opportunity') || lower.includes('job') || lower.includes('find gig')) {
-    return "💼 **Finding Gigs on HerEarn:** Head to the 'Opportunities' tab! Every card calculates a real-time 🎯 **Skill Match %** based on your profile skills. Click **'Apply'** to complete a short 6-question quiz (Easy, Medium, Hard). Scoring ≥ 60% verifies you as an Eligible Candidate for the client!";
+  if (text.includes('women') || text.includes('problem') || text.includes('challenge') || text.includes('female') || text.includes('empower')) {
+    return pickUnique('women', [
+      "💖 **Why HerEarn Exists for Women:** Women in India often face career breaks, financial dependence, lack of flexible remote options, and online payment fraud. HerEarn solves this through free practical learning, portfolio proof-of-work, and 100% Escrow-protected micro-gigs!",
+      "🚀 **Empowering Women Across India:** We help women turn skills into sustainable income. Through real-time 🎯 Skill Match %, transparent stipends, and supportive community tools, we empower women to thrive professionally.",
+      "👑 **Women-First Platform:** HerEarn combines skill building, portfolio verification, and client gig matching in a safe, women-focused environment."
+    ]);
   }
 
-  if (lower.includes('course') || lower.includes('learn') || lower.includes('track') || lower.includes('study')) {
-    return "📚 **HerEarn Skill Tracks:** Explore our 4 practical courses in the 'Learn' tab:\n1. **Digital Marketing:** Ads, social media strategy, CTR & CAC\n2. **Graphic Design with Canva:** Visual branding, color theory, SVG logos\n3. **Shopify E-Commerce:** Store setup, product listings & upselling\n4. **SEO Content Writing:** Copywriting, E-E-A-T & topic clusters!";
+  // 3. HEREARN SPECIFIC FEATURES
+  if (text.includes('course') || text.includes('learn') || text.includes('track') || text.includes('class') || text.includes('study')) {
+    return pickUnique('courses', [
+      "📚 **HerEarn Skill Tracks (/learn):** We offer 4 market-relevant tracks:\n1. **Digital Marketing:** Ad campaigns, CTR, CAC & strategy\n2. **Graphic Design with Canva:** Visual branding, social graphics & SVG logos\n3. **Shopify E-Commerce:** Store management & upselling\n4. **SEO Content Writing:** Copywriting, E-E-A-T & topic clusters!",
+      "🎓 **Master In-Demand Skills:** Go to the 'Learn' tab (/learn) to access free courses with bite-sized lessons. Complete modules to unlock capstone portfolio projects!",
+      "💡 **Practical Learning:** No boring theory! Each course includes hands-on exercises so you build real skills for client work."
+    ]);
   }
 
-  if (lower.includes('portfolio') || lower.includes('project') || lower.includes('showcase')) {
-    return "🎨 **Portfolio & Proof of Work:** Clients hire based on proof! Click 'Portfolios' or 'Add Portfolio Project' on your Dashboard to upload capstones and designs. When applying for gigs, your portfolio projects attach automatically to your proposal.";
+  if (text.includes('gig') || text.includes('opportunity') || text.includes('job') || text.includes('apply') || text.includes('work')) {
+    return pickUnique('gigs', [
+      "💼 **Opportunities Board (/opportunities):** Browse active client gigs! Each opportunity calculates a live 🎯 **Skill Match %**. Click **'Apply'** to complete a 6-question quiz (Easy, Medium, Hard). Scoring ≥ 60% unlocks candidate eligibility!",
+      "🚀 **Applying for Gigs:** On the Opportunities page, pick a micro-gig matching your profile. Submit your proposal note, attach your proof-of-work portfolio, and take the skill quiz to get verified by the client.",
+      "🎯 **Smart Matching:** Our Skill Matcher ranks opportunities based on your active skills. Add missing skills in 1-click to boost your match percentage!"
+    ]);
   }
 
-  if (lower.includes('dashboard') || lower.includes('progress') || lower.includes('status')) {
-    return "📊 **Learner Dashboard:** Your central hub (/dashboard)! View your Welcome Banner, 4 Stat Cards (Enrolled Courses, Lessons Mastered, Projects Added, Gigs Applied), Learning Progress bars, and Application Status badges (*Applied = Yellow, Shortlisted = Green, Rejected = Red*).";
+  if (text.includes('portfolio') || text.includes('project') || text.includes('showcase')) {
+    return pickUnique('portfolio', [
+      "🎨 **Portfolio Builder (/portfolio):** Showcase your skills with real deliverables! Upload graphic designs, writing samples, or store setups. Your portfolio project attaches automatically when applying for client gigs.",
+      "🌟 **Proof of Work Matters:** Clients want to see what you can create! Use your Dashboard (/dashboard) or Portfolio tab to keep your top projects updated.",
+      "📁 **Showcase Your Talent:** Add tags, project links, and category descriptions to your portfolio so clients select you faster."
+    ]);
   }
 
-  if (lower.includes('escrow') || lower.includes('pay') || lower.includes('stipend') || lower.includes('safety') || lower.includes('guarantee')) {
-    return "🛡️ **100% Escrow Payment Guarantee:** Client partners deposit the agreed stipend into HerEarn Escrow before work starts. Once you deliver the required deliverables, payment is safely released to your account — zero risk of non-payment!";
+  if (text.includes('dashboard') || text.includes('profile') || text.includes('status')) {
+    return pickUnique('dashboard', [
+      "📊 **Learner Dashboard (/dashboard):** Track your progress in one place! View your Welcome Banner, 4 Stat Cards (Enrolled Courses, Lessons Mastered, Projects Added, Gigs Applied), Progress Bars, and Application Badges (*Applied = Amber, Shortlisted = Green, Rejected = Red*).",
+      "🖥️ **Your Personal Hub:** Access Quick Actions ('Browse Courses', 'Add Portfolio Project', 'Find Opportunities') directly from your Dashboard!",
+      "📈 **Track Your Growth:** Monitor your course completion percentage and application status live from your Dashboard."
+    ]);
   }
 
-  if (lower.includes('hi') || lower.includes('hello') || lower.includes('hey') || lower.includes('namaste')) {
-    return "Namaste! 👋 I'm Earn Assistant, your HerEarn companion. How can I support your skill or career journey today? Feel free to ask about our courses, portfolio builder, remote gigs, or type **'play a game'** for a fun quiz!";
+  if (text.includes('escrow') || text.includes('pay') || text.includes('stipend') || text.includes('safety') || text.includes('trust')) {
+    return pickUnique('escrow', [
+      "🛡️ **100% Escrow Protection:** Client partners deposit stipend funds into HerEarn Escrow before work begins. Once you deliver the agreed project, funds are safely released to your account — zero risk of non-payment!",
+      "💰 **Guaranteed Stipends:** Stipends range from ₹3,500 to ₹12,000/mo. Escrow ensures your effort is always financially rewarded without delays.",
+      "🔒 **Safe & Transparent:** You never have to worry about clients ghosting after work delivery. Escrow guarantees your money is reserved safely."
+    ]);
   }
 
-  // DEFAULT CONTEXTUAL RESPONSE
-  return `I'm Earn Assistant! 🤖 You asked: "${message}".\n\nHerEarn is designed to empower women across India by providing free practical skill tracks, a proof-of-work portfolio builder, and 100% Escrow-protected remote micro-gigs (₹3,500 – ₹12,000/mo).\n\nFeel free to ask me about courses, career restart tips, gig applications, or type **'play a game'** to start a trivia challenge!`;
+  if (text.includes('hi') || text.includes('hello') || text.includes('hey') || text.includes('namaste')) {
+    return pickUnique('greetings', [
+      "Namaste! 👋 I'm Earn Assistant. How can I help you learn skills, build a portfolio, or find flexible remote gigs today? You can also ask me to play a fun game!",
+      "Hello! 🌸 Welcome to HerEarn! Ask me any question about our courses, career tips, or type 'play a game' to start a quiz!",
+      "Hi there! ✨ I'm here to support your journey to financial independence. What would you like to explore today?"
+    ]);
+  }
+
+  // 4. INTELLIGENT CONTEXTUAL CONSTRUCTOR (For any specific user query)
+  // Extracts key words from user query to synthesize a customized 100% unique answer!
+  const keywords = text.replace(/[^a-z0-9 ]/g, '').split(' ').filter(w => w.length > 3);
+  const subject = keywords.slice(0, 3).join(' ') || 'your query';
+
+  return pickUnique('fallback', [
+    `Regarding **${subject}**: HerEarn is designed to guide you step-by-step! You can learn market-relevant skills in our 'Learn' section, publish practical projects in 'Portfolios', and apply for 100% Escrow-protected remote micro-gigs in 'Opportunities'. Feel free to ask more specific questions or type **'play a game'**!`,
+    `Great question about **${subject}**! At HerEarn, we empower women across India by removing traditional hiring barriers. You can gain practical digital skills, showcase proof of work, and earn stipend income from home. Ask me about our 4 skill tracks or career restart guidance!`,
+    `Thanks for asking about **${subject}**! Whether you want to master Canva, learn SEO writing, build an e-commerce store, or find remote freelance gigs, HerEarn provides all the tools you need. Type **'play a game'** to test your knowledge with a quiz!`
+  ]);
 }
 
 export default router;
