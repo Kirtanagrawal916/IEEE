@@ -25,10 +25,11 @@ export const authenticateToken = async (req, res, next) => {
 
   try {
     const decoded = verifyToken(token);
+    const targetId = decoded.userId || decoded.id;
 
     // Optional database verification to ensure user still exists and has not been deactivated
     const user = await prisma.user.findUnique({
-      where: { id: decoded.id },
+      where: { id: targetId },
       select: {
         id: true,
         name: true,
