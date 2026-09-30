@@ -91,4 +91,7 @@ export const api = {
 
   // Dashboard API
   getDashboardMetrics: () => request('/api/dashboard'),
+
+  // AI Chatbot API
+  sendChatMessage: (message, sessionId) => request('/api/chat', { method: 'POST', body: JSON.stringify({ message, sessionId }) }),
 };

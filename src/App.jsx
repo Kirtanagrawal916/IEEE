@@ -20,6 +20,7 @@ import SubmitProjectModal from './components/SubmitProjectModal';
 import ApplyGigModal from './components/ApplyGigModal';
 import LogoutModal from './components/LogoutModal';
 import ToastNotification from './components/ToastNotification';
+import ChatBot from './components/ChatBot';
 
 import { 
   initialUser, 
@@ -569,6 +570,9 @@ function AppContent() {
         toast={toast} 
         onClose={() => setToast(null)} 
       />
+
+      {/* Floating AI Chatbot on every page */}
+      <ChatBot />
 
     </div>
   );
