@@ -7,16 +7,18 @@ import app from './app.js';
 import { env } from './config/env.js';
 import prisma from './config/db.js';
 
-const PORT = env.PORT;
+const PORT = env.PORT || 5000;
+const HOST = process.env.HOST || '0.0.0.0';
 
-const server = app.listen(PORT, () => {
+const server = app.listen(PORT, HOST, () => {
   console.log(`
 🚀 ===================================================
    HerEarn Backend Server is running!
    Environment: ${env.NODE_ENV}
+   Host:        ${HOST}
    Port:        ${PORT}
-   API URL:     http://localhost:${PORT}/api
-   Health:      http://localhost:${PORT}/api/health
+   API URL:     http://${HOST}:${PORT}/api
+   Health:      http://${HOST}:${PORT}/api/health
 ===================================================
   `);
 });

@@ -1,6 +1,8 @@
 /**
  * Main API Router Aggregator
- * Mounts system health and all feature route controllers
+ * Mounts system health and all domain feature routers:
+ * /api/auth, /api/users, /api/tracks, /api/lessons, /api/enrollments,
+ * /api/progress, /api/portfolio, /api/opportunities, /api/applications, /api/dashboard, /api/chat
  */
 
 import { Router } from 'express';
@@ -44,7 +46,7 @@ router.get('/health', async (req, res) => {
   });
 });
 
-// Feature Routes Mounting (Sections 9, 20: BE-03 to BE-09)
+// Feature Routes Mounting (BE-03 to BE-09)
 router.use('/auth', authRoutes);
 router.use('/users', userRoutes);
 router.use('/tracks', trackRoutes);
@@ -53,6 +55,7 @@ router.use('/enrollments', enrollmentRoutes);
 router.use('/progress', progressRoutes);
 router.use('/portfolio', portfolioRoutes);
 router.use('/opportunities', opportunityRoutes);
+router.use('/applications', applicationRoutes);
 router.use('/', applicationRoutes);
 router.use('/dashboard', dashboardRoutes);
 router.use('/chat', chatRoutes);
