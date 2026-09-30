@@ -2,22 +2,23 @@
  * Main API Router Aggregator
  * Mounts system health and all domain feature routers:
  * /api/auth, /api/users, /api/tracks, /api/lessons, /api/enrollments,
- * /api/progress, /api/portfolio, /api/opportunities, /api/applications, /api/dashboard
+ * /api/progress, /api/portfolio, /api/opportunities, /api/applications, /api/dashboard, /api/chat
  */
 
 import { Router } from 'express';
 import prisma from '../config/db.js';
 
-import authRoutes from './auth.js';
-import userRoutes from './users.js';
-import trackRoutes from './tracks.js';
-import lessonRoutes from './lessons.js';
-import enrollmentRoutes from './enrollments.js';
-import progressRoutes from './progress.js';
-import portfolioRoutes from './portfolio.js';
-import opportunityRoutes from './opportunities.js';
-import applicationRoutes from './applications.js';
-import dashboardRoutes from './dashboard.js';
+import authRoutes from './authRoutes.js';
+import userRoutes from './userRoutes.js';
+import trackRoutes from './trackRoutes.js';
+import lessonRoutes from './lessonRoutes.js';
+import enrollmentRoutes from './enrollmentRoutes.js';
+import progressRoutes from './progressRoutes.js';
+import portfolioRoutes from './portfolioRoutes.js';
+import opportunityRoutes from './opportunityRoutes.js';
+import applicationRoutes from './applicationRoutes.js';
+import dashboardRoutes from './dashboardRoutes.js';
+import chatRoutes from './chatRoutes.js';
 
 const router = Router();
 
@@ -29,7 +30,6 @@ const router = Router();
 router.get('/health', async (req, res) => {
   let dbStatus = 'disconnected';
   try {
-    // Quick probe to verify Prisma database connectivity
     await prisma.$queryRaw`SELECT 1`;
     dbStatus = 'connected';
   } catch (error) {
@@ -46,7 +46,7 @@ router.get('/health', async (req, res) => {
   });
 });
 
-// Mount Feature Routers
+// Feature Routes Mounting
 router.use('/auth', authRoutes);
 router.use('/users', userRoutes);
 router.use('/tracks', trackRoutes);
@@ -57,5 +57,6 @@ router.use('/portfolio', portfolioRoutes);
 router.use('/opportunities', opportunityRoutes);
 router.use('/applications', applicationRoutes);
 router.use('/dashboard', dashboardRoutes);
+router.use('/chat', chatRoutes);
 
 export default router;

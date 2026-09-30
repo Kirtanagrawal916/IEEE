@@ -28,6 +28,8 @@ model User {
   progress     LessonProgress[]
   portfolios   PortfolioProject[]
   applications Application[]
+
+  @@index([email])
 }
 
 model SkillTrack {
@@ -45,6 +47,8 @@ model SkillTrack {
 
   lessons     Lesson[]
   enrollments Enrollment[]
+
+  @@index([category])
 }
 
 model Lesson {
@@ -59,6 +63,8 @@ model Lesson {
   orderIndex   Int              @default(0)
 
   progress     LessonProgress[]
+
+  @@index([trackId])
 }
 
 model Enrollment {
@@ -74,6 +80,8 @@ model Enrollment {
   createdAt       DateTime   @default(now())
 
   @@unique([userId, trackId])
+  @@index([userId])
+  @@index([trackId])
 }
 
 model LessonProgress {
@@ -85,6 +93,8 @@ model LessonProgress {
   completedAt DateTime @default(now())
 
   @@unique([userId, lessonId])
+  @@index([userId])
+  @@index([lessonId])
 }
 
 model PortfolioProject {
@@ -103,6 +113,8 @@ model PortfolioProject {
   updatedAt           DateTime             @updatedAt
 
   applicationProjects ApplicationProject[]
+
+  @@index([userId])
 }
 
 model Opportunity {
@@ -125,6 +137,8 @@ model Opportunity {
   updatedAt       DateTime      @updatedAt
 
   applications    Application[]
+
+  @@index([category])
 }
 
 model Application {
@@ -140,6 +154,8 @@ model Application {
   applicationProjects ApplicationProject[]
 
   @@unique([opportunityId, userId])
+  @@index([userId])
+  @@index([opportunityId])
 }
 
 model ApplicationProject {
@@ -150,4 +166,6 @@ model ApplicationProject {
   project       PortfolioProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
   @@unique([applicationId, projectId])
+  @@index([applicationId])
+  @@index([projectId])
 }
