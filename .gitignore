@@ -7,10 +7,23 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
-dist
-dist-ssr
+# Dependencies
+node_modules/
+dist/
+dist-ssr/
 *.local
+
+# Environment & Secrets
+.env
+.env.*
+!.env.example
+*.env
+
+# Local Databases
+*.db
+*.db-journal
+dev.db
+dev.db-journal
 
 # Editor directories and files
 .vscode/*
@@ -22,3 +35,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Scratch scripts
+scratch/

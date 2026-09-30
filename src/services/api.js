@@ -25,7 +25,16 @@ const request = async (endpoint, options = {}) => {
 
   try {
     const res = await fetch(`${API_BASE}${endpoint}`, config);
-    const data = await res.json();
+    const contentType = res.headers.get('content-type') || '';
+
+    let data;
+    if (contentType.includes('application/json')) {
+      data = await res.json();
+    } else {
+      const text = await res.text();
+      data = { message: `Server error (${res.status}): Non-JSON response received` };
+    }
+
     if (!res.ok) {
       const error = new Error(data.message || `HTTP ${res.status} Error`);
       error.status = res.status;
@@ -84,6 +93,14 @@ export const api = {
   getMyApplications: () => request('/api/applications/me'),
   getApplicationDetails: (id) => request(`/api/applications/${id}`),
 
+  // Dashboard & Specific Mine APIs
+  getProgressMine: () => request('/api/progress'),
+  getApplicationsMine: () => request('/api/applications/mine'),
+  getProjectsMine: () => request('/api/projects/mine'),
+
   // Dashboard API
   getDashboardMetrics: () => request('/api/dashboard'),
+
+  // AI Chatbot API
+  sendChatMessage: (message, sessionId) => request('/api/chat', { method: 'POST', body: JSON.stringify({ message, sessionId }) }),
 };

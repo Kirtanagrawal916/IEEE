@@ -1,10 +1,9 @@
 import express from 'express';
-import { prisma } from '../config/db.js';
-import { authMiddleware } from '../middleware/authMiddleware.js';
+import prisma from '../config/db.js';
+import { authenticateToken } from '../middleware/auth.js';
 
 const router = express.Router();
 
-// GET /api/portfolio/me or /api/projects/mine
 const getMyProjectsHandler = async (req, res) => {
   try {
     const projects = await prisma.portfolioProject.findMany({
@@ -14,7 +13,7 @@ const getMyProjectsHandler = async (req, res) => {
 
     const formattedProjects = projects.map((p) => ({
       ...p,
-      tags: JSON.parse(p.tags || '[]'),
+      tags: typeof p.tags === 'string' ? JSON.parse(p.tags || '[]') : (p.tags || []),
     }));
 
     res.json({ success: true, projects: formattedProjects });
@@ -23,11 +22,19 @@ const getMyProjectsHandler = async (req, res) => {
   }
 };
 
-router.get('/me', authMiddleware, getMyProjectsHandler);
-router.get('/mine', authMiddleware, getMyProjectsHandler);
-router.get('/projects/mine', authMiddleware, getMyProjectsHandler);
+/**
+ * @route   GET /api/portfolio/me or /api/portfolio/mine
+ * @desc    Get authenticated user's portfolio projects
+ * @access  Private
+ */
+router.get('/me', authenticateToken, getMyProjectsHandler);
+router.get('/mine', authenticateToken, getMyProjectsHandler);
 
-// GET /api/portfolio (all verified public projects)
+/**
+ * @route   GET /api/portfolio
+ * @desc    Get all public portfolio projects showcase
+ * @access  Public
+ */
 router.get('/', async (req, res) => {
   try {
     const projects = await prisma.portfolioProject.findMany({
@@ -44,12 +51,12 @@ router.get('/', async (req, res) => {
       description: p.description,
       imageUrl: p.imageUrl,
       projectUrl: p.projectUrl,
-      tags: JSON.parse(p.tags || '[]'),
+      tags: typeof p.tags === 'string' ? JSON.parse(p.tags || '[]') : (p.tags || []),
       likes: p.likesCount,
       verified: p.verified,
-      authorName: p.user.name,
-      authorAvatar: p.user.avatar,
-      location: p.user.location,
+      authorName: p.user ? p.user.name : 'Learner',
+      authorAvatar: p.user ? p.user.avatar : null,
+      location: p.user ? p.user.location : 'India',
       createdAt: p.createdAt,
     }));
 
@@ -59,8 +66,12 @@ router.get('/', async (req, res) => {
   }
 });
 
-// POST /api/portfolio
-router.post('/', authMiddleware, async (req, res) => {
+/**
+ * @route   POST /api/portfolio
+ * @desc    Create a new portfolio project
+ * @access  Private
+ */
+router.post('/', authenticateToken, async (req, res) => {
   try {
     const { title, category, description, imageUrl, projectUrl, tags } = req.body;
 
@@ -76,8 +87,8 @@ router.post('/', authMiddleware, async (req, res) => {
         description,
         imageUrl: imageUrl || 'https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?auto=format&fit=crop&q=80&w=600',
         projectUrl: projectUrl || '',
-        tags: JSON.stringify(tags || [category]),
-        verified: true, // auto-verified for prototype
+        tags: typeof tags === 'string' ? tags : JSON.stringify(tags || [category]),
+        verified: true,
       },
     });
 
@@ -86,7 +97,7 @@ router.post('/', authMiddleware, async (req, res) => {
       message: 'Project created successfully',
       project: {
         ...project,
-        tags: JSON.parse(project.tags || '[]'),
+        tags: typeof project.tags === 'string' ? JSON.parse(project.tags || '[]') : (project.tags || []),
       },
     });
   } catch (error) {
@@ -94,7 +105,11 @@ router.post('/', authMiddleware, async (req, res) => {
   }
 });
 
-// GET /api/portfolio/:id
+/**
+ * @route   GET /api/portfolio/:id
+ * @desc    Get single portfolio project details
+ * @access  Public
+ */
 router.get('/:id', async (req, res) => {
   try {
     const project = await prisma.portfolioProject.findUnique({
@@ -112,7 +127,7 @@ router.get('/:id', async (req, res) => {
       success: true,
       project: {
         ...project,
-        tags: JSON.parse(project.tags || '[]'),
+        tags: typeof project.tags === 'string' ? JSON.parse(project.tags || '[]') : (project.tags || []),
       },
     });
   } catch (error) {
@@ -120,15 +135,19 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// PATCH /api/portfolio/:id
-router.patch('/:id', authMiddleware, async (req, res) => {
+/**
+ * @route   PATCH /api/portfolio/:id
+ * @desc    Update a portfolio project (Ownership required)
+ * @access  Private
+ */
+router.patch('/:id', authenticateToken, async (req, res) => {
   try {
     const project = await prisma.portfolioProject.findUnique({ where: { id: req.params.id } });
     if (!project) {
       return res.status(404).json({ success: false, message: 'Project not found' });
     }
 
-    if (project.userId !== req.user.id) {
+    if (project.userId !== req.user.id && req.user.role !== 'ADMIN') {
       return res.status(403).json({ success: false, message: 'Unauthorized to edit this project' });
     }
 
@@ -139,7 +158,7 @@ router.patch('/:id', authMiddleware, async (req, res) => {
     if (description !== undefined) updatedData.description = description;
     if (imageUrl !== undefined) updatedData.imageUrl = imageUrl;
     if (projectUrl !== undefined) updatedData.projectUrl = projectUrl;
-    if (tags !== undefined) updatedData.tags = JSON.stringify(tags);
+    if (tags !== undefined) updatedData.tags = typeof tags === 'string' ? tags : JSON.stringify(tags);
 
     const updated = await prisma.portfolioProject.update({
       where: { id: req.params.id },
@@ -150,7 +169,7 @@ router.patch('/:id', authMiddleware, async (req, res) => {
       success: true,
       project: {
         ...updated,
-        tags: JSON.parse(updated.tags || '[]'),
+        tags: typeof updated.tags === 'string' ? JSON.parse(updated.tags || '[]') : (updated.tags || []),
       },
     });
   } catch (error) {
@@ -158,15 +177,19 @@ router.patch('/:id', authMiddleware, async (req, res) => {
   }
 });
 
-// DELETE /api/portfolio/:id
-router.delete('/:id', authMiddleware, async (req, res) => {
+/**
+ * @route   DELETE /api/portfolio/:id
+ * @desc    Delete a portfolio project (Ownership required)
+ * @access  Private
+ */
+router.delete('/:id', authenticateToken, async (req, res) => {
   try {
     const project = await prisma.portfolioProject.findUnique({ where: { id: req.params.id } });
     if (!project) {
       return res.status(404).json({ success: false, message: 'Project not found' });
     }
 
-    if (project.userId !== req.user.id) {
+    if (project.userId !== req.user.id && req.user.role !== 'ADMIN') {
       return res.status(403).json({ success: false, message: 'Unauthorized to delete this project' });
     }
 

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { skillTracks } from '../data/mockData';
 import { 
   User, 
   Award, 
@@ -146,134 +147,56 @@ export default function ProfileSection({
     }
   ];
 
-  // --- LEARNING PROGRESS COURSES ---
-  const enrolledCourses = [
-    {
-      id: "c1",
-      title: "Digital Marketing & Social Media",
-      category: "Marketing",
-      progress: 75,
-      lessonsDone: 3,
-      totalLessons: 4,
-      instructor: "Meera Nair",
-      nextLesson: "Lesson 4: Running Meta Ads Campaign"
-    },
-    {
-      id: "c2",
-      title: "Graphic Design with Canva",
-      category: "Design",
-      progress: 100,
-      lessonsDone: 5,
-      totalLessons: 5,
-      instructor: "Ritu Sengupta",
-      nextLesson: "Track Mastered - Download Certificate"
-    },
-    {
-      id: "c3",
-      title: "Shopify Store & Catalog Management",
-      category: "E-Commerce",
-      progress: 40,
-      lessonsDone: 2,
-      totalLessons: 5,
-      instructor: "Kavita Rao",
-      nextLesson: "Lesson 3: High-Converting Product Listings"
-    },
-    {
-      id: "c4",
-      title: "SEO & Content Writing Basics",
-      category: "Content",
-      progress: 20,
-      lessonsDone: 1,
-      totalLessons: 4,
-      instructor: "Anjali Gupta",
-      nextLesson: "Lesson 2: Keyword Strategy & Blog Hooks"
+  // --- DYNAMIC LEARNING PROGRESS COURSES ---
+  const userCompletedLessons = currentUser.completedLessons || [];
+
+  const enrolledCourses = skillTracks.map(track => {
+    const trackLessons = track.lessons || [];
+    const lessonsDone = trackLessons.filter(l => userCompletedLessons.includes(l.id)).length;
+    const totalLessons = trackLessons.length;
+    const progress = totalLessons > 0 ? Math.round((lessonsDone / totalLessons) * 100) : 0;
+    
+    const nextUncompleted = trackLessons.find(l => !userCompletedLessons.includes(l.id));
+    let nextLesson = "Track Mastered - Download Certificate";
+    if (nextUncompleted) {
+      nextLesson = nextUncompleted.title;
+    } else if (lessonsDone === 0) {
+      nextLesson = "Start Lesson 1";
     }
-  ];
 
-  // --- ACTIVE GIGS DEMO DATA ---
-  const activeGigsList = [
-    {
-      id: "ag1",
-      title: "Digital Marketing Assistant",
-      company: "Desi Flavors Handcrafted",
-      category: "Marketing",
-      budget: "₹8,000 / mo",
-      status: "In Progress",
-      statusColor: "bg-emerald-100 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-500/30",
-      deadline: "Oct 15, 2026"
-    },
-    {
-      id: "ag2",
-      title: "Content Writer",
-      company: "NourishBites Foods",
-      category: "Content",
-      budget: "₹5,000 / mo",
-      status: "Under Review",
-      statusColor: "bg-amber-100 text-amber-800 dark:bg-amber-500/20 dark:text-amber-300 border border-amber-300 dark:border-amber-500/30",
-      deadline: "Oct 08, 2026"
-    },
-    {
-      id: "ag3",
-      title: "Social Media Manager",
-      company: "CraftsOfIndia Boutique",
-      category: "Marketing",
-      budget: "₹10,000 / mo",
-      status: "Active",
-      statusColor: "bg-purple-100 text-purple-800 dark:bg-purple-500/20 dark:text-purple-300 border border-purple-300 dark:border-purple-500/30",
-      deadline: "Oct 25, 2026"
-    },
-    {
-      id: "ag4",
-      title: "Graphic Design Task",
-      company: "Women Summit Event",
-      category: "Design",
-      budget: "₹3,500 flat",
-      status: "Applied",
-      statusColor: "bg-blue-100 text-blue-800 dark:bg-blue-500/20 dark:text-blue-300 border border-blue-300 dark:border-blue-500/30",
-      deadline: "Oct 04, 2026"
-    }
-  ];
+    return {
+      id: track.id,
+      title: track.title,
+      category: track.category,
+      progress,
+      lessonsDone,
+      totalLessons,
+      instructor: track.instructor ? track.instructor.split('(')[0].trim() : "Lead Instructor",
+      nextLesson
+    };
+  });
 
-  // --- PORTFOLIO SHOWCASE DATA ---
-  const defaultPortfolios = [
-    {
-      id: "p1",
-      title: "7-Day Instagram Growth Strategy for CraftBoutique",
-      category: "Digital Marketing",
-      imageUrl: "https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?auto=format&fit=crop&q=80&w=600",
-      views: 480,
-      likes: 42,
-      date: "2 days ago"
-    },
-    {
-      id: "p2",
-      title: "Organic Tea Packaging & Brand Identity",
-      category: "Graphic Design",
-      imageUrl: "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&q=80&w=600",
-      views: 520,
-      likes: 58,
-      date: "4 days ago"
-    },
-    {
-      id: "p3",
-      title: "Shopify Store Setup for Handmade Jewelry",
-      category: "E-Commerce",
-      imageUrl: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&q=80&w=600",
-      views: 240,
-      likes: 31,
-      date: "1 week ago"
-    }
-  ];
+  // --- DYNAMIC ACTIVE GIGS LIST ---
+  const activeGigsList = userAppliedGigs.map(gig => ({
+    id: gig.id,
+    title: gig.title,
+    company: gig.company,
+    category: gig.category,
+    budget: gig.stipend,
+    status: "Applied",
+    statusColor: "bg-purple-100 text-purple-800 dark:bg-purple-500/20 dark:text-purple-300 border border-purple-300 dark:border-purple-500/30",
+    deadline: gig.deadline || "Active"
+  }));
 
-  const displayedPortfolios = userPortfolios.length > 0 ? userPortfolios : defaultPortfolios;
+  // --- DYNAMIC PORTFOLIO SHOWCASE DATA ---
+  const displayedPortfolios = userPortfolios;
 
-  // --- EARNINGS TRANSACTIONS ---
-  const recentTransactions = [
-    { id: "t1", title: "Digital Marketing Assistant Milestone", client: "Desi Flavors Handcrafted", amount: "+₹8,000", date: "Sep 24, 2026", status: "Completed" },
-    { id: "t2", title: "Canva Banners Design Project", client: "Women Summit Event", amount: "+₹3,500", date: "Sep 18, 2026", status: "Completed" },
-    { id: "t3", title: "Healthy Snack Blog Articles", client: "NourishBites Foods", amount: "+₹5,000", date: "Sep 10, 2026", status: "Completed" },
-    { id: "t4", title: "Skill Track Completion Reward", client: "HerEarn Foundation", amount: "+₹2,000", date: "Aug 28, 2026", status: "Bonus" }
-  ];
+  // --- DYNAMIC EARNINGS TRANSACTIONS ---
+  const recentTransactions = (currentUser.earnings && currentUser.earnings > 0)
+    ? [
+        { id: "t1", title: "Micro-Gig Milestone Payout", client: "Verified Client Escrow", amount: `+₹${currentUser.earnings.toLocaleString()}`, date: "Recent", status: "Completed" }
+      ]
+    : [];
 
   // --- RECOMMENDED COURSES ---
   const recommendedCourses = [
@@ -306,20 +229,47 @@ export default function ProfileSection({
     }
   ];
 
-  // --- ACHIEVEMENTS BADGES ---
+  // --- DYNAMIC ACHIEVEMENTS BADGES ---
   const achievementsList = [
-    { id: "b1", title: "First Course Completed", icon: Trophy, unlocked: true, desc: "Mastered Canva Graphic Design Track", badgeBg: "bg-amber-50 dark:bg-slate-800/60 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-500/40" },
-    { id: "b2", title: "Top Performer", icon: Star, unlocked: true, desc: "Maintained 100% Client Rating", badgeBg: "bg-purple-50 dark:bg-slate-800/60 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-500/40" },
-    { id: "b3", title: "Portfolio Creator", icon: Sparkles, unlocked: true, desc: "Published 3+ Verified Showcase Projects", badgeBg: "bg-pink-50 dark:bg-slate-800/60 text-pink-700 dark:text-pink-400 border-pink-200 dark:border-pink-500/40" },
-    { id: "b4", title: "Gig Winner", icon: Zap, unlocked: true, desc: "Awarded & Delivered Paid Freelance Gig", badgeBg: "bg-emerald-50 dark:bg-slate-800/60 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-500/40" }
+    { 
+      id: "b1", 
+      title: "First Lesson Mastered", 
+      icon: Trophy, 
+      unlocked: completedCount > 0, 
+      desc: completedCount > 0 ? `${completedCount} Lessons Mastered` : "Complete your first lesson to unlock", 
+      badgeBg: completedCount > 0 ? "bg-amber-50 dark:bg-slate-800/60 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-500/40" : "bg-slate-100 dark:bg-slate-800/30 text-slate-400 border-slate-200 dark:border-slate-700/40 opacity-60" 
+    },
+    { 
+      id: "b2", 
+      title: "Track Mastered", 
+      icon: Award, 
+      unlocked: completedCount >= 3, 
+      desc: completedCount >= 3 ? "Skill Track Certificate Unlocked" : "Complete capstone track to unlock", 
+      badgeBg: completedCount >= 3 ? "bg-purple-50 dark:bg-slate-800/60 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-500/40" : "bg-slate-100 dark:bg-slate-800/30 text-slate-400 border-slate-200 dark:border-slate-700/40 opacity-60" 
+    },
+    { 
+      id: "b3", 
+      title: "Portfolio Creator", 
+      icon: Sparkles, 
+      unlocked: userPortfolios.length > 0, 
+      desc: userPortfolios.length > 0 ? `${userPortfolios.length} Showcase Project Published` : "Upload capstone project to unlock", 
+      badgeBg: userPortfolios.length > 0 ? "bg-pink-50 dark:bg-slate-800/60 text-pink-700 dark:text-pink-400 border-pink-200 dark:border-pink-500/40" : "bg-slate-100 dark:bg-slate-800/30 text-slate-400 border-slate-200 dark:border-slate-700/40 opacity-60" 
+    },
+    { 
+      id: "b4", 
+      title: "Gig Applicant", 
+      icon: Zap, 
+      unlocked: userAppliedGigs.length > 0, 
+      desc: userAppliedGigs.length > 0 ? `${userAppliedGigs.length} Active Application` : "Apply for micro-gigs to unlock", 
+      badgeBg: userAppliedGigs.length > 0 ? "bg-emerald-50 dark:bg-slate-800/60 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-500/40" : "bg-slate-100 dark:bg-slate-800/30 text-slate-400 border-slate-200 dark:border-slate-700/40 opacity-60" 
+    }
   ];
 
-  // --- ACTIVITY TIMELINE ---
+  // --- DYNAMIC ACTIVITY TIMELINE ---
   const activityTimelineData = [
-    { id: "act-1", action: "Course Completed", detail: "Completed 'Lesson 3: Captions & Hashtags' in Digital Marketing Track", time: "2 hours ago", icon: BookOpen, color: "text-purple-600 dark:text-purple-400 bg-purple-100 dark:bg-purple-500/20 border-purple-300 dark:border-purple-500/30" },
-    { id: "act-2", action: "Portfolio Updated", detail: "Added '7-Day Instagram Growth Strategy' to Public Portfolio", time: "1 day ago", icon: Upload, color: "text-pink-600 dark:text-pink-400 bg-pink-100 dark:bg-pink-500/20 border-pink-300 dark:border-pink-500/30" },
-    { id: "act-3", action: "New Gig Applied", detail: "Applied for 'Social Media Manager for Organic Spices Brand'", time: "2 days ago", icon: Briefcase, color: "text-amber-600 dark:text-amber-400 bg-amber-100 dark:bg-amber-500/20 border-amber-300 dark:border-amber-500/30" },
-    { id: "act-4", action: "Achievement Unlocked", detail: "Earned 'Top Performer' badge with 5-star client review", time: "3 days ago", icon: Trophy, color: "text-emerald-600 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-500/20 border-emerald-300 dark:border-emerald-500/30" }
+    ...(completedCount > 0 ? [{ id: "act-1", action: "Lesson Completed", detail: `${completedCount} skill lesson(s) mastered on HerEarn`, time: "Recent", icon: BookOpen, color: "text-purple-600 dark:text-purple-400 bg-purple-100 dark:bg-purple-500/20 border-purple-300 dark:border-purple-500/30" }] : []),
+    ...(userPortfolios.length > 0 ? [{ id: "act-2", action: "Portfolio Published", detail: `Published '${userPortfolios[0].title}' project`, time: "Recent", icon: Upload, color: "text-pink-600 dark:text-pink-400 bg-pink-100 dark:bg-pink-500/20 border-pink-300 dark:border-pink-500/30" }] : []),
+    ...(userAppliedGigs.length > 0 ? [{ id: "act-3", action: "Micro-Gig Applied", detail: `Submitted application for '${userAppliedGigs[0].title}'`, time: "Recent", icon: Briefcase, color: "text-amber-600 dark:text-amber-400 bg-amber-100 dark:bg-amber-500/20 border-amber-300 dark:border-amber-500/30" }] : [])
   ];
 
   return (
@@ -427,7 +377,7 @@ export default function ProfileSection({
               </div>
               <div className="text-left">
                 <span className="text-[10px] text-slate-500 dark:text-slate-400 uppercase font-extrabold tracking-wider block">Verified Earnings</span>
-                <span className="text-lg font-extrabold text-emerald-600 dark:text-emerald-400">₹{(currentUser.earnings || 18500).toLocaleString()}</span>
+                <span className="text-lg font-extrabold text-emerald-600 dark:text-emerald-400">₹{(currentUser.earnings || 0).toLocaleString()}</span>
               </div>
             </div>
           </div>
@@ -632,35 +582,57 @@ export default function ProfileSection({
             </div>
 
             <div className="space-y-3.5">
-              {activeGigsList.map((gig) => (
-                <div key={gig.id} className="bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/60 rounded-2xl p-4 space-y-3 hover:border-amber-400 transition-all">
-                  <div className="flex items-start justify-between gap-2">
-                    <div>
-                      <h4 className="text-sm font-bold text-slate-900 dark:text-white">{gig.title}</h4>
-                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 font-medium">{gig.company}</p>
+              {activeGigsList.length > 0 ? (
+                activeGigsList.map((gig) => (
+                  <div key={gig.id} className="bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/60 rounded-2xl p-4 space-y-3 hover:border-amber-400 transition-all">
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <h4 className="text-sm font-bold text-slate-900 dark:text-white">{gig.title}</h4>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 font-medium">{gig.company}</p>
+                      </div>
+                      <span className={`text-[10px] font-extrabold px-2.5 py-1 rounded-full border ${gig.statusColor}`}>
+                        {gig.status}
+                      </span>
                     </div>
-                    <span className={`text-[10px] font-extrabold px-2.5 py-1 rounded-full border ${gig.statusColor}`}>
-                      {gig.status}
-                    </span>
-                  </div>
 
-                  <div className="flex items-center justify-between text-xs pt-1 border-t border-slate-200 dark:border-slate-700/40">
-                    <span className="font-extrabold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
-                      <IndianRupee className="w-3.5 h-3.5" />
-                      {gig.budget}
-                    </span>
+                    <div className="flex items-center justify-between text-xs pt-1 border-t border-slate-200 dark:border-slate-700/40">
+                      <span className="font-extrabold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                        <IndianRupee className="w-3.5 h-3.5" />
+                        {gig.budget}
+                      </span>
 
-                    <button
-                      type="button"
-                      onClick={() => onNavigate && onNavigate('gigs')}
-                      className="px-3 py-1.5 rounded-xl bg-purple-100 dark:bg-purple-900/50 hover:bg-purple-200 dark:hover:bg-purple-800/80 border border-purple-300 dark:border-purple-500/30 text-xs font-bold text-purple-900 dark:text-purple-200 cursor-pointer flex items-center gap-1"
-                    >
-                      <span>View Details</span>
-                      <ExternalLink className="w-3 h-3 text-purple-600 dark:text-purple-300" />
-                    </button>
+                      <button
+                        type="button"
+                        onClick={() => onNavigate && onNavigate('gigs')}
+                        className="px-3 py-1.5 rounded-xl bg-purple-100 dark:bg-purple-900/50 hover:bg-purple-200 dark:hover:bg-purple-800/80 border border-purple-300 dark:border-purple-500/30 text-xs font-bold text-purple-900 dark:text-purple-200 cursor-pointer flex items-center gap-1"
+                      >
+                        <span>View Details</span>
+                        <ExternalLink className="w-3 h-3 text-purple-600 dark:text-purple-300" />
+                      </button>
+                    </div>
                   </div>
+                ))
+              ) : (
+                <div className="bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700/60 rounded-2xl p-6 text-center space-y-3">
+                  <div className="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-900/40 text-amber-600 dark:text-amber-400 flex items-center justify-center mx-auto">
+                    <Briefcase className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200">No Active Micro-Gigs Yet</h4>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 max-w-xs mx-auto font-medium">
+                      Apply to verified client tasks on the Opportunity board to earn income.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => onNavigate && onNavigate('gigs')}
+                    className="btn-gradient-award text-xs py-2 px-4 font-bold cursor-pointer shadow-sm inline-flex items-center gap-1.5"
+                  >
+                    <span>Explore Opportunity Board</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </button>
                 </div>
-              ))}
+              )}
             </div>
           </div>
         </div>
@@ -691,54 +663,76 @@ export default function ProfileSection({
         </div>
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {displayedPortfolios.map((item) => (
-            <div 
-              key={item.id}
-              className="bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-purple-500/20 rounded-2xl p-4 space-y-3 hover:border-pink-400 transition-all hover:-translate-y-1 group shadow-lg"
-            >
-              <div className="relative overflow-hidden rounded-xl h-40">
-                <img 
-                  src={item.imageUrl || item.thumbnail} 
-                  alt={item.title} 
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                />
-                <span className="absolute top-2.5 left-2.5 bg-slate-950/80 backdrop-blur-md text-pink-300 border border-pink-500/30 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full">
-                  {item.category || item.skillTrack}
-                </span>
-              </div>
-
-              <div>
-                <h4 className="text-sm font-bold text-slate-900 dark:text-white line-clamp-1 group-hover:text-pink-600 dark:group-hover:text-pink-300 transition-colors">
-                  {item.title}
-                </h4>
-                <p className="text-xs text-slate-600 dark:text-slate-400 line-clamp-2 mt-1 font-medium">
-                  {item.description || "Portfolio project built using verified practical skills on HerEarn."}
-                </p>
-              </div>
-
-              <div className="flex items-center justify-between text-xs text-slate-600 dark:text-slate-400 border-t border-slate-200 dark:border-slate-700/50 pt-3 font-semibold">
-                <div className="flex items-center gap-3">
-                  <span className="flex items-center gap-1">
-                    <Eye className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
-                    {item.views || 350}
-                  </span>
-                  <span className="flex items-center gap-1 text-rose-600 dark:text-rose-400">
-                    <ThumbsUp className="w-3.5 h-3.5" />
-                    {item.likes || 25}
+          {displayedPortfolios.length > 0 ? (
+            displayedPortfolios.map((item) => (
+              <div 
+                key={item.id}
+                className="bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-purple-500/20 rounded-2xl p-4 space-y-3 hover:border-pink-400 transition-all hover:-translate-y-1 group shadow-lg"
+              >
+                <div className="relative overflow-hidden rounded-xl h-40">
+                  <img 
+                    src={item.imageUrl || item.thumbnail} 
+                    alt={item.title} 
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
+                  <span className="absolute top-2.5 left-2.5 bg-slate-950/80 backdrop-blur-md text-pink-300 border border-pink-500/30 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full">
+                    {item.category || item.skillTrack}
                   </span>
                 </div>
 
-                <button
-                  type="button"
-                  onClick={onOpenSubmitModal}
-                  className="px-3 py-1 rounded-lg bg-purple-100 dark:bg-purple-950 border border-purple-300 dark:border-purple-500/40 text-[11px] font-bold text-purple-900 dark:text-purple-300 hover:bg-purple-200 dark:hover:bg-purple-900 cursor-pointer flex items-center gap-1"
-                >
-                  <Edit3 className="w-3 h-3" />
-                  <span>Edit Portfolio</span>
-                </button>
+                <div>
+                  <h4 className="text-sm font-bold text-slate-900 dark:text-white line-clamp-1 group-hover:text-pink-600 dark:group-hover:text-pink-300 transition-colors">
+                    {item.title}
+                  </h4>
+                  <p className="text-xs text-slate-600 dark:text-slate-400 line-clamp-2 mt-1 font-medium">
+                    {item.description || "Portfolio project built using verified practical skills on HerEarn."}
+                  </p>
+                </div>
+
+                <div className="flex items-center justify-between text-xs text-slate-600 dark:text-slate-400 border-t border-slate-200 dark:border-slate-700/50 pt-3 font-semibold">
+                  <div className="flex items-center gap-3">
+                    <span className="flex items-center gap-1">
+                      <Eye className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+                      {item.views || 1}
+                    </span>
+                    <span className="flex items-center gap-1 text-rose-600 dark:text-rose-400">
+                      <ThumbsUp className="w-3.5 h-3.5" />
+                      {item.likes || 1}
+                    </span>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={onOpenSubmitModal}
+                    className="px-3 py-1 rounded-lg bg-purple-100 dark:bg-purple-950 border border-purple-300 dark:border-purple-500/40 text-[11px] font-bold text-purple-900 dark:text-purple-300 hover:bg-purple-200 dark:hover:bg-purple-900 cursor-pointer flex items-center gap-1"
+                  >
+                    <Edit3 className="w-3 h-3" />
+                    <span>Edit Portfolio</span>
+                  </button>
+                </div>
               </div>
+            ))
+          ) : (
+            <div className="bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-purple-500/20 rounded-2xl p-8 text-center space-y-3 col-span-full">
+              <div className="w-12 h-12 rounded-2xl bg-pink-100 dark:bg-pink-900/40 text-pink-600 dark:text-pink-400 flex items-center justify-center mx-auto">
+                <Sparkles className="w-6 h-6" />
+              </div>
+              <div>
+                <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200">No Portfolio Cards Uploaded Yet</h4>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-sm mx-auto font-medium">
+                  Publish your capstone project proof to demonstrate practical skills to hiring clients.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={onOpenSubmitModal}
+                className="btn-gradient-award text-xs py-2.5 px-5 font-bold cursor-pointer shadow-md inline-flex items-center gap-2"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Upload First Capstone Project</span>
+              </button>
             </div>
-          ))}
+          )}
         </div>
       </div>
 
@@ -759,7 +753,7 @@ export default function ProfileSection({
 
               <div className="bg-emerald-100 dark:bg-emerald-500/20 border border-emerald-300 dark:border-emerald-500/30 text-emerald-800 dark:text-emerald-300 px-3 py-1.5 rounded-xl text-xs font-extrabold flex items-center gap-1.5 self-start sm:self-auto">
                 <TrendingUp className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                <span>+24.5% Growth</span>
+                <span>{currentUser.earnings > 0 ? "+100% Payout" : "0% Income"}</span>
               </div>
             </div>
 
@@ -767,21 +761,21 @@ export default function ProfileSection({
             <div className="bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/60 rounded-2xl p-5 space-y-4">
               <div className="flex justify-between items-end text-xs">
                 <div>
-                  <span className="text-[10px] text-slate-500 dark:text-slate-400 font-extrabold uppercase tracking-wider block">Monthly Total</span>
-                  <span className="text-2xl font-black text-emerald-600 dark:text-emerald-400">₹18,500</span>
+                  <span className="text-[10px] text-slate-500 dark:text-slate-400 font-extrabold uppercase tracking-wider block">Total Balance</span>
+                  <span className="text-2xl font-black text-emerald-600 dark:text-emerald-400">₹{(currentUser.earnings || 0).toLocaleString()}</span>
                 </div>
-                <span className="text-xs text-purple-700 dark:text-purple-300 font-semibold">6-Month Trend Overview</span>
+                <span className="text-xs text-purple-700 dark:text-purple-300 font-semibold">Earnings History</span>
               </div>
 
               {/* Bar Visualizer */}
               <div className="h-32 flex items-end justify-between gap-2 pt-4 px-2 border-b border-slate-200 dark:border-slate-700/50">
                 {[
-                  { month: 'Jan', val: '2.5k', height: '25%', bg: 'bg-purple-600/40' },
-                  { month: 'Feb', val: '4.0k', height: '40%', bg: 'bg-purple-600/60' },
-                  { month: 'Mar', val: '7.5k', height: '55%', bg: 'bg-pink-600/60' },
-                  { month: 'Apr', val: '12.0k', height: '70%', bg: 'bg-purple-500' },
-                  { month: 'May', val: '15.0k', height: '85%', bg: 'bg-pink-500' },
-                  { month: 'Jun', val: '18.5k', height: '100%', bg: 'bg-gradient-to-t from-purple-600 to-pink-500' }
+                  { month: 'Jan', val: '₹0', height: currentUser.earnings ? '20%' : '5%', bg: 'bg-purple-600/40' },
+                  { month: 'Feb', val: '₹0', height: currentUser.earnings ? '30%' : '5%', bg: 'bg-purple-600/60' },
+                  { month: 'Mar', val: '₹0', height: currentUser.earnings ? '45%' : '5%', bg: 'bg-pink-600/60' },
+                  { month: 'Apr', val: '₹0', height: currentUser.earnings ? '60%' : '5%', bg: 'bg-purple-500' },
+                  { month: 'May', val: '₹0', height: currentUser.earnings ? '80%' : '5%', bg: 'bg-pink-500' },
+                  { month: 'Current', val: `₹${(currentUser.earnings || 0).toLocaleString()}`, height: currentUser.earnings ? '100%' : '5%', bg: 'bg-gradient-to-t from-purple-600 to-pink-500' }
                 ].map((item, idx) => (
                   <div key={idx} className="flex-1 flex flex-col items-center gap-1.5 h-full justify-end group">
                     <span className="text-[10px] text-slate-700 dark:text-slate-300 font-bold opacity-0 group-hover:opacity-100 transition-opacity">
@@ -801,17 +795,24 @@ export default function ProfileSection({
             <div className="space-y-3">
               <h4 className="text-xs font-extrabold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Recent Payout Transactions</h4>
               <div className="space-y-2">
-                {recentTransactions.map((tx) => (
-                  <div key={tx.id} className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700/40 flex items-center justify-between text-xs">
-                    <div>
-                      <h5 className="font-bold text-slate-900 dark:text-white">{tx.title}</h5>
-                      <p className="text-[11px] text-slate-500 dark:text-slate-400">{tx.client} • {tx.date}</p>
+                {recentTransactions.length > 0 ? (
+                  recentTransactions.map((tx) => (
+                    <div key={tx.id} className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700/40 flex items-center justify-between text-xs">
+                      <div>
+                        <h5 className="font-bold text-slate-900 dark:text-white">{tx.title}</h5>
+                        <p className="text-[11px] text-slate-500 dark:text-slate-400">{tx.client} • {tx.date}</p>
+                      </div>
+                      <span className="font-extrabold text-emerald-700 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-500/10 px-2.5 py-1 rounded-lg border border-emerald-300 dark:border-emerald-500/30">
+                        {tx.amount}
+                      </span>
                     </div>
-                    <span className="font-extrabold text-emerald-700 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-500/10 px-2.5 py-1 rounded-lg border border-emerald-300 dark:border-emerald-500/30">
-                      {tx.amount}
-                    </span>
+                  ))
+                ) : (
+                  <div className="bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700/60 rounded-2xl p-5 text-center space-y-1">
+                    <p className="text-xs font-semibold text-slate-700 dark:text-slate-300">No payout transactions recorded yet.</p>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">Complete client micro-gigs to receive verified direct earnings.</p>
                   </div>
-                ))}
+                )}
               </div>
             </div>
 
@@ -831,7 +832,7 @@ export default function ProfileSection({
               </div>
 
               <span className="text-xs font-bold text-amber-800 dark:text-amber-400 bg-amber-100 dark:bg-amber-500/20 px-3 py-1 rounded-full border border-amber-300 dark:border-amber-500/30">
-                4 Unlocked
+                {achievementsList.filter(b => b.unlocked).length} Unlocked
               </span>
             </div>
 
@@ -867,21 +868,27 @@ export default function ProfileSection({
               </h4>
 
               <div className="space-y-3 pl-2 border-l-2 border-purple-300 dark:border-purple-500/30">
-                {activityTimelineData.map((act) => {
-                  const IconComp = act.icon;
-                  return (
-                    <div key={act.id} className="relative pl-4 space-y-0.5 group">
-                      <div className={`absolute -left-[17px] top-0.5 p-1 rounded-full border ${act.color}`}>
-                        <IconComp className="w-3 h-3" />
+                {activityTimelineData.length > 0 ? (
+                  activityTimelineData.map((act) => {
+                    const IconComp = act.icon;
+                    return (
+                      <div key={act.id} className="relative pl-4 space-y-0.5 group">
+                        <div className={`absolute -left-[17px] top-0.5 p-1 rounded-full border ${act.color}`}>
+                          <IconComp className="w-3 h-3" />
+                        </div>
+                        <div className="flex items-center justify-between text-xs">
+                          <span className="font-bold text-slate-900 dark:text-white">{act.action}</span>
+                          <span className="text-[10px] text-slate-500 dark:text-slate-400">{act.time}</span>
+                        </div>
+                        <p className="text-[11px] text-slate-600 dark:text-slate-300 font-medium">{act.detail}</p>
                       </div>
-                      <div className="flex items-center justify-between text-xs">
-                        <span className="font-bold text-slate-900 dark:text-white">{act.action}</span>
-                        <span className="text-[10px] text-slate-500 dark:text-slate-400">{act.time}</span>
-                      </div>
-                      <p className="text-[11px] text-slate-600 dark:text-slate-300 font-medium">{act.detail}</p>
-                    </div>
-                  );
-                })}
+                    );
+                  })
+                ) : (
+                  <div className="pl-4 text-xs text-slate-500 dark:text-slate-400 font-medium">
+                    No recent activity yet. Master lessons, upload projects, or apply for gigs to build your timeline.
+                  </div>
+                )}
               </div>
             </div>
 

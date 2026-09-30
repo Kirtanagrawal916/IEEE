@@ -7,13 +7,18 @@ import OpportunitiesSection from './components/OpportunitiesSection';
 import ProfileSection from './components/ProfileSection';
 import LoginPage from './components/LoginPage';
 import SignupPage from './components/SignupPage';
+import AboutPage from './components/AboutPage';
+import TermsPage from './components/TermsPage';
+import PrivacyPage from './components/PrivacyPage';
+import OpportunityDetailPage from './components/OpportunityDetailPage';
+import OpportunityApplyPage from './components/OpportunityApplyPage';
 
 import AuthModal from './components/AuthModal';
 import SubmitProjectModal from './components/SubmitProjectModal';
 import ApplyGigModal from './components/ApplyGigModal';
+import LogoutModal from './components/LogoutModal';
 import ToastNotification from './components/ToastNotification';
-import AboutModal from './components/AboutModal';
-import TermsModal from './components/TermsModal';
+import ChatBot from './components/ChatBot';
 
 import { 
   initialUser, 
@@ -24,7 +29,7 @@ import {
 import { api } from './services/api';
 
 export default function App() {
-  // Default to 'home' (Landing Page) tab when visiting website
+  // Navigation active tab: 'home' | 'about' | 'learn' | 'portfolio' | 'gigs' | 'profile' | 'login' | 'signup' | 'terms' | 'privacy' | 'opportunity_detail' | 'opportunity_apply'
   const [activeTab, setActiveTab] = useState('home');
   
   // User state
@@ -35,22 +40,24 @@ export default function App() {
 
   const [portfolios, setPortfolios] = useState(initialPortfolios);
   const [opportunities, setOpportunities] = useState(initialOpportunities);
-  const [theme, setTheme] = useState('dark');
+  const [selectedOpportunity, setSelectedOpportunity] = useState(null);
+  const [theme, setTheme] = useState(() => {
+    return localStorage.getItem('herearn_theme') || 'light';
+  });
 
-  // Modals
+  // Modals & Active state
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [authMode, setAuthMode] = useState('login');
   const [isSubmitOpen, setIsSubmitOpen] = useState(false);
   const [isApplyOpen, setIsApplyOpen] = useState(false);
-  const [activeGigToApply, setActiveGigToApply] = useState(null);
-  const [isAboutOpen, setIsAboutOpen] = useState(false);
-  const [isTermsOpen, setIsTermsOpen] = useState(false);
+  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
 
   // Toast
   const [toast, setToast] = useState(null);
 
   useEffect(() => {
     document.body.className = theme;
+    localStorage.setItem('herearn_theme', theme);
   }, [theme]);
 
   // Initial Data Fetching from Express Backend API
@@ -104,13 +111,12 @@ export default function App() {
     }
   };
 
-  const handleToggleTheme = () => {
-    setTheme(prev => prev === 'dark' ? 'light' : 'dark');
-  };
-
   const showToast = (title, message) => {
     setToast({ title, message });
-    setTimeout(() => setToast(null), 4000);
+  };
+
+  const handleToggleTheme = () => {
+    setTheme(prev => prev === 'dark' ? 'light' : 'dark');
   };
 
   const handleOpenAuth = (mode = 'login') => {
@@ -119,105 +125,63 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // Sign Out Handler
   const handleLogout = () => {
     saveUserData(null);
-    setActiveTab('profile'); // Keep on Dashboard in guest view
-    showToast("Signed Out", "You have successfully logged out.");
+    setIsLogoutModalOpen(false);
+    setActiveTab('home');
+    showToast("Signed Out", "You have signed out of your account.");
   };
 
-  // Profile Update Handler with API integration
-  const handleUpdateProfile = async (profileData) => {
-    try {
-      const updatedUser = await api.updateProfile(profileData);
-      setUser(updatedUser.user || updatedUser);
-      showToast("✨ Profile Updated!", "Your dashboard profile has been saved to the backend database.");
-    } catch (err) {
-      const updated = { ...(user || initialUser), ...profileData };
-      saveUserData(updated);
-      showToast("✨ Profile Updated!", "Your dashboard profile has been updated.");
-    }
-  };
-
-  // Lesson Completion Action with API integration
-  const handleCompleteLesson = async (lessonId) => {
+  const handleCompleteLesson = (lessonId) => {
     if (!user) {
-      handleOpenAuth('login');
+      showToast("Guest Mode Alert 💡", "Create a free account to track course progress & save certificates!");
       return;
     }
 
-    try {
-      const res = await api.markLessonComplete(lessonId);
-      const currentCompleted = user.completedLessons || [];
-      const updatedLessons = currentCompleted.includes(lessonId)
-        ? currentCompleted.filter(id => id !== lessonId)
-        : [...currentCompleted, lessonId];
-
-      saveUserData({
+    const currentCompleted = user.completedLessons || [];
+    if (!currentCompleted.includes(lessonId)) {
+      const updatedUser = {
         ...user,
-        completedLessons: updatedLessons,
-      });
-
-      showToast("🎉 Lesson Mastered!", "Your skill track progress has increased in database!");
-    } catch (err) {
-      const currentCompleted = user.completedLessons || [];
-      const updatedLessons = currentCompleted.includes(lessonId)
-        ? currentCompleted.filter(id => id !== lessonId)
-        : [...currentCompleted, lessonId];
-
-      saveUserData({
-        ...user,
-        completedLessons: updatedLessons,
-      });
-      showToast("🎉 Lesson Mastered!", "Your skill track progress has increased!");
+        completedLessons: [...currentCompleted, lessonId],
+      };
+      saveUserData(updatedUser);
+      showToast("Lesson Completed! 🎉", "Great job! Keep progressing to unlock capstone projects.");
     }
   };
 
-  // Submit Portfolio Project Action with API integration
-  const handleSubmitProject = async (newProject) => {
-    try {
-      const res = await api.createProject(newProject);
-      const created = res.project || {
-        id: `p-${Date.now()}`,
-        authorName: user ? user.name : "Guest Learner",
-        authorAvatar: user ? user.avatar : "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=300",
-        location: user ? user.location : "India",
-        skillTrack: newProject.category,
-        likes: 1,
-        date: "Just now",
-        ...newProject,
-      };
+  const handleSubmitProject = (projectData) => {
+    const newProject = {
+      id: `p-${Date.now()}`,
+      title: projectData.title,
+      authorName: user?.name || "Learner Creator",
+      authorAvatar: user?.avatar || "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=300",
+      category: projectData.category || "Marketing",
+      image: projectData.image || "https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?auto=format&fit=crop&q=80&w=600",
+      description: projectData.description,
+      likes: 0,
+      tags: projectData.tags ? projectData.tags.split(',').map(t => t.trim()) : ["HerEarn"],
+    };
 
-      setPortfolios([created, ...portfolios]);
-      showToast("✨ Portfolio Published!", "Your project is saved to database and live on the public showcase gallery.");
-    } catch (err) {
-      const createdItem = {
-        id: `p-${Date.now()}`,
-        authorName: user ? user.name : "Guest Learner",
-        authorAvatar: user ? user.avatar : "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=300",
-        location: user ? user.location : "India",
-        skillTrack: newProject.category,
-        likes: 1,
-        date: "Just now",
-        ...newProject,
-      };
-
-      setPortfolios([createdItem, ...portfolios]);
-      showToast("✨ Portfolio Published!", "Your project is live on the public showcase gallery.");
-    }
+    setPortfolios([newProject, ...portfolios]);
+    showToast("Project Published! 🚀", "Your project is live in the community portfolio showcase.");
   };
 
-  // Apply to Gig Trigger
   const handleOpenApplyGig = (gig) => {
     if (!user) {
+      showToast("Sign In Required 🔒", "Please log in or continue to submit gig proposals.");
       handleOpenAuth('login');
       return;
     }
-    setActiveGigToApply(gig);
+    setSelectedOpportunity(gig);
     setIsApplyOpen(true);
   };
 
-  // Confirm Gig Application Action with API integration
+  const handleViewOpportunityDetails = (gig) => {
+    setSelectedOpportunity(gig);
+    setActiveTab('opportunity_detail');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   const handleConfirmApply = async (gigId, coverNote) => {
     try {
       await api.applyOpportunity(gigId, { coverNote });
@@ -239,7 +203,7 @@ export default function App() {
         });
       }
 
-      showToast("🚀 Application Sent!", "Application recorded in database with portfolio proof.");
+      showToast("🚀 Application Sent!", "Application recorded with portfolio proof.");
     } catch (err) {
       setOpportunities(opportunities.map(g => {
         if (g.id === gigId) {
@@ -259,11 +223,10 @@ export default function App() {
         });
       }
 
-      showToast("🚀 Application Sent!", "Client received your application with attached portfolio proof.");
+      showToast("🚀 Application Sent!", "Client received your application with portfolio proof.");
     }
   };
 
-  // User Login Handler
   const handleLoginSuccess = (userData) => {
     const isNewSignUp = userData.isSignUp;
     const loggedInUser = {
@@ -282,8 +245,26 @@ export default function App() {
     };
 
     saveUserData(loggedInUser);
-    setActiveTab('profile'); // Switch to Dashboard view
+    setActiveTab('profile');
     showToast(isNewSignUp ? "Account Created! 🎉" : "Welcome Back! ✨", `Signed in as ${loggedInUser.name}`);
+  };
+
+  const handleContinueAsGuest = () => {
+    saveUserData(null);
+    setActiveTab('profile');
+    setIsAuthOpen(false);
+    showToast("Guest Mode Active 👤", "Exploring HerEarn in Guest Mode.");
+  };
+
+  const handleUpdateUserSkills = (newSkills) => {
+    const updatedUser = user ? { ...user, skills: newSkills } : {
+      name: 'Guest Learner',
+      isGuest: true,
+      skills: newSkills
+    };
+    setUser(updatedUser);
+    localStorage.setItem('herearn_user', JSON.stringify(updatedUser));
+    showToast("🎯 Skills Updated!", `Skill profile updated (${newSkills.length} skills active). Opportunity match percentages updated.`);
   };
 
   const userPortfolios = portfolios.filter(p => p.authorName === (user?.name || "Guest Learner"));
@@ -296,36 +277,41 @@ export default function App() {
       
       {/* Sticky Navigation Header */}
       <Navbar 
-        activeTab={activeTab} 
+        activeTab={activeTab}
         setActiveTab={setActiveTab}
         user={user}
+        onLogout={() => setIsLogoutModalOpen(true)}
         onOpenAuth={handleOpenAuth}
-        onLogout={handleLogout}
+        onContinueAsGuest={handleContinueAsGuest}
         theme={theme}
         onToggleTheme={handleToggleTheme}
-        onOpenAbout={() => setIsAboutOpen(true)}
-        onOpenTerms={() => setIsTermsOpen(true)}
       />
 
       {/* Main View Area */}
       <main className="flex-1 pb-16">
-        {activeTab === 'profile' && (
-          <ProfileSection 
-            user={user}
-            userPortfolios={userPortfolios}
-            userAppliedGigs={userAppliedGigs}
-            onOpenAuth={handleOpenAuth}
-            onOpenSubmitModal={() => setIsSubmitOpen(true)}
-            onUpdateProfile={handleUpdateProfile}
-            onNavigate={setActiveTab}
-          />
-        )}
-
         {activeTab === 'home' && (
           <LandingSection 
             onNavigate={setActiveTab}
             onOpenAuth={() => handleOpenAuth('signup')}
             theme={theme}
+          />
+        )}
+
+        {activeTab === 'about' && (
+          <AboutPage 
+            onNavigate={setActiveTab}
+          />
+        )}
+
+        {activeTab === 'terms' && (
+          <TermsPage 
+            onNavigate={setActiveTab}
+          />
+        )}
+
+        {activeTab === 'privacy' && (
+          <PrivacyPage 
+            onNavigate={setActiveTab}
           />
         )}
 
@@ -347,16 +333,52 @@ export default function App() {
           />
         )}
 
-        {activeTab === 'gigs' && (
+        {(activeTab === 'gigs' || activeTab === 'opportunities') && (
           <OpportunitiesSection 
             opportunities={opportunities}
+            user={user}
             onApplyGig={handleOpenApplyGig}
+            onViewDetails={handleViewOpportunityDetails}
+            onUpdateUserSkills={handleUpdateUserSkills}
+          />
+        )}
+
+        {activeTab === 'opportunity_detail' && (
+          <OpportunityDetailPage 
+            gig={selectedOpportunity || opportunities[0]}
+            user={user}
+            onBack={() => setActiveTab('opportunities')}
+            onApply={handleOpenApplyGig}
+            onToggleSkill={handleUpdateUserSkills}
+          />
+        )}
+
+        {activeTab === 'opportunity_apply' && (
+          <OpportunityApplyPage 
+            gig={selectedOpportunity || opportunities[0]}
+            userPortfolios={userPortfolios}
+            onBack={() => setActiveTab('opportunities')}
+            onSubmitApplication={handleConfirmApply}
+          />
+        )}
+
+        {activeTab === 'profile' && (
+          <ProfileSection 
+            user={user}
+            userPortfolios={userPortfolios}
+            userAppliedGigs={userAppliedGigs}
+            onOpenAuth={handleOpenAuth}
+            onOpenSubmitModal={() => setIsSubmitOpen(true)}
+            onUpdateProfile={(updated) => saveUserData(updated)}
+            onUpdateUserSkills={handleUpdateUserSkills}
+            onNavigate={setActiveTab}
           />
         )}
 
         {activeTab === 'login' && (
           <LoginPage 
             onLoginSuccess={handleLoginSuccess}
+            onContinueAsGuest={handleContinueAsGuest}
             onNavigateToSignup={() => {
               setActiveTab('signup');
               window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -368,6 +390,7 @@ export default function App() {
         {activeTab === 'signup' && (
           <SignupPage 
             onLoginSuccess={handleLoginSuccess}
+            onContinueAsGuest={handleContinueAsGuest}
             onNavigateToLogin={() => {
               setActiveTab('login');
               window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -376,41 +399,6 @@ export default function App() {
           />
         )}
       </main>
-
-      {/* Footer */}
-      <footer className={`border-t py-10 text-xs transition-colors ${
-        theme === 'dark' ? 'bg-slate-900 border-slate-800 text-slate-400' : 'bg-white border-slate-200 text-slate-600'
-      }`}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-4 text-center md:text-left">
-          <div>
-            <p className="font-bold text-sm">HerEarn • Skill-to-Income Platform for Women</p>
-            <p className="opacity-75 mt-1">Empowering women across India to learn skills, build portfolios, and earn income.</p>
-          </div>
-          <div className="flex flex-wrap items-center justify-center md:justify-end gap-5 font-semibold">
-            <button onClick={() => setActiveTab('profile')} className="hover:text-indigo-400 cursor-pointer">Dashboard</button>
-            <button onClick={() => setActiveTab('home')} className="hover:text-indigo-400 cursor-pointer">Overview</button>
-            <button onClick={() => setActiveTab('learn')} className="hover:text-indigo-400 cursor-pointer">Learn Case</button>
-            <button onClick={() => setActiveTab('portfolio')} className="hover:text-indigo-400 cursor-pointer">Show Skill</button>
-            <button onClick={() => setActiveTab('gigs')} className="hover:text-indigo-400 cursor-pointer">Opportunity</button>
-            <button onClick={() => setIsAboutOpen(true)} className="hover:text-indigo-400 cursor-pointer">About Us</button>
-            <button onClick={() => setIsTermsOpen(true)} className="hover:text-indigo-400 cursor-pointer">Terms & Conditions</button>
-            {!user && (
-              <>
-                <button onClick={() => handleOpenAuth('login')} className="hover:text-indigo-400 cursor-pointer font-bold text-purple-400">Log In</button>
-                <button onClick={() => handleOpenAuth('signup')} className="hover:text-pink-400 cursor-pointer font-bold text-pink-400">Sign Up</button>
-              </>
-            )}
-          </div>
-        </div>
-      </footer>
-
-      {/* Modals & Toasts */}
-      <AuthModal 
-        isOpen={isAuthOpen}
-        initialMode={authMode} 
-        onClose={() => setIsAuthOpen(false)} 
-        onLoginSuccess={handleLoginSuccess}
-      />
 
       <SubmitProjectModal 
         isOpen={isSubmitOpen}
@@ -421,25 +409,24 @@ export default function App() {
       <ApplyGigModal 
         isOpen={isApplyOpen}
         onClose={() => setIsApplyOpen(false)}
-        gig={activeGigToApply}
+        gig={selectedOpportunity}
         userPortfolios={userPortfolios}
         onConfirmApply={handleConfirmApply}
       />
 
-      <AboutModal 
-        isOpen={isAboutOpen}
-        onClose={() => setIsAboutOpen(false)}
-      />
-
-      <TermsModal 
-        isOpen={isTermsOpen}
-        onClose={() => setIsTermsOpen(false)}
+      <LogoutModal
+        isOpen={isLogoutModalOpen}
+        onConfirm={handleLogout}
+        onCancel={() => setIsLogoutModalOpen(false)}
       />
 
       <ToastNotification 
         toast={toast} 
         onClose={() => setToast(null)} 
       />
+
+      {/* Floating AI Chatbot on every page */}
+      <ChatBot />
 
     </div>
   );

@@ -1,14 +1,13 @@
 import express from 'express';
-import { prisma } from '../config/db.js';
-import { authMiddleware } from '../middleware/authMiddleware.js';
+import prisma from '../config/db.js';
+import { authenticateToken } from '../middleware/auth.js';
 
 const router = express.Router();
 
-// POST /api/opportunities/:id/apply
-router.post('/opportunities/:id/apply', authMiddleware, async (req, res) => {
+const applyHandler = async (req, res) => {
   try {
     const opportunityId = req.params.id;
-    const { coverNote, portfolioProjectIds } = req.body;
+    const { coverNote, portfolioProjectIds, portfolioId, quizSummary } = req.body;
 
     if (!coverNote) {
       return res.status(400).json({ success: false, message: 'Cover note is required' });
@@ -47,9 +46,10 @@ router.post('/opportunities/:id/apply', authMiddleware, async (req, res) => {
       },
     });
 
-    // Attach portfolio projects if passed
-    if (portfolioProjectIds && Array.isArray(portfolioProjectIds)) {
-      for (const projId of portfolioProjectIds) {
+    // Handle portfolio attachments via applicationProjects junction
+    const projIds = portfolioProjectIds || (portfolioId ? [portfolioId] : []);
+    if (Array.isArray(projIds)) {
+      for (const projId of projIds) {
         await prisma.applicationProject.create({
           data: {
             applicationId: application.id,
@@ -73,9 +73,8 @@ router.post('/opportunities/:id/apply', authMiddleware, async (req, res) => {
   } catch (error) {
     res.status(500).json({ success: false, message: 'Failed to submit application', error: error.message });
   }
-});
+};
 
-// GET /api/applications/me or /api/applications/mine
 const getMyApplicationsHandler = async (req, res) => {
   try {
     const applications = await prisma.application.findMany({
@@ -92,18 +91,18 @@ const getMyApplicationsHandler = async (req, res) => {
     const formatted = applications.map((app) => ({
       id: app.id,
       opportunityId: app.opportunityId,
-      opportunityTitle: app.opportunity.title,
-      company: app.opportunity.company,
-      logo: app.opportunity.logo,
-      stipend: app.opportunity.stipend,
-      type: app.opportunity.type,
-      category: app.opportunity.category,
+      opportunityTitle: app.opportunity ? app.opportunity.title : '',
+      company: app.opportunity ? app.opportunity.company : '',
+      logo: app.opportunity ? app.opportunity.logo : null,
+      stipend: app.opportunity ? app.opportunity.stipend : '',
+      type: app.opportunity ? app.opportunity.type : '',
+      category: app.opportunity ? app.opportunity.category : '',
       coverNote: app.coverNote,
       status: app.status,
       appliedAt: app.appliedAt,
-      attachedProjects: app.applicationProjects.map((ap) => ({
+      attachedProjects: (app.applicationProjects || []).map((ap) => ({
         ...ap.project,
-        tags: JSON.parse(ap.project.tags || '[]'),
+        tags: typeof ap.project.tags === 'string' ? JSON.parse(ap.project.tags || '[]') : (ap.project.tags || []),
       })),
     }));
 
@@ -113,11 +112,7 @@ const getMyApplicationsHandler = async (req, res) => {
   }
 };
 
-router.get('/applications/me', authMiddleware, getMyApplicationsHandler);
-router.get('/applications/mine', authMiddleware, getMyApplicationsHandler);
-
-// GET /api/applications/:id
-router.get('/applications/:id', authMiddleware, async (req, res) => {
+const getApplicationByIdHandler = async (req, res) => {
   try {
     const application = await prisma.application.findUnique({
       where: { id: req.params.id },
@@ -140,6 +135,13 @@ router.get('/applications/:id', authMiddleware, async (req, res) => {
   } catch (error) {
     res.status(500).json({ success: false, message: 'Failed to fetch application details', error: error.message });
   }
-});
+};
+
+// Route mappings for opportunities apply and user applications
+router.post('/opportunities/:id/apply', authenticateToken, applyHandler);
+
+router.get('/applications/me', authenticateToken, getMyApplicationsHandler);
+router.get('/applications/mine', authenticateToken, getMyApplicationsHandler);
+router.get('/applications/:id', authenticateToken, getApplicationByIdHandler);
 
 export default router;

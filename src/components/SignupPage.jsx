@@ -16,7 +16,7 @@ import {
   Layers
 } from 'lucide-react';
 
-export default function SignupPage({ onLoginSuccess, onNavigateToLogin, onNavigateHome }) {
+export default function SignupPage({ onLoginSuccess, onNavigateToLogin, onNavigateHome, onContinueAsGuest }) {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -32,9 +32,9 @@ export default function SignupPage({ onLoginSuccess, onNavigateToLogin, onNaviga
     e.preventDefault();
     setError('');
 
-    const displayName = name.trim() || 'Priya Patel';
-    const targetEmail = email.trim() || 'priya@herearn.org';
-    const targetPassword = password.trim() || 'password123';
+    const displayName = name.trim() || (email.trim() ? email.trim().split('@')[0] : 'Learner');
+    const targetEmail = email.trim();
+    const targetPassword = password.trim();
 
     setIsLoading(true);
 
@@ -333,8 +333,8 @@ export default function SignupPage({ onLoginSuccess, onNavigateToLogin, onNaviga
             </form>
           </div>
 
-          {/* Switch to Login */}
-          <div className="text-center pt-5 border-t border-slate-200 dark:border-slate-800 mt-5">
+          {/* Switch to Login & Guest Account Access */}
+          <div className="text-center pt-5 border-t border-slate-200 dark:border-slate-800 mt-5 space-y-4">
             <p className="text-xs text-slate-600 dark:text-slate-400">
               Already have an account?{' '}
               <button
@@ -345,6 +345,15 @@ export default function SignupPage({ onLoginSuccess, onNavigateToLogin, onNaviga
                 Log In
               </button>
             </p>
+
+            <button
+              type="button"
+              onClick={onContinueAsGuest}
+              className="w-full py-3 px-4 rounded-xl border border-purple-300 dark:border-purple-500/30 bg-purple-50/60 dark:bg-purple-950/40 hover:bg-purple-100 dark:hover:bg-purple-900/50 text-purple-900 dark:text-purple-200 text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer shadow-xs"
+            >
+              <User className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+              <span>Continue with Guest Account</span>
+            </button>
           </div>
 
         </div>
