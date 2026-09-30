@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, Sparkles, Lock, Mail, User } from 'lucide-react';
 
-export default function AuthModal({ isOpen, initialMode = 'login', onClose, onLoginSuccess }) {
+export default function AuthModal({ isOpen, initialMode = 'login', onClose, onLoginSuccess, onContinueAsGuest }) {
   const [isSignUp, setIsSignUp] = useState(initialMode === 'signup');
   const [email, setEmail] = useState('');
   const [name, setName] = useState('');
@@ -79,7 +79,7 @@ export default function AuthModal({ isOpen, initialMode = 'login', onClose, onLo
                 <input
                   type="text"
                   required
-                  placeholder="e.g. Priya Sharma"
+                  placeholder="Enter your full name"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   className="w-full bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white text-xs pl-10 pr-4 py-3 rounded-xl border border-slate-300 dark:border-slate-700 focus:outline-none focus:border-purple-500"
@@ -141,14 +141,26 @@ export default function AuthModal({ isOpen, initialMode = 'login', onClose, onLo
           </button>
         </form>
 
-        {/* Toggle sign up / sign in */}
-        <div className="text-center pt-4 border-t border-slate-200 dark:border-slate-800 mt-6">
+        {/* Toggle sign up / sign in & Guest Account Access */}
+        <div className="text-center pt-4 border-t border-slate-200 dark:border-slate-800 mt-6 space-y-3">
           <button
             type="button"
             onClick={() => setIsSignUp(!isSignUp)}
             className="text-xs text-purple-700 dark:text-purple-400 hover:underline font-bold cursor-pointer"
           >
             {isSignUp ? 'Already have an account? Login' : 'Need an account? Sign Up'}
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              if (onContinueAsGuest) onContinueAsGuest();
+              onClose();
+            }}
+            className="w-full py-2.5 px-4 rounded-xl border border-purple-300 dark:border-purple-500/30 bg-purple-50/60 dark:bg-purple-950/40 hover:bg-purple-100 dark:hover:bg-purple-900/50 text-purple-900 dark:text-purple-200 text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer shadow-xs"
+          >
+            <User className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+            <span>Continue with Guest Account</span>
           </button>
         </div>
 

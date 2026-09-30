@@ -1,0 +1,153 @@
+// HerEarn Backend - Prisma Schema Specification
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String             @id @default(uuid())
+  name         String
+  email        String             @unique
+  passwordHash String
+  role         String             @default("LEARNER") // LEARNER, EMPLOYER, ADMIN
+  avatar       String?
+  phone        String?
+  location     String?
+  bio          String?
+  skills       String             @default("[]") // JSON string of skill array
+  totalEarned  Float              @default(0.0)
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+
+  enrollments  Enrollment[]
+  progress     LessonProgress[]
+  portfolios   PortfolioProject[]
+  applications Application[]
+}
+
+model SkillTrack {
+  id          String       @id @default(uuid())
+  title       String
+  category    String
+  icon        String
+  duration    String
+  level       String       @default("Beginner")
+  instructor  String
+  description String
+  image       String
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  lessons     Lesson[]
+  enrollments Enrollment[]
+}
+
+model Lesson {
+  id           String           @id @default(uuid())
+  trackId      String
+  track        SkillTrack       @relation(fields: [trackId], references: [id], onDelete: Cascade)
+  title        String
+  duration     String
+  videoUrl     String
+  summary      String
+  keyTakeaways String           @default("[]") // JSON string of takeaways
+  orderIndex   Int              @default(0)
+
+  progress     LessonProgress[]
+}
+
+model Enrollment {
+  id              String     @id @default(uuid())
+  userId          String
+  user            User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  trackId         String
+  track           SkillTrack @relation(fields: [trackId], references: [id], onDelete: Cascade)
+  progressPercent Float      @default(0.0)
+  isCompleted     Boolean    @default(false)
+  completedAt     DateTime?
+  lastAccessedAt  DateTime   @default(now())
+  createdAt       DateTime   @default(now())
+
+  @@unique([userId, trackId])
+}
+
+model LessonProgress {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lessonId    String
+  lesson      Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  completedAt DateTime @default(now())
+
+  @@unique([userId, lessonId])
+}
+
+model PortfolioProject {
+  id                  String               @id @default(uuid())
+  userId              String
+  user                User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title               String
+  category            String
+  description         String
+  imageUrl            String
+  projectUrl          String?
+  tags                String               @default("[]") // JSON string of tags
+  likesCount          Int                  @default(0)
+  verified            Boolean              @default(false)
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+
+  applicationProjects ApplicationProject[]
+}
+
+model Opportunity {
+  id              String        @id @default(uuid())
+  title           String
+  company         String
+  logo            String?
+  stipend         String
+  type            String        @default("Micro-Gig")
+  category        String
+  skillsRequired  String        @default("[]") // JSON string of required skills
+  duration        String
+  description     String
+  deliverables    String        @default("[]") // JSON string of deliverables
+  verifiedClient  Boolean       @default(true)
+  isOpen          Boolean       @default(true)
+  applicantsCount Int           @default(0)
+  deadline        DateTime
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  applications    Application[]
+}
+
+model Application {
+  id                  String               @id @default(uuid())
+  opportunityId       String
+  opportunity         Opportunity          @relation(fields: [opportunityId], references: [id], onDelete: Cascade)
+  userId              String
+  user                User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  coverNote           String
+  status              String               @default("SUBMITTED") // SUBMITTED, UNDER_REVIEW, SHORTLISTED, ACCEPTED, REJECTED
+  appliedAt           DateTime             @default(now())
+
+  applicationProjects ApplicationProject[]
+
+  @@unique([opportunityId, userId])
+}
+
+model ApplicationProject {
+  id            String           @id @default(uuid())
+  applicationId String
+  application   Application      @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  projectId     String
+  project       PortfolioProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@unique([applicationId, projectId])
+}

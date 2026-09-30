@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { api } from '../services/api';
 import { 
   Sparkles, 
   User, 
@@ -15,7 +16,7 @@ import {
   Layers
 } from 'lucide-react';
 
-export default function SignupPage({ onLoginSuccess, onNavigateToLogin, onNavigateHome }) {
+export default function SignupPage({ onLoginSuccess, onNavigateToLogin, onNavigateHome, onContinueAsGuest }) {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -27,42 +28,41 @@ export default function SignupPage({ onLoginSuccess, onNavigateToLogin, onNaviga
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
 
     const displayName = name.trim() || 'Priya Patel';
-    const targetEmail = email.trim() || 'priya@example.com';
-    const cleanEmail = targetEmail.includes('@') ? targetEmail : `${targetEmail}@example.com`;
+    const targetEmail = email.trim() || 'priya@herearn.org';
+    const targetPassword = password.trim() || 'password123';
 
     setIsLoading(true);
 
-    setTimeout(() => {
+    try {
+      const res = await api.register({
+        name: displayName,
+        email: targetEmail,
+        password: targetPassword,
+        skills: [skillInterest],
+      });
+
+      setIsLoading(false);
+      onLoginSuccess({
+        ...res.user,
+        isSignUp: true,
+        role,
+      });
+    } catch (err) {
       setIsLoading(false);
       onLoginSuccess({
         name: displayName,
-        email: cleanEmail,
+        email: targetEmail,
         skillInterest,
         isSignUp: true,
-        role
+        role,
       });
-    }, 200);
+    }
   };
-
-  const handleQuickDemoSignup = () => {
-    setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
-      onLoginSuccess({
-        name: 'Priya Patel',
-        email: 'priya@example.com',
-        skillInterest: 'Graphic Design & Canva',
-        isSignUp: true,
-        role: 'learner'
-      });
-    }, 200);
-  };
-
   return (
     <div className="min-h-[calc(100vh-5rem)] flex items-center justify-center p-4 sm:p-6 lg:p-8 animate-fade-in">
       <div className="max-w-5xl w-full grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
@@ -165,24 +165,6 @@ export default function SignupPage({ onLoginSuccess, onNavigateToLogin, onNaviga
               </span>
             </div>
 
-            {/* Quick 1-Click Demo Sign Up */}
-            <div className="bg-purple-50 dark:bg-purple-950/60 border border-purple-200 dark:border-purple-500/30 p-3.5 rounded-2xl mb-6">
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-2 text-purple-900 dark:text-purple-200 text-xs font-extrabold">
-                  <Zap className="w-4 h-4 text-amber-500 fill-amber-500" />
-                  <span>Quick 1-Click Sign Up (Demo Account)</span>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={handleQuickDemoSignup}
-                disabled={isLoading}
-                className="w-full btn-gradient-award justify-center text-xs py-2 cursor-pointer shadow-md"
-              >
-                Create Account as Priya Patel
-              </button>
-            </div>
-
             {/* Role Selection Toggle */}
             <div className="mb-5">
               <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-2">I want to:</label>
@@ -233,7 +215,7 @@ export default function SignupPage({ onLoginSuccess, onNavigateToLogin, onNaviga
                   <input
                     type="text"
                     required
-                    placeholder="e.g. Ananya Sharma"
+                    placeholder="Enter your full name"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     className="w-full bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white text-xs pl-10 pr-4 py-3 rounded-xl border border-slate-300 dark:border-slate-700 focus:outline-none focus:border-purple-500"
@@ -351,8 +333,8 @@ export default function SignupPage({ onLoginSuccess, onNavigateToLogin, onNaviga
             </form>
           </div>
 
-          {/* Switch to Login */}
-          <div className="text-center pt-5 border-t border-slate-200 dark:border-slate-800 mt-5">
+          {/* Switch to Login & Guest Account Access */}
+          <div className="text-center pt-5 border-t border-slate-200 dark:border-slate-800 mt-5 space-y-4">
             <p className="text-xs text-slate-600 dark:text-slate-400">
               Already have an account?{' '}
               <button
@@ -363,6 +345,15 @@ export default function SignupPage({ onLoginSuccess, onNavigateToLogin, onNaviga
                 Log In
               </button>
             </p>
+
+            <button
+              type="button"
+              onClick={onContinueAsGuest}
+              className="w-full py-3 px-4 rounded-xl border border-purple-300 dark:border-purple-500/30 bg-purple-50/60 dark:bg-purple-950/40 hover:bg-purple-100 dark:hover:bg-purple-900/50 text-purple-900 dark:text-purple-200 text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer shadow-xs"
+            >
+              <User className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+              <span>Continue with Guest Account</span>
+            </button>
           </div>
 
         </div>

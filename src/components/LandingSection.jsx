@@ -55,27 +55,33 @@ export default function LandingSection({ onNavigate, onOpenAuth, theme }) {
   const howItWorksThreeCards = [
     {
       step: "01",
-      title: "1. Learn",
+      title: "1. Learn Market Skills",
       desc: "Pick a skill track and complete short, practical video lessons at your own pace.",
       icon: BookOpen,
       badge: "Self-Paced Tracks",
-      color: "from-purple-600 to-indigo-600"
+      color: "from-purple-600 to-indigo-600",
+      targetTab: "learn",
+      ctaText: "Go to Learning Hub"
     },
     {
       step: "02",
-      title: "2. Build",
+      title: "2. Build & Showcase Portfolio",
       desc: "Create real portfolio projects to showcase your verified work to potential clients.",
       icon: Award,
       badge: "Verified Proof",
-      color: "from-pink-600 to-rose-600"
+      color: "from-pink-600 to-rose-600",
+      targetTab: "portfolio",
+      ctaText: "Go to Skill Showcase"
     },
     {
       step: "03",
-      title: "3. Earn",
+      title: "3. Earn from Real Work",
       desc: "Apply to flexible gigs, freelance projects, and remote client opportunities.",
       icon: IndianRupee,
       badge: "Direct Payouts",
-      color: "from-amber-500 to-emerald-500"
+      color: "from-amber-500 to-emerald-500",
+      targetTab: "gigs",
+      ctaText: "Go to Opportunity Board"
     }
   ];
 
@@ -200,47 +206,62 @@ export default function LandingSection({ onNavigate, onOpenAuth, theme }) {
   ];
 
   return (
-    <div className="space-y-20 sm:space-y-24 pb-20 animate-fade-in overflow-x-hidden text-slate-900 dark:text-slate-100">
+    <div className="space-y-16 sm:space-y-20 pb-20 animate-fade-in overflow-x-hidden text-slate-900 dark:text-slate-100">
       
       {/* 1. HERO SECTION */}
-      <section className="relative pt-6 pb-12 sm:pt-8 sm:pb-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+      <section className="relative min-h-[calc(100vh-5rem)] flex flex-col justify-center py-8 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
         
         {/* Ambient Animated Background Blobs */}
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-500/15 dark:bg-purple-600/30 rounded-full blur-3xl pointer-events-none animate-pulse-glow"></div>
         <div className="absolute bottom-10 right-10 w-96 h-96 bg-pink-500/15 dark:bg-pink-600/25 rounded-full blur-3xl pointer-events-none animate-pulse-glow"></div>
 
+
+
+
+        <div
+  className="absolute inset-0 pointer-events-none opacity-20"
+  style={{
+    backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(168,85,247,0.7) 1px, transparent 0)',
+    backgroundSize: '28px 28px',
+    maskImage: 'radial-gradient(ellipse at center, black 30%, transparent 75%)',
+    WebkitMaskImage: 'radial-gradient(ellipse at center, black 30%, transparent 75%)'
+  }}
+></div>
+
+
+
         {/* Hero Badge below Navbar */}
-        <div className="flex justify-center lg:justify-start mb-6">
+        <div className="flex justify-center mb-6">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-purple-100 dark:bg-purple-900/40 border border-purple-300 dark:border-purple-500/40 text-purple-900 dark:text-purple-200 text-xs font-extrabold uppercase tracking-wider shadow-xs backdrop-blur-md">
             <Sparkles className="w-4 h-4 text-pink-600 dark:text-pink-400 animate-pulse" />
             <span>AI-Powered Skill-to-Income Recommendation Platform</span>
           </div>
         </div>
 
-        <div className="grid lg:grid-cols-12 gap-10 lg:gap-12 items-center relative z-10">
+        <div className="relative z-10 max-w-5xl mx-auto text-center">
           
-          {/* Left Column: Headline & Value Proposition */}
-          <div className="lg:col-span-6 space-y-6 text-center lg:text-left relative">
+          {/* Centered Hero Content */}
+          <div className="w-full space-y-8 text-center flex flex-col items-center relative">
             
             {/* Main Headline */}
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-[1.1] text-slate-900 dark:text-white">
-              Turn Skills Into <br />
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-[1.1] text-slate-900 dark:text-white max-w-4xl mx-auto">
+              Turn Skills Into <br className="hidden sm:inline" />
               <span className="bg-gradient-to-r from-purple-600 via-pink-600 to-amber-500 bg-clip-text text-transparent">
                 Sustainable Income
               </span>
             </h1>
 
             {/* Short Trust-Building Statement - High Contrast in both light & dark mode */}
-            <p className="text-base sm:text-lg text-slate-700 dark:text-slate-200 max-w-xl leading-relaxed font-semibold">
+            <p className="text-base sm:text-xl text-slate-700 dark:text-slate-200 max-w-3xl leading-relaxed font-semibold mx-auto">
               Bridging the gap between learning, opportunities, and financial independence.
             </p>
 
             {/* CTA Buttons */}
-            <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-2">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2 w-full">
               <button
                 type="button"
                 onClick={() => onNavigate('learn')}
-                className="w-full sm:w-auto btn-gradient-award text-sm py-3.5 px-8 shadow-xl cursor-pointer flex items-center justify-center gap-2"
+                className="w-full sm:w-auto btn-gradient-award text-sm py-4 px-9 shadow-xl cursor-pointer flex items-center justify-center gap-2"
               >
                 <span>Start Learning</span>
                 <ArrowRight className="w-4 h-4" />
@@ -249,160 +270,28 @@ export default function LandingSection({ onNavigate, onOpenAuth, theme }) {
               <button
                 type="button"
                 onClick={() => onNavigate('gigs')}
-                className="w-full sm:w-auto btn-outline-award text-sm py-3.5 px-8 cursor-pointer flex items-center justify-center"
+                className="w-full sm:w-auto btn-outline-award text-sm py-4 px-9 cursor-pointer flex items-center justify-center"
               >
                 Explore Opportunities
               </button>
             </div>
 
-            {/* Testimonial line under Hero buttons */}
-            <div className="pt-2 flex items-center justify-center lg:justify-start gap-3">
-              <div className="flex items-center -space-x-2">
-                <img 
-                  src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=120" 
-                  alt="Learner" 
-                  className="w-8 h-8 rounded-full border-2 border-purple-500 object-cover shadow-md"
-                />
-              </div>
-              <div className="text-left text-xs">
-                <p className="text-slate-800 dark:text-slate-100 font-bold leading-tight">
-                  "I earned my first ₹5,000 within 3 weeks of learning."
-                </p>
-                <span className="inline-block text-[10px] bg-purple-100 dark:bg-purple-500/30 text-purple-900 dark:text-purple-200 border border-purple-300 dark:border-purple-500/40 px-2 py-0.5 rounded-md font-extrabold uppercase mt-0.5">
-                  Example story
-                </span>
-              </div>
-            </div>
-
             {/* Micro Trust Indicators */}
-            <div className="pt-4 border-t border-purple-200 dark:border-purple-500/30 grid grid-cols-3 gap-3 text-slate-700 dark:text-slate-200 text-xs font-bold">
-              <div className="flex items-center gap-1.5 justify-center lg:justify-start">
-                <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
-                <span>Escrow Safe</span>
+            <div className="pt-6 border-t border-purple-200 dark:border-purple-500/30 flex flex-wrap items-center justify-center gap-8 text-slate-700 dark:text-slate-200 text-xs sm:text-sm font-bold w-full max-w-2xl mx-auto">
+              <div className="flex items-center gap-2">
+                <ShieldCheck className="w-5 h-5 text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
+                <span>Escrow Safe Payouts</span>
               </div>
-              <div className="flex items-center gap-1.5 justify-center lg:justify-start">
-                <Award className="w-4 h-4 text-purple-600 dark:text-purple-400 flex-shrink-0" />
+              <div className="flex items-center gap-2">
+                <Award className="w-5 h-5 text-purple-600 dark:text-purple-400 flex-shrink-0" />
                 <span>Verified Badges</span>
               </div>
-              <div className="flex items-center gap-1.5 justify-center lg:justify-start">
-                <Cpu className="w-4 h-4 text-pink-600 dark:text-pink-400 flex-shrink-0" />
+              <div className="flex items-center gap-2">
+                <Cpu className="w-5 h-5 text-pink-600 dark:text-pink-400 flex-shrink-0" />
                 <span>AI Matching</span>
               </div>
             </div>
 
-          </div>
-
-          {/* Right Column: Floating Skill Badges + INCOME CARD (Sample Preview) */}
-          <div className="lg:col-span-6 relative">
-            
-            {/* Subtle Floating Glassmorphism Skill Cards */}
-            <div className="hidden sm:block">
-              {floatingSkills.map((sk, idx) => {
-                const IconComp = sk.icon;
-                return (
-                  <div 
-                    key={idx}
-                    className={`absolute ${sk.pos} z-20 glass-card px-3.5 py-2 rounded-2xl border border-purple-300 dark:border-purple-500/40 shadow-xl backdrop-blur-md flex items-center gap-2 text-xs font-bold text-slate-900 dark:text-white animate-float`}
-                    style={{ animationDelay: `${idx * 0.8}s` }}
-                  >
-                    <div className={`w-6 h-6 rounded-lg bg-gradient-to-tr ${sk.color} text-white flex items-center justify-center`}>
-                      <IconComp className="w-3.5 h-3.5" />
-                    </div>
-                    <span>{sk.title}</span>
-                  </div>
-                );
-              })}
-            </div>
-
-            {/* INCOME CARD (Sample Preview) */}
-            <div className="bg-white/95 dark:bg-slate-900/90 border border-purple-200 dark:border-purple-500/40 rounded-3xl p-5 sm:p-6 relative overflow-hidden shadow-2xl space-y-4 backdrop-blur-xl text-slate-900 dark:text-white">
-              
-              {/* Card Header with "Sample Preview" badge */}
-              <div className="flex items-center justify-between border-b border-purple-100 dark:border-purple-500/30 pb-3">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-xl bg-purple-100 dark:bg-purple-600/30 text-purple-700 dark:text-purple-300 flex items-center justify-center font-bold">
-                    <IndianRupee className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-bold text-slate-900 dark:text-white leading-tight">Monthly Income Tracker</h3>
-                    <p className="text-[10px] text-purple-700 dark:text-purple-300 font-bold">HerEarn Learner Dashboard</p>
-                  </div>
-                </div>
-
-                {/* Badge: Sample Preview */}
-                <span className="bg-amber-100 dark:bg-amber-500/20 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-500/40 text-[10px] font-extrabold px-3 py-1 rounded-full uppercase tracking-wider">
-                  Sample Preview
-                </span>
-              </div>
-
-              {/* Total Income Display */}
-              <div className="bg-slate-50 dark:bg-slate-950 p-4 rounded-2xl border border-purple-200 dark:border-purple-500/30 flex items-center justify-between">
-                <div>
-                  <span className="text-[10px] text-slate-600 dark:text-slate-300 font-bold uppercase tracking-wider block">Total Estimated Monthly Income</span>
-                  <p className="text-2xl sm:text-3xl font-extrabold text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5 mt-0.5">
-                    ₹18,500 <span className="text-xs text-purple-700 dark:text-purple-300 font-bold">(3 active gigs)</span>
-                  </p>
-                </div>
-                <span className="bg-emerald-100 dark:bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 text-xs font-extrabold px-3 py-1.5 rounded-xl border border-emerald-300 dark:border-emerald-500/30">
-                  Verified Payouts
-                </span>
-              </div>
-
-              {/* 3 Gigs with Individual Progress Bars (Total = ₹18,500) */}
-              <div className="space-y-3 bg-slate-50/80 dark:bg-slate-950/80 p-4 rounded-2xl border border-purple-200 dark:border-purple-500/20">
-                
-                {/* Gig 1: Digital Marketing Gig ₹8,500 */}
-                <div className="space-y-1">
-                  <div className="flex items-center justify-between text-xs font-bold">
-                    <span className="text-slate-800 dark:text-slate-100">Digital Marketing Gig</span>
-                    <span className="text-purple-700 dark:text-purple-400 font-extrabold">₹8,500</span>
-                  </div>
-                  <div className="progress-bar-bg">
-                    <div className="progress-bar-fill w-[85%]"></div>
-                  </div>
-                </div>
-
-                {/* Gig 2: Content Writing ₹6,000 */}
-                <div className="space-y-1">
-                  <div className="flex items-center justify-between text-xs font-bold">
-                    <span className="text-slate-800 dark:text-slate-100">Content Writing</span>
-                    <span className="text-pink-700 dark:text-pink-400 font-extrabold">₹6,000</span>
-                  </div>
-                  <div className="progress-bar-bg">
-                    <div className="progress-bar-fill w-[60%]"></div>
-                  </div>
-                </div>
-
-                {/* Gig 3: Graphic Design ₹4,000 */}
-                <div className="space-y-1">
-                  <div className="flex items-center justify-between text-xs font-bold">
-                    <span className="text-slate-800 dark:text-slate-100">Graphic Design</span>
-                    <span className="text-amber-700 dark:text-amber-400 font-extrabold">₹4,000</span>
-                  </div>
-                  <div className="progress-bar-bg">
-                    <div className="progress-bar-fill w-[40%]"></div>
-                  </div>
-                </div>
-
-              </div>
-
-              {/* Caption note */}
-              <div className="text-center pt-1">
-                <p className="text-[11px] text-slate-600 dark:text-slate-300 font-bold italic">
-                  * Example income for illustration only.
-                </p>
-              </div>
-
-              {/* Bottom Quick Action */}
-              <button
-                type="button"
-                onClick={() => onNavigate('learn')}
-                className="w-full btn-gradient-award justify-center text-xs py-3 cursor-pointer"
-              >
-                Experience Platform Demo
-              </button>
-
-            </div>
           </div>
 
         </div>
@@ -468,11 +357,12 @@ export default function LandingSection({ onNavigate, onOpenAuth, theme }) {
             return (
               <div 
                 key={idx}
-                className="bg-white/90 dark:bg-slate-900/90 border border-purple-200 dark:border-purple-500/30 rounded-3xl p-7 space-y-4 shadow-xl card-hover-award flex flex-col justify-between relative overflow-hidden text-slate-900 dark:text-white"
+                onClick={() => onNavigate(card.targetTab)}
+                className="bg-white/90 dark:bg-slate-900/90 border border-purple-200 dark:border-purple-500/30 hover:border-purple-500/60 rounded-3xl p-7 space-y-4 shadow-xl card-hover-award flex flex-col justify-between relative overflow-hidden text-slate-900 dark:text-white cursor-pointer group transition-all"
               >
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <div className={`w-12 h-12 rounded-2xl bg-gradient-to-tr ${card.color} text-white flex items-center justify-center shadow-lg`}>
+                    <div className={`w-12 h-12 rounded-2xl bg-gradient-to-tr ${card.color} text-white flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform`}>
                       <IconComp className="w-6 h-6" />
                     </div>
                     <span className="text-xs font-extrabold text-purple-800 dark:text-purple-300 bg-purple-100 dark:bg-purple-500/20 border border-purple-300 dark:border-purple-500/30 px-3 py-1 rounded-full">
@@ -480,7 +370,7 @@ export default function LandingSection({ onNavigate, onOpenAuth, theme }) {
                     </span>
                   </div>
 
-                  <h3 className="text-xl font-bold text-slate-900 dark:text-white leading-snug">
+                  <h3 className="text-xl font-bold text-slate-900 dark:text-white leading-snug group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
                     {card.title}
                   </h3>
 
@@ -489,9 +379,23 @@ export default function LandingSection({ onNavigate, onOpenAuth, theme }) {
                   </p>
                 </div>
 
-                <div className="pt-3 border-t border-purple-100 dark:border-purple-500/20 flex items-center justify-between text-xs font-bold text-purple-700 dark:text-purple-300">
-                  <span>Step {card.step}</span>
-                  <ChevronRight className="w-4 h-4 text-pink-600 dark:text-pink-400" />
+                <div className="pt-3 border-t border-purple-100 dark:border-purple-500/20 space-y-3">
+                  <div className="flex items-center justify-between text-xs font-bold text-purple-700 dark:text-purple-300">
+                    <span>Step {card.step}</span>
+                    <ChevronRight className="w-4 h-4 text-pink-600 dark:text-pink-400 group-hover:translate-x-1 transition-transform" />
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onNavigate(card.targetTab);
+                    }}
+                    className="w-full py-2.5 px-4 rounded-xl font-extrabold text-xs bg-purple-100 hover:bg-purple-600 hover:text-white dark:bg-purple-950/80 dark:hover:bg-purple-600 text-purple-900 dark:text-purple-200 transition-all flex items-center justify-between cursor-pointer border border-purple-300 dark:border-purple-500/40 shadow-sm"
+                  >
+                    <span>{card.ctaText}</span>
+                    <ArrowRight className="w-4 h-4 text-pink-600 dark:text-pink-400 group-hover:text-white transition-colors" />
+                  </button>
                 </div>
               </div>
             );

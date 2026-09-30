@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import logo from '../assets/logo.jpg';
 import { 
-  Sparkles, 
   Compass, 
   User, 
   BookOpen, 
@@ -10,24 +11,25 @@ import {
   Sun, 
   Moon, 
   UserPlus, 
+  LogIn,
   LogOut,
   Info,
   Scale
 } from 'lucide-react';
+import LogoutModal from './LogoutModal';
 
 export default function Navbar({ 
-  activeTab, 
-  setActiveTab, 
   user, 
-  onOpenAuth, 
   onLogout,
   theme, 
-  onToggleTheme,
-  onOpenAbout,
-  onOpenTerms
+  onToggleTheme
 }) {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const location = useLocation();
+  const navigate = useNavigate();
+  const pathname = location.pathname;
 
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
   const menuRef = useRef(null);
 
   useEffect(() => {
@@ -40,27 +42,12 @@ export default function Navbar({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const handleSelectTab = (tabId) => {
-    setActiveTab(tabId);
-    setIsMenuOpen(false);
-  };
-
-  const handleNavSection = (sectionId) => {
-    if (sectionId === 'top') {
-      setActiveTab('home');
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-      return;
+  const handleConfirmLogout = () => {
+    setIsLogoutModalOpen(false);
+    if (onLogout) {
+      onLogout();
     }
-    if (activeTab !== 'home') {
-      setActiveTab('home');
-      setTimeout(() => {
-        const el = document.getElementById(sectionId);
-        if (el) el.scrollIntoView({ behavior: 'smooth' });
-      }, 100);
-    } else {
-      const el = document.getElementById(sectionId);
-      if (el) el.scrollIntoView({ behavior: 'smooth' });
-    }
+    navigate('/');
   };
 
   return (
@@ -69,78 +56,81 @@ export default function Navbar({
         <div className="flex items-center justify-between h-20">
           
           {/* Logo */}
-          <div 
-            className="flex items-center gap-3 cursor-pointer group"
-            onClick={() => setActiveTab('home')}
+          <Link
+            to="/"
+            className="flex items-center cursor-pointer group"
           >
-            <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-purple-600 via-pink-600 to-amber-500 flex items-center justify-center text-white shadow-md group-hover:scale-105 transition-transform">
-              <Sparkles className="w-6 h-6 animate-pulse" />
-            </div>
-            <div>
-              <span className="text-xl font-extrabold tracking-tight bg-gradient-to-r from-purple-400 via-pink-400 to-amber-300 bg-clip-text text-transparent">
-                Her<span className="text-pink-400">Earn</span>
-              </span>
-              <p className="text-[11px] text-slate-200 dark:text-slate-200 font-bold tracking-wide opacity-95">
-                Skill to Income Platform
-              </p>
-            </div>
-          </div>
+            <img
+              src={logo}
+              alt="HerEarn - Skill to Income Platform"
+              className="h-16 w-auto group-hover:scale-105 transition-transform"
+              style={theme === 'dark' ? { filter: 'contrast(1.4) brightness(1.1)', mixBlendMode: 'screen' } : {}}
+            />
+          </Link>
 
           {/* Clean Navigation: Home | Courses | Opportunities | Dashboard (If Logged In) */}
-          <div className="hidden md:flex items-center gap-1.5 bg-slate-900/80 dark:bg-slate-900/80 light:bg-white/90 p-1.5 rounded-2xl border border-purple-500/30 backdrop-blur-md shadow-lg">
-            <button
-              type="button"
-              onClick={() => handleNavSection('top')}
+          <div className="hidden md:flex items-center gap-1.5 bg-white/90 dark:bg-slate-900/80 p-1.5 rounded-2xl border border-purple-200 dark:border-purple-500/30 backdrop-blur-md shadow-lg">
+            <Link
+              to="/"
               className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                activeTab === 'home'
+                pathname === '/'
                   ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-md'
-                  : 'text-slate-200 hover:text-white hover:bg-purple-900/40'
+                  : 'text-slate-700 dark:text-slate-200 hover:text-purple-700 dark:hover:text-white hover:bg-purple-100/70 dark:hover:bg-purple-900/40'
               }`}
             >
               <Compass className="w-4 h-4" />
               <span>Home</span>
-            </button>
+            </Link>
 
-            <button
-              type="button"
-              onClick={() => setActiveTab('learn')}
+            <Link
+              to="/learn"
               className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                activeTab === 'learn'
+                pathname === '/learn'
                   ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-md'
-                  : 'text-slate-200 hover:text-white hover:bg-purple-900/40'
+                  : 'text-slate-700 dark:text-slate-200 hover:text-purple-700 dark:hover:text-white hover:bg-purple-100/70 dark:hover:bg-purple-900/40'
               }`}
             >
-              <BookOpen className="w-4 h-4 text-purple-400" />
+              <BookOpen className="w-4 h-4 text-purple-600 dark:text-purple-400" />
               <span>Courses</span>
-            </button>
+            </Link>
 
-            <button
-              type="button"
-              onClick={() => setActiveTab('gigs')}
+            <Link
+              to="/portfolio"
               className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                activeTab === 'gigs'
+                pathname === '/portfolio'
                   ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-md'
-                  : 'text-slate-200 hover:text-white hover:bg-purple-900/40'
+                  : 'text-slate-700 dark:text-slate-200 hover:text-purple-700 dark:hover:text-white hover:bg-purple-100/70 dark:hover:bg-purple-900/40'
               }`}
             >
-              <Briefcase className="w-4 h-4 text-amber-400" />
-              <span>Opportunities</span>
-            </button>
+              <Award className="w-4 h-4 text-pink-600 dark:text-pink-400" />
+              <span>Portfolios</span>
+            </Link>
 
-            {/* Dashboard Link - Hidden until user is logged in */}
+            <Link
+              to="/opportunities"
+              className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                pathname.startsWith('/opportunities') || pathname.startsWith('/opportunity')
+                  ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-md'
+                  : 'text-slate-700 dark:text-slate-200 hover:text-purple-700 dark:hover:text-white hover:bg-purple-100/70 dark:hover:bg-purple-900/40'
+              }`}
+            >
+              <Briefcase className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+              <span>Opportunities</span>
+            </Link>
+
+            {/* Dashboard Link */}
             {user && (
-              <button
-                type="button"
-                onClick={() => setActiveTab('profile')}
+              <Link
+                to="/dashboard"
                 className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                  activeTab === 'profile'
+                  pathname.startsWith('/dashboard')
                     ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-md'
-                    : 'text-slate-200 hover:text-white hover:bg-purple-900/40'
+                    : 'text-slate-700 dark:text-slate-200 hover:text-purple-700 dark:hover:text-white hover:bg-purple-100/70 dark:hover:bg-purple-900/40'
                 }`}
               >
                 <User className="w-4 h-4" />
                 <span>Dashboard</span>
-              </button>
+              </Link>
             )}
           </div>
 
@@ -152,64 +142,69 @@ export default function Navbar({
               type="button"
               onClick={onToggleTheme}
               title={`Switch to ${theme === 'dark' ? 'Light' : 'Dark'} Mode`}
-              className="p-2.5 rounded-xl bg-slate-900/80 border border-purple-500/20 text-amber-400 hover:scale-105 transition-all shadow-xs cursor-pointer"
+              aria-label={`Switch to ${theme === 'dark' ? 'Light' : 'Dark'} Mode`}
+              className={`p-2.5 rounded-xl border transition-all hover:scale-105 cursor-pointer focus:outline-none focus:ring-2 focus:ring-purple-400 ${
+                theme === 'dark'
+                  ? 'bg-slate-900/80 border-purple-500/30 text-amber-400'
+                  : 'bg-purple-50 border-purple-300 text-purple-700'
+              }`}
             >
               {theme === 'dark' ? (
                 <Sun className="w-4 h-4 text-amber-400" />
               ) : (
-                <Moon className="w-4 h-4 text-purple-400" />
+                <Moon className="w-4 h-4 text-purple-600" />
               )}
             </button>
 
-            {/* Login & Sign Up Buttons */}
+            {/* User Profile / Auth buttons */}
             {user ? (
               <div className="flex items-center gap-2">
-                <div 
-                  onClick={() => setActiveTab('profile')}
-                  className="flex items-center gap-2.5 bg-slate-900 border border-purple-500/30 px-3 py-1.5 rounded-xl cursor-pointer hover:border-pink-500 transition-all"
+                <Link 
+                  to="/dashboard"
+                  className="flex items-center gap-2.5 bg-white dark:bg-slate-900 border border-purple-200 dark:border-purple-500/30 px-3 py-1.5 rounded-xl cursor-pointer hover:border-pink-500 transition-all shadow-xs"
                 >
                   <img src={user.avatar} alt={user.name} className="w-8 h-8 rounded-full object-cover border border-purple-400" />
                   <div className="hidden sm:block text-left text-xs">
-                    <p className="font-bold leading-tight text-white">{user.name}</p>
-                    <p className="text-[10px] text-emerald-400 font-extrabold">₹{(user.earnings || 0).toLocaleString()}</p>
+                    <p className="font-bold leading-tight text-slate-900 dark:text-white">{user.name}</p>
+                    <p className="text-[10px] text-emerald-600 dark:text-emerald-400 font-extrabold">₹{(user.totalEarned || user.earnings || 0).toLocaleString()}</p>
                   </div>
-                </div>
+                </Link>
 
                 <button 
                   type="button"
-                  onClick={onLogout}
-                  title="Sign Out"
-                  className="p-2 rounded-xl text-slate-400 hover:text-pink-400 hover:bg-slate-800/50 transition-colors cursor-pointer"
+                  onClick={() => setIsLogoutModalOpen(true)}
+                  title="Log out of HerEarn"
+                  aria-label="Log out"
+                  className="p-2 rounded-xl text-slate-500 dark:text-slate-400 hover:text-pink-600 dark:hover:text-pink-400 hover:bg-purple-100 dark:hover:bg-slate-800/50 transition-colors cursor-pointer"
                 >
                   <LogOut className="w-4 h-4" />
                 </button>
               </div>
             ) : (
               <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => onOpenAuth('login')}
-                  className={`px-3.5 py-2 rounded-xl text-xs font-bold border transition-all text-white cursor-pointer ${
-                    activeTab === 'login'
-                      ? 'bg-purple-600 border-purple-500 shadow-md ring-2 ring-purple-400'
-                      : 'border-purple-500/30 hover:border-pink-500'
+                <Link
+                  to="/login"
+                  className={`px-3.5 py-2 rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer ${
+                    pathname === '/login'
+                      ? 'bg-purple-600 text-white shadow-md'
+                      : 'bg-white dark:bg-slate-900 border-2 border-purple-500/80 text-purple-600 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-slate-800'
                   }`}
                 >
-                  Login
-                </button>
+                  <LogIn className="w-3.5 h-3.5" />
+                  <span>Login</span>
+                </Link>
 
-                <button
-                  type="button"
-                  onClick={() => onOpenAuth('signup')}
-                  className={`text-xs py-2 px-3.5 shadow-md flex items-center gap-1.5 cursor-pointer rounded-xl transition-all ${
-                    activeTab === 'signup'
-                      ? 'bg-gradient-to-r from-pink-600 to-purple-600 text-white font-bold ring-2 ring-pink-400'
-                      : 'btn-gradient-award'
+                <Link
+                  to="/signup"
+                  className={`px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-all shadow-md ${
+                    pathname === '/signup'
+                      ? 'bg-gradient-to-r from-pink-600 to-purple-600 text-white ring-2 ring-pink-400'
+                      : 'bg-gradient-to-r from-purple-600 via-indigo-600 to-pink-600 text-white hover:shadow-lg'
                   }`}
                 >
                   <UserPlus className="w-3.5 h-3.5" />
                   <span className="hidden sm:inline">Sign Up</span>
-                </button>
+                </Link>
               </div>
             )}
 
@@ -219,9 +214,9 @@ export default function Navbar({
                 type="button"
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
                 className={`p-2.5 rounded-xl border transition-all flex items-center justify-center cursor-pointer ${
-                  isMenuOpen || ['learn', 'portfolio', 'gigs'].includes(activeTab)
+                  isMenuOpen
                     ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white border-pink-500 shadow-md'
-                    : 'bg-slate-900/80 border-purple-500/20 text-slate-300 hover:text-white'
+                    : 'bg-white dark:bg-slate-900/80 border-purple-200 dark:border-purple-500/20 text-purple-700 dark:text-slate-300 hover:text-purple-900 dark:hover:text-white'
                 }`}
                 title="Explore Sections"
               >
@@ -230,104 +225,91 @@ export default function Navbar({
 
               {/* Dropdown Menu Popup */}
               {isMenuOpen && (
-                <div className="absolute right-0 mt-3 w-64 rounded-2xl bg-slate-950 border border-purple-500/40 shadow-2xl p-2 z-50 animate-fade-in text-white space-y-1">
+                <div className="absolute right-0 mt-3 w-64 rounded-2xl bg-white dark:bg-slate-950 border border-purple-200 dark:border-purple-500/40 shadow-2xl p-2 z-50 animate-fade-in text-slate-900 dark:text-white space-y-1">
                   <div className="px-3 py-1.5 border-b border-purple-500/20">
                     <p className="text-[11px] font-extrabold text-purple-300 uppercase tracking-wider">Explore Modules</p>
                   </div>
 
-                  {/* 1. Courses */}
-                  <button
-                    type="button"
-                    onClick={() => handleSelectTab('learn')}
-                    className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold flex items-center justify-between transition-colors ${
-                      activeTab === 'learn' ? 'bg-purple-600 text-white' : 'hover:bg-purple-900/40 text-slate-200'
-                    }`}
+                  <Link
+                    to="/learn"
+                    onClick={() => setIsMenuOpen(false)}
+                    className="w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold flex items-center justify-between hover:bg-purple-900/40 text-slate-200 transition-colors"
                   >
                     <div className="flex items-center gap-2.5">
                       <BookOpen className="w-4 h-4 text-purple-400" />
                       <span>Courses</span>
                     </div>
-                    <span className="text-[10px] bg-purple-500/20 text-purple-300 px-2 py-0.5 rounded-full font-extrabold">4 Tracks</span>
-                  </button>
+                  </Link>
 
-                  {/* 2. Show Skill */}
-                  <button
-                    type="button"
-                    onClick={() => handleSelectTab('portfolio')}
-                    className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold flex items-center justify-between transition-colors ${
-                      activeTab === 'portfolio' ? 'bg-pink-600 text-white' : 'hover:bg-purple-900/40 text-slate-200'
-                    }`}
+                  <Link
+                    to="/portfolio"
+                    onClick={() => setIsMenuOpen(false)}
+                    className="w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold flex items-center justify-between hover:bg-purple-900/40 text-slate-200 transition-colors"
                   >
                     <div className="flex items-center gap-2.5">
                       <Award className="w-4 h-4 text-pink-400" />
                       <span>Portfolios</span>
                     </div>
-                    <span className="text-[10px] bg-pink-500/20 text-pink-300 px-2 py-0.5 rounded-full font-extrabold">Verified</span>
-                  </button>
+                  </Link>
 
-                  {/* 3. Opportunities */}
-                  <button
-                    type="button"
-                    onClick={() => handleSelectTab('gigs')}
-                    className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold flex items-center justify-between transition-colors ${
-                      activeTab === 'gigs' ? 'bg-amber-600 text-white' : 'hover:bg-purple-900/40 text-slate-200'
-                    }`}
+                  <Link
+                    to="/opportunities"
+                    onClick={() => setIsMenuOpen(false)}
+                    className="w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold flex items-center justify-between hover:bg-purple-900/40 text-slate-200 transition-colors"
                   >
                     <div className="flex items-center gap-2.5">
                       <Briefcase className="w-4 h-4 text-amber-400" />
                       <span>Opportunities</span>
                     </div>
-                    <span className="text-[10px] bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded-full font-extrabold">8+ Gigs</span>
-                  </button>
+                  </Link>
 
                   {user && (
-                    <button
-                      type="button"
-                      onClick={() => handleSelectTab('profile')}
-                      className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2.5 transition-colors ${
-                        activeTab === 'profile' ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white' : 'hover:bg-purple-900/40 text-slate-200'
-                      }`}
+                    <Link
+                      to="/dashboard"
+                      onClick={() => setIsMenuOpen(false)}
+                      className="w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2.5 hover:bg-purple-900/40 text-slate-200 transition-colors"
                     >
                       <User className="w-4 h-4 text-emerald-400" />
                       <span>My Dashboard</span>
-                    </button>
+                    </Link>
                   )}
 
                   <div className="px-3 pt-2 border-t border-purple-500/20">
                     <p className="text-[11px] font-extrabold text-purple-300 uppercase tracking-wider">Information & Policies</p>
                   </div>
 
-                  {/* About Us */}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsMenuOpen(false);
-                      if (onOpenAbout) onOpenAbout();
-                    }}
-                    className="w-full text-left px-3.5 py-2 rounded-xl text-xs font-bold flex items-center justify-between hover:bg-purple-900/40 text-slate-200 transition-colors cursor-pointer"
+                  <Link
+                    to="/about"
+                    onClick={() => setIsMenuOpen(false)}
+                    className="w-full text-left px-3.5 py-2 rounded-xl text-xs font-bold flex items-center justify-between hover:bg-purple-900/40 text-slate-200 transition-colors"
                   >
                     <div className="flex items-center gap-2.5">
                       <Info className="w-4 h-4 text-purple-400" />
                       <span>About Us</span>
                     </div>
-                    <span className="text-[10px] bg-purple-500/20 text-purple-300 px-2 py-0.5 rounded-full font-extrabold">Mission</span>
-                  </button>
+                  </Link>
 
-                  {/* Terms & Conditions */}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsMenuOpen(false);
-                      if (onOpenTerms) onOpenTerms();
-                    }}
-                    className="w-full text-left px-3.5 py-2 rounded-xl text-xs font-bold flex items-center justify-between hover:bg-purple-900/40 text-slate-200 transition-colors cursor-pointer"
+                  <Link
+                    to="/terms"
+                    onClick={() => setIsMenuOpen(false)}
+                    className="w-full text-left px-3.5 py-2 rounded-xl text-xs font-bold flex items-center justify-between hover:bg-purple-900/40 text-slate-200 transition-colors"
                   >
                     <div className="flex items-center gap-2.5">
                       <Scale className="w-4 h-4 text-pink-400" />
                       <span>Terms & Conditions</span>
                     </div>
-                    <span className="text-[10px] bg-pink-500/20 text-pink-300 px-2 py-0.5 rounded-full font-extrabold">Policy</span>
-                  </button>
+                  </Link>
+
+                  <Link
+                    to="/privacy"
+                    onClick={() => setIsMenuOpen(false)}
+                    className="w-full text-left px-3.5 py-2 rounded-xl text-xs font-bold flex items-center justify-between hover:bg-purple-900/40 text-slate-200 transition-colors"
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <Scale className="w-4 h-4 text-emerald-400" />
+                      <span>Privacy Policy</span>
+                    </div>
+                  </Link>
 
                 </div>
               )}
@@ -337,6 +319,13 @@ export default function Navbar({
 
         </div>
       </div>
+
+      {/* Logout Confirmation Modal */}
+      <LogoutModal
+        isOpen={isLogoutModalOpen}
+        onConfirm={handleConfirmLogout}
+        onCancel={() => setIsLogoutModalOpen(false)}
+      />
     </nav>
   );
 }
