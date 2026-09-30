@@ -10,6 +10,8 @@ import SignupPage from './components/SignupPage';
 import AboutPage from './components/AboutPage';
 import TermsPage from './components/TermsPage';
 import PrivacyPage from './components/PrivacyPage';
+import OpportunityDetailPage from './components/OpportunityDetailPage';
+import OpportunityApplyPage from './components/OpportunityApplyPage';
 
 import AuthModal from './components/AuthModal';
 import SubmitProjectModal from './components/SubmitProjectModal';
@@ -46,6 +48,7 @@ export default function App() {
   const [isSubmitOpen, setIsSubmitOpen] = useState(false);
   const [isApplyOpen, setIsApplyOpen] = useState(false);
   const [activeGigToApply, setActiveGigToApply] = useState(null);
+  const [selectedOpportunity, setSelectedOpportunity] = useState(null);
 
   // Toast
   const [toast, setToast] = useState(null);
@@ -209,26 +212,36 @@ export default function App() {
     }
   };
 
-  // Apply to Gig Trigger
+  // View Opportunity Details in separate page
+  const handleViewOpportunityDetails = (gig) => {
+    setSelectedOpportunity(gig);
+    setActiveTab('opportunity-detail');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // Apply to Gig Trigger (Navigates to dedicated separate Opportunity Apply & Quiz page)
   const handleOpenApplyGig = (gig) => {
     if (!user) {
       handleOpenAuth('login');
       return;
     }
-    setActiveGigToApply(gig);
-    setIsApplyOpen(true);
+    setSelectedOpportunity(gig);
+    setActiveTab('opportunity-apply');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // Confirm Gig Application Action with API integration
-  const handleConfirmApply = async (gigId, coverNote) => {
+  // Confirm Gig Application Action with Quiz Assessment & API integration
+  const handleConfirmApply = async (gigId, coverNote, portfolioId, quizSummary) => {
     try {
-      await api.applyOpportunity(gigId, { coverNote });
+      await api.applyOpportunity(gigId, { coverNote, portfolioId, quizSummary });
       setOpportunities(opportunities.map(g => {
         if (g.id === gigId) {
           return {
             ...g,
             applied: true,
             applicantsCount: (g.applicantsCount || 0) + 1,
+            quizScore: quizSummary ? quizSummary.percentage : null,
+            eligible: quizSummary ? quizSummary.isEligible : true,
           };
         }
         return g;
@@ -241,7 +254,14 @@ export default function App() {
         });
       }
 
-      showToast("🚀 Application Sent!", "Application recorded in database with portfolio proof.");
+      if (quizSummary) {
+        showToast(
+          quizSummary.isEligible ? "🎉 Application & Quiz Passed!" : "Application Recorded", 
+          quizSummary.isEligible ? `Eligible with ${quizSummary.percentage}% Quiz Score!` : `Quiz Score: ${quizSummary.percentage}%`
+        );
+      } else {
+        showToast("🚀 Application Sent!", "Application recorded in database with portfolio proof.");
+      }
     } catch (err) {
       setOpportunities(opportunities.map(g => {
         if (g.id === gigId) {
@@ -249,6 +269,8 @@ export default function App() {
             ...g,
             applied: true,
             applicantsCount: (g.applicantsCount || 0) + 1,
+            quizScore: quizSummary ? quizSummary.percentage : null,
+            eligible: quizSummary ? quizSummary.isEligible : true,
           };
         }
         return g;
@@ -261,7 +283,14 @@ export default function App() {
         });
       }
 
-      showToast("🚀 Application Sent!", "Client received your application with attached portfolio proof.");
+      if (quizSummary) {
+        showToast(
+          quizSummary.isEligible ? "🎉 Application & Quiz Passed!" : "Application Recorded", 
+          quizSummary.isEligible ? `Eligible Candidate status verified (${quizSummary.percentage}% Quiz Score)!` : `Quiz score recorded (${quizSummary.percentage}%).`
+        );
+      } else {
+        showToast("🚀 Application Sent!", "Client received your application with attached portfolio proof.");
+      }
     }
   };
 
@@ -411,7 +440,34 @@ export default function App() {
             opportunities={opportunities}
             user={user}
             onApplyGig={handleOpenApplyGig}
+            onViewDetails={handleViewOpportunityDetails}
             onUpdateUserSkills={handleUpdateUserSkills}
+          />
+        )}
+
+        {activeTab === 'opportunity-detail' && (
+          <OpportunityDetailPage 
+            gig={selectedOpportunity}
+            user={user}
+            onBack={() => {
+              setActiveTab('gigs');
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
+            onApply={handleOpenApplyGig}
+            onToggleSkill={handleUpdateUserSkills}
+          />
+        )}
+
+        {activeTab === 'opportunity-apply' && (
+          <OpportunityApplyPage 
+            gig={selectedOpportunity}
+            user={user}
+            userPortfolios={userPortfolios}
+            onBack={() => {
+              setActiveTab('opportunity-detail');
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
+            onConfirmApplySuccess={(gigId, coverNote, portId, quizSummary) => handleConfirmApply(gigId, coverNote, portId, quizSummary)}
           />
         )}
 
