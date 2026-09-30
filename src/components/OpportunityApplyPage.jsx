@@ -30,7 +30,6 @@ export default function OpportunityApplyPage({
   const [currentQIndex, setCurrentQIndex] = useState(0);
   const [userAnswers, setUserAnswers] = useState({}); // { questionId: optionIndex }
   const [selectedOption, setSelectedOption] = useState(null);
-  const [isQuizSubmitted, setIsQuizSubmitted] = useState(false);
   const [resultData, setResultData] = useState(null);
 
   if (!gig) {
