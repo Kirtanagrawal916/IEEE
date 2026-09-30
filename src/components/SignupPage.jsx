@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { api } from '../services/api';
+import GoogleSignInButton from './GoogleSignInButton';
 import { 
   Sparkles, 
   User, 
@@ -331,6 +332,31 @@ export default function SignupPage({ onLoginSuccess, onNavigateToLogin, onNaviga
                 )}
               </button>
             </form>
+
+            {/* DIVIDER: OR */}
+            <div className="relative flex items-center justify-center my-3">
+              <div className="border-t border-slate-200 dark:border-slate-800 w-full"></div>
+              <span className="bg-white dark:bg-slate-900 px-3 text-[10px] font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-widest absolute">
+                OR
+              </span>
+            </div>
+
+            {/* GOOGLE SIGN-UP OPTION */}
+            <GoogleSignInButton
+              text="Sign Up with Google"
+              onSuccess={(user) => {
+                onLoginSuccess({
+                  ...user,
+                  role,
+                  skillInterest,
+                  isSignUp: true,
+                });
+              }}
+              onError={(msg) => {
+                setError(msg);
+              }}
+              disabled={isLoading}
+            />
           </div>
 
           {/* Switch to Login & Guest Account Access */}

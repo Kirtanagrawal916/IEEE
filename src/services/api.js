@@ -52,6 +52,7 @@ export const api = {
   // Auth APIs
   register: (userData) => request('/api/auth/register', { method: 'POST', body: JSON.stringify(userData) }),
   login: (credentials) => request('/api/auth/login', { method: 'POST', body: JSON.stringify(credentials) }),
+  googleLogin: (credential) => request('/api/auth/google', { method: 'POST', body: JSON.stringify({ credential }) }),
   sendOtp: (email) => request('/api/auth/send-otp', { method: 'POST', body: JSON.stringify({ email }) }),
   verifyOtp: (data) => request('/api/auth/verify-otp', { method: 'POST', body: JSON.stringify(data) }),
   getMe: () => request('/api/auth/me'),
