@@ -37,29 +37,86 @@ export default function PortfolioSection({ portfolios, onOpenSubmitModal }) {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 animate-fade-in text-slate-900 dark:text-white">
       
-      {/* Page Header & Action Bar */}
-      <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 md:p-8 border border-slate-200 dark:border-purple-500/30 shadow-md flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-        <div className="space-y-2">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-100 dark:bg-purple-900/40 text-purple-900 dark:text-purple-300 text-xs font-bold">
-            <Award className="w-3.5 h-3.5" />
-            Verified Skill Showcase
+      {/* ========================================================
+          VIBRANT AZURE & IRIDESCENT AI CREATOR SHOWCASE BANNER
+         ======================================================== */}
+      <div className="relative rounded-[36px] bg-gradient-to-br from-[#0B5CFF] via-[#0088FF] to-[#00D2FF] dark:from-[#052A7A] dark:via-[#004BB5] dark:to-[#0088EE] p-6 sm:p-10 border border-blue-300/40 shadow-2xl overflow-hidden text-white">
+        
+        {/* Floating Glowing Spheres in Background */}
+        <div className="absolute -top-12 -left-12 w-64 h-64 rounded-full bg-gradient-to-tr from-cyan-400 via-sky-300 to-indigo-500 blur-2xl opacity-75 pointer-events-none animate-pulse"></div>
+        <div className="absolute -bottom-16 -right-16 w-80 h-80 rounded-full bg-gradient-to-tr from-purple-500 via-pink-400 to-cyan-300 blur-2xl opacity-70 pointer-events-none animate-pulse" style={{ animationDelay: '2s' }}></div>
+        <div className="absolute top-1/3 right-10 w-48 h-48 rounded-full bg-gradient-to-br from-fuchsia-400 to-indigo-600 blur-xl opacity-60 pointer-events-none"></div>
+
+        {/* TOP-LEFT / TOP-RIGHT BADGES */}
+        <div className="absolute top-6 left-6 z-20 flex items-center gap-2">
+          {/* AI-Generated Glass Badge */}
+          <div className="bg-slate-950/70 border border-cyan-400/50 text-cyan-200 text-xs font-black px-3.5 py-2 rounded-2xl flex items-center gap-2 shadow-lg backdrop-blur-md">
+            <Sparkles className="w-4 h-4 text-cyan-400 animate-pulse" />
+            <span>AI-generated Showcase</span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white">
-            Learner Portfolio Gallery
-          </h1>
-          <p className="text-xs sm:text-sm text-slate-700 dark:text-slate-200 max-w-xl font-medium">
-            Real projects created by women completing our skill tracks. Employers view these verified portfolios to offer paid micro-gigs.
-          </p>
         </div>
 
-        <button
-          type="button"
-          onClick={onOpenSubmitModal}
-          className="btn-gradient-award text-xs py-3 px-6 shadow-indigo-600/30 flex-shrink-0 cursor-pointer"
-        >
-          <Plus className="w-4 h-4" />
-          <span>Submit New Project</span>
-        </button>
+        {/* Main Content Layout (Grid with Text on Left & AI Creator Card on Right) */}
+        <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center pt-10">
+          
+          {/* Left Column: Title, Description & Action */}
+          <div className="lg:col-span-7 space-y-6 text-left">
+            
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-cyan-950/60 border border-cyan-400/40 text-cyan-200 text-xs font-extrabold uppercase tracking-wider shadow-sm backdrop-blur-md">
+              <Award className="w-4 h-4 text-amber-400" />
+              <span>Verified Skill Showcase Gallery</span>
+            </div>
+
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight leading-tight text-white drop-shadow-md">
+              Learner Portfolio <br />
+              <span className="bg-gradient-to-r from-amber-300 via-pink-300 to-cyan-200 bg-clip-text text-transparent">
+                Creative Showcase
+              </span>
+            </h1>
+
+            <p className="text-sm sm:text-base text-cyan-100 font-medium leading-relaxed max-w-xl">
+              Real projects created by women completing our skill tracks. Employers view these verified portfolios to offer paid micro-gigs.
+            </p>
+
+            <div className="flex flex-wrap items-center gap-4 pt-2">
+              <button
+                type="button"
+                onClick={onOpenSubmitModal}
+                className="py-3.5 px-7 rounded-2xl bg-gradient-to-r from-amber-400 via-pink-500 to-purple-600 hover:from-amber-300 hover:to-purple-500 text-white font-extrabold text-xs sm:text-sm shadow-xl flex items-center gap-2 cursor-pointer transition-all hover:scale-105"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Submit New Project</span>
+              </button>
+            </div>
+
+          </div>
+
+          {/* Right Column: AI Digital Creator Showcase Card (Matching Image Aesthetic) */}
+          <div className="lg:col-span-5 flex justify-center">
+            <div className="relative w-full max-w-xs sm:max-w-sm rounded-3xl overflow-hidden border-2 border-cyan-300/50 shadow-[0_20px_50px_rgba(0,136,255,0.6)] bg-slate-900/80 backdrop-blur-xl group hover:border-cyan-300 transition-all">
+              
+              <img 
+                src="/portfolio_creator_ai.jpg" 
+                alt="AI Digital Creator Showcase" 
+                className="w-full h-80 sm:h-96 object-cover group-hover:scale-105 transition-transform duration-700"
+              />
+
+              {/* Glass Overlay Badge on Image */}
+              <div className="absolute bottom-3 inset-x-3 bg-slate-950/80 backdrop-blur-md p-3.5 rounded-2xl border border-cyan-400/30 text-white flex items-center justify-between shadow-lg">
+                <div>
+                  <h4 className="text-xs font-black text-cyan-200">Digital Skill Showcase</h4>
+                  <p className="text-[10px] text-cyan-300/80 font-bold">100% Verified Profile Proof</p>
+                </div>
+                <div className="px-2.5 py-1 rounded-xl bg-cyan-500/30 border border-cyan-400 text-cyan-200 text-[11px] font-black">
+                  98% Match
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+        </div>
+
       </div>
 
       {/* Filter & Search Bar */}
