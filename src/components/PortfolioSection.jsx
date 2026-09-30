@@ -37,70 +37,30 @@ export default function PortfolioSection({ portfolios, onOpenSubmitModal }) {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 animate-fade-in text-slate-900 dark:text-white">
       
-      {/* ========================================================
-          ISOMETRIC DIGITAL CREATOR WORKSPACE BACKGROUND CONTAINER
-         ======================================================== */}
-      <div className="relative rounded-[36px] bg-gradient-to-br from-[#06152B] via-[#0B2240] to-[#0E1C30] p-6 sm:p-10 border border-slate-700/60 shadow-2xl overflow-hidden text-white">
-        
-        {/* NEON LIME GREEN RING (TOP-RIGHT - MATCHING REFERENCE IMAGE) */}
-        <div className="w-44 h-44 sm:w-64 sm:h-64 rounded-full border-[10px] sm:border-[16px] border-lime-400 shadow-[0_0_45px_rgba(163,230,53,0.85),inset_0_0_25px_rgba(163,230,53,0.6)] absolute -top-12 -right-12 sm:-top-20 sm:-right-20 z-0 opacity-90 pointer-events-none animate-pulse"></div>
-
-        {/* NEON CORAL PINK RING (LEFT-CENTER - MATCHING REFERENCE IMAGE) */}
-        <div className="w-40 h-40 sm:w-56 sm:h-56 rounded-full border-[8px] sm:border-[14px] border-rose-400 shadow-[0_0_40px_rgba(251,113,133,0.85),inset_0_0_20px_rgba(251,113,133,0.6)] absolute top-1/4 -left-16 sm:-left-20 z-0 opacity-85 pointer-events-none animate-pulse" style={{ animationDelay: '1.5s' }}></div>
-
-        {/* ELECTRIC CYAN ORB DISC (BOTTOM-RIGHT - MATCHING REFERENCE IMAGE) */}
-        <div className="w-48 h-48 sm:w-64 sm:h-64 rounded-full bg-gradient-to-tr from-cyan-400 via-sky-500 to-blue-600 shadow-[0_0_50px_rgba(34,211,238,0.85)] absolute -bottom-16 -right-16 sm:-bottom-20 sm:-right-20 z-0 opacity-85 pointer-events-none animate-pulse" style={{ animationDelay: '1s' }}></div>
-
-        {/* Isometric Code Lines Watermark Pattern */}
-        <div 
-          className="absolute inset-0 pointer-events-none opacity-10 flex flex-col gap-3 font-mono text-[10px] tracking-widest uppercase select-none overflow-hidden text-cyan-300"
-          style={{ transform: 'rotate(-15deg) scale(1.3)' }}
-        >
-          {Array.from({ length: 24 }).map((_, i) => (
-            <div key={i} className="whitespace-nowrap">
-              01001100 01101111 01110010 01100101 01101101 • HER-EARN PORTFOLIO CREATOR CODE • 01001001 01000101 01000101
-            </div>
-          ))}
+      {/* Page Header & Action Bar */}
+      <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 md:p-8 border border-slate-200 dark:border-purple-500/30 shadow-md flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+        <div className="space-y-2">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-100 dark:bg-purple-900/40 text-purple-900 dark:text-purple-300 text-xs font-bold">
+            <Award className="w-3.5 h-3.5" />
+            Verified Skill Showcase
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white">
+            Learner Portfolio Gallery
+          </h1>
+          <p className="text-xs sm:text-sm text-slate-700 dark:text-slate-200 max-w-xl font-medium">
+            Real projects created by women completing our skill tracks. Employers view these verified portfolios to offer paid micro-gigs.
+          </p>
         </div>
 
-        {/* Background Grid Pattern Overlay */}
-        <div
-          className="absolute inset-0 pointer-events-none opacity-20"
-          style={{
-            backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(56,189,248,0.8) 1px, transparent 0)',
-            backgroundSize: '28px 28px',
-            maskImage: 'radial-gradient(ellipse at center, black 40%, transparent 85%)',
-            WebkitMaskImage: 'radial-gradient(ellipse at center, black 40%, transparent 85%)'
-          }}
-        ></div>
-
-        {/* Content Layer Inside Isometric Glass Canvas */}
-        <div className="relative z-10 space-y-8">
-          
-          {/* Header & Action Bar */}
-          <div className="bg-slate-900/60 backdrop-blur-2xl rounded-3xl p-6 md:p-8 border border-cyan-400/30 shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-            <div className="space-y-2">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-950/80 border border-cyan-400/40 text-cyan-300 text-xs font-bold shadow-sm">
-                <Award className="w-3.5 h-3.5 text-cyan-400 animate-pulse" />
-                <span>Verified Skill Showcase • Digital Creator Hub</span>
-              </div>
-              <h1 className="text-2xl sm:text-3xl font-extrabold text-white">
-                Learner Portfolio Gallery
-              </h1>
-              <p className="text-xs sm:text-sm text-cyan-100/90 max-w-xl font-medium leading-relaxed">
-                Real projects created by women completing our skill tracks. Employers view these verified portfolios to offer paid micro-gigs.
-              </p>
-            </div>
-
-            <button
-              type="button"
-              onClick={onOpenSubmitModal}
-              className="py-3.5 px-6 rounded-2xl bg-gradient-to-r from-cyan-500 via-sky-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-black text-xs shadow-[0_0_25px_rgba(6,182,212,0.6)] flex items-center gap-2 flex-shrink-0 cursor-pointer transition-all hover:scale-105"
-            >
-              <Plus className="w-4 h-4" />
-              <span>Submit New Project</span>
-            </button>
-          </div>
+        <button
+          type="button"
+          onClick={onOpenSubmitModal}
+          className="btn-gradient-award text-xs py-3 px-6 shadow-indigo-600/30 flex-shrink-0 cursor-pointer"
+        >
+          <Plus className="w-4 h-4" />
+          <span>Submit New Project</span>
+        </button>
+      </div>
 
       {/* Filter & Search Bar */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-slate-100 dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-purple-500/30 text-slate-900 dark:text-white">
@@ -233,10 +193,6 @@ export default function PortfolioSection({ portfolios, onOpenSubmitModal }) {
             </div>
           );
         })}
-      </div>
-
-        </div>
-
       </div>
 
     </div>
