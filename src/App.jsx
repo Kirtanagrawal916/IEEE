@@ -1,11 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Link, useNavigate } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import LandingSection from './components/LandingSection';
 import LearnSection from './components/LearnSection';
 import PortfolioSection from './components/PortfolioSection';
 import OpportunitiesSection from './components/OpportunitiesSection';
-import Dashboard from './components/Dashboard';
 import ProfileSection from './components/ProfileSection';
 import LoginPage from './components/LoginPage';
 import SignupPage from './components/SignupPage';
@@ -30,9 +28,10 @@ import {
 
 import { api } from './services/api';
 
-function AppContent() {
-  const navigate = useNavigate();
-
+export default function App() {
+  // Navigation active tab: 'home' | 'about' | 'learn' | 'portfolio' | 'gigs' | 'profile' | 'login' | 'signup' | 'terms' | 'privacy' | 'opportunity_detail' | 'opportunity_apply'
+  const [activeTab, setActiveTab] = useState('home');
+  
   // User state
   const [user, setUser] = useState(() => {
     const saved = localStorage.getItem('herearn_user');
@@ -41,6 +40,7 @@ function AppContent() {
 
   const [portfolios, setPortfolios] = useState(initialPortfolios);
   const [opportunities, setOpportunities] = useState(initialOpportunities);
+  const [selectedOpportunity, setSelectedOpportunity] = useState(null);
   const [theme, setTheme] = useState(() => {
     return localStorage.getItem('herearn_theme') || 'light';
   });
@@ -51,7 +51,6 @@ function AppContent() {
   const [isSubmitOpen, setIsSubmitOpen] = useState(false);
   const [isApplyOpen, setIsApplyOpen] = useState(false);
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
-  const [selectedOpportunity, setSelectedOpportunity] = useState(null);
 
   // Toast
   const [toast, setToast] = useState(null);
@@ -112,142 +111,86 @@ function AppContent() {
     }
   };
 
+  const showToast = (title, message) => {
+    setToast({ title, message });
+  };
+
   const handleToggleTheme = () => {
     setTheme(prev => prev === 'dark' ? 'light' : 'dark');
   };
 
-  const showToast = (title, message) => {
-    setToast({ title, message });
-    setTimeout(() => setToast(null), 4000);
-  };
-
   const handleOpenAuth = (mode = 'login') => {
     setAuthMode(mode);
-    navigate(mode === 'signup' ? '/signup' : '/login');
+    setActiveTab(mode);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // Sign Out Handler
   const handleLogout = () => {
     saveUserData(null);
-    navigate('/');
-    showToast("Signed Out", "You have successfully logged out.");
+    setIsLogoutModalOpen(false);
+    setActiveTab('home');
+    showToast("Signed Out", "You have signed out of your account.");
   };
 
-  // Profile Update Handler with API integration
-  const handleUpdateProfile = async (profileData) => {
-    try {
-      const updatedUser = await api.updateProfile(profileData);
-      setUser(updatedUser.user || updatedUser);
-      showToast("✨ Profile Updated!", "Your dashboard profile has been saved to the backend database.");
-    } catch (error) {
-      console.warn('[App] Operation fallback:', error?.message);
-      const updated = { ...(user || initialUser), ...profileData };
-      saveUserData(updated);
-      showToast("✨ Profile Updated!", "Your dashboard profile has been updated.");
-    }
-  };
-
-  // Lesson Completion Action with API integration
-  const handleCompleteLesson = async (lessonId) => {
+  const handleCompleteLesson = (lessonId) => {
     if (!user) {
-      handleOpenAuth('login');
+      showToast("Guest Mode Alert 💡", "Create a free account to track course progress & save certificates!");
       return;
     }
 
-    try {
-      await api.markLessonComplete(lessonId);
-      const currentCompleted = user.completedLessons || [];
-      const updatedLessons = currentCompleted.includes(lessonId)
-        ? currentCompleted.filter(id => id !== lessonId)
-        : [...currentCompleted, lessonId];
-
-      saveUserData({
+    const currentCompleted = user.completedLessons || [];
+    if (!currentCompleted.includes(lessonId)) {
+      const updatedUser = {
         ...user,
-        completedLessons: updatedLessons,
-      });
-
-      showToast("🎉 Lesson Mastered!", "Your skill track progress has increased in database!");
-    } catch (error) {
-      console.warn('[App] Operation fallback:', error?.message);
-      const currentCompleted = user.completedLessons || [];
-      const updatedLessons = currentCompleted.includes(lessonId)
-        ? currentCompleted.filter(id => id !== lessonId)
-        : [...currentCompleted, lessonId];
-
-      saveUserData({
-        ...user,
-        completedLessons: updatedLessons,
-      });
-      showToast("🎉 Lesson Mastered!", "Your skill track progress has increased!");
+        completedLessons: [...currentCompleted, lessonId],
+      };
+      saveUserData(updatedUser);
+      showToast("Lesson Completed! 🎉", "Great job! Keep progressing to unlock capstone projects.");
     }
   };
 
-  // Submit Portfolio Project Action with API integration
-  const handleSubmitProject = async (newProject) => {
-    try {
-      const res = await api.createProject(newProject);
-      const created = res.project || {
-        id: `p-${Date.now()}`,
-        authorName: user ? user.name : "Guest Learner",
-        authorAvatar: user ? user.avatar : "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=300",
-        location: user ? user.location : "India",
-        skillTrack: newProject.category,
-        likes: 1,
-        date: "Just now",
-        ...newProject,
-      };
+  const handleSubmitProject = (projectData) => {
+    const newProject = {
+      id: `p-${Date.now()}`,
+      title: projectData.title,
+      authorName: user?.name || "Learner Creator",
+      authorAvatar: user?.avatar || "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=300",
+      category: projectData.category || "Marketing",
+      image: projectData.image || "https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?auto=format&fit=crop&q=80&w=600",
+      description: projectData.description,
+      likes: 0,
+      tags: projectData.tags ? projectData.tags.split(',').map(t => t.trim()) : ["HerEarn"],
+    };
 
-      setPortfolios([created, ...portfolios]);
-      showToast("✨ Portfolio Published!", "Your project is saved to database and live on the public showcase gallery.");
-    } catch (error) {
-      console.warn('[App] Operation fallback:', error?.message);
-      const createdItem = {
-        id: `p-${Date.now()}`,
-        authorName: user ? user.name : "Guest Learner",
-        authorAvatar: user ? user.avatar : "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=300",
-        location: user ? user.location : "India",
-        skillTrack: newProject.category,
-        likes: 1,
-        date: "Just now",
-        ...newProject,
-      };
-
-      setPortfolios([createdItem, ...portfolios]);
-      showToast("✨ Portfolio Published!", "Your project is live on the public showcase gallery.");
-    }
+    setPortfolios([newProject, ...portfolios]);
+    showToast("Project Published! 🚀", "Your project is live in the community portfolio showcase.");
   };
 
-  // View Opportunity Details in separate page
-  const handleViewOpportunityDetails = (gig) => {
-    setSelectedOpportunity(gig);
-    navigate(`/opportunities/${gig.id}`);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  // Apply to Gig Trigger (Navigates to dedicated separate Opportunity Apply & Quiz page)
   const handleOpenApplyGig = (gig) => {
     if (!user) {
+      showToast("Sign In Required 🔒", "Please log in or continue to submit gig proposals.");
       handleOpenAuth('login');
       return;
     }
     setSelectedOpportunity(gig);
-    navigate(`/opportunities/${gig.id}/apply`);
+    setIsApplyOpen(true);
+  };
+
+  const handleViewOpportunityDetails = (gig) => {
+    setSelectedOpportunity(gig);
+    setActiveTab('opportunity_detail');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // Confirm Gig Application Action with Quiz Assessment & API integration
-  const handleConfirmApply = async (gigId, coverNote, portfolioId, quizSummary) => {
+  const handleConfirmApply = async (gigId, coverNote) => {
     try {
-      await api.applyOpportunity(gigId, { coverNote, portfolioId, quizSummary });
+      await api.applyOpportunity(gigId, { coverNote });
       setOpportunities(opportunities.map(g => {
         if (g.id === gigId) {
           return {
             ...g,
             applied: true,
             applicantsCount: (g.applicantsCount || 0) + 1,
-            quizScore: quizSummary ? quizSummary.percentage : null,
-            eligible: quizSummary ? quizSummary.isEligible : true,
           };
         }
         return g;
@@ -260,24 +203,14 @@ function AppContent() {
         });
       }
 
-      if (quizSummary) {
-        showToast(
-          quizSummary.isEligible ? "🎉 Application & Quiz Passed!" : "Application Recorded", 
-          quizSummary.isEligible ? `Eligible with ${quizSummary.percentage}% Quiz Score!` : `Quiz Score: ${quizSummary.percentage}%`
-        );
-      } else {
-        showToast("🚀 Application Sent!", "Application recorded in database with portfolio proof.");
-      }
-    } catch (error) {
-      console.warn('[App] Operation fallback:', error?.message);
+      showToast("🚀 Application Sent!", "Application recorded with portfolio proof.");
+    } catch (err) {
       setOpportunities(opportunities.map(g => {
         if (g.id === gigId) {
           return {
             ...g,
             applied: true,
             applicantsCount: (g.applicantsCount || 0) + 1,
-            quizScore: quizSummary ? quizSummary.percentage : null,
-            eligible: quizSummary ? quizSummary.isEligible : true,
           };
         }
         return g;
@@ -290,18 +223,10 @@ function AppContent() {
         });
       }
 
-      if (quizSummary) {
-        showToast(
-          quizSummary.isEligible ? "🎉 Application & Quiz Passed!" : "Application Recorded", 
-          quizSummary.isEligible ? `Eligible Candidate status verified (${quizSummary.percentage}% Quiz Score)!` : `Quiz score recorded (${quizSummary.percentage}%).`
-        );
-      } else {
-        showToast("🚀 Application Sent!", "Client received your application with attached portfolio proof.");
-      }
+      showToast("🚀 Application Sent!", "Client received your application with portfolio proof.");
     }
   };
 
-  // User Login Handler
   const handleLoginSuccess = (userData) => {
     const isNewSignUp = userData.isSignUp;
     const loggedInUser = {
@@ -320,14 +245,13 @@ function AppContent() {
     };
 
     saveUserData(loggedInUser);
-    navigate('/dashboard');
+    setActiveTab('profile');
     showToast(isNewSignUp ? "Account Created! 🎉" : "Welcome Back! ✨", `Signed in as ${loggedInUser.name}`);
   };
 
-  // Continue as Guest Handler
   const handleContinueAsGuest = () => {
     saveUserData(null);
-    navigate('/dashboard');
+    setActiveTab('profile');
     setIsAuthOpen(false);
     showToast("Guest Mode Active 👤", "Exploring HerEarn in Guest Mode.");
   };
@@ -353,202 +277,128 @@ function AppContent() {
       
       {/* Sticky Navigation Header */}
       <Navbar 
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
         user={user}
         onLogout={() => setIsLogoutModalOpen(true)}
+        onOpenAuth={handleOpenAuth}
+        onContinueAsGuest={handleContinueAsGuest}
         theme={theme}
         onToggleTheme={handleToggleTheme}
       />
 
-      {/* Main View Area with React Router Routes */}
+      {/* Main View Area */}
       <main className="flex-1 pb-16">
-        <Routes>
-          <Route 
-            path="/" 
-            element={
-              <LandingSection 
-                onNavigate={(page) => navigate(`/${page}`)}
-                onOpenAuth={() => handleOpenAuth('signup')}
-                theme={theme}
-              />
-            } 
+        {activeTab === 'home' && (
+          <LandingSection 
+            onNavigate={setActiveTab}
+            onOpenAuth={() => handleOpenAuth('signup')}
+            theme={theme}
           />
+        )}
 
-          <Route 
-            path="/about" 
-            element={
-              <AboutPage 
-                onNavigate={(page) => navigate(`/${page}`)}
-              />
-            } 
+        {activeTab === 'about' && (
+          <AboutPage 
+            onNavigate={setActiveTab}
           />
+        )}
 
-          <Route 
-            path="/terms" 
-            element={<TermsPage />} 
+        {activeTab === 'terms' && (
+          <TermsPage 
+            onNavigate={setActiveTab}
           />
+        )}
 
-          <Route 
-            path="/privacy" 
-            element={
-              <PrivacyPage 
-                onNavigate={(page) => navigate(`/${page}`)}
-              />
-            } 
+        {activeTab === 'privacy' && (
+          <PrivacyPage 
+            onNavigate={setActiveTab}
           />
+        )}
 
-          <Route 
-            path="/learn" 
-            element={
-              <LearnSection 
-                user={user}
-                onCompleteLesson={handleCompleteLesson}
-                onNavigateToPortfolio={() => {
-                  navigate('/portfolio');
-                  setIsSubmitOpen(true);
-                }}
-              />
-            } 
+        {activeTab === 'learn' && (
+          <LearnSection 
+            user={user}
+            onCompleteLesson={handleCompleteLesson}
+            onNavigateToPortfolio={() => {
+              setActiveTab('portfolio');
+              setIsSubmitOpen(true);
+            }}
           />
+        )}
 
-          <Route 
-            path="/portfolio" 
-            element={
-              <PortfolioSection 
-                portfolios={portfolios}
-                onOpenSubmitModal={() => setIsSubmitOpen(true)}
-              />
-            } 
+        {activeTab === 'portfolio' && (
+          <PortfolioSection 
+            portfolios={portfolios}
+            onOpenSubmitModal={() => setIsSubmitOpen(true)}
           />
+        )}
 
-          <Route 
-            path="/opportunities" 
-            element={
-              <OpportunitiesSection 
-                opportunities={opportunities}
-                user={user}
-                onApplyGig={handleOpenApplyGig}
-                onViewDetails={handleViewOpportunityDetails}
-                onUpdateUserSkills={handleUpdateUserSkills}
-              />
-            } 
+        {(activeTab === 'gigs' || activeTab === 'opportunities') && (
+          <OpportunitiesSection 
+            opportunities={opportunities}
+            user={user}
+            onApplyGig={handleOpenApplyGig}
+            onViewDetails={handleViewOpportunityDetails}
+            onUpdateUserSkills={handleUpdateUserSkills}
           />
+        )}
 
-          <Route 
-            path="/opportunities/:id" 
-            element={
-              <OpportunityDetailPage 
-                gig={selectedOpportunity || opportunities[0]}
-                user={user}
-                onBack={() => navigate('/opportunities')}
-                onApply={handleOpenApplyGig}
-                onToggleSkill={handleUpdateUserSkills}
-              />
-            } 
+        {activeTab === 'opportunity_detail' && (
+          <OpportunityDetailPage 
+            gig={selectedOpportunity || opportunities[0]}
+            user={user}
+            onBack={() => setActiveTab('opportunities')}
+            onApply={handleOpenApplyGig}
+            onToggleSkill={handleUpdateUserSkills}
           />
+        )}
 
-          <Route 
-            path="/opportunities/:id/apply" 
-            element={
-              <OpportunityApplyPage 
-                gig={selectedOpportunity || opportunities[0]}
-                user={user}
-                userPortfolios={userPortfolios}
-                onBack={() => navigate(`/opportunities/${selectedOpportunity?.id || opportunities[0]?.id}`)}
-                onConfirmApplySuccess={(gigId, coverNote, portId, quizSummary) => handleConfirmApply(gigId, coverNote, portId, quizSummary)}
-              />
-            } 
+        {activeTab === 'opportunity_apply' && (
+          <OpportunityApplyPage 
+            gig={selectedOpportunity || opportunities[0]}
+            userPortfolios={userPortfolios}
+            onBack={() => setActiveTab('opportunities')}
+            onSubmitApplication={handleConfirmApply}
           />
+        )}
 
-          <Route 
-            path="/dashboard/*" 
-            element={
-              <Dashboard 
-                user={user}
-                onOpenSubmitModal={() => setIsSubmitOpen(true)}
-                onOpenLogoutModal={() => setIsLogoutModalOpen(true)}
-              />
-            } 
+        {activeTab === 'profile' && (
+          <ProfileSection 
+            user={user}
+            userPortfolios={userPortfolios}
+            userAppliedGigs={userAppliedGigs}
+            onOpenAuth={handleOpenAuth}
+            onOpenSubmitModal={() => setIsSubmitOpen(true)}
+            onUpdateProfile={(updated) => saveUserData(updated)}
+            onUpdateUserSkills={handleUpdateUserSkills}
+            onNavigate={setActiveTab}
           />
+        )}
 
-          <Route 
-            path="/profile" 
-            element={
-              <ProfileSection 
-                user={user}
-                userPortfolios={userPortfolios}
-                userAppliedGigs={userAppliedGigs}
-                onOpenAuth={handleOpenAuth}
-                onOpenSubmitModal={() => setIsSubmitOpen(true)}
-                onUpdateProfile={handleUpdateProfile}
-                onUpdateUserSkills={handleUpdateUserSkills}
-                onNavigate={(page) => navigate(`/${page}`)}
-              />
-            } 
+        {activeTab === 'login' && (
+          <LoginPage 
+            onLoginSuccess={handleLoginSuccess}
+            onContinueAsGuest={handleContinueAsGuest}
+            onNavigateToSignup={() => {
+              setActiveTab('signup');
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
+            onNavigateHome={() => setActiveTab('home')}
           />
+        )}
 
-          <Route 
-            path="/login" 
-            element={
-              <LoginPage 
-                onLoginSuccess={handleLoginSuccess}
-                onContinueAsGuest={handleContinueAsGuest}
-                onNavigateToSignup={() => navigate('/signup')}
-                onNavigateHome={() => navigate('/')}
-                onNavigate={(page) => navigate(`/${page}`)}
-              />
-            } 
+        {activeTab === 'signup' && (
+          <SignupPage 
+            onLoginSuccess={handleLoginSuccess}
+            onContinueAsGuest={handleContinueAsGuest}
+            onNavigateToLogin={() => {
+              setActiveTab('login');
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
+            onNavigateHome={() => setActiveTab('home')}
           />
-
-          <Route 
-            path="/signup" 
-            element={
-              <SignupPage 
-                onLoginSuccess={handleLoginSuccess}
-                onContinueAsGuest={handleContinueAsGuest}
-                onNavigateToLogin={() => navigate('/login')}
-                onNavigateHome={() => navigate('/')}
-              />
-            } 
-          />
-        </Routes>
+        )}
       </main>
-
-      {/* Footer */}
-      <footer className={`border-t py-10 text-xs transition-colors ${
-        theme === 'dark' ? 'bg-slate-900 border-slate-800 text-slate-400' : 'bg-white border-slate-200 text-slate-600'
-      }`}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-4 text-center md:text-left">
-          <div>
-            <p className="font-bold text-sm">HerEarn • Skill-to-Income Platform for Women</p>
-            <p className="opacity-75 mt-1">Empowering women across India to learn skills, build portfolios, and earn income.</p>
-          </div>
-          <div className="flex flex-wrap items-center justify-center md:justify-end gap-5 font-semibold">
-            <Link to="/dashboard" className="hover:text-indigo-400 cursor-pointer">Dashboard</Link>
-            <Link to="/" className="hover:text-indigo-400 cursor-pointer">Overview</Link>
-            <Link to="/about" className="hover:text-indigo-400 cursor-pointer text-purple-400 font-bold">About Us</Link>
-            <Link to="/learn" className="hover:text-indigo-400 cursor-pointer">Learn Case</Link>
-            <Link to="/portfolio" className="hover:text-indigo-400 cursor-pointer">Show Skill</Link>
-            <Link to="/opportunities" className="hover:text-indigo-400 cursor-pointer">Opportunity</Link>
-            <Link to="/terms" className="hover:text-indigo-400 cursor-pointer">Terms & Conditions</Link>
-            <Link to="/privacy" className="hover:text-indigo-400 cursor-pointer">Privacy Policy</Link>
-            {!user && (
-              <>
-                <Link to="/login" className="hover:text-indigo-400 cursor-pointer font-bold text-purple-400">Log In</Link>
-                <Link to="/signup" className="hover:text-pink-400 cursor-pointer font-bold text-pink-400">Sign Up</Link>
-              </>
-            )}
-          </div>
-        </div>
-      </footer>
-
-      {/* Modals & Toasts */}
-      <AuthModal 
-        isOpen={isAuthOpen}
-        initialMode={authMode} 
-        onClose={() => setIsAuthOpen(false)} 
-        onLoginSuccess={handleLoginSuccess}
-        onContinueAsGuest={handleContinueAsGuest}
-      />
 
       <SubmitProjectModal 
         isOpen={isSubmitOpen}
@@ -579,13 +429,5 @@ function AppContent() {
       <ChatBot />
 
     </div>
-  );
-}
-
-export default function App() {
-  return (
-    <BrowserRouter>
-      <AppContent />
-    </BrowserRouter>
   );
 }
