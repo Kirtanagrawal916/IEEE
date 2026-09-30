@@ -140,7 +140,8 @@ function AppContent() {
       const updatedUser = await api.updateProfile(profileData);
       setUser(updatedUser.user || updatedUser);
       showToast("✨ Profile Updated!", "Your dashboard profile has been saved to the backend database.");
-    } catch (_err) {
+    } catch (error) {
+      console.warn('[App] Operation fallback:', error?.message);
       const updated = { ...(user || initialUser), ...profileData };
       saveUserData(updated);
       showToast("✨ Profile Updated!", "Your dashboard profile has been updated.");
@@ -167,7 +168,8 @@ function AppContent() {
       });
 
       showToast("🎉 Lesson Mastered!", "Your skill track progress has increased in database!");
-    } catch (_err) {
+    } catch (error) {
+      console.warn('[App] Operation fallback:', error?.message);
       const currentCompleted = user.completedLessons || [];
       const updatedLessons = currentCompleted.includes(lessonId)
         ? currentCompleted.filter(id => id !== lessonId)
@@ -198,7 +200,8 @@ function AppContent() {
 
       setPortfolios([created, ...portfolios]);
       showToast("✨ Portfolio Published!", "Your project is saved to database and live on the public showcase gallery.");
-    } catch (_err) {
+    } catch (error) {
+      console.warn('[App] Operation fallback:', error?.message);
       const createdItem = {
         id: `p-${Date.now()}`,
         authorName: user ? user.name : "Guest Learner",
@@ -265,7 +268,8 @@ function AppContent() {
       } else {
         showToast("🚀 Application Sent!", "Application recorded in database with portfolio proof.");
       }
-    } catch (_err) {
+    } catch (error) {
+      console.warn('[App] Operation fallback:', error?.message);
       setOpportunities(opportunities.map(g => {
         if (g.id === gigId) {
           return {

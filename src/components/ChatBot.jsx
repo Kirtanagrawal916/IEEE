@@ -6,7 +6,8 @@ import {
   Gamepad2, 
   Briefcase, 
   BookOpen, 
-  IndianRupee 
+  IndianRupee,
+  Sparkles
 } from 'lucide-react';
 import { api } from '../services/api';
 
@@ -45,8 +46,8 @@ export default function ChatBot() {
   const quickReplyChips = [
     { text: "How do I find gigs?", icon: Briefcase },
     { text: "What courses are available?", icon: BookOpen },
-    { text: "Play a game with me", icon: Gamepad2 },
-    { text: "How do I earn on HerEarn?", icon: IndianRupee }
+    { text: "Career restart for women", icon: Sparkles },
+    { text: "Play a game with me", icon: Gamepad2 }
   ];
 
   // Auto scroll to bottom when messages update
