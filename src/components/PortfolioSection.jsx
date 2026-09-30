@@ -47,24 +47,8 @@ export default function PortfolioSection({ portfolios, onOpenSubmitModal }) {
         <div className="absolute -bottom-16 -right-16 w-80 h-80 rounded-full bg-gradient-to-tr from-purple-500 via-pink-400 to-cyan-300 blur-2xl opacity-70 pointer-events-none animate-pulse" style={{ animationDelay: '2s' }}></div>
         <div className="absolute top-1/3 right-10 w-48 h-48 rounded-full bg-gradient-to-br from-fuchsia-400 to-indigo-600 blur-xl opacity-60 pointer-events-none"></div>
 
-        {/* Tilted Repeating Background Watermark */}
-        <div 
-          className="absolute inset-0 pointer-events-none opacity-15 flex flex-col gap-4 font-black text-xs tracking-widest uppercase select-none overflow-hidden text-cyan-200"
-          style={{ transform: 'rotate(-10deg) scale(1.3)' }}
-        >
-          {Array.from({ length: 24 }).map((_, i) => (
-            <div key={i} className="whitespace-nowrap">
-              HerEarn • AI Creative Showcase • Verified Skill Gallery • Digital Creator
-            </div>
-          ))}
-        </div>
-
-        {/* TOP-LEFT / TOP-RIGHT BADGES (MATCHING REFERENCE IMAGE) */}
+        {/* TOP-LEFT / TOP-RIGHT BADGES */}
         <div className="absolute top-6 left-6 z-20 flex items-center gap-2">
-          {/* Crown Badge */}
-          <div className="w-10 h-10 rounded-2xl bg-amber-500/90 border border-amber-300 text-slate-950 flex items-center justify-center font-black shadow-lg backdrop-blur-md">
-            👑
-          </div>
           {/* AI-Generated Glass Badge */}
           <div className="bg-slate-950/70 border border-cyan-400/50 text-cyan-200 text-xs font-black px-3.5 py-2 rounded-2xl flex items-center gap-2 shadow-lg backdrop-blur-md">
             <Sparkles className="w-4 h-4 text-cyan-400 animate-pulse" />
