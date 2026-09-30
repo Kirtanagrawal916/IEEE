@@ -4,8 +4,8 @@ import { authMiddleware } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
-// GET /api/portfolio/me
-router.get('/me', authMiddleware, async (req, res) => {
+// GET /api/portfolio/me or /api/projects/mine
+const getMyProjectsHandler = async (req, res) => {
   try {
     const projects = await prisma.portfolioProject.findMany({
       where: { userId: req.user.id },
@@ -21,7 +21,11 @@ router.get('/me', authMiddleware, async (req, res) => {
   } catch (error) {
     res.status(500).json({ success: false, message: 'Failed to fetch user portfolio', error: error.message });
   }
-});
+};
+
+router.get('/me', authMiddleware, getMyProjectsHandler);
+router.get('/mine', authMiddleware, getMyProjectsHandler);
+router.get('/projects/mine', authMiddleware, getMyProjectsHandler);
 
 // GET /api/portfolio (all verified public projects)
 router.get('/', async (req, res) => {

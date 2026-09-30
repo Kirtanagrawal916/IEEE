@@ -3,21 +3,14 @@ import {
   ArrowLeft, 
   Briefcase, 
   FileText, 
-  Send, 
   ShieldCheck, 
   CheckCircle2, 
-  XCircle, 
   Award, 
-  Sparkles, 
   BrainCircuit, 
-  HelpCircle, 
   AlertCircle, 
   RotateCcw, 
-  BookOpen, 
   Target, 
-  ChevronRight,
-  Clock,
-  Layers
+  ChevronRight
 } from 'lucide-react';
 import { getQuizForCategory } from '../data/opportunityQuizzes';
 
