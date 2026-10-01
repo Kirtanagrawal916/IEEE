@@ -87,7 +87,7 @@ export default function PortfolioSection({ portfolios, onOpenSubmitModal, user, 
   };
 
   return (
-    <div className="w-full px-4 sm:px-8 lg:px-12 py-8 space-y-8 animate-fade-in text-slate-900 dark:text-white">
+    <div className="max-w-[1440px] mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 space-y-8 animate-fade-in text-slate-900 dark:text-white">
       
       {/* ========================================================
           VIBRANT AZURE & IRIDESCENT AI CREATOR SHOWCASE BANNER
