@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { api } from '../services/api';
 import { 
   Briefcase, 
   MapPin, 
@@ -31,12 +32,13 @@ import {
 } from '../utils/skillMatcher';
 
 export default function OpportunitiesSection({ 
-  opportunities, 
+  opportunities: propOpportunities, 
   user, 
   onApplyGig, 
   onViewDetails,
   onUpdateUserSkills 
 }) {
+  const [opportunities, setOpportunities] = useState(propOpportunities || []);
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [selectedType, setSelectedType] = useState('All');
   const [selectedMatchFilter, setSelectedMatchFilter] = useState('All'); // 'All', 'HighMatch' (75%+), 'ExactMatch' (100%)
@@ -44,6 +46,32 @@ export default function OpportunitiesSection({
   const [sortBy, setSortBy] = useState('highest_match'); // 'highest_match', 'newest', 'highest_pay', 'applicants'
   const [activeSkillFilter, setActiveSkillFilter] = useState(null);
   const [isSkillsDrawerOpen, setIsSkillsDrawerOpen] = useState(true);
+
+  useEffect(() => {
+    if (propOpportunities && propOpportunities.length > 0) {
+      setOpportunities(propOpportunities);
+    }
+  }, [propOpportunities]);
+
+  useEffect(() => {
+    const fetchFiltered = async () => {
+      try {
+        const filters = {};
+        if (selectedCategory !== 'All') filters.category = selectedCategory;
+        if (searchQuery.trim()) filters.search = searchQuery.trim();
+        if (activeSkillFilter) filters.skill = activeSkillFilter;
+
+        const res = await api.getOpportunities(filters);
+        if (res.success && res.opportunities) {
+          setOpportunities(res.opportunities);
+        }
+      } catch (err) {
+        // Fallback to props
+      }
+    };
+
+    fetchFiltered();
+  }, [selectedCategory, searchQuery, activeSkillFilter]);
 
   // Modal states
   const [detailModalGig, setDetailModalGig] = useState(null);

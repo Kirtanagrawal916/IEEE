@@ -118,19 +118,33 @@ export default function Navbar({
               <span>Opportunities</span>
             </Link>
 
-            {/* Dashboard Link */}
+            {/* Dashboard & Applications Links */}
             {user && (
-              <Link
-                to="/dashboard"
-                className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                  pathname.startsWith('/dashboard')
-                    ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-md'
-                    : 'text-slate-700 dark:text-slate-200 hover:text-purple-700 dark:hover:text-white hover:bg-purple-100/70 dark:hover:bg-purple-900/40'
-                }`}
-              >
-                <User className="w-4 h-4" />
-                <span>Dashboard</span>
-              </Link>
+              <>
+                <Link
+                  to="/applications"
+                  className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                    pathname === '/applications'
+                      ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-md'
+                      : 'text-slate-700 dark:text-slate-200 hover:text-purple-700 dark:hover:text-white hover:bg-purple-100/70 dark:hover:bg-purple-900/40'
+                  }`}
+                >
+                  <FileText className="w-4 h-4 text-emerald-500" />
+                  <span>Applications</span>
+                </Link>
+
+                <Link
+                  to="/dashboard"
+                  className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                    pathname.startsWith('/dashboard')
+                      ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-md'
+                      : 'text-slate-700 dark:text-slate-200 hover:text-purple-700 dark:hover:text-white hover:bg-purple-100/70 dark:hover:bg-purple-900/40'
+                  }`}
+                >
+                  <User className="w-4 h-4" />
+                  <span>Dashboard</span>
+                </Link>
+              </>
             )}
           </div>
 

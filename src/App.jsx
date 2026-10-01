@@ -14,6 +14,11 @@ import TermsPage from './components/TermsPage';
 import PrivacyPage from './components/PrivacyPage';
 import OpportunityDetailPage from './components/OpportunityDetailPage';
 import OpportunityApplyPage from './components/OpportunityApplyPage';
+import TrackDetailPage from './components/TrackDetailPage';
+import LessonPlayerPage from './components/LessonPlayerPage';
+import ApplicationsPage from './components/ApplicationsPage';
+import PublicProfilePage from './components/PublicProfilePage';
+import ProtectedRoute from './components/ProtectedRoute';
 
 import AuthModal from './components/AuthModal';
 import SubmitProjectModal from './components/SubmitProjectModal';
@@ -411,13 +416,55 @@ function AppContent() {
           />
 
           <Route 
+            path="/courses" 
+            element={
+              <LearnSection 
+                user={user}
+                onCompleteLesson={handleCompleteLesson}
+                onNavigateToPortfolio={() => {
+                  navigate('/portfolio');
+                  setIsSubmitOpen(true);
+                }}
+              />
+            } 
+          />
+
+          <Route 
+            path="/courses/:trackId" 
+            element={
+              <TrackDetailPage 
+                user={user}
+                onCompleteLesson={handleCompleteLesson}
+              />
+            } 
+          />
+
+          <Route 
+            path="/courses/:trackId/lessons/:lessonId" 
+            element={
+              <LessonPlayerPage 
+                user={user}
+                onCompleteLesson={handleCompleteLesson}
+                showToast={showToast}
+              />
+            } 
+          />
+
+          <Route 
             path="/portfolio" 
             element={
               <PortfolioSection 
                 portfolios={portfolios}
+                user={user}
                 onOpenSubmitModal={() => setIsSubmitOpen(true)}
+                showToast={showToast}
               />
             } 
+          />
+
+          <Route 
+            path="/profile/:userId" 
+            element={<PublicProfilePage />} 
           />
 
           <Route 
@@ -449,40 +496,55 @@ function AppContent() {
           <Route 
             path="/opportunities/:id/apply" 
             element={
-              <OpportunityApplyPage 
-                gig={selectedOpportunity || opportunities[0]}
-                user={user}
-                userPortfolios={userPortfolios}
-                onBack={() => navigate(`/opportunities/${selectedOpportunity?.id || opportunities[0]?.id}`)}
-                onConfirmApplySuccess={(gigId, coverNote, portId, quizSummary) => handleConfirmApply(gigId, coverNote, portId, quizSummary)}
-              />
+              <ProtectedRoute user={user}>
+                <OpportunityApplyPage 
+                  gig={selectedOpportunity || opportunities[0]}
+                  user={user}
+                  userPortfolios={userPortfolios}
+                  onBack={() => navigate(`/opportunities/${selectedOpportunity?.id || opportunities[0]?.id}`)}
+                  onConfirmApplySuccess={(gigId, coverNote, portId, quizSummary) => handleConfirmApply(gigId, coverNote, portId, quizSummary)}
+                />
+              </ProtectedRoute>
+            } 
+          />
+
+          <Route 
+            path="/applications" 
+            element={
+              <ProtectedRoute user={user}>
+                <ApplicationsPage user={user} />
+              </ProtectedRoute>
             } 
           />
 
           <Route 
             path="/dashboard/*" 
             element={
-              <Dashboard 
-                user={user}
-                onOpenSubmitModal={() => setIsSubmitOpen(true)}
-                onOpenLogoutModal={() => setIsLogoutModalOpen(true)}
-              />
+              <ProtectedRoute user={user}>
+                <Dashboard 
+                  user={user}
+                  onOpenSubmitModal={() => setIsSubmitOpen(true)}
+                  onOpenLogoutModal={() => setIsLogoutModalOpen(true)}
+                />
+              </ProtectedRoute>
             } 
           />
 
           <Route 
             path="/profile" 
             element={
-              <ProfileSection 
-                user={user}
-                userPortfolios={userPortfolios}
-                userAppliedGigs={userAppliedGigs}
-                onOpenAuth={handleOpenAuth}
-                onOpenSubmitModal={() => setIsSubmitOpen(true)}
-                onUpdateProfile={handleUpdateProfile}
-                onUpdateUserSkills={handleUpdateUserSkills}
-                onNavigate={(page) => navigate(`/${page}`)}
-              />
+              <ProtectedRoute user={user}>
+                <ProfileSection 
+                  user={user}
+                  userPortfolios={userPortfolios}
+                  userAppliedGigs={userAppliedGigs}
+                  onOpenAuth={handleOpenAuth}
+                  onOpenSubmitModal={() => setIsSubmitOpen(true)}
+                  onUpdateProfile={handleUpdateProfile}
+                  onUpdateUserSkills={handleUpdateUserSkills}
+                  onNavigate={(page) => navigate(`/${page}`)}
+                />
+              </ProtectedRoute>
             } 
           />
 
