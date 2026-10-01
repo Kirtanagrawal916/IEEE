@@ -62,7 +62,19 @@ function AppContent() {
   const [toast, setToast] = useState(null);
 
   useEffect(() => {
-    document.body.className = theme;
+    const root = document.documentElement;
+    const body = document.body;
+    if (theme === 'dark') {
+      root.classList.add('dark');
+      root.classList.remove('light');
+      body.classList.add('dark');
+      body.classList.remove('light');
+    } else {
+      root.classList.add('light');
+      root.classList.remove('dark');
+      body.classList.add('light');
+      body.classList.remove('dark');
+    }
     localStorage.setItem('herearn_theme', theme);
   }, [theme]);
 
