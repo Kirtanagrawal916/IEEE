@@ -621,7 +621,7 @@ function AppContent() {
       <footer className={`border-t py-10 text-xs transition-colors ${
         theme === 'dark' ? 'bg-slate-900 border-slate-800 text-slate-400' : 'bg-white border-slate-200 text-slate-600'
       }`}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-4 text-center md:text-left">
+        <div className="w-full px-4 sm:px-8 lg:px-12 flex flex-col md:flex-row items-center justify-between gap-4 text-center md:text-left">
           <div>
             <p className="font-bold text-sm">HerEarn • Skill-to-Income Platform for Women</p>
             <p className="opacity-75 mt-1">Empowering women across India to learn skills, build portfolios, and earn income.</p>

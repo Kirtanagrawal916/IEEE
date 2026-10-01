@@ -211,7 +211,7 @@ export default function LandingSection({ onNavigate, onOpenAuth, theme }) {
     <div className="space-y-16 sm:space-y-20 pb-20 animate-fade-in overflow-x-hidden text-slate-900 dark:text-slate-100">
       
       {/* 1. HERO SECTION (DYNAMIC LIGHT & DARK MODE HERO) */}
-      <section className="relative min-h-[calc(100vh-5rem)] flex flex-col justify-center items-center py-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto overflow-hidden text-center">
+      <section className="relative min-h-[calc(100vh-5rem)] flex flex-col justify-center items-center py-16 w-full px-4 sm:px-8 lg:px-12 overflow-hidden text-center">
         
         {/* Ambient Radial Glow Background (Light & Dark Compatible) */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[500px] bg-gradient-to-tr from-purple-200/50 via-pink-100/40 to-indigo-100/50 dark:from-purple-900/30 dark:via-fuchsia-900/20 dark:to-indigo-950/40 rounded-full blur-[120px] pointer-events-none"></div>
@@ -293,7 +293,7 @@ export default function LandingSection({ onNavigate, onOpenAuth, theme }) {
 
       {/* STATS STRIP (Honest Pilot Launch Values) */}
       <section className="bg-slate-100/90 dark:bg-slate-900/95 border-y border-purple-200 dark:border-purple-500/30 py-10 relative">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-4">
+        <div className="w-full px-4 sm:px-8 lg:px-12 space-y-4">
           
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 text-center">
             {stats.map((s, idx) => {
@@ -329,7 +329,7 @@ export default function LandingSection({ onNavigate, onOpenAuth, theme }) {
       </section>
 
       {/* WHAT WE DO SECTION */}
-      <section id="what-we-do" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-10">
+      <section id="what-we-do" className="w-full px-4 sm:px-8 lg:px-12 py-8 space-y-10">
         <div className="text-center max-w-3xl mx-auto space-y-3">
           <span className="text-xs font-extrabold text-purple-700 dark:text-purple-300 uppercase tracking-widest px-4 py-1.5 rounded-full bg-purple-100 dark:bg-purple-900/40 border border-purple-300 dark:border-purple-500/30">
             Our Core Mission & Platform Pillars
@@ -433,7 +433,7 @@ export default function LandingSection({ onNavigate, onOpenAuth, theme }) {
       </section>
 
       {/* HOW IT WORKS SECTION (3 Core Cards Right Below Stats Strip) */}
-      <section id="how-it-works" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+      <section id="how-it-works" className="w-full px-4 sm:px-8 lg:px-12 space-y-8">
         
         <div className="text-center max-w-2xl mx-auto space-y-2">
           <span className="text-xs font-extrabold text-pink-700 dark:text-pink-400 uppercase tracking-widest px-3 py-1 rounded-full bg-pink-100 dark:bg-pink-500/10 border border-pink-300 dark:border-pink-500/20">
@@ -502,7 +502,7 @@ export default function LandingSection({ onNavigate, onOpenAuth, theme }) {
       </section>
 
       {/* PROBLEM WE SOLVE SECTION */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="w-full px-4 sm:px-8 lg:px-12">
         <div className="bg-white/90 dark:bg-slate-900/90 border border-purple-200 dark:border-purple-500/30 rounded-3xl p-6 sm:p-12 shadow-xl backdrop-blur-md space-y-8 text-slate-900 dark:text-white">
           
           <div className="text-center max-w-3xl mx-auto space-y-4">
@@ -544,7 +544,7 @@ export default function LandingSection({ onNavigate, onOpenAuth, theme }) {
       </section>
 
       {/* FEATURES SECTION */}
-      <section id="features" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+      <section id="features" className="w-full px-4 sm:px-8 lg:px-12 space-y-12">
         <div className="text-center max-w-3xl mx-auto space-y-3">
           <span className="text-xs font-extrabold text-pink-700 dark:text-pink-400 uppercase tracking-widest">Platform Modules</span>
           <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white">
@@ -601,7 +601,7 @@ export default function LandingSection({ onNavigate, onOpenAuth, theme }) {
       </section>
 
       {/* SUCCESS STORIES SECTION */}
-      <section id="success-stories" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
+      <section id="success-stories" className="w-full px-4 sm:px-8 lg:px-12 space-y-10">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-purple-200 dark:border-purple-500/20 pb-4">
           <div>
             <span className="text-xs font-extrabold text-purple-700 dark:text-purple-400 uppercase tracking-widest">Real Results</span>
@@ -673,7 +673,7 @@ export default function LandingSection({ onNavigate, onOpenAuth, theme }) {
       </section>
 
       {/* CALL TO ACTION FOOTER BANNER */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="w-full px-4 sm:px-8 lg:px-12">
         <div className="bg-gradient-to-r from-purple-900 via-indigo-950 to-pink-950 border border-purple-500/40 rounded-3xl p-10 lg:p-16 text-center text-white space-y-6 shadow-2xl relative overflow-hidden">
           <div className="max-w-2xl mx-auto space-y-4 relative z-10">
             <h2 className="text-3xl sm:text-5xl font-extrabold leading-tight text-white">

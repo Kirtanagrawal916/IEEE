@@ -99,7 +99,7 @@ export default function LearnSection({ user, onCompleteLesson, onNavigateToPortf
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 animate-fade-in text-slate-900 dark:text-white">
+    <div className="w-full px-4 sm:px-8 lg:px-12 py-8 space-y-8 animate-fade-in text-slate-900 dark:text-white">
       
       {/* View Switcher Bar: Courses vs Challenge Zone */}
       <div className="flex items-center justify-between flex-wrap gap-4 bg-white dark:bg-slate-900 p-3 rounded-2xl border border-slate-200 dark:border-purple-500/30 shadow-md">

@@ -65,8 +65,8 @@ export default function Navbar({
   const currentLangObj = LANGUAGES.find(l => l.code === language) || LANGUAGES[0];
 
   return (
-    <nav className="glass-nav sticky top-0 z-50 shadow-md transition-colors">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <nav className="glass-nav sticky top-0 z-50 shadow-md transition-colors w-full">
+      <div className="w-full px-4 sm:px-8 lg:px-12">
         <div className="flex items-center justify-between h-20">
           
           {/* Logo */}

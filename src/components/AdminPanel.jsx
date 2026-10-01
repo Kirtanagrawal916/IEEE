@@ -18,7 +18,7 @@ export default function AdminPanel({ opportunities, portfolios, showToast }) {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 animate-fade-in text-slate-900 dark:text-white">
+    <div className="w-full px-4 sm:px-8 lg:px-12 py-8 space-y-8 animate-fade-in text-slate-900 dark:text-white">
       
       {/* Header */}
       <div className="bg-gradient-to-r from-slate-900 via-purple-950 to-slate-900 rounded-3xl p-6 border border-purple-500/30 text-white shadow-xl flex items-center justify-between">
