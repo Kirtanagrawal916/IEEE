@@ -246,6 +246,53 @@ export default function Dashboard({ user, onOpenSubmitModal, onOpenLogoutModal }
         </div>
       </div>
 
+      {/* 4. Learner Achievement Unlocked Badges */}
+      <div className="bg-gradient-to-r from-purple-900/90 via-slate-900 to-indigo-950/90 rounded-3xl p-6 border border-purple-500/40 text-white shadow-xl space-y-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Trophy className="w-5 h-5 text-amber-400" />
+            <h3 className="text-sm font-extrabold uppercase tracking-wider text-white">Learner Milestones & Badges</h3>
+          </div>
+          <span className="text-[11px] font-bold text-purple-300 bg-purple-500/20 px-3 py-1 rounded-full border border-purple-500/30">
+            Level 2 Creator
+          </span>
+        </div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+          <div className="p-3.5 rounded-2xl bg-white/10 border border-purple-400/30 backdrop-blur-md flex items-center gap-2.5">
+            <span className="text-xl">🏅</span>
+            <div>
+              <p className="font-extrabold text-white">First Module Mastered</p>
+              <p className="text-[10px] text-purple-200">Digital Marketing</p>
+            </div>
+          </div>
+
+          <div className="p-3.5 rounded-2xl bg-white/10 border border-pink-400/30 backdrop-blur-md flex items-center gap-2.5">
+            <span className="text-xl">⭐</span>
+            <div>
+              <p className="font-extrabold text-white">150 Skill Points</p>
+              <p className="text-[10px] text-pink-200">Challenge Master</p>
+            </div>
+          </div>
+
+          <div className="p-3.5 rounded-2xl bg-white/10 border border-emerald-400/30 backdrop-blur-md flex items-center gap-2.5">
+            <span className="text-xl">🛡️</span>
+            <div>
+              <p className="font-extrabold text-white">Escrow Verified</p>
+              <p className="text-[10px] text-emerald-200">Ready for Payouts</p>
+            </div>
+          </div>
+
+          <div className="p-3.5 rounded-2xl bg-white/10 border border-amber-400/30 backdrop-blur-md flex items-center gap-2.5">
+            <span className="text-xl">🚀</span>
+            <div>
+              <p className="font-extrabold text-white">Proof of Work</p>
+              <p className="text-[10px] text-amber-200">Portfolio Published</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* 5. Quick Actions Row */}
       <div className="bg-white dark:bg-slate-900 rounded-3xl p-5 border border-slate-200 dark:border-purple-500/30 shadow-md space-y-3">
         <h3 className="text-xs font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
