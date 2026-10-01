@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { BrowserRouter, Routes, Route, Link, useNavigate } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import LandingSection from './components/LandingSection';
 import LearnSection from './components/LearnSection';
 import PortfolioSection from './components/PortfolioSection';
 import OpportunitiesSection from './components/OpportunitiesSection';
+import Dashboard from './components/Dashboard';
 import ProfileSection from './components/ProfileSection';
 import LoginPage from './components/LoginPage';
 import SignupPage from './components/SignupPage';
