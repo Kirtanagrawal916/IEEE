@@ -35,11 +35,8 @@ import {
 
 import { api } from './services/api';
 
-export default function App() {
-  // Navigation active tab: 'home' | 'about' | 'learn' | 'portfolio' | 'gigs' | 'profile' | 'login' | 'signup' | 'terms' | 'privacy' | 'opportunity_detail' | 'opportunity_apply'
-  const [activeTab, setActiveTab] = useState('home');
-  
-  // User state
+function AppContent() {
+  const navigate = useNavigate();
   const [user, setUser] = useState(() => {
     const saved = localStorage.getItem('herearn_user');
     return saved ? JSON.parse(saved) : null;
@@ -538,5 +535,13 @@ export default function App() {
       <ChatBot />
 
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <BrowserRouter>
+      <AppContent />
+    </BrowserRouter>
   );
 }
