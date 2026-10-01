@@ -232,8 +232,8 @@ export default function LandingSection({ onNavigate, onOpenAuth, theme }) {
            ======================================================== */}
         <div className="relative z-10 max-w-4xl mx-auto text-center w-full my-6">
           
-          {/* Main Frosted Glass Card */}
-          <div className="rounded-[40px] bg-slate-950/45 dark:bg-[#071328]/55 backdrop-blur-2xl border border-cyan-300/40 dark:border-cyan-400/40 p-8 sm:p-14 shadow-[0_25px_65px_-15px_rgba(6,182,212,0.4)] relative overflow-hidden transition-all hover:border-cyan-300/60 hover:shadow-[0_30px_75px_-15px_rgba(6,182,212,0.5)] group">
+          {/* Main Hero Card (Solid & Modern) */}
+          <div className="rounded-[40px] bg-slate-950 dark:bg-[#071328] border border-cyan-400/40 p-8 sm:p-14 shadow-2xl relative overflow-hidden transition-all hover:border-cyan-300 group">
             
             {/* TOP-LEFT NEON GLOWING CYAN RING */}
             <div className="w-24 h-24 sm:w-36 sm:h-36 rounded-full border-[5px] sm:border-[7px] border-cyan-300 shadow-[0_0_35px_rgba(6,182,212,1),inset_0_0_20px_rgba(6,182,212,0.8)] absolute -top-8 -left-8 sm:-top-12 sm:-left-12 z-20 pointer-events-none animate-pulse"></div>
@@ -241,14 +241,11 @@ export default function LandingSection({ onNavigate, onOpenAuth, theme }) {
             {/* BOTTOM-RIGHT NEON GLOWING CYAN RING */}
             <div className="w-28 h-28 sm:w-40 sm:h-40 rounded-full border-[5px] sm:border-[7px] border-cyan-300 shadow-[0_0_35px_rgba(6,182,212,1),inset_0_0_20px_rgba(6,182,212,0.8)] absolute -bottom-10 -right-10 sm:-bottom-14 sm:-right-14 z-20 pointer-events-none animate-pulse" style={{ animationDelay: '1.5s' }}></div>
 
-            {/* Glass Surface Top Reflection Line */}
-            <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-cyan-300/20 dark:from-cyan-400/10 to-transparent pointer-events-none"></div>
-
             {/* Card Inner Content */}
             <div className="w-full space-y-8 text-center flex flex-col items-center relative z-10">
               
-              {/* Sleek Subtitle Badge matching image vector subtitle */}
-              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-cyan-950/60 border border-cyan-400/50 text-cyan-300 text-xs font-black tracking-widest uppercase shadow-md backdrop-blur-md">
+              {/* Sleek Subtitle Badge */}
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-cyan-950 border border-cyan-400/50 text-cyan-300 text-xs font-black tracking-widest uppercase shadow-md">
                 <Sparkles className="w-4 h-4 text-cyan-400 animate-pulse" />
                 <span>AI Skill-to-Income Recommendation</span>
               </div>
@@ -427,7 +424,7 @@ export default function LandingSection({ onNavigate, onOpenAuth, theme }) {
 
       {/* PROBLEM WE SOLVE SECTION */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="bg-white/90 dark:bg-slate-900/90 border border-purple-200 dark:border-purple-500/30 rounded-3xl p-6 sm:p-12 shadow-xl backdrop-blur-md space-y-8 text-slate-900 dark:text-white">
+        <div className="bg-white dark:bg-slate-900 border border-purple-200 dark:border-purple-500/30 rounded-3xl p-6 sm:p-12 shadow-xl space-y-8 text-slate-900 dark:text-white">
           
           <div className="text-center max-w-3xl mx-auto space-y-4">
             <span className="text-xs font-extrabold text-rose-700 dark:text-rose-400 uppercase tracking-widest px-3 py-1 rounded-full bg-rose-100 dark:bg-rose-500/10 border border-rose-300 dark:border-rose-500/20">
@@ -485,7 +482,7 @@ export default function LandingSection({ onNavigate, onOpenAuth, theme }) {
             return (
               <div 
                 key={feat.id}
-                className="bg-white/90 dark:bg-slate-900/80 border border-purple-200 dark:border-purple-500/30 rounded-3xl p-7 card-hover-award space-y-5 flex flex-col justify-between shadow-lg backdrop-blur-md text-slate-900 dark:text-white"
+                className="bg-white dark:bg-slate-900 border border-purple-200 dark:border-purple-500/30 rounded-3xl p-7 card-hover-award space-y-5 flex flex-col justify-between shadow-lg text-slate-900 dark:text-white"
               >
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
@@ -543,7 +540,7 @@ export default function LandingSection({ onNavigate, onOpenAuth, theme }) {
 
         <div className="grid md:grid-cols-3 gap-8">
           {successStories.map((story, idx) => (
-            <div key={idx} className="bg-white/90 dark:bg-slate-900/80 border border-purple-200 dark:border-purple-500/30 rounded-3xl p-7 space-y-5 flex flex-col justify-between card-hover-award shadow-lg backdrop-blur-md text-slate-900 dark:text-white">
+            <div key={idx} className="bg-white dark:bg-slate-900 border border-purple-200 dark:border-purple-500/30 rounded-3xl p-7 space-y-5 flex flex-col justify-between card-hover-award shadow-lg text-slate-900 dark:text-white">
               <div className="space-y-4">
                 <div className="flex items-center gap-4">
                   <img src={story.avatar} alt={story.name} className="w-14 h-14 rounded-full object-cover border-2 border-purple-500 shadow-md" />

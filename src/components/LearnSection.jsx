@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
 import { 
   Play, 
   CheckCircle, 
@@ -17,30 +18,72 @@ import {
   CheckCircle2,
   Layers,
   Flame,
-  Send
+  Send,
+  Loader2
 } from 'lucide-react';
 import { skillTracks } from '../data/mockData';
 import { initialChallenges } from '../data/challengesData';
 import ChallengeZoneModal from './ChallengeZoneModal';
+import { api } from '../services/api';
 
 export default function LearnSection({ user, onCompleteLesson, onNavigateToPortfolio, onUpdateUserSkillPoints }) {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('courses'); // 'courses' | 'challenges'
+  const [tracks, setTracks] = useState(skillTracks);
   const [selectedTrackId, setSelectedTrackId] = useState('track-1');
   const [activeLessonId, setActiveLessonId] = useState('m1-l1');
-  
+  const [isLoadingTracks, setIsLoadingTracks] = useState(false);
+  const [backendProgressPercent, setBackendProgressPercent] = useState(null);
+
   // Challenge Zone states
   const [challenges, setChallenges] = useState(initialChallenges);
   const [activeChallenge, setActiveChallenge] = useState(null);
   const [completedChallengeIds, setCompletedChallengeIds] = useState([]);
   const [userPoints, setUserPoints] = useState(user?.skillPoints || 150);
 
-  const currentTrack = skillTracks.find(t => t.id === selectedTrackId) || skillTracks[0];
-  const activeLesson = currentTrack.lessons.find(l => l.id === activeLessonId) || currentTrack.lessons[0];
+  useEffect(() => {
+    const fetchLiveTracks = async () => {
+      setIsLoadingTracks(true);
+      try {
+        const res = await api.getTracks();
+        if (res.success && res.tracks && res.tracks.length > 0) {
+          setTracks(res.tracks);
+        }
+      } catch (err) {
+        console.log('[LearnSection] Using cached tracks:', err.message);
+      } finally {
+        setIsLoadingTracks(false);
+      }
+    };
+
+    fetchLiveTracks();
+  }, []);
+
+  useEffect(() => {
+    const fetchProgress = async () => {
+      if (!selectedTrackId) return;
+      try {
+        const progRes = await api.getTrackProgress(selectedTrackId);
+        if (progRes.success && progRes.progressPercent !== undefined) {
+          setBackendProgressPercent(progRes.progressPercent);
+        }
+      } catch (err) {
+        setBackendProgressPercent(null);
+      }
+    };
+
+    fetchProgress();
+  }, [selectedTrackId, user]);
+
+  const currentTrack = tracks.find(t => t.id === selectedTrackId) || tracks[0] || skillTracks[0];
+  const activeLesson = (currentTrack.lessons || []).find(l => l.id === activeLessonId) || (currentTrack.lessons || [])[0] || {};
 
   const userCompletedLessons = user?.completedLessons || [];
-  const trackLessonsCount = currentTrack.lessons.length;
-  const completedCount = currentTrack.lessons.filter(l => userCompletedLessons.includes(l.id)).length;
-  const progressPercent = Math.round((completedCount / trackLessonsCount) * 100);
+  const trackLessonsCount = currentTrack.lessons ? currentTrack.lessons.length : 1;
+  const completedCount = (currentTrack.lessons || []).filter(l => userCompletedLessons.includes(l.id)).length;
+  const progressPercent = backendProgressPercent !== null 
+    ? backendProgressPercent 
+    : Math.round((completedCount / trackLessonsCount) * 100);
 
   const isCurrentLessonCompleted = userCompletedLessons.includes(activeLesson.id);
 

@@ -75,73 +75,82 @@ export default function Navbar({
           </div>
 
           {/* Clean Navigation: Home | Courses | Opportunities | Dashboard (If Logged In) */}
-          <div className="hidden md:flex items-center gap-1.5 bg-white/90 dark:bg-slate-900/80 p-1.5 rounded-2xl border border-purple-200 dark:border-purple-500/30 backdrop-blur-md shadow-lg">
-            <button
-              type="button"
-              onClick={() => handleNav('home')}
+          {/* Clean Navigation: Home | Courses | Opportunities | Applications | Dashboard */}
+          <div className="hidden md:flex items-center gap-1.5 bg-white dark:bg-slate-900 p-1.5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-md">
+            <Link
+              to="/"
               className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                activeTab === 'home'
+                pathname === '/'
                   ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-md'
                   : 'text-slate-700 dark:text-slate-200 hover:text-purple-700 dark:hover:text-white hover:bg-purple-100/70 dark:hover:bg-purple-900/40'
               }`}
             >
               <Compass className="w-4 h-4" />
               <span>Home</span>
-            </button>
+            </Link>
 
-            <button
-              type="button"
-              onClick={() => handleNav('learn')}
+            <Link
+              to="/learn"
               className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                activeTab === 'learn'
+                pathname === '/learn' || pathname.startsWith('/courses')
                   ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-md'
                   : 'text-slate-700 dark:text-slate-200 hover:text-purple-700 dark:hover:text-white hover:bg-purple-100/70 dark:hover:bg-purple-900/40'
               }`}
             >
               <BookOpen className="w-4 h-4 text-purple-600 dark:text-purple-400" />
               <span>Courses</span>
-            </button>
+            </Link>
 
-            <button
-              type="button"
-              onClick={() => handleNav('portfolio')}
+            <Link
+              to="/portfolio"
               className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                activeTab === 'portfolio'
+                pathname === '/portfolio'
                   ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-md'
                   : 'text-slate-700 dark:text-slate-200 hover:text-purple-700 dark:hover:text-white hover:bg-purple-100/70 dark:hover:bg-purple-900/40'
               }`}
             >
               <Award className="w-4 h-4 text-pink-600 dark:text-pink-400" />
               <span>Portfolios</span>
-            </button>
+            </Link>
 
-            <button
-              type="button"
-              onClick={() => handleNav('opportunities')}
+            <Link
+              to="/opportunities"
               className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                activeTab === 'opportunities' || activeTab === 'gigs' || activeTab === 'opportunity_detail'
+                pathname.startsWith('/opportunities')
                   ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-md'
                   : 'text-slate-700 dark:text-slate-200 hover:text-purple-700 dark:hover:text-white hover:bg-purple-100/70 dark:hover:bg-purple-900/40'
               }`}
             >
               <Briefcase className="w-4 h-4 text-amber-600 dark:text-amber-400" />
               <span>Opportunities</span>
-            </button>
+            </Link>
 
-            {/* Profile / Dashboard Link */}
             {user && (
-              <button
-                type="button"
-                onClick={() => handleNav('profile')}
-                className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                  activeTab === 'profile'
-                    ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-md'
-                    : 'text-slate-700 dark:text-slate-200 hover:text-purple-700 dark:hover:text-white hover:bg-purple-100/70 dark:hover:bg-purple-900/40'
-                }`}
-              >
-                <User className="w-4 h-4" />
-                <span>Dashboard</span>
-              </button>
+              <>
+                <Link
+                  to="/applications"
+                  className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                    pathname === '/applications'
+                      ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-md'
+                      : 'text-slate-700 dark:text-slate-200 hover:text-purple-700 dark:hover:text-white hover:bg-purple-100/70 dark:hover:bg-purple-900/40'
+                  }`}
+                >
+                  <FileText className="w-4 h-4 text-emerald-500" />
+                  <span>Applications</span>
+                </Link>
+
+                <Link
+                  to="/dashboard"
+                  className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                    pathname.startsWith('/dashboard')
+                      ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-md'
+                      : 'text-slate-700 dark:text-slate-200 hover:text-purple-700 dark:hover:text-white hover:bg-purple-100/70 dark:hover:bg-purple-900/40'
+                  }`}
+                >
+                  <User className="w-4 h-4" />
+                  <span>Dashboard</span>
+                </Link>
+              </>
             )}
           </div>
 

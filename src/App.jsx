@@ -12,6 +12,11 @@ import TermsPage from './components/TermsPage';
 import PrivacyPage from './components/PrivacyPage';
 import OpportunityDetailPage from './components/OpportunityDetailPage';
 import OpportunityApplyPage from './components/OpportunityApplyPage';
+import TrackDetailPage from './components/TrackDetailPage';
+import LessonPlayerPage from './components/LessonPlayerPage';
+import ApplicationsPage from './components/ApplicationsPage';
+import PublicProfilePage from './components/PublicProfilePage';
+import ProtectedRoute from './components/ProtectedRoute';
 
 import AuthModal from './components/AuthModal';
 import SubmitProjectModal from './components/SubmitProjectModal';
@@ -289,115 +294,217 @@ export default function App() {
 
       {/* Main View Area */}
       <main className="flex-1 pb-16">
-        {activeTab === 'home' && (
-          <LandingSection 
-            onNavigate={setActiveTab}
-            onOpenAuth={() => handleOpenAuth('signup')}
-            theme={theme}
+        <Routes>
+          <Route 
+            path="/" 
+            element={
+              <LandingSection 
+                onNavigate={(page) => navigate(`/${page}`)}
+                onOpenAuth={() => handleOpenAuth('signup')}
+                theme={theme}
+              />
+            } 
           />
-        )}
 
-        {activeTab === 'about' && (
-          <AboutPage 
-            onNavigate={setActiveTab}
+          <Route 
+            path="/about" 
+            element={
+              <AboutPage 
+                onNavigate={(page) => navigate(`/${page}`)}
+              />
+            } 
           />
-        )}
 
-        {activeTab === 'terms' && (
-          <TermsPage 
-            onNavigate={setActiveTab}
+          <Route 
+            path="/terms" 
+            element={
+              <TermsPage 
+                onNavigate={(page) => navigate(`/${page}`)}
+              />
+            } 
           />
-        )}
 
-        {activeTab === 'privacy' && (
-          <PrivacyPage 
-            onNavigate={setActiveTab}
+          <Route 
+            path="/privacy" 
+            element={
+              <PrivacyPage 
+                onNavigate={(page) => navigate(`/${page}`)}
+              />
+            } 
           />
-        )}
 
-        {activeTab === 'learn' && (
-          <LearnSection 
-            user={user}
-            onCompleteLesson={handleCompleteLesson}
-            onNavigateToPortfolio={() => {
-              setActiveTab('portfolio');
-              setIsSubmitOpen(true);
-            }}
+          <Route 
+            path="/learn" 
+            element={
+              <LearnSection 
+                user={user}
+                onCompleteLesson={handleCompleteLesson}
+                onNavigateToPortfolio={() => {
+                  navigate('/portfolio');
+                  setIsSubmitOpen(true);
+                }}
+              />
+            } 
           />
-        )}
 
-        {activeTab === 'portfolio' && (
-          <PortfolioSection 
-            portfolios={portfolios}
-            onOpenSubmitModal={() => setIsSubmitOpen(true)}
+          <Route 
+            path="/courses" 
+            element={
+              <LearnSection 
+                user={user}
+                onCompleteLesson={handleCompleteLesson}
+                onNavigateToPortfolio={() => {
+                  navigate('/portfolio');
+                  setIsSubmitOpen(true);
+                }}
+              />
+            } 
           />
-        )}
 
-        {(activeTab === 'gigs' || activeTab === 'opportunities') && (
-          <OpportunitiesSection 
-            opportunities={opportunities}
-            user={user}
-            onApplyGig={handleOpenApplyGig}
-            onViewDetails={handleViewOpportunityDetails}
-            onUpdateUserSkills={handleUpdateUserSkills}
+          <Route 
+            path="/courses/:trackId" 
+            element={
+              <TrackDetailPage 
+                user={user}
+                onCompleteLesson={handleCompleteLesson}
+              />
+            } 
           />
-        )}
 
-        {activeTab === 'opportunity_detail' && (
-          <OpportunityDetailPage 
-            gig={selectedOpportunity || opportunities[0]}
-            user={user}
-            onBack={() => setActiveTab('opportunities')}
-            onApply={handleOpenApplyGig}
-            onToggleSkill={handleUpdateUserSkills}
+          <Route 
+            path="/courses/:trackId/lessons/:lessonId" 
+            element={
+              <LessonPlayerPage 
+                user={user}
+                onCompleteLesson={handleCompleteLesson}
+                showToast={showToast}
+              />
+            } 
           />
-        )}
 
-        {activeTab === 'opportunity_apply' && (
-          <OpportunityApplyPage 
-            gig={selectedOpportunity || opportunities[0]}
-            userPortfolios={userPortfolios}
-            onBack={() => setActiveTab('opportunities')}
-            onSubmitApplication={handleConfirmApply}
+          <Route 
+            path="/portfolio" 
+            element={
+              <PortfolioSection 
+                portfolios={portfolios}
+                user={user}
+                onOpenSubmitModal={() => setIsSubmitOpen(true)}
+                showToast={showToast}
+              />
+            } 
           />
-        )}
 
-        {activeTab === 'profile' && (
-          <ProfileSection 
-            user={user}
-            userPortfolios={userPortfolios}
-            userAppliedGigs={userAppliedGigs}
-            onOpenAuth={handleOpenAuth}
-            onOpenSubmitModal={() => setIsSubmitOpen(true)}
-            onUpdateProfile={(updated) => saveUserData(updated)}
-            onUpdateUserSkills={handleUpdateUserSkills}
-            onNavigate={setActiveTab}
+          <Route 
+            path="/profile/:userId" 
+            element={<PublicProfilePage />} 
           />
-        )}
 
-        {activeTab === 'login' && (
-          <LoginPage 
-            onLoginSuccess={handleLoginSuccess}
-            onContinueAsGuest={handleContinueAsGuest}
-            onNavigateToSignup={() => {
-              setActiveTab('signup');
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-            }}
-            onNavigateHome={() => setActiveTab('home')}
+          <Route 
+            path="/opportunities" 
+            element={
+              <OpportunitiesSection 
+                opportunities={opportunities}
+                user={user}
+                onApplyGig={handleOpenApplyGig}
+                onViewDetails={handleViewOpportunityDetails}
+                onUpdateUserSkills={handleUpdateUserSkills}
+              />
+            } 
           />
-        )}
 
-        {activeTab === 'signup' && (
-          <SignupPage 
-            onLoginSuccess={handleLoginSuccess}
-            onContinueAsGuest={handleContinueAsGuest}
-            onNavigateToLogin={() => {
-              setActiveTab('login');
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-            }}
-            onNavigateHome={() => setActiveTab('home')}
+          <Route 
+            path="/opportunities/:id" 
+            element={
+              <OpportunityDetailPage 
+                gig={selectedOpportunity || opportunities[0]}
+                user={user}
+                onBack={() => navigate('/opportunities')}
+                onApply={handleOpenApplyGig}
+                onToggleSkill={handleUpdateUserSkills}
+              />
+            } 
           />
-        )}
+
+          <Route 
+            path="/opportunities/:id/apply" 
+            element={
+              <ProtectedRoute user={user}>
+                <OpportunityApplyPage 
+                  gig={selectedOpportunity || opportunities[0]}
+                  user={user}
+                  userPortfolios={userPortfolios}
+                  onBack={() => navigate(`/opportunities/${selectedOpportunity?.id || opportunities[0]?.id}`)}
+                  onConfirmApplySuccess={(gigId, coverNote, portId, quizSummary) => handleConfirmApply(gigId, coverNote, portId, quizSummary)}
+                />
+              </ProtectedRoute>
+            } 
+          />
+
+          <Route 
+            path="/applications" 
+            element={
+              <ProtectedRoute user={user}>
+                <ApplicationsPage user={user} />
+              </ProtectedRoute>
+            } 
+          />
+
+          <Route 
+            path="/dashboard/*" 
+            element={
+              <ProtectedRoute user={user}>
+                <Dashboard 
+                  user={user}
+                  onOpenSubmitModal={() => setIsSubmitOpen(true)}
+                  onOpenLogoutModal={() => setIsLogoutModalOpen(true)}
+                />
+              </ProtectedRoute>
+            } 
+          />
+
+          <Route 
+            path="/profile" 
+            element={
+              <ProtectedRoute user={user}>
+                <ProfileSection 
+                  user={user}
+                  userPortfolios={userPortfolios}
+                  userAppliedGigs={userAppliedGigs}
+                  onOpenAuth={handleOpenAuth}
+                  onOpenSubmitModal={() => setIsSubmitOpen(true)}
+                  onUpdateProfile={handleUpdateProfile}
+                  onUpdateUserSkills={handleUpdateUserSkills}
+                  onNavigate={(page) => navigate(`/${page}`)}
+                />
+              </ProtectedRoute>
+            } 
+          />
+
+          <Route 
+            path="/login" 
+            element={
+              <LoginPage 
+                onLoginSuccess={handleLoginSuccess}
+                onContinueAsGuest={handleContinueAsGuest}
+                onNavigateToSignup={() => navigate('/signup')}
+                onNavigateHome={() => navigate('/')}
+                onNavigate={(page) => navigate(`/${page}`)}
+              />
+            } 
+          />
+
+          <Route 
+            path="/signup" 
+            element={
+              <SignupPage 
+                onLoginSuccess={handleLoginSuccess}
+                onContinueAsGuest={handleContinueAsGuest}
+                onNavigateToLogin={() => navigate('/login')}
+                onNavigateHome={() => navigate('/')}
+              />
+            } 
+          />
+        </Routes>
       </main>
 
       <SubmitProjectModal 
