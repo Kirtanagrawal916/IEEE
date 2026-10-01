@@ -16,7 +16,10 @@ import {
   Info,
   Scale,
   Globe,
-  FileText
+  FileText,
+  Users,
+  Shield,
+  Building2
 } from 'lucide-react';
 import LogoutModal from './LogoutModal';
 import { useLanguage } from '../context/LanguageContext';
@@ -62,8 +65,8 @@ export default function Navbar({
   const currentLangObj = LANGUAGES.find(l => l.code === language) || LANGUAGES[0];
 
   return (
-    <nav className="glass-nav sticky top-0 z-50 shadow-md transition-colors">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <nav className="glass-nav sticky top-0 z-50 shadow-md transition-colors w-full">
+      <div className="w-full px-4 sm:px-8 lg:px-12">
         <div className="flex items-center justify-between h-20">
           
           {/* Logo */}
@@ -127,6 +130,18 @@ export default function Navbar({
             >
               <Briefcase className="w-4 h-4 text-amber-600 dark:text-amber-400" />
               <span>{t('opportunities')}</span>
+            </Link>
+
+            <Link
+              to="/mentorship"
+              className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                pathname === '/mentorship'
+                  ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-md'
+                  : 'text-slate-700 dark:text-slate-200 hover:text-purple-700 dark:hover:text-white hover:bg-purple-100/70 dark:hover:bg-purple-900/40'
+              }`}
+            >
+              <Users className="w-4 h-4 text-indigo-500" />
+              <span>Mentorship</span>
             </Link>
 
             {/* Dashboard & Applications Links */}

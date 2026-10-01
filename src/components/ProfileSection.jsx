@@ -273,7 +273,7 @@ export default function ProfileSection({
   ];
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-10 animate-fade-in text-slate-900 dark:text-white">
+    <div className="w-full px-4 sm:px-8 lg:px-12 py-8 space-y-10 animate-fade-in text-slate-900 dark:text-white">
       
       {/* Top Banner Notice for Guests */}
       {!user && (
