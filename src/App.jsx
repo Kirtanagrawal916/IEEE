@@ -27,6 +27,13 @@ import LogoutModal from './components/LogoutModal';
 import ToastNotification from './components/ToastNotification';
 import ChatBot from './components/ChatBot';
 
+import CertificateModal from './components/CertificateModal';
+import ResumeBuilderModal from './components/ResumeBuilderModal';
+import EmployerPortal from './components/EmployerPortal';
+import MentorshipSection from './components/MentorshipSection';
+import AdminPanel from './components/AdminPanel';
+import PaymentEscrowModal from './components/PaymentEscrowModal';
+
 import { 
   initialUser, 
   initialPortfolios, 
@@ -57,6 +64,15 @@ function AppContent() {
   const [isApplyOpen, setIsApplyOpen] = useState(false);
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
   const [selectedOpportunity, setSelectedOpportunity] = useState(null);
+
+  // New Feature Modules Modals State
+  const [isCertOpen, setIsCertOpen] = useState(false);
+  const [certTrackTitle, setCertTrackTitle] = useState('Digital Marketing & Growth Strategy');
+  const [isResumeOpen, setIsResumeOpen] = useState(false);
+  const [isEmployerOpen, setIsEmployerOpen] = useState(false);
+  const [isPaymentEscrowOpen, setIsPaymentEscrowOpen] = useState(false);
+  const [escrowAmount, setEscrowAmount] = useState(6000);
+  const [escrowGigTitle, setEscrowGigTitle] = useState('Canva Social Graphic Deliverable');
 
   // Toast
   const [toast, setToast] = useState(null);
@@ -584,6 +600,20 @@ function AppContent() {
               />
             } 
           />
+
+          <Route 
+            path="/mentorship" 
+            element={
+              <MentorshipSection showToast={showToast} />
+            } 
+          />
+
+          <Route 
+            path="/admin" 
+            element={
+              <AdminPanel opportunities={opportunities} portfolios={portfolios} showToast={showToast} />
+            } 
+          />
         </Routes>
       </main>
 
@@ -599,18 +629,13 @@ function AppContent() {
           <div className="flex flex-wrap items-center justify-center md:justify-end gap-5 font-semibold">
             <Link to="/dashboard" className="hover:text-indigo-400 cursor-pointer">Dashboard</Link>
             <Link to="/" className="hover:text-indigo-400 cursor-pointer">Overview</Link>
+            <Link to="/mentorship" className="hover:text-indigo-400 cursor-pointer text-indigo-400 font-bold">Mentorship</Link>
             <Link to="/about" className="hover:text-indigo-400 cursor-pointer text-purple-400 font-bold">About Us</Link>
-            <Link to="/learn" className="hover:text-indigo-400 cursor-pointer">Learn Case</Link>
+            <Link to="/learn" className="hover:text-indigo-400 cursor-pointer">Courses</Link>
             <Link to="/portfolio" className="hover:text-indigo-400 cursor-pointer">Show Skill</Link>
             <Link to="/opportunities" className="hover:text-indigo-400 cursor-pointer">Opportunity</Link>
-            <Link to="/terms" className="hover:text-indigo-400 cursor-pointer">Terms & Conditions</Link>
-            <Link to="/privacy" className="hover:text-indigo-400 cursor-pointer">Privacy Policy</Link>
-            {!user && (
-              <>
-                <Link to="/login" className="hover:text-indigo-400 cursor-pointer font-bold text-purple-400">Log In</Link>
-                <Link to="/signup" className="hover:text-pink-400 cursor-pointer font-bold text-pink-400">Sign Up</Link>
-              </>
-            )}
+            <button onClick={() => setIsEmployerOpen(true)} className="hover:text-pink-400 cursor-pointer font-bold text-pink-400">Post Gig</button>
+            <Link to="/admin" className="hover:text-purple-400 cursor-pointer font-bold text-purple-400">Admin</Link>
           </div>
         </div>
       </footer>
@@ -642,6 +667,36 @@ function AppContent() {
         isOpen={isLogoutModalOpen}
         onConfirm={handleLogout}
         onCancel={() => setIsLogoutModalOpen(false)}
+      />
+
+      {/* New Feature Modals */}
+      <CertificateModal
+        isOpen={isCertOpen}
+        onClose={() => setIsCertOpen(false)}
+        user={user}
+        trackTitle={certTrackTitle}
+      />
+
+      <ResumeBuilderModal
+        isOpen={isResumeOpen}
+        onClose={() => setIsResumeOpen(false)}
+        user={user}
+        portfolios={userPortfolios}
+      />
+
+      <EmployerPortal
+        isOpen={isEmployerOpen}
+        onClose={() => setIsEmployerOpen(false)}
+        onAddOpportunity={(newOpp) => setOpportunities([newOpp, ...opportunities])}
+        showToast={showToast}
+      />
+
+      <PaymentEscrowModal
+        isOpen={isPaymentEscrowOpen}
+        onClose={() => setIsPaymentEscrowOpen(false)}
+        amount={escrowAmount}
+        gigTitle={escrowGigTitle}
+        showToast={showToast}
       />
 
       <ToastNotification 
