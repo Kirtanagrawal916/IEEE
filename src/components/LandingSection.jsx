@@ -210,50 +210,50 @@ export default function LandingSection({ onNavigate, onOpenAuth, theme }) {
   return (
     <div className="space-y-16 sm:space-y-20 pb-20 animate-fade-in overflow-x-hidden text-slate-900 dark:text-slate-100">
       
-      {/* 1. HERO SECTION (MATCHING DESIGN SCREENSHOT EXACTLY) */}
+      {/* 1. HERO SECTION (DYNAMIC LIGHT & DARK MODE HERO) */}
       <section className="relative min-h-[calc(100vh-5rem)] flex flex-col justify-center items-center py-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto overflow-hidden text-center">
         
-        {/* Ambient Dark Deep Purple Radial Glow Background */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[500px] bg-gradient-to-tr from-purple-900/30 via-fuchsia-900/20 to-indigo-950/40 rounded-full blur-[120px] pointer-events-none"></div>
+        {/* Ambient Radial Glow Background (Light & Dark Compatible) */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[500px] bg-gradient-to-tr from-purple-200/50 via-pink-100/40 to-indigo-100/50 dark:from-purple-900/30 dark:via-fuchsia-900/20 dark:to-indigo-950/40 rounded-full blur-[120px] pointer-events-none"></div>
 
-        {/* Subtle Dark Dot Grid Matrix Background */}
+        {/* Subtle Grid Matrix Background */}
         <div
-          className="absolute inset-0 pointer-events-none opacity-20"
+          className="absolute inset-0 pointer-events-none opacity-25 dark:opacity-20"
           style={{
-            backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(168,85,247,0.6) 1px, transparent 0)',
+            backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(147,51,234,0.4) 1px, transparent 0)',
             backgroundSize: '28px 28px'
           }}
         ></div>
 
         <div className="relative z-10 max-w-3xl mx-auto space-y-8 flex flex-col items-center">
           
-          {/* Top Pill Badge matching image */}
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#1a0f30]/90 border border-purple-500/40 text-purple-200 text-[10px] sm:text-xs font-black tracking-widest uppercase shadow-[0_0_20px_rgba(168,85,247,0.25)] backdrop-blur-md">
-            <Sparkles className="w-3.5 h-3.5 text-purple-400 animate-pulse" />
+          {/* Top Pill Badge */}
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-purple-100/90 dark:bg-[#1a0f30]/90 border border-purple-300 dark:border-purple-500/40 text-purple-900 dark:text-purple-200 text-[10px] sm:text-xs font-black tracking-widest uppercase shadow-sm dark:shadow-[0_0_20px_rgba(168,85,247,0.25)] backdrop-blur-md">
+            <Sparkles className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400 animate-pulse" />
             <span>AI-POWERED SKILL-TO-INCOME RECOMMENDATION PLATFORM</span>
           </div>
 
-          {/* Main Headline matching image */}
+          {/* Main Headline */}
           <div className="space-y-1">
-            <h1 className="text-4xl sm:text-6xl lg:text-7xl font-black tracking-tight leading-tight text-white">
+            <h1 className="text-4xl sm:text-6xl lg:text-7xl font-black tracking-tight leading-tight text-slate-900 dark:text-white">
               Turn Skills Into
             </h1>
-            <h1 className="text-4xl sm:text-6xl lg:text-7xl font-black tracking-tight leading-tight bg-gradient-to-r from-purple-400 via-pink-500 to-amber-400 bg-clip-text text-transparent drop-shadow-[0_0_35px_rgba(236,72,153,0.3)]">
+            <h1 className="text-4xl sm:text-6xl lg:text-7xl font-black tracking-tight leading-tight bg-gradient-to-r from-purple-600 via-pink-600 to-amber-500 dark:from-purple-400 dark:via-pink-500 dark:to-amber-400 bg-clip-text text-transparent drop-shadow-sm dark:drop-shadow-[0_0_35px_rgba(236,72,153,0.3)]">
               Sustainable Income
             </h1>
           </div>
 
-          {/* Subtitle matching image */}
-          <p className="text-sm sm:text-base text-slate-300 font-semibold max-w-xl mx-auto leading-relaxed">
+          {/* Subtitle */}
+          <p className="text-sm sm:text-base text-slate-700 dark:text-slate-300 font-bold max-w-xl mx-auto leading-relaxed">
             Bridging the gap between learning, opportunities, and financial independence.
           </p>
 
-          {/* Action Buttons matching image */}
+          {/* Action Buttons */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2 w-full max-w-md">
             <button
               type="button"
               onClick={() => onNavigate('learn')}
-              className="w-full sm:w-auto px-7 py-3.5 rounded-xl bg-gradient-to-r from-purple-500 via-pink-500 to-rose-500 hover:from-purple-600 hover:to-rose-600 text-white font-extrabold text-xs sm:text-sm shadow-[0_0_25px_rgba(236,72,153,0.4)] transition-all flex items-center justify-center gap-2 cursor-pointer hover:scale-105"
+              className="w-full sm:w-auto px-7 py-3.5 rounded-xl bg-gradient-to-r from-purple-600 via-pink-600 to-rose-600 hover:from-purple-700 hover:to-rose-700 text-white font-extrabold text-xs sm:text-sm shadow-lg dark:shadow-[0_0_25px_rgba(236,72,153,0.4)] transition-all flex items-center justify-center gap-2 cursor-pointer hover:scale-105"
             >
               <span>Start Learning</span>
               <ArrowRight className="w-4 h-4" />
@@ -262,27 +262,27 @@ export default function LandingSection({ onNavigate, onOpenAuth, theme }) {
             <button
               type="button"
               onClick={() => onNavigate('gigs')}
-              className="w-full sm:w-auto px-7 py-3.5 rounded-xl bg-[#140c26]/90 border border-purple-500/40 hover:border-purple-400 text-purple-200 font-extrabold text-xs sm:text-sm shadow-md transition-all flex items-center justify-center cursor-pointer hover:scale-105 backdrop-blur-md"
+              className="w-full sm:w-auto px-7 py-3.5 rounded-xl bg-white dark:bg-[#140c26]/90 border-2 border-purple-500/80 dark:border-purple-500/40 hover:border-purple-600 dark:hover:border-purple-400 text-purple-700 dark:text-purple-200 hover:bg-purple-50 dark:hover:bg-purple-900/40 font-extrabold text-xs sm:text-sm shadow-sm transition-all flex items-center justify-center cursor-pointer hover:scale-105 backdrop-blur-md"
             >
               Explore Opportunities
             </button>
           </div>
 
           {/* Thin Horizontal Divider */}
-          <div className="w-full max-w-xl border-t border-purple-500/20 pt-6"></div>
+          <div className="w-full max-w-xl border-t border-purple-200 dark:border-purple-500/20 pt-6"></div>
 
-          {/* 3 Trust Features Row matching image */}
-          <div className="flex flex-wrap items-center justify-center gap-6 sm:gap-10 text-xs font-bold text-slate-200">
+          {/* 3 Trust Features Row */}
+          <div className="flex flex-wrap items-center justify-center gap-6 sm:gap-10 text-xs font-extrabold text-slate-800 dark:text-slate-200">
             <div className="flex items-center gap-2">
-              <ShieldCheck className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+              <ShieldCheck className="w-4.5 h-4.5 text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
               <span>Escrow Safe Payouts</span>
             </div>
             <div className="flex items-center gap-2">
-              <Award className="w-4 h-4 text-purple-400 flex-shrink-0" />
+              <Award className="w-4.5 h-4.5 text-purple-600 dark:text-purple-400 flex-shrink-0" />
               <span>Verified Badges</span>
             </div>
             <div className="flex items-center gap-2">
-              <Cpu className="w-4 h-4 text-pink-400 flex-shrink-0" />
+              <Cpu className="w-4.5 h-4.5 text-pink-600 dark:text-pink-400 flex-shrink-0" />
               <span>AI Matching</span>
             </div>
           </div>
