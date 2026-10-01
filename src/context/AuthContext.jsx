@@ -55,6 +55,18 @@ export const AuthProvider = ({ children }) => {
     throw new Error(res.message || 'Registration failed');
   };
 
+  const googleLogin = async (credential) => {
+    const res = await api.googleLogin(credential);
+    if (res.success && res.token) {
+      localStorage.setItem('herearn_jwt_token', res.token);
+      localStorage.setItem('herearn_user', JSON.stringify(res.user));
+      setToken(res.token);
+      setUser(res.user);
+      return res;
+    }
+    throw new Error(res.message || 'Google sign-in failed');
+  };
+
   const logout = () => {
     localStorage.removeItem('herearn_jwt_token');
     localStorage.removeItem('herearn_user');
@@ -81,6 +93,7 @@ export const AuthProvider = ({ children }) => {
         loading,
         login,
         register,
+        googleLogin,
         logout,
         updateUserProfile,
         setUser,

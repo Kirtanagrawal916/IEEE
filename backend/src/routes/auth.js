@@ -3,12 +3,14 @@
  * Conforms to frontend API contract (src/services/api.js) and PostgreSQL Prisma Schema
  */
 
+import crypto from 'crypto';
 import { Router } from 'express';
 import prisma from '../config/db.js';
 import { hashPassword, comparePassword } from '../utils/password.js';
 import { generateToken } from '../utils/jwt.js';
 import { authenticateToken } from '../middleware/auth.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
+import { verifyGoogleToken } from '../utils/googleAuth.js';
 
 const router = Router();
 
@@ -128,6 +130,91 @@ router.post(
         bio: user.bio,
         skills: user.skills,
         totalEarned: user.totalEarned,
+      },
+    });
+  })
+);
+
+/**
+ * @route   POST /api/auth/google
+ * @desc    Authenticate with verified Google ID token / account linking
+ * @access  Public
+ */
+router.post(
+  '/google',
+  asyncHandler(async (req, res) => {
+    const { credential } = req.body;
+
+    if (!credential) {
+      return res.status(400).json({
+        success: false,
+        message: 'Google credential token is required.',
+      });
+    }
+
+    let googlePayload;
+    try {
+      googlePayload = await verifyGoogleToken(credential);
+    } catch (err) {
+      return res.status(401).json({
+        success: false,
+        message: err.message || 'Google authentication failed.',
+      });
+    }
+
+    const { email, name, picture } = googlePayload;
+    const cleanEmail = email.toLowerCase().trim();
+
+    // Check if user already exists with this verified email
+    let user = await prisma.user.findUnique({ where: { email: cleanEmail } });
+
+    if (!user) {
+      // Create new user account with verified Google information
+      const rawName = name || cleanEmail.split('@')[0].replace(/[^a-zA-Z0-9]/g, ' ') || 'HerEarn Learner';
+      const formattedName = rawName.charAt(0).toUpperCase() + rawName.slice(1);
+      const secureRandomPassword = crypto.randomBytes(32).toString('hex');
+      const passwordHash = await hashPassword(secureRandomPassword);
+
+      user = await prisma.user.create({
+        data: {
+          name: formattedName,
+          email: cleanEmail,
+          passwordHash,
+          role: 'LEARNER',
+          avatar: picture || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(formattedName)}`,
+          location: 'India',
+          bio: 'Verified HerEarn Learner via Google Sign-In',
+          skills: ['Digital Marketing', 'Graphic Design'],
+        },
+      });
+    } else if (picture && (!user.avatar || user.avatar.includes('dicebear'))) {
+      // If user already exists and has default avatar, update avatar without touching existing profile/skills/data
+      try {
+        user = await prisma.user.update({
+          where: { id: user.id },
+          data: { avatar: picture },
+        });
+      } catch (err) {
+        console.warn('Avatar update notice:', err.message);
+      }
+    }
+
+    const token = generateToken({ id: user.id, email: user.email, role: user.role });
+
+    res.status(200).json({
+      success: true,
+      message: 'Google authentication successful',
+      token,
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        avatar: user.avatar,
+        location: user.location,
+        bio: user.bio,
+        skills: user.skills,
+        totalEarned: user.totalEarned || 0,
       },
     });
   })

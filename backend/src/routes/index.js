@@ -46,7 +46,7 @@ router.get('/health', async (req, res) => {
   });
 });
 
-// Feature Routes Mounting (BE-03 to BE-09)
+// Feature Routes Mounting
 router.use('/auth', authRoutes);
 router.use('/users', userRoutes);
 router.use('/tracks', trackRoutes);
@@ -56,7 +56,6 @@ router.use('/progress', progressRoutes);
 router.use('/portfolio', portfolioRoutes);
 router.use('/opportunities', opportunityRoutes);
 router.use('/applications', applicationRoutes);
-router.use('/', applicationRoutes);
 router.use('/dashboard', dashboardRoutes);
 router.use('/chat', chatRoutes);
 
