@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useLanguage } from '../context/LanguageContext';
 import { 
   Sparkles, 
   ArrowRight, 
@@ -33,6 +34,7 @@ import {
 } from 'lucide-react';
 
 export default function LandingSection({ onNavigate, onOpenAuth, theme }) {
+  const { t } = useLanguage();
 
   // Floating Skill Cards for Hero Section
   const floatingSkills = [
@@ -351,6 +353,110 @@ export default function LandingSection({ onNavigate, onOpenAuth, theme }) {
             <p className="text-xs font-bold text-purple-900 dark:text-purple-300 bg-purple-100 dark:bg-purple-950/60 inline-block px-4 py-1 rounded-full border border-purple-300 dark:border-purple-500/30">
               📌 Pilot stage: numbers reflect our launch goals.
             </p>
+          </div>
+
+        </div>
+      </section>
+
+      {/* WHAT WE DO SECTION */}
+      <section id="what-we-do" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-10">
+        <div className="text-center max-w-3xl mx-auto space-y-3">
+          <span className="text-xs font-extrabold text-purple-700 dark:text-purple-300 uppercase tracking-widest px-4 py-1.5 rounded-full bg-purple-100 dark:bg-purple-900/40 border border-purple-300 dark:border-purple-500/30">
+            Our Core Mission & Platform Pillars
+          </span>
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-slate-900 dark:text-white tracking-tight">
+            {t('whatWeDo')}
+          </h2>
+          <p className="text-sm sm:text-base text-slate-700 dark:text-slate-300 font-semibold leading-relaxed">
+            {t('whatWeDoSubtitle')}
+          </p>
+        </div>
+
+        {/* 4 Core Pillars Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          
+          <div 
+            onClick={() => onNavigate('learn')}
+            className="bg-white/90 dark:bg-slate-900/90 border border-purple-200 dark:border-purple-500/30 hover:border-purple-500 rounded-3xl p-6 space-y-4 shadow-lg flex flex-col justify-between transition-all group cursor-pointer hover:-translate-y-1"
+          >
+            <div className="space-y-3">
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-500 to-indigo-600 text-white flex items-center justify-center shadow-md group-hover:scale-110 transition-transform">
+                <BookOpen className="w-6 h-6" />
+              </div>
+              <h3 className="text-lg font-bold text-slate-900 dark:text-white group-hover:text-purple-500 transition-colors">
+                Free Practical Upskilling
+              </h3>
+              <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed font-medium">
+                Step-by-step video courses and practical exercises in Digital Marketing, Graphic Design, E-Commerce, and Copywriting tailored for women.
+              </p>
+            </div>
+            <div className="pt-3 border-t border-slate-100 dark:border-slate-800 text-[11px] font-bold text-purple-600 dark:text-purple-400 flex items-center gap-1">
+              <span>Explore 4 Skill Tracks</span>
+              <ChevronRight className="w-3.5 h-3.5" />
+            </div>
+          </div>
+
+          <div 
+            onClick={() => onNavigate('portfolio')}
+            className="bg-white/90 dark:bg-slate-900/90 border border-pink-200 dark:border-pink-500/30 hover:border-pink-500 rounded-3xl p-6 space-y-4 shadow-lg flex flex-col justify-between transition-all group cursor-pointer hover:-translate-y-1"
+          >
+            <div className="space-y-3">
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-pink-500 to-rose-600 text-white flex items-center justify-center shadow-md group-hover:scale-110 transition-transform">
+                <Award className="w-6 h-6" />
+              </div>
+              <h3 className="text-lg font-bold text-slate-900 dark:text-white group-hover:text-pink-500 transition-colors">
+                Verified Digital Portfolio
+              </h3>
+              <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed font-medium">
+                Automatically convert course capstone projects into a shareable proof-of-work portfolio. Showcase real deliverables directly to clients.
+              </p>
+            </div>
+            <div className="pt-3 border-t border-slate-100 dark:border-slate-800 text-[11px] font-bold text-pink-600 dark:text-pink-400 flex items-center gap-1">
+              <span>Build Proof of Work</span>
+              <ChevronRight className="w-3.5 h-3.5" />
+            </div>
+          </div>
+
+          <div 
+            onClick={() => onNavigate('gigs')}
+            className="bg-white/90 dark:bg-slate-900/90 border border-amber-200 dark:border-amber-500/30 hover:border-amber-500 rounded-3xl p-6 space-y-4 shadow-lg flex flex-col justify-between transition-all group cursor-pointer hover:-translate-y-1"
+          >
+            <div className="space-y-3">
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 text-white flex items-center justify-center shadow-md group-hover:scale-110 transition-transform">
+                <Briefcase className="w-6 h-6" />
+              </div>
+              <h3 className="text-lg font-bold text-slate-900 dark:text-white group-hover:text-amber-500 transition-colors">
+                Micro-Gigs & Job Matching
+              </h3>
+              <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed font-medium">
+                Directly apply for verified freelance projects and flexible work-from-home gigs with transparent 🎯 Skill Match % and eligibility quizzes.
+              </p>
+            </div>
+            <div className="pt-3 border-t border-slate-100 dark:border-slate-800 text-[11px] font-bold text-amber-600 dark:text-amber-400 flex items-center gap-1">
+              <span>Find Client Opportunities</span>
+              <ChevronRight className="w-3.5 h-3.5" />
+            </div>
+          </div>
+
+          <div 
+            onClick={() => onNavigate('gigs')}
+            className="bg-white/90 dark:bg-slate-900/90 border border-emerald-200 dark:border-emerald-500/30 hover:border-emerald-500 rounded-3xl p-6 space-y-4 shadow-lg flex flex-col justify-between transition-all group cursor-pointer hover:-translate-y-1"
+          >
+            <div className="space-y-3">
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white flex items-center justify-center shadow-md group-hover:scale-110 transition-transform">
+                <ShieldCheck className="w-6 h-6" />
+              </div>
+              <h3 className="text-lg font-bold text-slate-900 dark:text-white group-hover:text-emerald-500 transition-colors">
+                100% Escrow Payout Safety
+              </h3>
+              <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed font-medium">
+                Protected stipend payments (₹3,500 – ₹12,000/mo) stored in escrow before work starts so women get paid safely with zero online scam risk.
+              </p>
+            </div>
+            <div className="pt-3 border-t border-slate-100 dark:border-slate-800 text-[11px] font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+              <span>Guaranteed Earnings</span>
+              <ChevronRight className="w-3.5 h-3.5" />
+            </div>
           </div>
 
         </div>
