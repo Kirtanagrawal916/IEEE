@@ -14,9 +14,12 @@ import {
   LogIn,
   LogOut,
   Info,
-  Scale
+  Scale,
+  Globe,
+  FileText
 } from 'lucide-react';
 import LogoutModal from './LogoutModal';
+import { useLanguage } from '../context/LanguageContext';
 
 export default function Navbar({ 
   user, 
@@ -24,18 +27,24 @@ export default function Navbar({
   theme, 
   onToggleTheme
 }) {
+  const { language, setLanguage, t, LANGUAGES } = useLanguage();
   const location = useLocation();
   const navigate = useNavigate();
   const pathname = location.pathname;
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isLangOpen, setIsLangOpen] = useState(false);
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
   const menuRef = useRef(null);
+  const langRef = useRef(null);
 
   useEffect(() => {
     function handleClickOutside(event) {
       if (menuRef.current && !menuRef.current.contains(event.target)) {
         setIsMenuOpen(false);
+      }
+      if (langRef.current && !langRef.current.contains(event.target)) {
+        setIsLangOpen(false);
       }
     }
     document.addEventListener('mousedown', handleClickOutside);
@@ -49,6 +58,8 @@ export default function Navbar({
     }
     navigate('/');
   };
+
+  const currentLangObj = LANGUAGES.find(l => l.code === language) || LANGUAGES[0];
 
   return (
     <nav className="glass-nav sticky top-0 z-50 shadow-md transition-colors">
@@ -79,7 +90,7 @@ export default function Navbar({
               }`}
             >
               <Compass className="w-4 h-4" />
-              <span>Home</span>
+              <span>{t('home')}</span>
             </Link>
 
             <Link
@@ -91,7 +102,7 @@ export default function Navbar({
               }`}
             >
               <BookOpen className="w-4 h-4 text-purple-600 dark:text-purple-400" />
-              <span>Courses</span>
+              <span>{t('courses')}</span>
             </Link>
 
             <Link
@@ -103,7 +114,7 @@ export default function Navbar({
               }`}
             >
               <Award className="w-4 h-4 text-pink-600 dark:text-pink-400" />
-              <span>Portfolios</span>
+              <span>{t('portfolios')}</span>
             </Link>
 
             <Link
@@ -115,7 +126,7 @@ export default function Navbar({
               }`}
             >
               <Briefcase className="w-4 h-4 text-amber-600 dark:text-amber-400" />
-              <span>Opportunities</span>
+              <span>{t('opportunities')}</span>
             </Link>
 
             {/* Dashboard & Applications Links */}
@@ -130,7 +141,7 @@ export default function Navbar({
                   }`}
                 >
                   <FileText className="w-4 h-4 text-emerald-500" />
-                  <span>Applications</span>
+                  <span>{t('applications')}</span>
                 </Link>
 
                 <Link
@@ -142,14 +153,53 @@ export default function Navbar({
                   }`}
                 >
                   <User className="w-4 h-4" />
-                  <span>Dashboard</span>
+                  <span>{t('dashboard')}</span>
                 </Link>
               </>
             )}
           </div>
 
-          {/* Right Section: Theme Toggle, Login/Sign Up, & Mobile Menu */}
+          {/* Right Section: Language Selector, Theme Toggle, Login/Sign Up, & Mobile Menu */}
           <div className="flex items-center gap-2 sm:gap-3">
+
+            {/* Native Language Selector Dropdown */}
+            <div className="relative" ref={langRef}>
+              <button
+                type="button"
+                onClick={() => setIsLangOpen(!isLangOpen)}
+                className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-purple-200 dark:border-purple-500/30 bg-white/90 dark:bg-slate-900/90 text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-slate-800 text-xs font-bold transition-all cursor-pointer shadow-sm"
+                title="Select Native Language / भाषा चुनें"
+              >
+                <Globe className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                <span className="hidden sm:inline font-bold">{currentLangObj.native}</span>
+                <span className="sm:hidden font-extrabold uppercase">{currentLangObj.code}</span>
+              </button>
+
+              {isLangOpen && (
+                <div className="absolute right-0 mt-2 w-48 rounded-2xl bg-white dark:bg-slate-900 border border-purple-200 dark:border-purple-500/40 shadow-2xl p-2 z-50 animate-fade-in space-y-1">
+                  <div className="px-3 py-1 border-b border-purple-500/20 text-[10px] font-extrabold text-purple-500 uppercase tracking-wider">
+                    Select Language / भाषा
+                  </div>
+                  {LANGUAGES.map((langItem) => (
+                    <button
+                      key={langItem.code}
+                      onClick={() => {
+                        setLanguage(langItem.code);
+                        setIsLangOpen(false);
+                      }}
+                      className={`w-full text-left px-3 py-2 rounded-xl text-xs font-semibold flex items-center justify-between transition-colors cursor-pointer ${
+                        language === langItem.code
+                          ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold'
+                          : 'text-slate-700 dark:text-slate-200 hover:bg-purple-50 dark:hover:bg-slate-800'
+                      }`}
+                    >
+                      <span>{langItem.native}</span>
+                      <span className="text-[10px] opacity-75 font-normal">({langItem.name})</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
 
             {/* Light / Dark Mode Switch */}
             <button
