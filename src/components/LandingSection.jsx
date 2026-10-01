@@ -225,6 +225,35 @@ export default function LandingSection({ onNavigate, onOpenAuth, theme }) {
           }}
         ></div>
 
+        {/* Floating Animated Skill Chips */}
+        <div className="hidden lg:block absolute top-20 left-12 animate-float-slow pointer-events-none">
+          <div className="flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-white/90 dark:bg-slate-900/90 border border-purple-300 dark:border-purple-500/40 text-purple-700 dark:text-purple-300 text-xs font-bold shadow-lg backdrop-blur-md">
+            <Palette className="w-4 h-4 text-pink-500" />
+            <span>🎨 Canva Graphic Design</span>
+          </div>
+        </div>
+
+        <div className="hidden lg:block absolute top-28 right-12 animate-float-reverse pointer-events-none">
+          <div className="flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-white/90 dark:bg-slate-900/90 border border-pink-300 dark:border-pink-500/40 text-pink-700 dark:text-pink-300 text-xs font-bold shadow-lg backdrop-blur-md">
+            <Megaphone className="w-4 h-4 text-purple-500" />
+            <span>🚀 Digital Marketing</span>
+          </div>
+        </div>
+
+        <div className="hidden lg:block absolute bottom-24 left-16 animate-float-reverse pointer-events-none">
+          <div className="flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-white/90 dark:bg-slate-900/90 border border-amber-300 dark:border-amber-500/40 text-amber-700 dark:text-amber-300 text-xs font-bold shadow-lg backdrop-blur-md">
+            <Feather className="w-4 h-4 text-amber-500" />
+            <span>✍️ SEO Copywriting</span>
+          </div>
+        </div>
+
+        <div className="hidden lg:block absolute bottom-20 right-16 animate-float-slow pointer-events-none">
+          <div className="flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-white/90 dark:bg-slate-900/90 border border-emerald-300 dark:border-emerald-500/40 text-emerald-700 dark:text-emerald-300 text-xs font-bold shadow-lg backdrop-blur-md">
+            <Code className="w-4 h-4 text-emerald-500" />
+            <span>🛍️ Shopify E-Commerce</span>
+          </div>
+        </div>
+
         <div className="relative z-10 max-w-3xl mx-auto space-y-8 flex flex-col items-center">
           
           {/* Top Pill Badge */}
