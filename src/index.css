@@ -195,18 +195,3 @@ h1, h2, h3, h4, h5, h6 {
   background: #7C3AED;
   border-radius: 4px;
 }
-
-/* Floating Animations */
-@keyframes floatSlow {
-  0%, 100% { transform: translateY(0px) rotate(0deg); }
-  50% { transform: translateY(-10px) rotate(1.5deg); }
-}
-
-.animate-float-slow {
-  animation: floatSlow 5s ease-in-out infinite;
-}
-
-.animate-float-reverse {
-  animation: floatSlow 6s ease-in-out infinite reverse;
-}
-

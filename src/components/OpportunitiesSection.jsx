@@ -335,16 +335,16 @@ export default function OpportunitiesSection({
                   <div className="absolute top-0 inset-x-0 h-1.5 bg-gradient-to-r from-purple-600 via-pink-500 to-purple-600"></div>
 
                   <div>
-                    {/* Category Label & Glowing Match Badge at Top Right */}
+                    {/* Category Label at Top Left */}
                     <div className="flex items-center justify-between gap-2 mb-3">
-                      <span className="text-[11px] font-black tracking-wider text-purple-600 dark:text-purple-400 capitalize bg-purple-50 dark:bg-purple-950/60 px-3 py-1 rounded-full border border-purple-200 dark:border-purple-800">
-                        {gig.category || 'Micro-Gig'}
+                      <span className="text-[11px] font-extrabold text-purple-600 dark:text-purple-400 capitalize">
+                        {gig.category || 'Learning Program'}
                       </span>
-                      
-                      <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-gradient-to-r from-emerald-500/20 via-teal-500/20 to-purple-500/20 border border-emerald-500/40 text-emerald-600 dark:text-emerald-300 shadow-sm">
-                        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
-                        <span className="text-xs font-black">{matchResult.matchPercentage}% Match</span>
-                      </div>
+                      {matchResult.matchPercentage >= 75 && (
+                        <span className="text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full bg-purple-100 dark:bg-purple-950 text-purple-700 dark:text-purple-300 border border-purple-300">
+                          {matchResult.matchPercentage}% Match
+                        </span>
+                      )}
                     </div>
 
                     {/* Title */}
