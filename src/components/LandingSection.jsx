@@ -210,111 +210,81 @@ export default function LandingSection({ onNavigate, onOpenAuth, theme }) {
   return (
     <div className="space-y-16 sm:space-y-20 pb-20 animate-fade-in overflow-x-hidden text-slate-900 dark:text-slate-100">
       
-      {/* 1. HERO SECTION WITH NEON CYAN RINGS & FLUID GLASSMORPHISM */}
-      <section className="relative min-h-[calc(100vh-5rem)] flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto overflow-hidden">
+      {/* 1. HERO SECTION (MATCHING DESIGN SCREENSHOT EXACTLY) */}
+      <section className="relative min-h-[calc(100vh-5rem)] flex flex-col justify-center items-center py-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto overflow-hidden text-center">
         
-        {/* Organic Electric Cyan Fluid Liquid Shapes (Background Blob Layer) */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-4xl h-[480px] bg-gradient-to-tr from-cyan-500 via-sky-500 to-blue-600 rounded-[35%_65%_70%_30%/45%_35%_65%_55%] blur-xl opacity-80 pointer-events-none animate-pulse"></div>
-        <div className="absolute top-12 left-10 w-80 h-80 bg-gradient-to-br from-cyan-400 via-blue-500 to-sky-600 rounded-[50%_50%_30%_70%/60%_30%_70%_40%] blur-lg opacity-70 pointer-events-none"></div>
-        <div className="absolute bottom-8 right-10 w-96 h-96 bg-gradient-to-tl from-sky-400 via-cyan-500 to-indigo-600 rounded-[60%_40%_50%_50%/40%_60%_40%_60%] blur-lg opacity-75 pointer-events-none"></div>
+        {/* Ambient Dark Deep Purple Radial Glow Background */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[500px] bg-gradient-to-tr from-purple-900/30 via-fuchsia-900/20 to-indigo-950/40 rounded-full blur-[120px] pointer-events-none"></div>
 
-        {/* Ambient Dark Navy Overlay Grid */}
+        {/* Subtle Dark Dot Grid Matrix Background */}
         <div
-          className="absolute inset-0 pointer-events-none opacity-25"
+          className="absolute inset-0 pointer-events-none opacity-20"
           style={{
-            backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(6,182,212,0.8) 1px, transparent 0)',
-            backgroundSize: '32px 32px',
-            maskImage: 'radial-gradient(ellipse at center, black 40%, transparent 85%)',
-            WebkitMaskImage: 'radial-gradient(ellipse at center, black 40%, transparent 85%)'
+            backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(168,85,247,0.6) 1px, transparent 0)',
+            backgroundSize: '28px 28px'
           }}
         ></div>
 
-        {/* ========================================================
-            FROSTED GLASSMORPHIC HERO CONTAINER WITH NEON GLOW RINGS
-           ======================================================== */}
-        <div className="relative z-10 max-w-4xl mx-auto text-center w-full my-6">
+        <div className="relative z-10 max-w-3xl mx-auto space-y-8 flex flex-col items-center">
           
-          {/* Main Frosted Glass Card */}
-          <div className="rounded-[40px] bg-slate-950/45 dark:bg-[#071328]/55 backdrop-blur-2xl border border-cyan-300/40 dark:border-cyan-400/40 p-8 sm:p-14 shadow-[0_25px_65px_-15px_rgba(6,182,212,0.4)] relative overflow-hidden transition-all hover:border-cyan-300/60 hover:shadow-[0_30px_75px_-15px_rgba(6,182,212,0.5)] group">
-            
-            {/* TOP-LEFT NEON GLOWING CYAN RING */}
-            <div className="w-24 h-24 sm:w-36 sm:h-36 rounded-full border-[5px] sm:border-[7px] border-cyan-300 shadow-[0_0_35px_rgba(6,182,212,1),inset_0_0_20px_rgba(6,182,212,0.8)] absolute -top-8 -left-8 sm:-top-12 sm:-left-12 z-20 pointer-events-none animate-pulse"></div>
+          {/* Top Pill Badge matching image */}
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#1a0f30]/90 border border-purple-500/40 text-purple-200 text-[10px] sm:text-xs font-black tracking-widest uppercase shadow-[0_0_20px_rgba(168,85,247,0.25)] backdrop-blur-md">
+            <Sparkles className="w-3.5 h-3.5 text-purple-400 animate-pulse" />
+            <span>AI-POWERED SKILL-TO-INCOME RECOMMENDATION PLATFORM</span>
+          </div>
 
-            {/* BOTTOM-RIGHT NEON GLOWING CYAN RING */}
-            <div className="w-28 h-28 sm:w-40 sm:h-40 rounded-full border-[5px] sm:border-[7px] border-cyan-300 shadow-[0_0_35px_rgba(6,182,212,1),inset_0_0_20px_rgba(6,182,212,0.8)] absolute -bottom-10 -right-10 sm:-bottom-14 sm:-right-14 z-20 pointer-events-none animate-pulse" style={{ animationDelay: '1.5s' }}></div>
+          {/* Main Headline matching image */}
+          <div className="space-y-1">
+            <h1 className="text-4xl sm:text-6xl lg:text-7xl font-black tracking-tight leading-tight text-white">
+              Turn Skills Into
+            </h1>
+            <h1 className="text-4xl sm:text-6xl lg:text-7xl font-black tracking-tight leading-tight bg-gradient-to-r from-purple-400 via-pink-500 to-amber-400 bg-clip-text text-transparent drop-shadow-[0_0_35px_rgba(236,72,153,0.3)]">
+              Sustainable Income
+            </h1>
+          </div>
 
-            {/* Glass Surface Top Reflection Line */}
-            <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-cyan-300/20 dark:from-cyan-400/10 to-transparent pointer-events-none"></div>
+          {/* Subtitle matching image */}
+          <p className="text-sm sm:text-base text-slate-300 font-semibold max-w-xl mx-auto leading-relaxed">
+            Bridging the gap between learning, opportunities, and financial independence.
+          </p>
 
-            {/* Card Inner Content */}
-            <div className="w-full space-y-8 text-center flex flex-col items-center relative z-10">
-              
-              {/* Sleek Subtitle Badge matching image vector subtitle */}
-              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-cyan-950/60 border border-cyan-400/50 text-cyan-300 text-xs font-black tracking-widest uppercase shadow-md backdrop-blur-md">
-                <Sparkles className="w-4 h-4 text-cyan-400 animate-pulse" />
-                <span>AI Skill-to-Income Recommendation</span>
-              </div>
+          {/* Action Buttons matching image */}
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2 w-full max-w-md">
+            <button
+              type="button"
+              onClick={() => onNavigate('learn')}
+              className="w-full sm:w-auto px-7 py-3.5 rounded-xl bg-gradient-to-r from-purple-500 via-pink-500 to-rose-500 hover:from-purple-600 hover:to-rose-600 text-white font-extrabold text-xs sm:text-sm shadow-[0_0_25px_rgba(236,72,153,0.4)] transition-all flex items-center justify-center gap-2 cursor-pointer hover:scale-105"
+            >
+              <span>Start Learning</span>
+              <ArrowRight className="w-4 h-4" />
+            </button>
 
-              {/* Main Glass Title */}
-              <div className="space-y-2">
-                <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-[1.1] text-white">
-                  Turn Skills Into <br className="hidden sm:inline" />
-                  <span className="bg-gradient-to-r from-cyan-300 via-sky-300 to-blue-400 bg-clip-text text-transparent drop-shadow-[0_0_25px_rgba(6,182,212,0.6)]">
-                    Sustainable Income
-                  </span>
-                </h1>
-                
-                {/* 3 Glowing Dots matching reference image */}
-                <div className="flex items-center justify-center gap-2 pt-2">
-                  <span className="w-2.5 h-2.5 rounded-full bg-cyan-400 shadow-[0_0_10px_rgba(6,182,212,1)] animate-ping"></span>
-                  <span className="w-2.5 h-2.5 rounded-full bg-cyan-300 shadow-[0_0_10px_rgba(6,182,212,1)]"></span>
-                  <span className="w-2.5 h-2.5 rounded-full bg-cyan-400 shadow-[0_0_10px_rgba(6,182,212,1)] animate-ping" style={{ animationDelay: '0.5s' }}></span>
-                </div>
-              </div>
+            <button
+              type="button"
+              onClick={() => onNavigate('gigs')}
+              className="w-full sm:w-auto px-7 py-3.5 rounded-xl bg-[#140c26]/90 border border-purple-500/40 hover:border-purple-400 text-purple-200 font-extrabold text-xs sm:text-sm shadow-md transition-all flex items-center justify-center cursor-pointer hover:scale-105 backdrop-blur-md"
+            >
+              Explore Opportunities
+            </button>
+          </div>
 
-              {/* High Contrast Subtitle */}
-              <p className="text-base sm:text-xl text-slate-100 dark:text-cyan-100 max-w-2xl leading-relaxed font-bold mx-auto">
-                Bridging the gap between learning, opportunities, and financial independence for women across India.
-              </p>
+          {/* Thin Horizontal Divider */}
+          <div className="w-full max-w-xl border-t border-purple-500/20 pt-6"></div>
 
-              {/* Cyan Action Buttons */}
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2 w-full">
-                <button
-                  type="button"
-                  onClick={() => onNavigate('learn')}
-                  className="w-full sm:w-auto py-4 px-9 rounded-2xl bg-gradient-to-r from-cyan-500 via-sky-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-black text-sm shadow-[0_0_25px_rgba(6,182,212,0.6)] transition-all flex items-center justify-center gap-2 cursor-pointer hover:scale-105"
-                >
-                  <span>Start Learning</span>
-                  <ArrowRight className="w-4 h-4" />
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => onNavigate('gigs')}
-                  className="w-full sm:w-auto py-4 px-9 rounded-2xl bg-slate-900/80 border border-cyan-400/50 hover:border-cyan-300 text-cyan-300 font-bold text-sm shadow-md transition-all flex items-center justify-center cursor-pointer hover:scale-105 backdrop-blur-md"
-                >
-                  Explore Opportunities
-                </button>
-              </div>
-
-              {/* Micro Trust Indicators */}
-              <div className="pt-6 border-t border-cyan-400/30 flex flex-wrap items-center justify-center gap-8 text-cyan-200 text-xs sm:text-sm font-extrabold w-full max-w-2xl mx-auto">
-                <div className="flex items-center gap-2">
-                  <ShieldCheck className="w-5 h-5 text-cyan-400 flex-shrink-0" />
-                  <span>Escrow Safe Payouts</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Award className="w-5 h-5 text-sky-400 flex-shrink-0" />
-                  <span>Verified Badges</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Cpu className="w-5 h-5 text-cyan-300 flex-shrink-0" />
-                  <span>AI Matching</span>
-                </div>
-              </div>
-
+          {/* 3 Trust Features Row matching image */}
+          <div className="flex flex-wrap items-center justify-center gap-6 sm:gap-10 text-xs font-bold text-slate-200">
+            <div className="flex items-center gap-2">
+              <ShieldCheck className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+              <span>Escrow Safe Payouts</span>
             </div>
-
+            <div className="flex items-center gap-2">
+              <Award className="w-4 h-4 text-purple-400 flex-shrink-0" />
+              <span>Verified Badges</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Cpu className="w-4 h-4 text-pink-400 flex-shrink-0" />
+              <span>AI Matching</span>
+            </div>
           </div>
 
         </div>
