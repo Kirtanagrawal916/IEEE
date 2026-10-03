@@ -74,27 +74,47 @@ h1, h2, h3, h4, h5, h6 {
   letter-spacing: -0.02em;
 }
 
-/* Glassmorphism & Card Utilities */
+/* Dynamic Glassmorphism System */
 .glass-nav {
   background: var(--bg-nav);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
   border-bottom: 1px solid var(--border-subtle);
 }
 
-.glass-card {
-  background: var(--bg-card-glass);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid var(--border-subtle);
-  box-shadow: var(--shadow-card);
+.glass-panel {
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.05);
 }
 
-.glass-card-glow {
-  background: rgba(124, 58, 237, 0.06);
-  backdrop-filter: blur(16px);
-  border: 1px solid rgba(236, 72, 153, 0.3);
-  box-shadow: 0 20px 50px rgba(124, 58, 237, 0.25);
+.dark .glass-panel {
+  background: rgba(15, 10, 30, 0.65);
+  backdrop-filter: blur(24px) saturate(200%);
+  -webkit-backdrop-filter: blur(24px) saturate(200%);
+  border: 1px solid rgba(168, 85, 247, 0.25);
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.glass-panel-glow {
+  background: rgba(124, 58, 237, 0.08);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(236, 72, 153, 0.35);
+  box-shadow: 0 20px 60px rgba(124, 58, 237, 0.2), inset 0 1px 1px rgba(255, 255, 255, 0.2);
+}
+
+.glass-card-interactive {
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.glass-card-interactive:hover {
+  transform: translateY(-6px) scale(1.01);
+  backdrop-filter: blur(28px) saturate(220%);
+  border-color: rgba(236, 72, 153, 0.5);
+  box-shadow: 0 30px 60px -12px rgba(124, 58, 237, 0.3);
 }
 
 .card-hover-award {
@@ -195,3 +215,35 @@ h1, h2, h3, h4, h5, h6 {
   background: #7C3AED;
   border-radius: 4px;
 }
+
+/* Hide Google Translate top banner, tooltips & widget overlays for clean UI */
+.goog-te-banner-frame,
+iframe.goog-te-banner-frame,
+.goog-te-balloon-frame,
+#goog-gt-tt,
+.goog-te-spinner-pos {
+  display: none !important;
+  visibility: hidden !important;
+}
+
+body {
+  top: 0px !important;
+  position: static !important;
+}
+
+.goog-te-gadget,
+#google_translate_element,
+.skiptranslate,
+body > .skiptranslate {
+  display: none !important;
+  visibility: hidden !important;
+  height: 0 !important;
+  width: 0 !important;
+  overflow: hidden !important;
+}
+
+.goog-text-highlight {
+  background-color: transparent !important;
+  box-shadow: none !important;
+}
+

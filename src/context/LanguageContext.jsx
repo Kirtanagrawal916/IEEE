@@ -10,6 +10,9 @@ export const LANGUAGES = [
   { code: 'ta', name: 'Tamil', native: 'தமிழ்' },
   { code: 'te', name: 'Telugu', native: 'తెలుగు' },
   { code: 'gu', name: 'Gujarati', native: 'ગુજરાતી' },
+  { code: 'kn', name: 'Kannada', native: 'ಕನ್ನಡ' },
+  { code: 'ml', name: 'Malayalam', native: 'മലയാളം' },
+  { code: 'pa', name: 'Punjabi', native: 'ਪੰਜਾਬੀ' },
 ];
 
 export const TRANSLATIONS = {
@@ -156,13 +159,85 @@ export const TRANSLATIONS = {
 };
 
 export const LanguageProvider = ({ children }) => {
-  const [language, setLanguage] = useState(() => {
+  const [language, setLanguageState] = useState(() => {
     return localStorage.getItem('herearn_language') || 'en';
   });
 
+  const applyGoogleTranslateCookie = (langCode) => {
+    const domain = window.location.hostname;
+    if (langCode === 'en') {
+      document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+      document.cookie = `googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=${domain};`;
+      document.cookie = 'googtrans=/en/en; path=/;';
+      document.cookie = `googtrans=/en/en; path=/; domain=${domain};`;
+    } else {
+      document.cookie = `googtrans=/en/${langCode}; path=/;`;
+      document.cookie = `googtrans=/en/${langCode}; path=/; domain=${domain};`;
+    }
+  };
+
+  const triggerGoogleTranslateWidget = (langCode) => {
+    const selectElem = document.querySelector('.goog-te-combo');
+    if (selectElem) {
+      if (langCode === 'en') {
+        selectElem.value = '';
+        selectElem.dispatchEvent(new Event('change'));
+        selectElem.value = 'en';
+        selectElem.dispatchEvent(new Event('change'));
+      } else {
+        selectElem.value = langCode;
+        selectElem.dispatchEvent(new Event('change'));
+      }
+      return true;
+    }
+    return false;
+  };
+
+  const setLanguage = (newLangCode) => {
+    const prevLang = language;
+    setLanguageState(newLangCode);
+    localStorage.setItem('herearn_language', newLangCode);
+    applyGoogleTranslateCookie(newLangCode);
+    
+    // When switching back to English, clear translation state and reload for pristine DOM
+    if (newLangCode === 'en') {
+      triggerGoogleTranslateWidget('en');
+      if (prevLang !== 'en' || document.cookie.includes('googtrans')) {
+        window.location.reload();
+      }
+      return;
+    }
+
+    // Trigger widget for other languages
+    const triggered = triggerGoogleTranslateWidget(newLangCode);
+    if (!triggered) {
+      setTimeout(() => {
+        const retryTriggered = triggerGoogleTranslateWidget(newLangCode);
+        if (!retryTriggered) {
+          window.location.reload();
+        }
+      }, 400);
+    }
+  };
+
   useEffect(() => {
-    localStorage.setItem('herearn_language', language);
-  }, [language]);
+    const savedLang = localStorage.getItem('herearn_language') || 'en';
+    if (savedLang !== 'en') {
+      applyGoogleTranslateCookie(savedLang);
+      const checkInterval = setInterval(() => {
+        const selectElem = document.querySelector('.goog-te-combo');
+        if (selectElem) {
+          selectElem.value = savedLang;
+          selectElem.dispatchEvent(new Event('change'));
+          clearInterval(checkInterval);
+        }
+      }, 300);
+
+      setTimeout(() => clearInterval(checkInterval), 4000);
+    } else {
+      applyGoogleTranslateCookie('en');
+    }
+  }, []);
 
   const t = (key) => {
     return TRANSLATIONS[language]?.[key] || TRANSLATIONS.en[key] || key;
@@ -176,3 +251,4 @@ export const LanguageProvider = ({ children }) => {
 };
 
 export const useLanguage = () => useContext(LanguageContext);
+

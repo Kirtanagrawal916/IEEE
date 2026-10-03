@@ -41,6 +41,21 @@
   <div id="root"></div>
   <!-- Google Identity Services (OAuth 2.0 Sign-In) -->
   <script src="https://accounts.google.com/gsi/client" async defer></script>
+  
+  <!-- Google Translate Engine for Full Page Translation across every page -->
+  <div id="google_translate_element" style="display:none;"></div>
+  <script type="text/javascript">
+    function googleTranslateElementInit() {
+      new google.translate.TranslateElement({
+        pageLanguage: 'en',
+        includedLanguages: 'en,hi,mr,bn,ta,te,gu,kn,ml,pa',
+        layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
+        autoDisplay: false
+      }, 'google_translate_element');
+    }
+  </script>
+  <script type="text/javascript" src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+
   <script type="module" src="/src/main.jsx"></script>
 </body>
 </html>
