@@ -191,8 +191,8 @@ export default function Navbar({
               </button>
 
               {isLangOpen && (
-                <div className="absolute right-0 mt-2 w-48 rounded-2xl bg-white dark:bg-slate-900 border border-purple-200 dark:border-purple-500/40 shadow-2xl p-2 z-50 animate-fade-in space-y-1">
-                  <div className="px-3 py-1 border-b border-purple-500/20 text-[10px] font-extrabold text-purple-500 uppercase tracking-wider">
+                <div className="absolute right-0 mt-2 w-52 rounded-2xl bg-white dark:bg-slate-900 border border-purple-200 dark:border-purple-500/40 shadow-2xl p-2 z-50 animate-fade-in space-y-1 max-h-72 overflow-y-auto">
+                  <div className="sticky top-0 bg-white dark:bg-slate-900 px-3 py-1.5 border-b border-purple-500/20 text-[10px] font-extrabold text-purple-500 uppercase tracking-wider z-10">
                     Select Language / भाषा
                   </div>
                   {LANGUAGES.map((langItem) => (

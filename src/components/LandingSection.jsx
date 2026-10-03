@@ -347,7 +347,7 @@ export default function LandingSection({ onNavigate, onOpenAuth, theme }) {
           
           <div 
             onClick={() => onNavigate('learn')}
-            className="bg-white/90 dark:bg-slate-900/90 border border-purple-200 dark:border-purple-500/30 hover:border-purple-500 rounded-3xl p-6 space-y-4 shadow-lg flex flex-col justify-between transition-all group cursor-pointer hover:-translate-y-1"
+            className="glass-panel glass-card-interactive rounded-3xl p-6 space-y-4 shadow-xl flex flex-col justify-between group cursor-pointer"
           >
             <div className="space-y-3">
               <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-500 to-indigo-600 text-white flex items-center justify-center shadow-md group-hover:scale-110 transition-transform">
@@ -360,7 +360,7 @@ export default function LandingSection({ onNavigate, onOpenAuth, theme }) {
                 Step-by-step video courses and practical exercises in Digital Marketing, Graphic Design, E-Commerce, and Copywriting tailored for women.
               </p>
             </div>
-            <div className="pt-3 border-t border-slate-100 dark:border-slate-800 text-[11px] font-bold text-purple-600 dark:text-purple-400 flex items-center gap-1">
+            <div className="pt-3 border-t border-purple-500/20 text-[11px] font-bold text-purple-600 dark:text-purple-400 flex items-center gap-1">
               <span>Explore 4 Skill Tracks</span>
               <ChevronRight className="w-3.5 h-3.5" />
             </div>
@@ -368,7 +368,7 @@ export default function LandingSection({ onNavigate, onOpenAuth, theme }) {
 
           <div 
             onClick={() => onNavigate('portfolio')}
-            className="bg-white/90 dark:bg-slate-900/90 border border-pink-200 dark:border-pink-500/30 hover:border-pink-500 rounded-3xl p-6 space-y-4 shadow-lg flex flex-col justify-between transition-all group cursor-pointer hover:-translate-y-1"
+            className="glass-panel glass-card-interactive rounded-3xl p-6 space-y-4 shadow-xl flex flex-col justify-between group cursor-pointer"
           >
             <div className="space-y-3">
               <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-pink-500 to-rose-600 text-white flex items-center justify-center shadow-md group-hover:scale-110 transition-transform">
@@ -381,7 +381,7 @@ export default function LandingSection({ onNavigate, onOpenAuth, theme }) {
                 Automatically convert course capstone projects into a shareable proof-of-work portfolio. Showcase real deliverables directly to clients.
               </p>
             </div>
-            <div className="pt-3 border-t border-slate-100 dark:border-slate-800 text-[11px] font-bold text-pink-600 dark:text-pink-400 flex items-center gap-1">
+            <div className="pt-3 border-t border-pink-500/20 text-[11px] font-bold text-pink-600 dark:text-pink-400 flex items-center gap-1">
               <span>Build Proof of Work</span>
               <ChevronRight className="w-3.5 h-3.5" />
             </div>
@@ -389,7 +389,7 @@ export default function LandingSection({ onNavigate, onOpenAuth, theme }) {
 
           <div 
             onClick={() => onNavigate('gigs')}
-            className="bg-white/90 dark:bg-slate-900/90 border border-amber-200 dark:border-amber-500/30 hover:border-amber-500 rounded-3xl p-6 space-y-4 shadow-lg flex flex-col justify-between transition-all group cursor-pointer hover:-translate-y-1"
+            className="glass-panel glass-card-interactive rounded-3xl p-6 space-y-4 shadow-xl flex flex-col justify-between group cursor-pointer"
           >
             <div className="space-y-3">
               <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 text-white flex items-center justify-center shadow-md group-hover:scale-110 transition-transform">
@@ -402,7 +402,7 @@ export default function LandingSection({ onNavigate, onOpenAuth, theme }) {
                 Directly apply for verified freelance projects and flexible work-from-home gigs with transparent 🎯 Skill Match % and eligibility quizzes.
               </p>
             </div>
-            <div className="pt-3 border-t border-slate-100 dark:border-slate-800 text-[11px] font-bold text-amber-600 dark:text-amber-400 flex items-center gap-1">
+            <div className="pt-3 border-t border-amber-500/20 text-[11px] font-bold text-amber-600 dark:text-amber-400 flex items-center gap-1">
               <span>Find Client Opportunities</span>
               <ChevronRight className="w-3.5 h-3.5" />
             </div>
@@ -410,7 +410,7 @@ export default function LandingSection({ onNavigate, onOpenAuth, theme }) {
 
           <div 
             onClick={() => onNavigate('gigs')}
-            className="bg-white/90 dark:bg-slate-900/90 border border-emerald-200 dark:border-emerald-500/30 hover:border-emerald-500 rounded-3xl p-6 space-y-4 shadow-lg flex flex-col justify-between transition-all group cursor-pointer hover:-translate-y-1"
+            className="glass-panel glass-card-interactive rounded-3xl p-6 space-y-4 shadow-xl flex flex-col justify-between group cursor-pointer"
           >
             <div className="space-y-3">
               <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white flex items-center justify-center shadow-md group-hover:scale-110 transition-transform">
@@ -423,7 +423,7 @@ export default function LandingSection({ onNavigate, onOpenAuth, theme }) {
                 Protected stipend payments (₹3,500 – ₹12,000/mo) stored in escrow before work starts so women get paid safely with zero online scam risk.
               </p>
             </div>
-            <div className="pt-3 border-t border-slate-100 dark:border-slate-800 text-[11px] font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+            <div className="pt-3 border-t border-emerald-500/20 text-[11px] font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
               <span>Guaranteed Earnings</span>
               <ChevronRight className="w-3.5 h-3.5" />
             </div>
@@ -455,7 +455,7 @@ export default function LandingSection({ onNavigate, onOpenAuth, theme }) {
               <div 
                 key={idx}
                 onClick={() => onNavigate(card.targetTab)}
-                className="bg-white/90 dark:bg-slate-900/90 border border-purple-200 dark:border-purple-500/30 hover:border-purple-500/60 rounded-3xl p-7 space-y-4 shadow-xl card-hover-award flex flex-col justify-between relative overflow-hidden text-slate-900 dark:text-white cursor-pointer group transition-all"
+                className="glass-panel glass-card-interactive rounded-3xl p-7 space-y-4 shadow-xl flex flex-col justify-between relative overflow-hidden text-slate-900 dark:text-white cursor-pointer group"
               >
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
