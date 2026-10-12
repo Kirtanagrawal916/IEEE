@@ -374,7 +374,7 @@ export default function Navbar({
                 <div className="absolute right-0 mt-3 w-72 rounded-2xl bg-white dark:bg-slate-950 border border-purple-200 dark:border-purple-500/40 shadow-2xl p-2.5 z-50 animate-fade-in text-slate-900 dark:text-white space-y-2">
                   
                   {/* 1. PROFILE SECTION (Visible at the top when logged in, as in picture) */}
-                  {user ? (
+                  {user && (
                     <div className="bg-slate-900 dark:bg-slate-900/90 border border-purple-500/30 rounded-2xl p-3 shadow-md space-y-2.5">
                       <div className="flex items-center gap-3">
                         <img 
@@ -417,28 +417,6 @@ export default function Navbar({
                         >
                           <Sparkles className="w-3 h-3 text-pink-400" />
                           <span>Dashboard</span>
-                        </Link>
-                      </div>
-                    </div>
-                  ) : (
-                    /* Guest Welcome Card */
-                    <div className="p-3 rounded-2xl bg-gradient-to-r from-purple-900/30 to-pink-900/30 border border-purple-500/30 text-center space-y-2">
-                      <p className="text-xs font-bold text-slate-200">Welcome to HerEarn</p>
-                      <p className="text-[11px] text-slate-400">Join to learn skills, build portfolio & earn income.</p>
-                      <div className="flex gap-2 pt-1">
-                        <Link
-                          to="/login"
-                          onClick={() => setIsMenuOpen(false)}
-                          className="flex-1 py-1.5 rounded-lg bg-purple-600 text-white text-xs font-bold text-center hover:bg-purple-700 transition-colors"
-                        >
-                          Login
-                        </Link>
-                        <Link
-                          to="/signup"
-                          onClick={() => setIsMenuOpen(false)}
-                          className="flex-1 py-1.5 rounded-lg bg-gradient-to-r from-pink-600 to-purple-600 text-white text-xs font-bold text-center hover:opacity-90 transition-opacity"
-                        >
-                          Sign Up
                         </Link>
                       </div>
                     </div>
