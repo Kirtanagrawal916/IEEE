@@ -87,6 +87,33 @@ export default function ProfileSection({
   const handleSaveProfile = (e) => {
     e.preventDefault();
     const cleanUsername = (editUsername || '').trim().replace(/^@/, '').toLowerCase().replace(/[^a-z0-9_]/g, '') || 'learner';
+
+    // Verify username uniqueness against other registered users
+    const registeredUsers = JSON.parse(localStorage.getItem('herearn_registered_users') || '[]');
+    const isTaken = registeredUsers.some(u => 
+      u.username?.toLowerCase() === cleanUsername && 
+      u.id !== currentUser.id && 
+      u.email?.toLowerCase() !== currentUser.email?.toLowerCase()
+    );
+
+    if (isTaken) {
+      if (showToast) {
+        showToast("⚠️ Username Taken", `The handle @${cleanUsername} is already in use by another account.`);
+      } else {
+        alert(`The username @${cleanUsername} is already in use by another account. Please pick another.`);
+      }
+      return;
+    }
+
+    // Update local registry
+    const updatedRegistry = registeredUsers.map(u => {
+      if (u.id === currentUser.id || u.email?.toLowerCase() === currentUser.email?.toLowerCase()) {
+        return { ...u, name: editName || u.name, username: cleanUsername };
+      }
+      return u;
+    });
+    localStorage.setItem('herearn_registered_users', JSON.stringify(updatedRegistry));
+
     onUpdateProfile({
       ...currentUser,
       name: editName || 'My Profile',

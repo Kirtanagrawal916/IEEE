@@ -38,17 +38,62 @@ export default function SignupPage({ onLoginSuccess, onNavigateToLogin, onNaviga
     }
   };
 
+  const cleanUsername = (username.trim() || '').toLowerCase().replace(/^@/, '');
+  const cleanEmail = email.trim().toLowerCase();
+
+  // Load existing registry to check uniqueness live
+  const registeredUsers = JSON.parse(localStorage.getItem('herearn_registered_users') || '[]');
+
+  // Live Uniqueness & Availability Checks
+  const isUsernameTaken = cleanUsername.length >= 3 && registeredUsers.some(u => u.username?.toLowerCase() === cleanUsername);
+  const isUsernameAvailable = cleanUsername.length >= 3 && !isUsernameTaken;
+  const isEmailTaken = cleanEmail.includes('@') && cleanEmail.includes('.') && registeredUsers.some(u => u.email?.toLowerCase() === cleanEmail);
+
+  // Password Strength
+  const passwordLength = password.length;
+  let passwordStrength = 'weak';
+  if (passwordLength >= 8) {
+    passwordStrength = 'strong';
+  } else if (passwordLength >= 6) {
+    passwordStrength = 'good';
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
 
-    const displayName = name.trim() || (email.trim() ? email.trim().split('@')[0] : 'Learner');
-    const cleanUsername = (username.trim() || displayName.toLowerCase().replace(/[^a-z0-9]/g, '_') || 'learner').replace(/^@/, '');
-    const targetEmail = email.trim();
+    const displayName = name.trim() || (cleanEmail ? cleanEmail.split('@')[0] : 'Learner');
+    const targetUsername = cleanUsername || displayName.toLowerCase().replace(/[^a-z0-9_]/g, '_') || 'learner';
+    const targetEmail = cleanEmail;
     const targetPassword = password.trim();
 
-    if (password !== confirmPassword) {
+    // 1. Password length validation
+    if (targetPassword.length < 6) {
+      setError('Password must be at least 6 characters long.');
+      return;
+    }
+
+    // 2. Password matching check
+    if (targetPassword !== confirmPassword.trim()) {
       setError('Passwords do not match. Please re-enter.');
+      return;
+    }
+
+    // 3. Username length check
+    if (targetUsername.length < 3) {
+      setError('Username must be at least 3 characters long.');
+      return;
+    }
+
+    // 4. Unique Email enforcement
+    if (isEmailTaken) {
+      setError(`An account with the email "${targetEmail}" already exists. Please log in instead.`);
+      return;
+    }
+
+    // 5. Unique Username enforcement
+    if (isUsernameTaken) {
+      setError(`The username "@${targetUsername}" is already taken by another user. Please choose a different handle.`);
       return;
     }
 
@@ -57,21 +102,23 @@ export default function SignupPage({ onLoginSuccess, onNavigateToLogin, onNaviga
     try {
       const res = await api.register({
         name: displayName,
+        username: targetUsername,
         email: targetEmail,
         password: targetPassword,
         skills: [skillInterest],
       });
 
-      // Save to local registry so username is permanently indexed
-      const existingUsers = JSON.parse(localStorage.getItem('herearn_registered_users') || '[]');
-      const updatedRegistry = existingUsers.filter(u => u.email !== targetEmail && u.username !== cleanUsername);
+      // Save to local registry with verified unique credentials
+      const updatedRegistry = registeredUsers.filter(u => u.email?.toLowerCase() !== targetEmail && u.username?.toLowerCase() !== targetUsername);
       const userRecord = {
         id: res?.user?.id || `u-${Date.now()}`,
         name: displayName,
-        username: cleanUsername,
+        username: targetUsername,
         email: targetEmail,
+        password: targetPassword,
         skills: [skillInterest],
         role,
+        createdAt: new Date().toISOString()
       };
       updatedRegistry.push(userRecord);
       localStorage.setItem('herearn_registered_users', JSON.stringify(updatedRegistry));
@@ -80,30 +127,50 @@ export default function SignupPage({ onLoginSuccess, onNavigateToLogin, onNaviga
       onLoginSuccess({
         ...(res?.user || {}),
         name: displayName,
-        username: cleanUsername,
+        username: targetUsername,
         email: targetEmail,
         isSignUp: true,
         role,
       });
     } catch (err) {
-      // Local resilient fallback registry
-      const existingUsers = JSON.parse(localStorage.getItem('herearn_registered_users') || '[]');
-      const updatedRegistry = existingUsers.filter(u => u.email !== targetEmail && u.username !== cleanUsername);
+      setIsLoading(false);
+
+      // If backend returned conflict error (409 or 400), display message and DO NOT register
+      if (err.status === 409 || err.status === 400) {
+        setError(err.message || 'An account with this email or username already exists. Please choose another.');
+        return;
+      }
+
+      // Offline fallback: double check local uniqueness
+      const localEmailConflict = registeredUsers.some(u => u.email?.toLowerCase() === targetEmail);
+      if (localEmailConflict) {
+        setError(`An account with email "${targetEmail}" is already registered. Please sign in.`);
+        return;
+      }
+
+      const localUserConflict = registeredUsers.some(u => u.username?.toLowerCase() === targetUsername);
+      if (localUserConflict) {
+        setError(`The username "@${targetUsername}" is already taken. Please choose another username.`);
+        return;
+      }
+
+      const updatedRegistry = registeredUsers.filter(u => u.email?.toLowerCase() !== targetEmail && u.username?.toLowerCase() !== targetUsername);
       const userRecord = {
         id: `u-${Date.now()}`,
         name: displayName,
-        username: cleanUsername,
+        username: targetUsername,
         email: targetEmail,
+        password: targetPassword,
         skills: [skillInterest],
         role,
+        createdAt: new Date().toISOString()
       };
       updatedRegistry.push(userRecord);
       localStorage.setItem('herearn_registered_users', JSON.stringify(updatedRegistry));
 
-      setIsLoading(false);
       onLoginSuccess({
         name: displayName,
-        username: cleanUsername,
+        username: targetUsername,
         email: targetEmail,
         skillInterest,
         isSignUp: true,
@@ -284,9 +351,28 @@ export default function SignupPage({ onLoginSuccess, onNavigateToLogin, onNaviga
                       placeholder="ananya_sharma"
                       value={username}
                       onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
-                      className="w-full bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white text-xs pl-8 pr-4 py-3 rounded-xl border border-slate-300 dark:border-slate-700 focus:outline-none focus:border-purple-500 font-mono font-semibold"
+                      className={`w-full bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white text-xs pl-8 pr-4 py-3 rounded-xl border focus:outline-none font-mono font-semibold transition-colors ${
+                        isUsernameTaken 
+                          ? 'border-rose-500 focus:border-rose-500' 
+                          : isUsernameAvailable 
+                            ? 'border-emerald-500 focus:border-emerald-500' 
+                            : 'border-slate-300 dark:border-slate-700 focus:border-purple-500'
+                      }`}
                     />
                   </div>
+                  {cleanUsername.length > 0 && cleanUsername.length < 3 && (
+                    <p className="text-[10px] text-amber-500 font-semibold mt-1">Username must be at least 3 characters</p>
+                  )}
+                  {isUsernameTaken && (
+                    <p className="text-[10px] text-rose-500 font-bold mt-1 flex items-center gap-1">
+                      <span>❌ @{cleanUsername} is already taken</span>
+                    </p>
+                  )}
+                  {isUsernameAvailable && (
+                    <p className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold mt-1 flex items-center gap-1">
+                      <span>✓ @{cleanUsername} is available</span>
+                    </p>
+                  )}
                 </div>
               </div>
 
@@ -301,9 +387,25 @@ export default function SignupPage({ onLoginSuccess, onNavigateToLogin, onNaviga
                     placeholder="you@example.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white text-xs pl-10 pr-4 py-3 rounded-xl border border-slate-300 dark:border-slate-700 focus:outline-none focus:border-purple-500"
+                    className={`w-full bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white text-xs pl-10 pr-4 py-3 rounded-xl border focus:outline-none transition-colors ${
+                      isEmailTaken 
+                        ? 'border-rose-500 focus:border-rose-500' 
+                        : 'border-slate-300 dark:border-slate-700 focus:border-purple-500'
+                    }`}
                   />
                 </div>
+                {isEmailTaken && (
+                  <p className="text-[10px] text-rose-500 font-bold mt-1 flex items-center gap-1">
+                    <span>❌ An account with this email already exists.</span>
+                    <button 
+                      type="button" 
+                      onClick={onNavigateToLogin} 
+                      className="underline text-purple-600 dark:text-purple-400 font-extrabold hover:text-purple-700 cursor-pointer ml-1"
+                    >
+                      Sign in instead
+                    </button>
+                  </p>
+                )}
               </div>
 
               {/* Passwords (2 columns) */}
@@ -328,6 +430,18 @@ export default function SignupPage({ onLoginSuccess, onNavigateToLogin, onNaviga
                       {showPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
                     </button>
                   </div>
+                  {passwordLength > 0 && (
+                    <div className="flex items-center justify-between text-[10px] mt-1">
+                      <span className="font-semibold text-slate-500 dark:text-slate-400">Strength:</span>
+                      <span className={`font-bold ${
+                        passwordStrength === 'strong' ? 'text-emerald-500' :
+                        passwordStrength === 'good' ? 'text-amber-500' : 'text-rose-500'
+                      }`}>
+                        {passwordStrength === 'strong' ? '✓ Strong (8+ chars)' :
+                         passwordStrength === 'good' ? 'Good (6+ chars)' : 'Too short (min 6 chars)'}
+                      </span>
+                    </div>
+                  )}
                 </div>
 
                 <div>
@@ -340,9 +454,20 @@ export default function SignupPage({ onLoginSuccess, onNavigateToLogin, onNaviga
                       placeholder="Repeat password"
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
-                      className="w-full bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white text-xs pl-10 pr-4 py-3 rounded-xl border border-slate-300 dark:border-slate-700 focus:outline-none focus:border-purple-500"
+                      className={`w-full bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white text-xs pl-10 pr-4 py-3 rounded-xl border focus:outline-none ${
+                        confirmPassword.length > 0 && password !== confirmPassword 
+                          ? 'border-rose-500 focus:border-rose-500' 
+                          : confirmPassword.length > 0 && password === confirmPassword
+                            ? 'border-emerald-500 focus:border-emerald-500'
+                            : 'border-slate-300 dark:border-slate-700 focus:border-purple-500'
+                      }`}
                     />
                   </div>
+                  {confirmPassword.length > 0 && (
+                    <p className={`text-[10px] font-bold mt-1 ${password === confirmPassword ? 'text-emerald-500' : 'text-rose-500'}`}>
+                      {password === confirmPassword ? '✓ Passwords match' : '❌ Passwords do not match'}
+                    </p>
+                  )}
                 </div>
               </div>
 

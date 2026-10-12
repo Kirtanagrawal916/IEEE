@@ -113,10 +113,17 @@ export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNaviga
       (u.name && u.name.toLowerCase() === targetInput.toLowerCase())
     );
 
+    // If account found locally with password, enforce password check immediately
+    if (matchedUser && matchedUser.password && matchedUser.password !== targetPassword) {
+      setIsLoading(false);
+      setError('Incorrect password for this account. Please verify your password and try again.');
+      return;
+    }
+
     const lookupEmail = matchedUser?.email || (targetInput.includes('@') ? targetInput : `${cleanSearch}@herearn.org`);
 
     try {
-      const res = await api.login({ email: lookupEmail, password: targetPassword });
+      const res = await api.login({ email: lookupEmail, username: cleanSearch, password: targetPassword });
       if (res && res.token) {
         localStorage.setItem('herearn_jwt_token', res.token);
       }
@@ -136,21 +143,35 @@ export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNaviga
     } catch (err) {
       setIsLoading(false);
       if (err.status === 401) {
-        setError(err.message || 'Incorrect Password: You can also log in instantly using Email OTP or Google.');
-      } else {
-        // Fallback resilient login for offline / prototype mode using matched user or clean credentials
-        const resolvedUsername = matchedUser?.username || cleanSearch;
-        const resolvedName = matchedUser?.name || (resolvedUsername.charAt(0).toUpperCase() + resolvedUsername.slice(1));
-        const finalEmail = matchedUser?.email || (targetInput.includes('@') ? targetInput : `${resolvedUsername}@herearn.org`);
+        setError(err.message || 'Incorrect password. Please verify your password or use Google/OTP sign-in.');
+        return;
+      }
+
+      if (err.status === 404) {
+        setError(`No account found matching "${targetInput}". Please check your credentials or create a new account.`);
+        return;
+      }
+
+      // Offline / network fallback with password verification
+      if (matchedUser) {
+        if (matchedUser.password && matchedUser.password !== targetPassword) {
+          setError('Incorrect password. Please check your credentials and try again.');
+          return;
+        }
+
+        const resolvedUsername = matchedUser.username || cleanSearch;
+        const resolvedName = matchedUser.name || (resolvedUsername.charAt(0).toUpperCase() + resolvedUsername.slice(1));
 
         onLoginSuccess({
-          ...(matchedUser || {}),
+          ...matchedUser,
           name: resolvedName,
           username: resolvedUsername,
-          email: finalEmail,
-          skillInterest: matchedUser?.skills?.[0] || 'Digital Marketing',
+          email: matchedUser.email || lookupEmail,
+          skillInterest: matchedUser.skills?.[0] || 'Digital Marketing',
           isSignUp: false,
         });
+      } else {
+        setError(`No account registered under "${targetInput}". Please check your username/email or sign up.`);
       }
     }
   };
