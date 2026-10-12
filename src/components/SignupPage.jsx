@@ -19,6 +19,7 @@ import {
 
 export default function SignupPage({ onLoginSuccess, onNavigateToLogin, onNavigateHome, onContinueAsGuest }) {
   const [name, setName] = useState('');
+  const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -29,13 +30,27 @@ export default function SignupPage({ onLoginSuccess, onNavigateToLogin, onNaviga
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
+  // Auto-suggest username when user types their name
+  const handleNameChange = (val) => {
+    setName(val);
+    if (!username || username === name.toLowerCase().replace(/[^a-z0-9]/g, '_')) {
+      setUsername(val.toLowerCase().replace(/[^a-z0-9]/g, '_'));
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
 
     const displayName = name.trim() || (email.trim() ? email.trim().split('@')[0] : 'Learner');
+    const cleanUsername = (username.trim() || displayName.toLowerCase().replace(/[^a-z0-9]/g, '_') || 'learner').replace(/^@/, '');
     const targetEmail = email.trim();
     const targetPassword = password.trim();
+
+    if (password !== confirmPassword) {
+      setError('Passwords do not match. Please re-enter.');
+      return;
+    }
 
     setIsLoading(true);
 
@@ -47,16 +62,48 @@ export default function SignupPage({ onLoginSuccess, onNavigateToLogin, onNaviga
         skills: [skillInterest],
       });
 
+      // Save to local registry so username is permanently indexed
+      const existingUsers = JSON.parse(localStorage.getItem('herearn_registered_users') || '[]');
+      const updatedRegistry = existingUsers.filter(u => u.email !== targetEmail && u.username !== cleanUsername);
+      const userRecord = {
+        id: res?.user?.id || `u-${Date.now()}`,
+        name: displayName,
+        username: cleanUsername,
+        email: targetEmail,
+        skills: [skillInterest],
+        role,
+      };
+      updatedRegistry.push(userRecord);
+      localStorage.setItem('herearn_registered_users', JSON.stringify(updatedRegistry));
+
       setIsLoading(false);
       onLoginSuccess({
-        ...res.user,
+        ...(res?.user || {}),
+        name: displayName,
+        username: cleanUsername,
+        email: targetEmail,
         isSignUp: true,
         role,
       });
     } catch (err) {
+      // Local resilient fallback registry
+      const existingUsers = JSON.parse(localStorage.getItem('herearn_registered_users') || '[]');
+      const updatedRegistry = existingUsers.filter(u => u.email !== targetEmail && u.username !== cleanUsername);
+      const userRecord = {
+        id: `u-${Date.now()}`,
+        name: displayName,
+        username: cleanUsername,
+        email: targetEmail,
+        skills: [skillInterest],
+        role,
+      };
+      updatedRegistry.push(userRecord);
+      localStorage.setItem('herearn_registered_users', JSON.stringify(updatedRegistry));
+
       setIsLoading(false);
       onLoginSuccess({
         name: displayName,
+        username: cleanUsername,
         email: targetEmail,
         skillInterest,
         isSignUp: true,
@@ -208,19 +255,38 @@ export default function SignupPage({ onLoginSuccess, onNavigateToLogin, onNaviga
             {/* Form */}
             <form onSubmit={handleSubmit} className="space-y-3.5">
               
-              {/* Full Name */}
-              <div>
-                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Full Name</label>
-                <div className="relative">
-                  <User className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                  <input
-                    type="text"
-                    required
-                    placeholder="Enter your full name"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    className="w-full bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white text-xs pl-10 pr-4 py-3 rounded-xl border border-slate-300 dark:border-slate-700 focus:outline-none focus:border-purple-500"
-                  />
+              {/* Full Name & Username */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Full Name</label>
+                  <div className="relative">
+                    <User className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. Ananya Sharma"
+                      value={name}
+                      onChange={(e) => handleNameChange(e.target.value)}
+                      className="w-full bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white text-xs pl-10 pr-4 py-3 rounded-xl border border-slate-300 dark:border-slate-700 focus:outline-none focus:border-purple-500 font-semibold"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                    Username <span className="text-purple-600 dark:text-purple-400 font-normal">(Login Handle)</span>
+                  </label>
+                  <div className="relative">
+                    <span className="text-xs font-bold text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2">@</span>
+                    <input
+                      type="text"
+                      required
+                      placeholder="ananya_sharma"
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
+                      className="w-full bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white text-xs pl-8 pr-4 py-3 rounded-xl border border-slate-300 dark:border-slate-700 focus:outline-none focus:border-purple-500 font-mono font-semibold"
+                    />
+                  </div>
                 </div>
               </div>
 

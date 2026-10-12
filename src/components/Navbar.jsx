@@ -21,7 +21,6 @@ import {
   Shield,
   Building2
 } from 'lucide-react';
-import LogoutModal from './LogoutModal';
 import { useLanguage } from '../context/LanguageContext';
 
 export default function Navbar({ 
@@ -37,7 +36,6 @@ export default function Navbar({
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isLangOpen, setIsLangOpen] = useState(false);
-  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
   const menuRef = useRef(null);
   const langRef = useRef(null);
 
@@ -53,14 +51,6 @@ export default function Navbar({
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
-
-  const handleConfirmLogout = () => {
-    setIsLogoutModalOpen(false);
-    if (onLogout) {
-      onLogout();
-    }
-    navigate('/');
-  };
 
   const currentLangObj = LANGUAGES.find(l => l.code === language) || LANGUAGES[0];
 
@@ -244,14 +234,19 @@ export default function Navbar({
                 >
                   <img src={user.avatar} alt={user.name} className="w-8 h-8 rounded-full object-cover border border-purple-400" />
                   <div className="hidden sm:block text-left text-xs">
-                    <p className="font-bold leading-tight text-slate-900 dark:text-white">{user.name}</p>
+                    <div className="flex items-center gap-1.5">
+                      <p className="font-bold leading-tight text-slate-900 dark:text-white">{user.name}</p>
+                      {user.username && (
+                        <span className="text-[10px] font-mono text-purple-600 dark:text-purple-400 font-bold bg-purple-50 dark:bg-purple-950/60 px-1.5 py-0.2 rounded border border-purple-200 dark:border-purple-500/30">@{user.username}</span>
+                      )}
+                    </div>
                     <p className="text-[10px] text-emerald-600 dark:text-emerald-400 font-extrabold">₹{(user.totalEarned || user.earnings || 0).toLocaleString()}</p>
                   </div>
                 </Link>
 
                 <button 
                   type="button"
-                  onClick={() => setIsLogoutModalOpen(true)}
+                  onClick={onLogout}
                   title="Log out of HerEarn"
                   aria-label="Log out"
                   className="p-2 rounded-xl text-slate-500 dark:text-slate-400 hover:text-pink-600 dark:hover:text-pink-400 hover:bg-purple-100 dark:hover:bg-slate-800/50 transition-colors cursor-pointer"
@@ -356,14 +351,28 @@ export default function Navbar({
                   </Link>
 
                   {user && (
-                    <Link
-                      to="/dashboard"
-                      onClick={() => setIsMenuOpen(false)}
-                      className="w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2.5 hover:bg-purple-900/40 text-slate-200 transition-colors"
-                    >
-                      <User className="w-4 h-4 text-emerald-400" />
-                      <span>My Dashboard</span>
-                    </Link>
+                    <>
+                      <Link
+                        to="/dashboard"
+                        onClick={() => setIsMenuOpen(false)}
+                        className="w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2.5 hover:bg-purple-900/40 text-slate-200 transition-colors"
+                      >
+                        <User className="w-4 h-4 text-emerald-400" />
+                        <span>My Dashboard</span>
+                      </Link>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsMenuOpen(false);
+                          if (onLogout) onLogout();
+                        }}
+                        className="w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2.5 text-rose-400 hover:bg-rose-950/40 transition-colors cursor-pointer"
+                      >
+                        <LogOut className="w-4 h-4 text-rose-400" />
+                        <span>Log Out</span>
+                      </button>
+                    </>
                   )}
 
                   <Link
@@ -425,13 +434,6 @@ export default function Navbar({
 
         </div>
       </div>
-
-      {/* Logout Confirmation Modal */}
-      <LogoutModal
-        isOpen={isLogoutModalOpen}
-        onConfirm={handleConfirmLogout}
-        onCancel={() => setIsLogoutModalOpen(false)}
-      />
     </nav>
   );
 }
