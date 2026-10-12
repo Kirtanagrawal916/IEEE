@@ -425,6 +425,8 @@ function AppContent() {
           onLogout={() => setIsLogoutModalOpen(true)}
           theme={theme}
           onToggleTheme={handleToggleTheme}
+          onUpdateUser={saveUserData}
+          showToast={showToast}
         />
       )}
 
