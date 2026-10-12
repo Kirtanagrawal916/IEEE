@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Sparkles, Lock, Mail, User } from 'lucide-react';
+import { X, Sparkles, Lock, Mail, User, Shield } from 'lucide-react';
 
 export default function AuthModal({ isOpen, initialMode = 'login', onClose, onLoginSuccess, onContinueAsGuest }) {
   const [isSignUp, setIsSignUp] = useState(initialMode === 'signup');
@@ -162,6 +162,17 @@ export default function AuthModal({ isOpen, initialMode = 'login', onClose, onLo
             <User className="w-4 h-4 text-purple-600 dark:text-purple-400" />
             <span>Continue with Guest Account</span>
           </button>
+
+          <div className="pt-2">
+            <a
+              href="/admin"
+              onClick={onClose}
+              className="text-[11px] font-bold text-slate-500 dark:text-slate-400 hover:text-purple-600 dark:hover:text-pink-400 transition-colors flex items-center justify-center gap-1.5"
+            >
+              <Shield className="w-3.5 h-3.5 text-pink-500" />
+              <span>Platform Administrator? Login to Admin Console →</span>
+            </a>
+          </div>
         </div>
 
       </div>

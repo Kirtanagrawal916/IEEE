@@ -6,7 +6,7 @@
 const API_BASE = import.meta.env.VITE_API_URL || '';
 
 const getAuthHeaders = () => {
-  const token = localStorage.getItem('herearn_jwt_token');
+  const token = localStorage.getItem('herearn_jwt_token') || sessionStorage.getItem('herearn_admin_token');
   return {
     'Content-Type': 'application/json',
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
@@ -55,6 +55,7 @@ export const api = {
   googleLogin: (credential) => request('/api/auth/google', { method: 'POST', body: JSON.stringify({ credential }) }),
   sendOtp: (email) => request('/api/auth/send-otp', { method: 'POST', body: JSON.stringify({ email }) }),
   verifyOtp: (data) => request('/api/auth/verify-otp', { method: 'POST', body: JSON.stringify(data) }),
+  verifyAdminKey: (key) => request('/api/auth/verify-admin-key', { method: 'POST', body: JSON.stringify({ key }) }),
   getMe: () => request('/api/auth/me'),
 
   // User Profile APIs
@@ -104,4 +105,22 @@ export const api = {
 
   // AI Chatbot API
   sendChatMessage: (message, sessionId) => request('/api/chat', { method: 'POST', body: JSON.stringify({ message, sessionId }) }),
+
+  // Admin APIs
+  getAdminMetrics: () => request('/api/admin/metrics'),
+  getAdminUsers: () => request('/api/admin/users'),
+  updateUserRole: (id, role) => request(`/api/admin/users/${id}/role`, { method: 'PATCH', body: JSON.stringify({ role }) }),
+  updateUserKyc: (id, verifiedKyc) => request(`/api/admin/users/${id}/kyc`, { method: 'PATCH', body: JSON.stringify({ verifiedKyc }) }),
+  updateUserStatus: (id, status) => request(`/api/admin/users/${id}/status`, { method: 'PATCH', body: JSON.stringify({ status }) }),
+  getAdminOpportunities: () => request('/api/admin/opportunities'),
+  createAdminOpportunity: (gigData) => request('/api/admin/opportunities', { method: 'POST', body: JSON.stringify(gigData) }),
+  updateOpportunityStatus: (id, statusData) => request(`/api/admin/opportunities/${id}/status`, { method: 'PATCH', body: JSON.stringify(statusData) }),
+  deleteOpportunity: (id) => request(`/api/admin/opportunities/${id}`, { method: 'DELETE' }),
+  getAdminEscrow: () => request('/api/admin/escrow'),
+  releaseEscrow: (id) => request(`/api/admin/escrow/${id}/release`, { method: 'POST' }),
+  freezeEscrow: (id) => request(`/api/admin/escrow/${id}/freeze`, { method: 'POST' }),
+  getAdminSettings: () => request('/api/admin/settings'),
+  updateAdminSettings: (settings) => request('/api/admin/settings', { method: 'PATCH', body: JSON.stringify(settings) }),
+  getAdminAuditLogs: () => request('/api/admin/audit-logs'),
+  createAuditLog: (logData) => request('/api/admin/audit-logs', { method: 'POST', body: JSON.stringify(logData) }),
 };

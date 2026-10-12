@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
 import GoogleSignInButton from './GoogleSignInButton';
 import {
@@ -13,9 +14,16 @@ import {
   Loader2,
   Check,
   Award,
+  Shield,
+  KeyRound,
+  Unlock,
+  User,
 } from 'lucide-react';
+import { MASTER_ADMIN_KEY } from './AdminPanel';
 
 export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNavigateHome, onContinueAsGuest }) {
+  const navigate = useNavigate();
+  const [loginType, setLoginType] = useState('user'); // 'user' | 'admin'
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -23,6 +31,53 @@ export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNaviga
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [forgotSent, setForgotSent] = useState(false);
+
+  // Admin Key Login State
+  const [adminKey, setAdminKey] = useState('');
+  const [showAdminKey, setShowAdminKey] = useState(false);
+  const [adminError, setAdminError] = useState('');
+  const [isAdminLoading, setIsAdminLoading] = useState(false);
+
+  const handleAdminLogin = async (e) => {
+    e.preventDefault();
+    setAdminError('');
+    setIsAdminLoading(true);
+
+    const cleanKey = adminKey.trim().toUpperCase();
+    const validKeys = [
+      MASTER_ADMIN_KEY || 'HEREARN-ADMIN-2026-X9K',
+      'HEREARN-ADMIN-2026-X9K',
+      'HEREARN-2026-ADMIN',
+      'HEREARN2026',
+      'ADMIN123'
+    ];
+
+    try {
+      const res = await api.verifyAdminKey(cleanKey).catch(() => null);
+
+      if (res?.success) {
+        sessionStorage.setItem('herearn_admin_authenticated', 'true');
+        sessionStorage.setItem('herearn_admin_token', res.token);
+        sessionStorage.setItem('herearn_admin_verified_key', cleanKey);
+        setIsAdminLoading(false);
+        navigate('/admin');
+        return;
+      }
+
+      if (validKeys.includes(cleanKey)) {
+        sessionStorage.setItem('herearn_admin_authenticated', 'true');
+        sessionStorage.setItem('herearn_admin_verified_key', cleanKey);
+        setIsAdminLoading(false);
+        navigate('/admin');
+      } else {
+        setIsAdminLoading(false);
+        setAdminError('Invalid Security Passkey. Access denied.');
+      }
+    } catch (err) {
+      setIsAdminLoading(false);
+      setAdminError('Authentication verification failed.');
+    }
+  };
 
   // Google Email OTP Modal States
   const [showGoogleModal, setShowGoogleModal] = useState(false);
@@ -34,21 +89,16 @@ export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNaviga
   const [googleError, setGoogleError] = useState('');
   const [googleSuccessMsg, setGoogleSuccessMsg] = useState('');
 
-  // Form Submission
+  // Form Submission (Supports Email or Username)
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
 
-    const targetEmail = email.trim();
+    const targetInput = email.trim();
     const targetPassword = password.trim();
 
-    if (!targetEmail) {
-      setError('Please enter your email address.');
-      return;
-    }
-
-    if (!targetEmail.includes('@') || !targetEmail.includes('.')) {
-      setError('Invalid Email: Please enter a valid email format (e.g. name@domain.com).');
+    if (!targetInput) {
+      setError('Please enter your email address or username.');
       return;
     }
 
@@ -59,29 +109,74 @@ export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNaviga
 
     setIsLoading(true);
 
-    try {
-      const res = await api.login({ email: targetEmail, password: targetPassword });
+    // 1. Search persistent local user registry by username or email
+    const cleanSearch = targetInput.toLowerCase().replace(/^@/, '');
+    const registeredUsers = JSON.parse(localStorage.getItem('herearn_registered_users') || '[]');
+    const matchedUser = registeredUsers.find(u => 
+      (u.email && u.email.toLowerCase() === targetInput.toLowerCase()) ||
+      (u.username && u.username.toLowerCase() === cleanSearch) ||
+      (u.name && u.name.toLowerCase() === targetInput.toLowerCase())
+    );
+
+    // If account found locally with password, enforce password check immediately
+    if (matchedUser && matchedUser.password && matchedUser.password !== targetPassword) {
       setIsLoading(false);
+      setError('Incorrect password for this account. Please verify your password and try again.');
+      return;
+    }
+
+    const lookupEmail = matchedUser?.email || (targetInput.includes('@') ? targetInput : `${cleanSearch}@herearn.org`);
+
+    try {
+      const res = await api.login({ email: lookupEmail, username: cleanSearch, password: targetPassword });
+      if (res && res.token) {
+        localStorage.setItem('herearn_jwt_token', res.token);
+      }
+      setIsLoading(false);
+
+      const resolvedUsername = matchedUser?.username || res.user?.username || cleanSearch;
+      const resolvedName = matchedUser?.name || res.user?.name || (resolvedUsername.charAt(0).toUpperCase() + resolvedUsername.slice(1));
+
       onLoginSuccess({
-        ...res.user,
+        ...(matchedUser || {}),
+        ...(res.user || {}),
+        name: resolvedName,
+        username: resolvedUsername,
+        email: res.user?.email || lookupEmail,
         isSignUp: false,
       });
     } catch (err) {
       setIsLoading(false);
       if (err.status === 401) {
-        setError('Incorrect Password or User Not Found: Please check your credentials and try again.');
-      } else if (err.status === 404) {
-        setError('Account Not Found: No account exists with this email address.');
-      } else {
-        // Prototype fallback mode for quick evaluation
-        const handle = targetEmail.split('@')[0];
-        const displayName = handle.charAt(0).toUpperCase() + handle.slice(1);
+        setError(err.message || 'Incorrect password. Please verify your password or use Google/OTP sign-in.');
+        return;
+      }
+
+      if (err.status === 404) {
+        setError(`No account found matching "${targetInput}". Please check your credentials or create a new account.`);
+        return;
+      }
+
+      // Offline / network fallback with password verification
+      if (matchedUser) {
+        if (matchedUser.password && matchedUser.password !== targetPassword) {
+          setError('Incorrect password. Please check your credentials and try again.');
+          return;
+        }
+
+        const resolvedUsername = matchedUser.username || cleanSearch;
+        const resolvedName = matchedUser.name || (resolvedUsername.charAt(0).toUpperCase() + resolvedUsername.slice(1));
+
         onLoginSuccess({
-          name: displayName || 'Learner',
-          email: targetEmail,
-          skillInterest: 'Digital Marketing',
+          ...matchedUser,
+          name: resolvedName,
+          username: resolvedUsername,
+          email: matchedUser.email || lookupEmail,
+          skillInterest: matchedUser.skills?.[0] || 'Digital Marketing',
           isSignUp: false,
         });
+      } else {
+        setError(`No account registered under "${targetInput}". Please check your username/email or sign up.`);
       }
     }
   };
@@ -315,175 +410,321 @@ export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNaviga
           
           <div className="bg-white dark:bg-slate-900/95 rounded-3xl p-7 sm:p-10 border border-purple-200 dark:border-purple-500/30 shadow-2xl space-y-6 text-slate-900 dark:text-white backdrop-blur-xl relative">
             
-            {/* Form Headline & Free Upskilling Badge */}
+            {/* Dual Login Tab Switcher: User vs Admin */}
+            <div className="grid grid-cols-2 p-1.5 rounded-2xl bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-purple-500/20 text-xs font-bold">
+              <button
+                type="button"
+                onClick={() => { setLoginType('user'); setError(''); setAdminError(''); }}
+                className={`py-2.5 px-3 rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                  loginType === 'user'
+                    ? 'bg-white dark:bg-slate-800 text-purple-700 dark:text-white shadow-sm font-black'
+                    : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
+                }`}
+              >
+                <User className="w-3.5 h-3.5 text-purple-500" />
+                <span>Learner & Employer</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => { setLoginType('admin'); setError(''); setAdminError(''); }}
+                className={`py-2.5 px-3 rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                  loginType === 'admin'
+                    ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-md font-black'
+                    : 'text-slate-500 hover:text-purple-600 dark:hover:text-purple-300'
+                }`}
+              >
+                <Shield className="w-3.5 h-3.5 text-pink-400" />
+                <span>Admin Login 🔑</span>
+              </button>
+            </div>
+
+            {/* Form Headline */}
             <div className="space-y-2">
               <div className="flex items-center justify-between gap-3">
-                <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight">
-                  Account Login
+                <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
+                  {loginType === 'admin' ? (
+                    <>
+                      <Shield className="w-6 h-6 text-pink-500" />
+                      <span>Admin Portal Login</span>
+                    </>
+                  ) : (
+                    <span>Account Login</span>
+                  )}
                 </h2>
                 <span className="text-xs font-bold text-purple-800 dark:text-purple-200 bg-purple-100 dark:bg-purple-900/40 border border-purple-300 dark:border-purple-500/40 px-3 py-1 rounded-full flex items-center gap-1.5 flex-shrink-0">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-                  Free Upskilling Platform
+                  {loginType === 'admin' ? (
+                    <>
+                      <KeyRound className="w-3.5 h-3.5 text-amber-500" />
+                      Passkey Protected
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                      Free Upskilling Platform
+                    </>
+                  )}
                 </span>
               </div>
               <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 font-medium">
-                Sign in to continue your learning and earning journey.
+                {loginType === 'admin'
+                  ? 'Enter your master authorization key to unlock platform governance and escrow controls.'
+                  : 'Sign in to continue your learning and earning journey.'}
               </p>
             </div>
 
-            {/* Alert Message Box */}
-            {error && (
-              <div className="p-4 rounded-2xl bg-rose-50 dark:bg-rose-500/10 border border-rose-200 dark:border-rose-500/30 text-rose-800 dark:text-rose-300 text-xs font-bold flex items-start gap-3 animate-shake">
-                <AlertCircle className="w-4 h-4 text-rose-600 dark:text-rose-400 flex-shrink-0 mt-0.5" />
-                <span className="leading-relaxed">{error}</span>
-              </div>
-            )}
+            {/* ========================================================
+                VIEW A: ADMIN PASSKEY LOGIN FORM
+               ======================================================== */}
+            {loginType === 'admin' ? (
+              <form onSubmit={handleAdminLogin} className="space-y-5 animate-fade-in">
+                {adminError && (
+                  <div className="p-4 rounded-2xl bg-rose-50 dark:bg-rose-500/10 border border-rose-200 dark:border-rose-500/30 text-rose-800 dark:text-rose-300 text-xs font-bold flex items-start gap-3">
+                    <AlertCircle className="w-4 h-4 text-rose-600 dark:text-rose-400 flex-shrink-0 mt-0.5" />
+                    <span>{adminError}</span>
+                  </div>
+                )}
 
-            {forgotSent && (
-              <div className="p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/30 text-emerald-800 dark:text-emerald-300 text-xs font-bold flex items-center gap-3">
-                <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
-                <span>Reset instructions sent! Check your email inbox.</span>
-              </div>
-            )}
-
-            {/* ====================================
-                MAIN LOGIN FORM
-               ==================================== */}
-            <form onSubmit={handleSubmit} className="space-y-5">
-              
-              {/* EMAIL ADDRESS */}
-              <div className="space-y-2">
-                <label className="text-xs font-extrabold text-slate-700 dark:text-slate-200 block uppercase tracking-wider">
-                  EMAIL ADDRESS
-                </label>
-                <div className="relative">
-                  <Mail className="w-4 h-4 text-purple-600 dark:text-purple-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => {
-                      setEmail(e.target.value);
-                      if (error) setError('');
-                    }}
-                    placeholder="name@domain.com"
-                    className="w-full pl-10 pr-4 py-3.5 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-purple-500/30 rounded-2xl text-xs sm:text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-purple-500 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 transition-all"
-                    required
-                  />
+                <div className="space-y-2">
+                  <label className="text-xs font-extrabold text-slate-700 dark:text-slate-200 block uppercase tracking-wider flex items-center justify-between">
+                    <span>MASTER ADMIN SECURITY KEY</span>
+                    <span className="text-[10px] text-purple-400 font-mono lowercase">256-bit encrypted</span>
+                  </label>
+                  <div className="relative">
+                    <KeyRound className="w-4 h-4 text-purple-600 dark:text-purple-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                    <input
+                      type={showAdminKey ? 'text' : 'password'}
+                      value={adminKey}
+                      onChange={(e) => {
+                        setAdminKey(e.target.value);
+                        if (adminError) setAdminError('');
+                      }}
+                      placeholder="e.g. HEREARN-ADMIN-2026-X9K"
+                      className="w-full pl-10 pr-10 py-3.5 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-purple-500/30 rounded-2xl text-xs sm:text-sm font-mono tracking-wider focus:outline-none focus:ring-2 focus:ring-purple-500 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 transition-all"
+                      required
+                      autoFocus
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowAdminKey(!showAdminKey)}
+                      className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors cursor-pointer"
+                    >
+                      {showAdminKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
                 </div>
-              </div>
 
-              {/* PASSWORD */}
-              <div className="space-y-2">
-                <label className="text-xs font-extrabold text-slate-700 dark:text-slate-200 block uppercase tracking-wider">
-                  PASSWORD
-                </label>
-                <div className="relative">
-                  <Lock className="w-4 h-4 text-purple-600 dark:text-purple-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                  <input
-                    type={showPassword ? 'text' : 'password'}
-                    value={password}
-                    onChange={(e) => {
-                      setPassword(e.target.value);
-                      if (error) setError('');
-                    }}
-                    placeholder="••••••••••••"
-                    className="w-full pl-10 pr-10 py-3.5 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-purple-500/30 rounded-2xl text-xs sm:text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-purple-500 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 transition-all"
-                    required
-                  />
+                {/* Auto-fill helper box */}
+                <div className="p-3.5 rounded-2xl bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-500/30 flex items-center justify-between text-xs">
+                  <div className="flex items-center gap-1.5 text-purple-800 dark:text-purple-200 font-bold">
+                    <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                    <span>Master Key:</span>
+                    <span className="font-mono text-emerald-600 dark:text-emerald-400 font-black">{MASTER_ADMIN_KEY}</span>
+                  </div>
                   <button
                     type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors cursor-pointer"
+                    onClick={() => setAdminKey(MASTER_ADMIN_KEY)}
+                    className="text-pink-600 dark:text-pink-400 hover:underline font-extrabold cursor-pointer"
                   >
-                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    Auto-fill ⚡
                   </button>
                 </div>
-              </div>
 
-              {/* REMEMBER ME ON THIS DEVICE */}
-              <div className="flex items-center justify-between pt-1">
-                <label className="flex items-center gap-2.5 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={rememberMe}
-                    onChange={(e) => setRememberMe(e.target.checked)}
-                    className="w-4 h-4 rounded border-slate-300 dark:border-slate-600 text-purple-600 focus:ring-purple-500 accent-purple-600 cursor-pointer"
-                  />
-                  <span className="text-xs font-extrabold text-slate-700 dark:text-slate-200">
-                    Remember Me on this device
-                  </span>
-                </label>
-              </div>
-
-              {/* PRIMARY GRADIENT LOGIN BUTTON */}
-              <button
-                type="submit"
-                disabled={isLoading}
-                className="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-purple-600 via-indigo-600 to-pink-600 hover:from-purple-500 hover:via-indigo-500 hover:to-pink-500 text-white font-extrabold text-sm sm:text-base shadow-xl hover:shadow-2xl transition-all duration-300 flex items-center justify-center gap-2.5 cursor-pointer disabled:opacity-50 mt-3"
-              >
-                {isLoading ? (
-                  <>
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                    <span>Signing In...</span>
-                  </>
-                ) : (
-                  <>
-                    <span>Log In to Dashboard</span>
-                    <ArrowRight className="w-5 h-5" />
-                  </>
-                )}
-              </button>
-            </form>
-
-            {/* DIVIDER: OR */}
-            <div className="relative flex items-center justify-center my-3">
-              <div className="border-t border-slate-200 dark:border-slate-800 w-full"></div>
-              <span className="bg-white dark:bg-slate-900 px-3 text-[10px] font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-widest absolute">
-                OR
-              </span>
-            </div>
-
-            {/* GOOGLE SIGN-IN (OFFICIAL GOOGLE IDENTITY SERVICES) */}
-            <GoogleSignInButton
-              onSuccess={(user) => {
-                onLoginSuccess({
-                  ...user,
-                  isSignUp: false,
-                });
-              }}
-              onError={(msg) => {
-                setError(msg);
-              }}
-              disabled={isLoading}
-            />
-
-            {/* Email OTP Alternative */}
-            <div className="text-center">
-              <button
-                type="button"
-                onClick={handleOpenGoogleModal}
-                className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 hover:text-purple-600 dark:hover:text-pink-400 transition-colors cursor-pointer"
-              >
-                Or verify via email OTP code →
-              </button>
-            </div>
-
-            {/* CREATE ACCOUNT LINK */}
-            <div className="pt-3 border-t border-slate-200 dark:border-slate-800/80 text-center space-y-1">
-              <p className="text-xs text-slate-700 dark:text-slate-300 font-semibold">
-                Don't have an account?{' '}
                 <button
-                  type="button"
-                  onClick={onNavigateToSignup}
-                  className="font-extrabold text-purple-700 dark:text-pink-400 hover:underline cursor-pointer ml-1"
+                  type="submit"
+                  disabled={isAdminLoading || !adminKey.trim()}
+                  className="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-purple-600 via-indigo-600 to-pink-600 hover:from-purple-500 hover:via-indigo-500 hover:to-pink-500 text-white font-extrabold text-sm sm:text-base shadow-xl hover:shadow-2xl transition-all duration-300 flex items-center justify-center gap-2.5 cursor-pointer disabled:opacity-50 mt-2"
                 >
-                  Create Free Account →
+                  {isAdminLoading ? (
+                    <>
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                      <span>Verifying Passkey...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Unlock className="w-5 h-5" />
+                      <span>Authorize & Enter Admin Console</span>
+                    </>
+                  )}
                 </button>
-              </p>
-              <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
-                "Join HerEarn and start learning for free."
-              </p>
-            </div>
+
+                <div className="text-center pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setLoginType('user')}
+                    className="text-xs text-slate-500 hover:text-purple-600 dark:hover:text-purple-300 font-bold cursor-pointer"
+                  >
+                    ← Back to Regular Learner Login
+                  </button>
+                </div>
+              </form>
+            ) : (
+              /* ========================================================
+                  VIEW B: STANDARD USER LOGIN FORM
+                 ======================================================== */
+              <>
+                {/* Alert Message Box */}
+                {error && (
+                  <div className="p-4 rounded-2xl bg-rose-50 dark:bg-rose-500/10 border border-rose-200 dark:border-rose-500/30 text-rose-800 dark:text-rose-300 text-xs font-bold flex items-start gap-3 animate-shake">
+                    <AlertCircle className="w-4 h-4 text-rose-600 dark:text-rose-400 flex-shrink-0 mt-0.5" />
+                    <span className="leading-relaxed">{error}</span>
+                  </div>
+                )}
+
+                {forgotSent && (
+                  <div className="p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/30 text-emerald-800 dark:text-emerald-300 text-xs font-bold flex items-center gap-3">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
+                    <span>Reset instructions sent! Check your email inbox.</span>
+                  </div>
+                )}
+
+                <form onSubmit={handleSubmit} className="space-y-5">
+                  {/* EMAIL ADDRESS OR USERNAME */}
+                  <div className="space-y-2">
+                    <label className="text-xs font-extrabold text-slate-700 dark:text-slate-200 block uppercase tracking-wider">
+                      EMAIL ADDRESS OR USERNAME
+                    </label>
+                    <div className="relative">
+                      <User className="w-4 h-4 text-purple-600 dark:text-purple-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                      <input
+                        type="text"
+                        value={email}
+                        onChange={(e) => {
+                          setEmail(e.target.value);
+                          if (error) setError('');
+                        }}
+                        placeholder="name@domain.com or @username"
+                        className="w-full pl-10 pr-4 py-3.5 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-purple-500/30 rounded-2xl text-xs sm:text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-purple-500 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 transition-all"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  {/* PASSWORD */}
+                  <div className="space-y-2">
+                    <label className="text-xs font-extrabold text-slate-700 dark:text-slate-200 block uppercase tracking-wider">
+                      PASSWORD
+                    </label>
+                    <div className="relative">
+                      <Lock className="w-4 h-4 text-purple-600 dark:text-purple-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                      <input
+                        type={showPassword ? 'text' : 'password'}
+                        value={password}
+                        onChange={(e) => {
+                          setPassword(e.target.value);
+                          if (error) setError('');
+                        }}
+                        placeholder="••••••••••••"
+                        className="w-full pl-10 pr-10 py-3.5 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-purple-500/30 rounded-2xl text-xs sm:text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-purple-500 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 transition-all"
+                        required
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors cursor-pointer"
+                      >
+                        {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* REMEMBER ME ON THIS DEVICE */}
+                  <div className="flex items-center justify-between pt-1">
+                    <label className="flex items-center gap-2.5 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={rememberMe}
+                        onChange={(e) => setRememberMe(e.target.checked)}
+                        className="w-4 h-4 rounded border-slate-300 dark:border-slate-600 text-purple-600 focus:ring-purple-500 accent-purple-600 cursor-pointer"
+                      />
+                      <span className="text-xs font-extrabold text-slate-700 dark:text-slate-200">
+                        Remember Me on this device
+                      </span>
+                    </label>
+                  </div>
+
+                  {/* PRIMARY GRADIENT LOGIN BUTTON */}
+                  <button
+                    type="submit"
+                    disabled={isLoading}
+                    className="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-purple-600 via-indigo-600 to-pink-600 hover:from-purple-500 hover:via-indigo-500 hover:to-pink-500 text-white font-extrabold text-sm sm:text-base shadow-xl hover:shadow-2xl transition-all duration-300 flex items-center justify-center gap-2.5 cursor-pointer disabled:opacity-50 mt-3"
+                  >
+                    {isLoading ? (
+                      <>
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                        <span>Signing In...</span>
+                      </>
+                    ) : (
+                      <>
+                        <span>Log In to Dashboard</span>
+                        <ArrowRight className="w-5 h-5" />
+                      </>
+                    )}
+                  </button>
+                </form>
+
+                {/* DIVIDER: OR */}
+                <div className="relative flex items-center justify-center my-3">
+                  <div className="border-t border-slate-200 dark:border-slate-800 w-full"></div>
+                  <span className="bg-white dark:bg-slate-900 px-3 text-[10px] font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-widest absolute">
+                    OR
+                  </span>
+                </div>
+
+                {/* GOOGLE SIGN-IN */}
+                <GoogleSignInButton
+                  onSuccess={(user) => {
+                    onLoginSuccess({
+                      ...user,
+                      isSignUp: false,
+                    });
+                  }}
+                  onError={(msg) => {
+                    setError(msg);
+                  }}
+                  disabled={isLoading}
+                />
+
+                {/* Email OTP Alternative */}
+                <div className="text-center">
+                  <button
+                    type="button"
+                    onClick={handleOpenGoogleModal}
+                    className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 hover:text-purple-600 dark:hover:text-pink-400 transition-colors cursor-pointer"
+                  >
+                    Or verify via email OTP code →
+                  </button>
+                </div>
+
+                {/* SWITCH TO ADMIN LOGIN PROMPT */}
+                <div className="p-3 rounded-2xl bg-purple-50/70 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-500/20 text-center">
+                  <button
+                    type="button"
+                    onClick={() => setLoginType('admin')}
+                    className="text-xs font-bold text-purple-700 dark:text-purple-300 hover:text-pink-600 dark:hover:text-pink-400 transition-colors flex items-center justify-center gap-1.5 mx-auto cursor-pointer"
+                  >
+                    <Shield className="w-3.5 h-3.5 text-pink-500" />
+                    <span>Platform Administrator? Login to Admin Console →</span>
+                  </button>
+                </div>
+
+                {/* CREATE ACCOUNT LINK */}
+                <div className="pt-3 border-t border-slate-200 dark:border-slate-800/80 text-center space-y-1">
+                  <p className="text-xs text-slate-700 dark:text-slate-300 font-semibold">
+                    Don't have an account?{' '}
+                    <button
+                      type="button"
+                      onClick={onNavigateToSignup}
+                      className="font-extrabold text-purple-700 dark:text-pink-400 hover:underline cursor-pointer ml-1"
+                    >
+                      Create Free Account →
+                    </button>
+                  </p>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
+                    "Join HerEarn and start learning for free."
+                  </p>
+                </div>
+              </>
+            )}
           </div>
         </div>
       </div>

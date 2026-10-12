@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { api } from '../services/api';
 import { Loader2, AlertCircle } from 'lucide-react';
 
 /**
@@ -13,7 +14,8 @@ export default function GoogleSignInButton({
   disabled = false,
   className = '',
 }) {
-  const { googleLogin } = useAuth();
+  const auth = useAuth();
+  const googleLoginFunc = auth?.googleLogin;
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const googleBtnContainerRef = useRef(null);
@@ -33,7 +35,12 @@ export default function GoogleSignInButton({
     setErrorMessage('');
 
     try {
-      const res = await googleLogin(response.credential);
+      let res;
+      if (googleLoginFunc) {
+        res = await googleLoginFunc(response.credential);
+      } else {
+        res = await api.googleLogin(response.credential);
+      }
       setIsLoading(false);
       if (onSuccess) {
         onSuccess(res.user);
