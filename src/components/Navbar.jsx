@@ -262,6 +262,19 @@ export default function Navbar({
             ) : (
               <div className="flex items-center gap-2">
                 <Link
+                  to="/admin"
+                  title="Super Admin Portal Login (Passkey Protected)"
+                  className={`px-3 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+                    pathname === '/admin'
+                      ? 'bg-gradient-to-r from-purple-700 to-indigo-700 text-white shadow-md'
+                      : 'bg-purple-50 dark:bg-purple-950/50 border border-purple-300 dark:border-purple-500/40 text-purple-700 dark:text-purple-300 hover:bg-purple-100 dark:hover:bg-purple-900/60 shadow-xs'
+                  }`}
+                >
+                  <Shield className="w-3.5 h-3.5 text-pink-500" />
+                  <span>Admin</span>
+                </Link>
+
+                <Link
                   to="/login"
                   className={`px-3.5 py-2 rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer ${
                     pathname === '/login'
@@ -352,6 +365,20 @@ export default function Navbar({
                       <span>My Dashboard</span>
                     </Link>
                   )}
+
+                  <Link
+                    to="/admin"
+                    onClick={() => setIsMenuOpen(false)}
+                    className="w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold flex items-center justify-between bg-purple-950/40 border border-purple-500/30 text-purple-200 hover:bg-purple-900/60 transition-colors cursor-pointer"
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <Shield className="w-4 h-4 text-pink-400" />
+                      <span>Admin Portal</span>
+                    </div>
+                    <span className="text-[9px] font-black uppercase px-2 py-0.5 rounded-full bg-purple-500/30 text-purple-300">
+                      Passkey
+                    </span>
+                  </Link>
 
                   <div className="px-3 pt-2 border-t border-purple-500/20">
                     <p className="text-[11px] font-extrabold text-purple-300 uppercase tracking-wider">Information & Policies</p>
