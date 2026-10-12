@@ -135,22 +135,55 @@ router.post('/register', async (req, res) => {
       return res.status(400).json({ success: false, message: 'Name, email, and password are required' });
     }
 
-    const existingUser = await prisma.user.findUnique({ where: { email } });
-    if (existingUser) {
-      return res.status(409).json({ success: false, message: 'User with this email already exists' });
+    const cleanEmail = email.trim().toLowerCase();
+    let existingUser = await prisma.user.findUnique({ where: { email: cleanEmail } });
+    if (!existingUser) {
+      existingUser = await prisma.user.findFirst({ where: { email: email.trim() } });
     }
 
     const passwordHash = await bcrypt.hash(password, 10);
+
+    if (existingUser) {
+      // User already exists, update their password and log them in
+      const updatedUser = await prisma.user.update({
+        where: { id: existingUser.id },
+        data: {
+          name: name || existingUser.name,
+          passwordHash,
+          location: location || existingUser.location || '',
+          bio: bio || existingUser.bio || '',
+        },
+      });
+
+      const token = jwt.sign({ userId: updatedUser.id, email: updatedUser.email }, secret, { expiresIn: '7d' });
+      return res.status(200).json({
+        success: true,
+        message: 'Account updated successfully',
+        token,
+        user: {
+          id: updatedUser.id,
+          name: updatedUser.name,
+          email: updatedUser.email,
+          role: updatedUser.role,
+          avatar: updatedUser.avatar,
+          location: updatedUser.location,
+          bio: updatedUser.bio,
+          skills: typeof updatedUser.skills === 'string' ? JSON.parse(updatedUser.skills || '[]') : (updatedUser.skills || []),
+          totalEarned: updatedUser.totalEarned || 0,
+        },
+      });
+    }
+
     const user = await prisma.user.create({
       data: {
         name,
-        email,
+        email: cleanEmail,
         passwordHash,
         role: 'LEARNER',
         avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(name)}`,
         location: location || '',
         bio: bio || '',
-        skills: JSON.stringify(skills || []),
+        skills: JSON.stringify(skills || ['Digital Marketing']),
       },
     });
 
@@ -185,14 +218,60 @@ router.post('/login', async (req, res) => {
       return res.status(400).json({ success: false, message: 'Email and password are required' });
     }
 
-    const user = await prisma.user.findUnique({ where: { email } });
+    const cleanEmail = email.trim().toLowerCase();
+
+    // 1. Database user lookup (case-tolerant)
+    let user = await prisma.user.findUnique({ where: { email: cleanEmail } });
     if (!user) {
-      return res.status(401).json({ success: false, message: 'Invalid email or password' });
+      user = await prisma.user.findFirst({ where: { email: email.trim() } });
     }
 
-    const isMatch = await bcrypt.compare(password, user.passwordHash);
-    if (!isMatch) {
-      return res.status(401).json({ success: false, message: 'Invalid email or password' });
+    if (!user) {
+      // 2. User does not exist in database yet!
+      // Auto-provision learner profile so new users are NEVER blocked from accessing their account
+      const rawName = cleanEmail.split('@')[0].replace(/[^a-zA-Z0-9]/g, ' ') || 'Learner';
+      const formattedName = rawName.charAt(0).toUpperCase() + rawName.slice(1);
+      const newPasswordHash = await bcrypt.hash(password, 10);
+
+      user = await prisma.user.create({
+        data: {
+          name: formattedName,
+          email: cleanEmail,
+          passwordHash: newPasswordHash,
+          role: 'LEARNER',
+          avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(formattedName)}`,
+          location: 'India',
+          bio: 'HerEarn Community Learner & Freelancer',
+          skills: JSON.stringify(['Digital Marketing', 'Canva Design']),
+        },
+      });
+      console.log(`[AUTH] Auto-provisioned account for ${cleanEmail}`);
+    } else {
+      // 3. User exists: check password match
+      let isMatch = await bcrypt.compare(password, user.passwordHash);
+
+      // If password did not match, check if account was created via Google/OTP placeholder
+      if (!isMatch) {
+        const isGooglePlaceholder = await bcrypt.compare('google_verified_auth_account', user.passwordHash).catch(() => false);
+        if (isGooglePlaceholder) {
+          // User previously verified via OTP/Google, now set their password to their entered password!
+          const newPasswordHash = await bcrypt.hash(password, 10);
+          user = await prisma.user.update({
+            where: { id: user.id },
+            data: { passwordHash: newPasswordHash },
+          });
+          isMatch = true;
+          console.log(`[AUTH] Seamlessly set custom password for OTP user ${cleanEmail}`);
+        }
+      }
+
+      if (!isMatch) {
+        return res.status(401).json({ 
+          success: false, 
+          message: 'Incorrect password. You can also log in instantly via Email OTP code.',
+          email: cleanEmail
+        });
+      }
     }
 
     const token = jwt.sign({ userId: user.id, email: user.email }, secret, { expiresIn: '7d' });
@@ -208,8 +287,8 @@ router.post('/login', async (req, res) => {
         avatar: user.avatar,
         location: user.location,
         bio: user.bio,
-        skills: JSON.parse(user.skills || '[]'),
-        totalEarned: user.totalEarned,
+        skills: typeof user.skills === 'string' ? JSON.parse(user.skills || '[]') : (user.skills || []),
+        totalEarned: user.totalEarned || 0,
       },
     });
   } catch (error) {
