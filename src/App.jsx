@@ -146,8 +146,13 @@ function AppContent() {
   };
 
   // Sign Out Handler
-  const handleLogout = () => {
+  const handleLogout = async () => {
     setIsLogoutModalOpen(false);
+    try {
+      await api.logout();
+    } catch {
+      // Ignore network errors
+    }
     saveUserData(null);
     navigate('/');
     showToast("Signed Out 👋", "You have successfully logged out of HerEarn.");

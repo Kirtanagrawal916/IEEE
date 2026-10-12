@@ -8,21 +8,35 @@ export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(() => localStorage.getItem('herearn_jwt_token'));
   const [loading, setLoading] = useState(true);
 
-  // Auto login on mount if token exists
+  // Auto login on mount: check server session via HttpOnly cookie or token
   useEffect(() => {
     const initAuth = async () => {
-      const storedToken = localStorage.getItem('herearn_jwt_token');
-      if (storedToken) {
-        try {
-          const res = await api.getMe();
-          if (res.success && res.user) {
-            setUser(res.user);
-          } else {
-            logout();
+      try {
+        const res = await api.getMe();
+        if (res.success && res.user) {
+          setUser(res.user);
+          if (res.token) {
+            setToken(res.token);
+            localStorage.setItem('herearn_jwt_token', res.token);
           }
-        } catch (err) {
-          console.warn('Auto-login failed, clearing session:', err.message);
+          localStorage.setItem('herearn_user', JSON.stringify(res.user));
+        } else {
           logout();
+        }
+      } catch (err) {
+        // Fallback to stored token if offline or cookie not set
+        const storedToken = localStorage.getItem('herearn_jwt_token');
+        if (storedToken) {
+          try {
+            const res = await api.getMe();
+            if (res.success && res.user) {
+              setUser(res.user);
+            } else {
+              logout();
+            }
+          } catch {
+            // Keep local state if disconnected
+          }
         }
       }
       setLoading(false);
@@ -57,17 +71,22 @@ export const AuthProvider = ({ children }) => {
 
   const googleLogin = async (credential) => {
     const res = await api.googleLogin(credential);
-    if (res.success && res.token) {
+    if (res && res.success && res.token) {
       localStorage.setItem('herearn_jwt_token', res.token);
       localStorage.setItem('herearn_user', JSON.stringify(res.user));
       setToken(res.token);
       setUser(res.user);
       return res;
     }
-    throw new Error(res.message || 'Google sign-in failed');
+    throw new Error(res?.message || 'Google sign-in failed');
   };
 
-  const logout = () => {
+  const logout = async () => {
+    try {
+      await api.logout();
+    } catch {
+      // Ignore network errors on logout
+    }
     localStorage.removeItem('herearn_jwt_token');
     localStorage.removeItem('herearn_user');
     setToken(null);

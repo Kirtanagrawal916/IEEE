@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X, Sparkles, Lock, Mail, User, Shield } from 'lucide-react';
+import GoogleSignInButton from './GoogleSignInButton';
 
 export default function AuthModal({ isOpen, initialMode = 'login', onClose, onLoginSuccess, onContinueAsGuest }) {
   const [isSignUp, setIsSignUp] = useState(initialMode === 'signup');
@@ -140,6 +141,27 @@ export default function AuthModal({ isOpen, initialMode = 'login', onClose, onLo
             {isSignUp ? 'Create Account' : 'Login'}
           </button>
         </form>
+
+        {/* DIVIDER: OR */}
+        <div className="relative flex items-center justify-center my-4">
+          <div className="border-t border-slate-200 dark:border-slate-800 w-full"></div>
+          <span className="bg-white dark:bg-slate-900 px-3 text-[10px] font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-widest absolute">
+            OR
+          </span>
+        </div>
+
+        {/* GOOGLE SIGN IN */}
+        <GoogleSignInButton
+          text={isSignUp ? "Sign Up with Google" : "Continue with Google"}
+          onSuccess={(user) => {
+            onLoginSuccess({
+              ...user,
+              skillInterest,
+              isSignUp,
+            });
+            onClose();
+          }}
+        />
 
         {/* Toggle sign up / sign in & Guest Account Access */}
         <div className="text-center pt-4 border-t border-slate-200 dark:border-slate-800 mt-6 space-y-3">

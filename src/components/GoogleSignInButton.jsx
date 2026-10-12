@@ -5,7 +5,10 @@ import { Loader2, AlertCircle } from 'lucide-react';
 
 /**
  * GoogleSignInButton Component
- * Uses official Google Identity Services (GIS) Web SDK for OAuth 2.0 Sign-In
+ * Uses official Google Identity Services (GIS) Web SDK for OAuth 2.0 / OpenID Connect Sign-In
+ * - Renders Google's official iframe button for immediate browser account selection
+ * - Prompts Google's account selection One-Tap dialog (`select_account`)
+ * - Cryptographically verified on server via google-auth-library
  */
 export default function GoogleSignInButton({
   onSuccess,
@@ -18,16 +21,20 @@ export default function GoogleSignInButton({
   const googleLoginFunc = auth?.googleLogin;
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const [useCustomFallback, setUseCustomFallback] = useState(false);
   const googleBtnContainerRef = useRef(null);
+  const isProcessingRef = useRef(false);
 
   const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
 
-  // Handle Google Credential Callback
+  // Process Google credential / id_token returned from official Google sign-in
   const handleCredentialResponse = async (response) => {
     if (!response || !response.credential) {
       const msg = 'Google authentication response was empty. Please try again.';
       setErrorMessage(msg);
       if (onError) onError(msg);
+      setIsLoading(false);
+      isProcessingRef.current = false;
       return;
     }
 
@@ -41,36 +48,42 @@ export default function GoogleSignInButton({
       } else {
         res = await api.googleLogin(response.credential);
       }
+
       setIsLoading(false);
+      isProcessingRef.current = false;
+
       if (onSuccess) {
         onSuccess(res.user);
       }
     } catch (err) {
       setIsLoading(false);
-      const userMsg = err.message?.includes('network') || err.message?.includes('Failed to fetch')
-        ? 'Unable to connect to HerEarn backend server. Please check your connection.'
-        : err.message || 'Google sign-in failed. Please try again.';
+      isProcessingRef.current = false;
+      const userMsg =
+        err.message?.includes('network') || err.message?.includes('Failed to fetch')
+          ? 'Unable to connect to HerEarn backend server. Please verify the server is running.'
+          : err.message || 'Google sign-in failed. Please try again.';
       setErrorMessage(userMsg);
       if (onError) onError(userMsg);
     }
   };
 
+  // Initialize and Render Official Google Identity Services Button
   useEffect(() => {
-    // If no client ID provided yet, do not attempt to initialize GIS
     if (!googleClientId) {
+      setUseCustomFallback(true);
       return;
     }
 
     let intervalId = null;
 
-    const initGsi = () => {
+    const renderOfficialGoogleButton = () => {
       if (window.google?.accounts?.id) {
         try {
           window.google.accounts.id.initialize({
             client_id: googleClientId,
             callback: handleCredentialResponse,
             auto_select: false,
-            cancel_on_tap_outside: false,
+            cancel_on_tap_outside: true,
             itp_support: true,
           });
 
@@ -80,30 +93,31 @@ export default function GoogleSignInButton({
               theme: document.documentElement.classList.contains('dark') ? 'filled_black' : 'outline',
               size: 'large',
               type: 'standard',
-              shape: 'rectangular',
+              shape: 'pill',
               text: 'continue_with',
               logo_alignment: 'left',
               width: 320,
             });
+            setUseCustomFallback(false);
           }
 
-          // Automatically trigger Google One Tap account selector prompt (shows logged-in browser accounts)
+          // Trigger One Tap prompt if browser permits
           window.google.accounts.id.prompt();
+          return true;
         } catch (err) {
-          console.warn('GIS init notice:', err.message);
+          console.warn('[GIS] Render warning:', err.message);
+          setUseCustomFallback(true);
         }
       }
+      return false;
     };
 
-    if (window.google?.accounts?.id) {
-      initGsi();
-    } else {
+    if (!renderOfficialGoogleButton()) {
       intervalId = setInterval(() => {
-        if (window.google?.accounts?.id) {
+        if (renderOfficialGoogleButton()) {
           clearInterval(intervalId);
-          initGsi();
         }
-      }, 300);
+      }, 200);
     }
 
     return () => {
@@ -111,39 +125,27 @@ export default function GoogleSignInButton({
     };
   }, [googleClientId]);
 
-  // Click handler for custom fallback / direct trigger
+  // Click handler for fallback button
   const handleCustomButtonClick = () => {
+    if (isLoading || isProcessingRef.current || disabled) return;
+
     if (!googleClientId) {
-      setErrorMessage(
-        'Google Client ID (VITE_GOOGLE_CLIENT_ID) is not configured in .env. Please set your OAuth Client ID from Google Cloud Console.'
-      );
-      if (onError) {
-        onError('Google Client ID is missing in environment variables.');
-      }
+      setErrorMessage('Google Client ID is not configured in .env.');
       return;
     }
 
     if (window.google?.accounts?.id) {
-      setErrorMessage('');
       window.google.accounts.id.prompt((notification) => {
         if (notification.isNotDisplayed()) {
-          console.info('GIS prompt not displayed:', notification.getNotDisplayedReason());
-        }
-        if (notification.isSkippedMoment()) {
-          console.info('GIS prompt skipped:', notification.getSkippedReason());
-        }
-        if (notification.isDismissedMoment()) {
-          console.info('GIS prompt dismissed:', notification.getDismissedReason());
+          console.info('[GIS] Prompt not displayed:', notification.getNotDisplayedReason());
         }
       });
-    } else {
-      setErrorMessage('Google Sign-In service is currently loading. Please check your internet connection and try again.');
     }
   };
 
   return (
     <div className={`w-full flex flex-col items-center space-y-2 ${className}`}>
-      {/* If Google GIS rendered button container is active and initialized */}
+      {/* Container for Official Google Rendered Button */}
       {googleClientId && (
         <div
           ref={googleBtnContainerRef}
@@ -151,8 +153,8 @@ export default function GoogleSignInButton({
         />
       )}
 
-      {/* Primary / Fallback Google Button */}
-      {(!googleClientId || isLoading) && (
+      {/* Fallback button shown if client ID missing or loading */}
+      {(useCustomFallback || isLoading) && (
         <button
           type="button"
           onClick={handleCustomButtonClick}
@@ -162,11 +164,10 @@ export default function GoogleSignInButton({
           {isLoading ? (
             <>
               <Loader2 className="w-4 h-4 animate-spin text-purple-600 dark:text-purple-400" />
-              <span>Verifying with Google...</span>
+              <span>Connecting to Google...</span>
             </>
           ) : (
             <>
-              {/* Official Google Brand SVG Icon */}
               <svg className="w-5 h-5 flex-shrink-0 group-hover:scale-105 transition-transform" viewBox="0 0 24 24">
                 <path
                   fill="#4285F4"
@@ -191,9 +192,12 @@ export default function GoogleSignInButton({
         </button>
       )}
 
-      {/* Inline Error Notice if any */}
+      {/* Inline Error Notice */}
       {errorMessage && (
-        <div className="w-full p-2.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-200 text-xs font-semibold flex items-start gap-2 text-left">
+        <div
+          role="alert"
+          className="w-full p-2.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-200 text-xs font-semibold flex items-start gap-2 text-left"
+        >
           <AlertCircle className="w-4 h-4 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
           <span className="leading-snug">{errorMessage}</span>
         </div>

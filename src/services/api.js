@@ -17,6 +17,7 @@ const getAuthHeaders = () => {
 const request = async (endpoint, options = {}) => {
   const config = {
     ...options,
+    credentials: 'include', // Ensure HttpOnly cookies are sent and received
     headers: {
       ...getAuthHeaders(),
       ...options.headers,
@@ -52,6 +53,7 @@ export const api = {
   // Auth APIs
   register: (userData) => request('/api/auth/register', { method: 'POST', body: JSON.stringify(userData) }),
   login: (credentials) => request('/api/auth/login', { method: 'POST', body: JSON.stringify(credentials) }),
+  logout: () => request('/api/auth/logout', { method: 'POST' }),
   googleLogin: (credential) => request('/api/auth/google', { method: 'POST', body: JSON.stringify({ credential }) }),
   sendOtp: (email) => request('/api/auth/send-otp', { method: 'POST', body: JSON.stringify({ email }) }),
   verifyOtp: (data) => request('/api/auth/verify-otp', { method: 'POST', body: JSON.stringify(data) }),

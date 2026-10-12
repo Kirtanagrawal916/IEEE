@@ -1,7 +1,12 @@
 import express from 'express';
 import { prisma } from '../config/db.js';
+import { authMiddleware, requireRole } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
+
+// Enforce authentication & ADMIN role check across all admin endpoints
+router.use(authMiddleware);
+router.use(requireRole('ADMIN'));
 
 // Helper to push audit log
 const logAudit = async (action, detail, type = 'info') => {
