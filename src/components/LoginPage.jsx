@@ -53,10 +53,15 @@ export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNaviga
     ];
 
     try {
-      try {
-        await api.verifyAdminKey(cleanKey);
-      } catch (err) {
-        // Fallback to local check
+      const res = await api.verifyAdminKey(cleanKey).catch(() => null);
+
+      if (res?.success) {
+        sessionStorage.setItem('herearn_admin_authenticated', 'true');
+        sessionStorage.setItem('herearn_admin_token', res.token);
+        sessionStorage.setItem('herearn_admin_verified_key', cleanKey);
+        setIsAdminLoading(false);
+        navigate('/admin');
+        return;
       }
 
       if (validKeys.includes(cleanKey)) {

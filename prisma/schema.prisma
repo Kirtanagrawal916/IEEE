@@ -21,6 +21,8 @@ model User {
   bio          String?
   skills       String             @default("[]") // JSON string of skill array
   totalEarned  Float              @default(0.0)
+  status       String             @default("Active") // Active, Suspended
+  verifiedKyc  Boolean            @default(false)
   createdAt    DateTime           @default(now())
   updatedAt    DateTime           @updatedAt
 
@@ -131,6 +133,7 @@ model Opportunity {
   deliverables    String        @default("[]") // JSON string of deliverables
   verifiedClient  Boolean       @default(true)
   isOpen          Boolean       @default(true)
+  status          String        @default("verified") // verified, pending, flagged
   applicantsCount Int           @default(0)
   deadline        DateTime
   createdAt       DateTime      @default(now())
@@ -168,4 +171,36 @@ model ApplicationProject {
   @@unique([applicationId, projectId])
   @@index([applicationId])
   @@index([projectId])
+}
+
+model EscrowTransaction {
+  id             String   @id @default(uuid())
+  code           String   @unique
+  gigTitle       String
+  clientName     String
+  freelancerName String
+  amount         Float
+  status         String   @default("HELD_IN_ESCROW") // HELD_IN_ESCROW, DISBURSED, DISPUTED_FROZEN
+  freelancerId   String?
+  opportunityId  String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([status])
+}
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  action    String
+  detail    String
+  type      String   @default("info") // security, escrow, approval, warning, delete, user
+  timestamp DateTime @default(now())
+
+  @@index([timestamp])
+}
+
+model PlatformSetting {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt
 }
