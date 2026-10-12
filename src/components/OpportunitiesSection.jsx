@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
 import { 
   Briefcase, 
@@ -41,6 +42,7 @@ export default function OpportunitiesSection({
   onViewDetails,
   onUpdateUserSkills 
 }) {
+  const navigate = useNavigate();
   const [opportunities, setOpportunities] = useState(propOpportunities || []);
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [selectedType, setSelectedType] = useState('All');
@@ -74,21 +76,6 @@ export default function OpportunitiesSection({
 
     fetchFiltered();
   }, [selectedCategory, searchQuery, activeSkillFilter]);
-
-  // Modal states
-  const [detailModalGig, setDetailModalGig] = useState(null);
-  const [isPostGigOpen, setIsPostGigOpen] = useState(false);
-  const [postGigSuccess, setPostGigSuccess] = useState(false);
-  const [newGigForm, setNewGigForm] = useState({
-    title: '',
-    company: '',
-    category: 'Startup cohort',
-    type: 'Micro-Gig',
-    stipend: '₹5,000 / Free Cohort',
-    description: '',
-    deliverables: '',
-    skillsRequired: ''
-  });
 
   const categories = ['All', 'Startup cohort', 'Scholarship', 'Learning Program', 'Digital Marketing', 'Design'];
 
@@ -130,49 +117,6 @@ export default function OpportunitiesSection({
     }
     return 0;
   });
-
-  const handlePostGigSubmit = (e) => {
-    e.preventDefault();
-    const formattedSkills = newGigForm.skillsRequired
-      ? newGigForm.skillsRequired.split(',').map(s => s.trim())
-      : ['Canva Design', 'Digital Marketing'];
-
-    const newGig = {
-      id: `client-gig-${Date.now()}`,
-      title: newGigForm.title,
-      company: newGigForm.company,
-      category: newGigForm.category,
-      type: newGigForm.type,
-      stipend: newGigForm.stipend,
-      duration: 'Flexible / 2 Weeks',
-      location: 'PAN India',
-      postedAgo: 'Just Now',
-      deadline: '7 Days Left',
-      description: newGigForm.description,
-      deliverables: newGigForm.deliverables ? newGigForm.deliverables.split('\n') : ['Complete client project brief'],
-      skillsRequired: formattedSkills,
-      applicantsCount: 0,
-      verifiedClient: true,
-      postedByClient: true
-    };
-
-    setOpportunities([newGig, ...opportunities]);
-    setPostGigSuccess(true);
-    setTimeout(() => {
-      setPostGigSuccess(false);
-      setIsPostGigOpen(false);
-      setNewGigForm({
-        title: '',
-        company: '',
-        category: 'Startup cohort',
-        type: 'Micro-Gig',
-        stipend: '₹5,000 / Free Cohort',
-        description: '',
-        deliverables: '',
-        skillsRequired: ''
-      });
-    }, 1800);
-  };
 
   const scrollToGigs = () => {
     const elem = document.getElementById('gigs-list-section');
@@ -243,7 +187,7 @@ export default function OpportunitiesSection({
 
             <button
               type="button"
-              onClick={() => setIsPostGigOpen(true)}
+              onClick={() => navigate('/post-gig')}
               className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-extrabold px-5 py-2.5 rounded-full text-xs shadow-md transition-all flex items-center gap-2 cursor-pointer hover:scale-105"
             >
               <Users className="w-4 h-4" />
@@ -349,7 +293,7 @@ export default function OpportunitiesSection({
 
                     {/* Title */}
                     <h3 
-                      onClick={() => setDetailModalGig(gig)}
+                      onClick={() => onViewDetails ? onViewDetails(gig) : navigate(`/opportunities/${gig.id}`)}
                       className="text-lg font-extrabold text-purple-950 dark:text-purple-100 hover:text-purple-600 transition-colors leading-snug mb-4 cursor-pointer"
                     >
                       {gig.title}
@@ -397,7 +341,7 @@ export default function OpportunitiesSection({
 
                     <button
                       type="button"
-                      onClick={() => setDetailModalGig(gig)}
+                      onClick={() => onViewDetails ? onViewDetails(gig) : navigate(`/opportunities/${gig.id}`)}
                       className="w-full py-2.5 px-4 rounded-full bg-white dark:bg-slate-800 border border-purple-200 dark:border-purple-800 text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-950/40 font-extrabold text-xs text-center flex items-center justify-center gap-1.5 transition-all cursor-pointer"
                     >
                       <span>View Details</span>
@@ -412,179 +356,6 @@ export default function OpportunitiesSection({
         )}
 
       </div>
-
-      {/* ========================================================
-          OPPORTUNITY DETAIL MODAL
-         ======================================================== */}
-      {detailModalGig && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-fade-in">
-          <div className="bg-white dark:bg-slate-900 border border-purple-500/30 rounded-3xl max-w-2xl w-full p-6 sm:p-8 text-slate-900 dark:text-white shadow-2xl relative space-y-6 max-h-[90vh] overflow-y-auto">
-            
-            <button 
-              onClick={() => setDetailModalGig(null)}
-              className="absolute top-5 right-5 p-2 text-slate-400 hover:text-slate-700 dark:hover:text-white rounded-full bg-slate-100 dark:bg-slate-800"
-            >
-              <X className="w-5 h-5" />
-            </button>
-
-            <div className="space-y-3">
-              <span className="text-xs font-bold px-3 py-1 rounded-full bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300">
-                {detailModalGig.category}
-              </span>
-              <h2 className="text-2xl font-black">{detailModalGig.title}</h2>
-              <p className="text-xs font-bold text-slate-500 dark:text-slate-400 flex items-center gap-2">
-                <Building className="w-4 h-4 text-purple-500" /> {detailModalGig.company} • {detailModalGig.location || 'Remote'}
-              </p>
-            </div>
-
-            <div className="bg-slate-50 dark:bg-slate-800/60 p-4 rounded-2xl space-y-2 text-xs font-semibold">
-              <p><strong className="text-purple-600 dark:text-purple-400">Stipend:</strong> {detailModalGig.stipend}</p>
-              <p><strong className="text-purple-600 dark:text-purple-400">Duration:</strong> {detailModalGig.duration || 'Flexible'}</p>
-              <p><strong className="text-purple-600 dark:text-purple-400">Deadline:</strong> {detailModalGig.deadline || 'Open'}</p>
-            </div>
-
-            <div className="space-y-2 text-xs">
-              <h4 className="font-bold text-sm text-purple-600 dark:text-purple-400">Role Description</h4>
-              <p className="text-slate-600 dark:text-slate-300 leading-relaxed">{detailModalGig.description}</p>
-            </div>
-
-            <div className="flex justify-end gap-3 pt-4 border-t border-slate-200 dark:border-slate-800">
-              <button 
-                type="button" 
-                onClick={() => setDetailModalGig(null)}
-                className="px-5 py-2.5 rounded-full bg-slate-100 dark:bg-slate-800 text-xs font-bold"
-              >
-                Close
-              </button>
-              <button 
-                type="button" 
-                onClick={() => {
-                  setDetailModalGig(null);
-                  onApplyGig(detailModalGig);
-                }}
-                disabled={detailModalGig.applied}
-                className="px-6 py-2.5 rounded-full bg-purple-600 text-white text-xs font-extrabold hover:bg-purple-700"
-              >
-                {detailModalGig.applied ? 'Already Applied' : 'Register Interest →'}
-              </button>
-            </div>
-
-          </div>
-        </div>
-      )}
-
-      {/* ========================================================
-          POST GIG CLIENT MODAL
-         ======================================================== */}
-      {isPostGigOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-fade-in">
-          <div className="bg-white dark:bg-slate-900 border border-purple-500/30 rounded-3xl max-w-lg w-full p-6 sm:p-8 text-slate-900 dark:text-white shadow-2xl relative space-y-5">
-            
-            <button 
-              onClick={() => setIsPostGigOpen(false)}
-              className="absolute top-5 right-5 p-2 text-slate-400 hover:text-slate-700 dark:hover:text-white rounded-full bg-slate-100 dark:bg-slate-800"
-            >
-              <X className="w-5 h-5" />
-            </button>
-
-            <div className="space-y-1">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-500/10 text-purple-600 text-xs font-extrabold uppercase">
-                <Building className="w-3.5 h-3.5" /> Client Partner Hub
-              </span>
-              <h2 className="text-xl font-bold">Post a Paid Opportunity</h2>
-              <p className="text-xs text-slate-500 dark:text-slate-400">
-                Connect with verified, trained women creators for digital marketing, design, and work opportunities.
-              </p>
-            </div>
-
-            {postGigSuccess ? (
-              <div className="p-6 bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-300 rounded-2xl text-center space-y-2">
-                <CheckCircle2 className="w-10 h-10 text-emerald-500 mx-auto" />
-                <h3 className="text-base font-bold text-emerald-900 dark:text-emerald-200">Opportunity Submitted!</h3>
-                <p className="text-xs text-emerald-700 dark:text-emerald-400">
-                  Your project has been submitted to the live board.
-                </p>
-              </div>
-            ) : (
-              <form onSubmit={handlePostGigSubmit} className="space-y-4 text-xs font-bold">
-                <div>
-                  <label className="block mb-1">Company / Brand Name</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="e.g. Aspire / Desi Crafts"
-                    value={newGigForm.company}
-                    onChange={(e) => setNewGigForm({ ...newGigForm, company: e.target.value })}
-                    className="w-full bg-slate-50 dark:bg-slate-800 p-3 rounded-xl border border-slate-300 dark:border-slate-700"
-                  />
-                </div>
-
-                <div>
-                  <label className="block mb-1">Opportunity Title</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="e.g. McKinsey Forward Program or Accelerator"
-                    value={newGigForm.title}
-                    onChange={(e) => setNewGigForm({ ...newGigForm, title: e.target.value })}
-                    className="w-full bg-slate-50 dark:bg-slate-800 p-3 rounded-xl border border-slate-300 dark:border-slate-700"
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block mb-1">Category</label>
-                    <select
-                      value={newGigForm.category}
-                      onChange={(e) => setNewGigForm({ ...newGigForm, category: e.target.value })}
-                      className="w-full bg-slate-50 dark:bg-slate-800 p-3 rounded-xl border border-slate-300 dark:border-slate-700"
-                    >
-                      <option value="Startup cohort">Startup cohort</option>
-                      <option value="Scholarship">Scholarship</option>
-                      <option value="Learning Program">Learning Program</option>
-                      <option value="Digital Marketing">Digital Marketing</option>
-                      <option value="Design">Design</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block mb-1">Stipend / Budget</label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="e.g. ₹5,000 / Free Cohort"
-                      value={newGigForm.stipend}
-                      onChange={(e) => setNewGigForm({ ...newGigForm, stipend: e.target.value })}
-                      className="w-full bg-slate-50 dark:bg-slate-800 p-3 rounded-xl border border-slate-300 dark:border-slate-700"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block mb-1">Brief Description</label>
-                  <textarea
-                    required
-                    rows={3}
-                    placeholder="Describe program objectives and criteria..."
-                    value={newGigForm.description}
-                    onChange={(e) => setNewGigForm({ ...newGigForm, description: e.target.value })}
-                    className="w-full bg-slate-50 dark:bg-slate-800 p-3 rounded-xl border border-slate-300 dark:border-slate-700"
-                  ></textarea>
-                </div>
-
-                <button
-                  type="submit"
-                  className="w-full py-3.5 rounded-full bg-purple-600 hover:bg-purple-700 text-white font-extrabold shadow-md flex items-center justify-center gap-2 cursor-pointer"
-                >
-                  <PlusCircle className="w-4 h-4" />
-                  Publish Opportunity
-                </button>
-              </form>
-            )}
-
-          </div>
-        </div>
-      )}
 
     </div>
   );

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { 
   Award, 
   Plus, 
@@ -18,6 +19,7 @@ import {
 import { api } from '../services/api';
 
 export default function PortfolioSection({ portfolios, onOpenSubmitModal, user, onUpdatePortfolios, showToast }) {
+  const navigate = useNavigate();
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [likedIds, setLikedIds] = useState([]);
@@ -25,7 +27,6 @@ export default function PortfolioSection({ portfolios, onOpenSubmitModal, user, 
   // Modals for CRUD operations
   const [editingProject, setEditingProject] = useState(null);
   const [deletingProject, setDeletingProject] = useState(null);
-  const [detailProject, setDetailProject] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
 
   const categories = ['All', 'Digital Marketing', 'Design', 'E-Commerce'];
@@ -130,7 +131,7 @@ export default function PortfolioSection({ portfolios, onOpenSubmitModal, user, 
             <div className="flex flex-wrap items-center gap-4 pt-2">
               <button
                 type="button"
-                onClick={onOpenSubmitModal}
+                onClick={() => navigate('/portfolio/submit')}
                 className="py-3.5 px-7 rounded-2xl bg-gradient-to-r from-amber-400 via-pink-500 to-purple-600 hover:from-amber-300 hover:to-purple-500 text-white font-extrabold text-xs sm:text-sm shadow-xl flex items-center gap-2 cursor-pointer transition-all hover:scale-105"
               >
                 <Plus className="w-4 h-4" />
@@ -258,7 +259,7 @@ export default function PortfolioSection({ portfolios, onOpenSubmitModal, user, 
                   </div>
 
                   <h3 
-                    onClick={() => setDetailProject(portfolio)}
+                    onClick={() => navigate(`/portfolio/${portfolio.id}`)}
                     className="text-base font-bold text-slate-900 dark:text-white line-clamp-2 leading-snug cursor-pointer hover:text-purple-600"
                   >
                     {portfolio.title}
@@ -280,7 +281,7 @@ export default function PortfolioSection({ portfolios, onOpenSubmitModal, user, 
 
               <div className="px-6 py-4 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between text-xs text-slate-600 dark:text-slate-300 font-semibold">
                 <button 
-                  type="button"
+                  type="button" 
                   onClick={() => toggleLike(portfolio.id)}
                   className={`flex items-center gap-1.5 font-bold transition-colors cursor-pointer ${
                     isLiked ? 'text-rose-600' : 'text-slate-600 dark:text-slate-300 hover:text-rose-600'
@@ -293,7 +294,7 @@ export default function PortfolioSection({ portfolios, onOpenSubmitModal, user, 
                 <div className="flex items-center gap-3">
                   <button 
                     type="button" 
-                    onClick={() => setDetailProject(portfolio)}
+                    onClick={() => navigate(`/portfolio/${portfolio.id}`)}
                     className="hover:text-purple-600 flex items-center gap-1 font-semibold cursor-pointer"
                   >
                     <Eye className="w-3.5 h-3.5" /> View
@@ -411,47 +412,6 @@ export default function PortfolioSection({ portfolios, onOpenSubmitModal, user, 
               >
                 {isSaving && <Loader2 className="w-4 h-4 animate-spin" />}
                 <span>Delete</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* DETAIL PROJECT VIEW MODAL */}
-      {detailProject && (
-        <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-purple-500/30 rounded-3xl p-6 max-w-xl w-full shadow-2xl space-y-4 text-slate-900 dark:text-white">
-            <div className="flex items-center justify-between border-b pb-3">
-              <h3 className="font-bold text-lg">{detailProject.title}</h3>
-              <button type="button" onClick={() => setDetailProject(null)}>
-                <X className="w-5 h-5 text-slate-400" />
-              </button>
-            </div>
-
-            <div className="space-y-4 text-xs">
-              <img 
-                src={detailProject.imageUrl || detailProject.image || '/portfolio_creator_ai.jpg'} 
-                alt={detailProject.title}
-                className="w-full h-56 object-cover rounded-2xl border" 
-              />
-              <div className="space-y-2">
-                <span className="px-3 py-1 rounded-full bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300 font-bold">
-                  {detailProject.category}
-                </span>
-                <p className="text-slate-600 dark:text-slate-300 leading-relaxed font-medium pt-2">
-                  {detailProject.description}
-                </p>
-                <p className="text-slate-400">Created by: <strong className="text-slate-700 dark:text-slate-200">{detailProject.authorName || 'Learner'}</strong></p>
-              </div>
-            </div>
-
-            <div className="flex justify-end border-t pt-3">
-              <button 
-                type="button"
-                onClick={() => setDetailProject(null)}
-                className="px-4 py-2 rounded-xl bg-purple-600 text-white font-bold"
-              >
-                Close
               </button>
             </div>
           </div>

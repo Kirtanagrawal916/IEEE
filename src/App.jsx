@@ -19,20 +19,16 @@ import LessonPlayerPage from './components/LessonPlayerPage';
 import ApplicationsPage from './components/ApplicationsPage';
 import PublicProfilePage from './components/PublicProfilePage';
 import ProtectedRoute from './components/ProtectedRoute';
+import ChallengeDetailPage from './components/ChallengeDetailPage';
+import SubmitProjectPage from './components/SubmitProjectPage';
+import PortfolioDetailPage from './components/PortfolioDetailPage';
+import PostGigPage from './components/PostGigPage';
 
-import AuthModal from './components/AuthModal';
-import SubmitProjectModal from './components/SubmitProjectModal';
-import ApplyGigModal from './components/ApplyGigModal';
 import LogoutModal from './components/LogoutModal';
 import ToastNotification from './components/ToastNotification';
 import ChatBot from './components/ChatBot';
-
-import CertificateModal from './components/CertificateModal';
-import ResumeBuilderModal from './components/ResumeBuilderModal';
-import EmployerPortal from './components/EmployerPortal';
 import MentorshipSection from './components/MentorshipSection';
 import AdminPanel from './components/AdminPanel';
-import PaymentEscrowModal from './components/PaymentEscrowModal';
 
 import { 
   initialUser, 
@@ -59,22 +55,9 @@ function AppContent() {
     return localStorage.getItem('herearn_theme') || 'light';
   });
 
-  // Modals & Active state
-  const [isAuthOpen, setIsAuthOpen] = useState(false);
-  const [authMode, setAuthMode] = useState('login');
-  const [isSubmitOpen, setIsSubmitOpen] = useState(false);
-  const [isApplyOpen, setIsApplyOpen] = useState(false);
+  // Modals & Navigation state
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
   const [selectedOpportunity, setSelectedOpportunity] = useState(null);
-
-  // New Feature Modules Modals State
-  const [isCertOpen, setIsCertOpen] = useState(false);
-  const [certTrackTitle, setCertTrackTitle] = useState('Digital Marketing & Growth Strategy');
-  const [isResumeOpen, setIsResumeOpen] = useState(false);
-  const [isEmployerOpen, setIsEmployerOpen] = useState(false);
-  const [isPaymentEscrowOpen, setIsPaymentEscrowOpen] = useState(false);
-  const [escrowAmount, setEscrowAmount] = useState(6000);
-  const [escrowGigTitle, setEscrowGigTitle] = useState('Canva Social Graphic Deliverable');
 
   // Toast
   const [toast, setToast] = useState(null);
@@ -522,8 +505,100 @@ function AppContent() {
               <PortfolioSection 
                 portfolios={portfolios}
                 user={user}
-                onOpenSubmitModal={() => setIsSubmitOpen(true)}
+                onOpenSubmitModal={() => navigate('/portfolio/submit')}
                 showToast={showToast}
+              />
+            } 
+          />
+
+          {/* Dedicated Full Page Challenge Routes (No Blur/Overlay) */}
+          <Route 
+            path="/challenges/:challengeId" 
+            element={
+              <ChallengeDetailPage 
+                user={user} 
+                onUpdateUserSkillPoints={(points, badge) => {
+                  if (user) {
+                    saveUserData({
+                      ...user,
+                      skillPoints: (user.skillPoints || 0) + points,
+                      badges: [...(user.badges || []), badge]
+                    });
+                  }
+                }}
+                showToast={showToast} 
+              />
+            } 
+          />
+          <Route 
+            path="/challenge/:challengeId" 
+            element={
+              <ChallengeDetailPage 
+                user={user} 
+                onUpdateUserSkillPoints={(points, badge) => {
+                  if (user) {
+                    saveUserData({
+                      ...user,
+                      skillPoints: (user.skillPoints || 0) + points,
+                      badges: [...(user.badges || []), badge]
+                    });
+                  }
+                }}
+                showToast={showToast} 
+              />
+            } 
+          />
+
+          {/* Dedicated Full Page Submit Project Routes */}
+          <Route 
+            path="/portfolio/submit" 
+            element={
+              <SubmitProjectPage 
+                user={user} 
+                onSubmitProject={handleSubmitProject} 
+                showToast={showToast} 
+              />
+            } 
+          />
+          <Route 
+            path="/submit-project" 
+            element={
+              <SubmitProjectPage 
+                user={user} 
+                onSubmitProject={handleSubmitProject} 
+                showToast={showToast} 
+              />
+            } 
+          />
+
+          {/* Dedicated Full Page Portfolio Detail View Route */}
+          <Route 
+            path="/portfolio/:id" 
+            element={
+              <PortfolioDetailPage 
+                portfolios={portfolios} 
+                user={user} 
+                showToast={showToast} 
+              />
+            } 
+          />
+
+          {/* Dedicated Full Page Post Gig Routes */}
+          <Route 
+            path="/post-gig" 
+            element={
+              <PostGigPage 
+                onAddOpportunity={(newOpp) => setOpportunities([newOpp, ...opportunities])} 
+                showToast={showToast} 
+              />
+            } 
+          />
+          <Route 
+            path="/opportunities/post" 
+            element={
+              <PostGigPage 
+                onAddOpportunity={(newOpp) => setOpportunities([newOpp, ...opportunities])} 
+                showToast={showToast} 
               />
             } 
           />
@@ -593,7 +668,7 @@ function AppContent() {
               <ProtectedRoute user={user}>
                 <Dashboard 
                   user={user}
-                  onOpenSubmitModal={() => setIsSubmitOpen(true)}
+                  onOpenSubmitModal={() => navigate('/portfolio/submit')}
                   onOpenLogoutModal={() => setIsLogoutModalOpen(true)}
                 />
               </ProtectedRoute>
@@ -609,7 +684,7 @@ function AppContent() {
                   userPortfolios={userPortfolios}
                   userAppliedGigs={userAppliedGigs}
                   onOpenAuth={handleOpenAuth}
-                  onOpenSubmitModal={() => setIsSubmitOpen(true)}
+                  onOpenSubmitModal={() => navigate('/portfolio/submit')}
                   onUpdateProfile={handleUpdateProfile}
                   onUpdateUserSkills={handleUpdateUserSkills}
                   onNavigate={(page) => navigate(`/${page}`)}
@@ -684,70 +759,18 @@ function AppContent() {
               <Link to="/learn" className="hover:text-indigo-400 cursor-pointer">Courses</Link>
               <Link to="/portfolio" className="hover:text-indigo-400 cursor-pointer">Show Skill</Link>
               <Link to="/opportunities" className="hover:text-indigo-400 cursor-pointer">Opportunity</Link>
-              <button onClick={() => setIsEmployerOpen(true)} className="hover:text-pink-400 cursor-pointer font-bold text-pink-400">Post Gig</button>
+              <Link to="/post-gig" className="hover:text-pink-400 cursor-pointer font-bold text-pink-400">Post Gig</Link>
               <Link to="/admin" className="hover:text-purple-400 cursor-pointer font-bold text-purple-400">Admin</Link>
             </div>
           </div>
         </footer>
       )}
 
-      {/* Modals & Toasts */}
-      <AuthModal 
-        isOpen={isAuthOpen}
-        initialMode={authMode} 
-        onClose={() => setIsAuthOpen(false)} 
-        onLoginSuccess={handleLoginSuccess}
-        onContinueAsGuest={handleContinueAsGuest}
-      />
-
-      <SubmitProjectModal 
-        isOpen={isSubmitOpen}
-        onClose={() => setIsSubmitOpen(false)}
-        onSubmitProject={handleSubmitProject}
-      />
-
-      <ApplyGigModal 
-        isOpen={isApplyOpen}
-        onClose={() => setIsApplyOpen(false)}
-        gig={selectedOpportunity}
-        userPortfolios={userPortfolios}
-        onConfirmApply={handleConfirmApply}
-      />
-
+      {/* Confirmation Dialogs & Notifications */}
       <LogoutModal
         isOpen={isLogoutModalOpen}
         onConfirm={handleLogout}
         onCancel={() => setIsLogoutModalOpen(false)}
-      />
-
-      {/* New Feature Modals */}
-      <CertificateModal
-        isOpen={isCertOpen}
-        onClose={() => setIsCertOpen(false)}
-        user={user}
-        trackTitle={certTrackTitle}
-      />
-
-      <ResumeBuilderModal
-        isOpen={isResumeOpen}
-        onClose={() => setIsResumeOpen(false)}
-        user={user}
-        portfolios={userPortfolios}
-      />
-
-      <EmployerPortal
-        isOpen={isEmployerOpen}
-        onClose={() => setIsEmployerOpen(false)}
-        onAddOpportunity={(newOpp) => setOpportunities([newOpp, ...opportunities])}
-        showToast={showToast}
-      />
-
-      <PaymentEscrowModal
-        isOpen={isPaymentEscrowOpen}
-        onClose={() => setIsPaymentEscrowOpen(false)}
-        amount={escrowAmount}
-        gigTitle={escrowGigTitle}
-        showToast={showToast}
       />
 
       <ToastNotification 
