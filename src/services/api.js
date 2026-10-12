@@ -55,6 +55,7 @@ export const api = {
   googleLogin: (credential) => request('/api/auth/google', { method: 'POST', body: JSON.stringify({ credential }) }),
   sendOtp: (email) => request('/api/auth/send-otp', { method: 'POST', body: JSON.stringify({ email }) }),
   verifyOtp: (data) => request('/api/auth/verify-otp', { method: 'POST', body: JSON.stringify(data) }),
+  verifyAdminKey: (key) => request('/api/auth/verify-admin-key', { method: 'POST', body: JSON.stringify({ key }) }),
   getMe: () => request('/api/auth/me'),
 
   // User Profile APIs

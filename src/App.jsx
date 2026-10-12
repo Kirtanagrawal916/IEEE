@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Link, useNavigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Link, useNavigate, useLocation } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import LandingSection from './components/LandingSection';
 import LearnSection from './components/LearnSection';
@@ -44,6 +44,8 @@ import { api } from './services/api';
 
 function AppContent() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const isAdminRoute = location.pathname.startsWith('/admin');
 
   // User state
   const [user, setUser] = useState(() => {
@@ -384,16 +386,18 @@ function AppContent() {
       theme === 'dark' ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-900'
     }`}>
       
-      {/* Sticky Navigation Header */}
-      <Navbar 
-        user={user}
-        onLogout={() => setIsLogoutModalOpen(true)}
-        theme={theme}
-        onToggleTheme={handleToggleTheme}
-      />
+      {/* Sticky Navigation Header (Hidden on Admin portal for dedicated admin console) */}
+      {!isAdminRoute && (
+        <Navbar 
+          user={user}
+          onLogout={() => setIsLogoutModalOpen(true)}
+          theme={theme}
+          onToggleTheme={handleToggleTheme}
+        />
+      )}
 
       {/* Main View Area with React Router Routes */}
-      <main className="flex-1 pb-16">
+      <main className={`flex-1 ${isAdminRoute ? 'pb-0' : 'pb-16'}`}>
         <Routes>
           <Route 
             path="/" 
@@ -615,34 +619,42 @@ function AppContent() {
           <Route 
             path="/admin" 
             element={
-              <AdminPanel opportunities={opportunities} portfolios={portfolios} showToast={showToast} />
+              <AdminPanel 
+                opportunities={opportunities} 
+                portfolios={portfolios} 
+                setOpportunities={setOpportunities}
+                setPortfolios={setPortfolios}
+                showToast={showToast} 
+              />
             } 
           />
         </Routes>
       </main>
 
-      {/* Footer */}
-      <footer className={`border-t py-10 text-xs transition-colors ${
-        theme === 'dark' ? 'bg-slate-900 border-slate-800 text-slate-400' : 'bg-white border-slate-200 text-slate-600'
-      }`}>
-        <div className="w-full px-4 sm:px-8 lg:px-12 flex flex-col md:flex-row items-center justify-between gap-4 text-center md:text-left">
-          <div>
-            <p className="font-bold text-sm">HerEarn • Skill-to-Income Platform for Women</p>
-            <p className="opacity-75 mt-1">Empowering women across India to learn skills, build portfolios, and earn income.</p>
+      {/* Footer (Hidden on Admin portal) */}
+      {!isAdminRoute && (
+        <footer className={`border-t py-10 text-xs transition-colors ${
+          theme === 'dark' ? 'bg-slate-900 border-slate-800 text-slate-400' : 'bg-white border-slate-200 text-slate-600'
+        }`}>
+          <div className="w-full px-4 sm:px-8 lg:px-12 flex flex-col md:flex-row items-center justify-between gap-4 text-center md:text-left">
+            <div>
+              <p className="font-bold text-sm">HerEarn • Skill-to-Income Platform for Women</p>
+              <p className="opacity-75 mt-1">Empowering women across India to learn skills, build portfolios, and earn income.</p>
+            </div>
+            <div className="flex flex-wrap items-center justify-center md:justify-end gap-5 font-semibold">
+              <Link to="/dashboard" className="hover:text-indigo-400 cursor-pointer">Dashboard</Link>
+              <Link to="/" className="hover:text-indigo-400 cursor-pointer">Overview</Link>
+              <Link to="/mentorship" className="hover:text-indigo-400 cursor-pointer text-indigo-400 font-bold">Mentorship</Link>
+              <Link to="/about" className="hover:text-indigo-400 cursor-pointer text-purple-400 font-bold">About Us</Link>
+              <Link to="/learn" className="hover:text-indigo-400 cursor-pointer">Courses</Link>
+              <Link to="/portfolio" className="hover:text-indigo-400 cursor-pointer">Show Skill</Link>
+              <Link to="/opportunities" className="hover:text-indigo-400 cursor-pointer">Opportunity</Link>
+              <button onClick={() => setIsEmployerOpen(true)} className="hover:text-pink-400 cursor-pointer font-bold text-pink-400">Post Gig</button>
+              <Link to="/admin" className="hover:text-purple-400 cursor-pointer font-bold text-purple-400">Admin</Link>
+            </div>
           </div>
-          <div className="flex flex-wrap items-center justify-center md:justify-end gap-5 font-semibold">
-            <Link to="/dashboard" className="hover:text-indigo-400 cursor-pointer">Dashboard</Link>
-            <Link to="/" className="hover:text-indigo-400 cursor-pointer">Overview</Link>
-            <Link to="/mentorship" className="hover:text-indigo-400 cursor-pointer text-indigo-400 font-bold">Mentorship</Link>
-            <Link to="/about" className="hover:text-indigo-400 cursor-pointer text-purple-400 font-bold">About Us</Link>
-            <Link to="/learn" className="hover:text-indigo-400 cursor-pointer">Courses</Link>
-            <Link to="/portfolio" className="hover:text-indigo-400 cursor-pointer">Show Skill</Link>
-            <Link to="/opportunities" className="hover:text-indigo-400 cursor-pointer">Opportunity</Link>
-            <button onClick={() => setIsEmployerOpen(true)} className="hover:text-pink-400 cursor-pointer font-bold text-pink-400">Post Gig</button>
-            <Link to="/admin" className="hover:text-purple-400 cursor-pointer font-bold text-purple-400">Admin</Link>
-          </div>
-        </div>
-      </footer>
+        </footer>
+      )}
 
       {/* Modals & Toasts */}
       <AuthModal 
