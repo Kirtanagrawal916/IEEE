@@ -57,14 +57,14 @@ export const AuthProvider = ({ children }) => {
 
   const googleLogin = async (credential) => {
     const res = await api.googleLogin(credential);
-    if (res.success && res.token) {
+    if (res && res.success && res.token) {
       localStorage.setItem('herearn_jwt_token', res.token);
       localStorage.setItem('herearn_user', JSON.stringify(res.user));
       setToken(res.token);
       setUser(res.user);
       return res;
     }
-    throw new Error(res.message || 'Google sign-in failed');
+    throw new Error(res?.message || 'Google sign-in failed');
   };
 
   const logout = () => {
