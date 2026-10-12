@@ -17,26 +17,20 @@ import {
   TrendingUp,
   X,
   Upload,
-  Search,
-  FileText,
   Eye,
   ThumbsUp,
   Download,
   ChevronRight,
   Star,
   Zap,
-  Check,
   BarChart3,
-  ArrowUpRight,
   Trophy,
-  Target,
   Activity,
   Flame,
-  CheckCircle,
   ExternalLink,
-  Layers,
-  ArrowRight
+  CreditCard
 } from 'lucide-react';
+import WalletWithdrawModal from './WalletWithdrawModal';
 
 export default function ProfileSection({ 
   user, 
@@ -45,16 +39,31 @@ export default function ProfileSection({
   onOpenAuth, 
   onOpenSubmitModal,
   onUpdateProfile,
-  onNavigate
+  onNavigate,
+  showToast
 }) {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isCertModalOpen, setIsCertModalOpen] = useState(false);
+  const [isWithdrawModalOpen, setIsWithdrawModalOpen] = useState(false);
   const [selectedCertCourse, setSelectedCertCourse] = useState('Graphic Design with Canva');
+  const [withdrawalHistory, setWithdrawalHistory] = useState([]);
 
   // Active user data or default guest user
-  const currentUser = user || {
+  const effectiveUsername = user?.username || (user?.name ? user.name.toLowerCase().replace(/[^a-z0-9]/g, '_') : 'guest_learner');
+  const effectiveBalance = user?.walletBalance !== undefined 
+    ? user.walletBalance 
+    : (user?.earnings !== undefined 
+      ? user.earnings 
+      : (user?.totalEarned !== undefined ? user.totalEarned : (user ? 12000 : 0)));
+
+  const currentUser = user ? {
+    ...user,
+    username: effectiveUsername,
+    earnings: effectiveBalance,
+  } : {
     id: "guest",
     name: "Guest Learner",
+    username: "guest_learner",
     title: "Explore Skills, Build Portfolio & Earn Income",
     location: "India",
     bio: "You are exploring in Guest Mode. Create an account or log in to customize your profile, complete skill tracks, publish portfolio projects, and apply for income opportunities.",
@@ -62,12 +71,14 @@ export default function ProfileSection({
     verified: false,
     skills: ["Digital Marketing", "Graphic Design", "Canva", "E-Commerce"],
     earnings: 0,
+    walletBalance: 0,
     completedLessons: [],
     appliedGigIds: []
   };
 
   // Edit profile local state
   const [editName, setEditName] = useState(currentUser.name);
+  const [editUsername, setEditUsername] = useState(currentUser.username);
   const [editTitle, setEditTitle] = useState(currentUser.title);
   const [editLocation, setEditLocation] = useState(currentUser.location);
   const [editBio, setEditBio] = useState(currentUser.bio);
@@ -75,14 +86,66 @@ export default function ProfileSection({
 
   const handleSaveProfile = (e) => {
     e.preventDefault();
+    const cleanUsername = (editUsername || '').trim().replace(/^@/, '').toLowerCase().replace(/[^a-z0-9_]/g, '') || 'learner';
+
+    // Verify username uniqueness against other registered users
+    const registeredUsers = JSON.parse(localStorage.getItem('herearn_registered_users') || '[]');
+    const isTaken = registeredUsers.some(u => 
+      u.username?.toLowerCase() === cleanUsername && 
+      u.id !== currentUser.id && 
+      u.email?.toLowerCase() !== currentUser.email?.toLowerCase()
+    );
+
+    if (isTaken) {
+      if (showToast) {
+        showToast("⚠️ Username Taken", `The handle @${cleanUsername} is already in use by another account.`);
+      } else {
+        alert(`The username @${cleanUsername} is already in use by another account. Please pick another.`);
+      }
+      return;
+    }
+
+    // Update local registry
+    const updatedRegistry = registeredUsers.map(u => {
+      if (u.id === currentUser.id || u.email?.toLowerCase() === currentUser.email?.toLowerCase()) {
+        return { ...u, name: editName || u.name, username: cleanUsername };
+      }
+      return u;
+    });
+    localStorage.setItem('herearn_registered_users', JSON.stringify(updatedRegistry));
+
     onUpdateProfile({
+      ...currentUser,
       name: editName || 'My Profile',
+      username: cleanUsername,
       title: editTitle || 'Skill Learner',
       location: editLocation || 'India',
       bio: editBio || 'Learning skills & building portfolio on HerEarn.',
       avatar: editAvatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=300'
     });
     setIsEditOpen(false);
+  };
+
+  const handleConfirmWithdrawal = (amount, transferDetails) => {
+    const newBal = Math.max(0, (currentUser.earnings || 0) - amount);
+    const newTx = {
+      id: `w-${Date.now()}`,
+      title: `Payout Withdrawal (${transferDetails?.method || 'Instant UPI'})`,
+      client: transferDetails?.destination || 'Direct Payout',
+      amount: `-₹${amount.toLocaleString()}`,
+      date: 'Just now',
+      status: 'Completed'
+    };
+    setWithdrawalHistory(prev => [newTx, ...prev]);
+
+    if (onUpdateProfile) {
+      onUpdateProfile({
+        ...currentUser,
+        earnings: newBal,
+        walletBalance: newBal,
+        totalEarned: newBal,
+      });
+    }
   };
 
   const completedCount = currentUser.completedLessons ? currentUser.completedLessons.length : 0;
@@ -192,11 +255,14 @@ export default function ProfileSection({
   const displayedPortfolios = userPortfolios;
 
   // --- DYNAMIC EARNINGS TRANSACTIONS ---
-  const recentTransactions = (currentUser.earnings && currentUser.earnings > 0)
-    ? [
-        { id: "t1", title: "Micro-Gig Milestone Payout", client: "Verified Client Escrow", amount: `+₹${currentUser.earnings.toLocaleString()}`, date: "Recent", status: "Completed" }
-      ]
-    : [];
+  const recentTransactions = [
+    ...withdrawalHistory,
+    ...((currentUser.earnings && currentUser.earnings > 0)
+      ? [
+          { id: "t1", title: "Micro-Gig Milestone Payout", client: "Verified Client Escrow", amount: `+₹${currentUser.earnings.toLocaleString()}`, date: "Recent", status: "Completed" }
+        ]
+      : [])
+  ];
 
   // --- RECOMMENDED COURSES ---
   const recommendedCourses = [
@@ -335,6 +401,9 @@ export default function ProfileSection({
                 <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
                   {currentUser.name}
                 </h1>
+                <span className="text-xs font-mono font-bold px-2.5 py-0.5 rounded-lg bg-purple-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-500/30">
+                  @{currentUser.username || 'learner'}
+                </span>
                 <span className={`text-xs font-bold px-2.5 py-0.5 rounded-full border flex items-center gap-1 ${
                   user 
                     ? 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 border-emerald-300 dark:border-emerald-500/40' 
@@ -360,25 +429,43 @@ export default function ProfileSection({
             </div>
           </div>
 
-          {/* Quick Action Profile Edit & Earnings Badge */}
-          <div className="flex flex-row lg:flex-col items-center lg:items-end justify-between lg:justify-center gap-3 pt-4 lg:pt-0 border-t lg:border-t-0 border-purple-200 dark:border-purple-500/20">
+          {/* Quick Action Profile Edit & Earnings Badge with Withdraw Button */}
+          <div className="flex flex-col sm:flex-row lg:flex-col items-center lg:items-end justify-between lg:justify-center gap-3 pt-4 lg:pt-0 border-t lg:border-t-0 border-purple-200 dark:border-purple-500/20">
             <button
               type="button"
               onClick={() => setIsEditOpen(true)}
-              className="px-4 py-2.5 rounded-xl text-xs font-bold border border-purple-300 dark:border-purple-400/40 bg-purple-50 dark:bg-purple-900/40 hover:bg-purple-100 dark:hover:bg-purple-800/60 flex items-center gap-2 cursor-pointer transition-all text-purple-900 dark:text-white shadow-md"
+              className="w-full sm:w-auto px-4 py-2.5 rounded-xl text-xs font-bold border border-purple-300 dark:border-purple-400/40 bg-purple-50 dark:bg-purple-900/40 hover:bg-purple-100 dark:hover:bg-purple-800/60 flex items-center justify-center gap-2 cursor-pointer transition-all text-purple-900 dark:text-white shadow-md"
             >
               <Edit3 className="w-4 h-4 text-purple-600 dark:text-purple-300" />
               <span>Edit Profile Workspace</span>
             </button>
 
-            <div className="bg-slate-50 dark:bg-slate-900/90 border border-emerald-300 dark:border-emerald-500/40 px-5 py-2.5 rounded-2xl flex items-center gap-3 shadow-lg">
-              <div className="p-2 rounded-xl bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400">
-                <IndianRupee className="w-5 h-5" />
+            <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto justify-end">
+              <div className="bg-slate-50 dark:bg-slate-900/90 border border-emerald-300 dark:border-emerald-500/40 px-4 py-2 rounded-2xl flex items-center gap-3 shadow-lg">
+                <div className="p-2 rounded-xl bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400">
+                  <IndianRupee className="w-4 h-4" />
+                </div>
+                <div className="text-left">
+                  <span className="text-[10px] text-slate-500 dark:text-slate-400 uppercase font-extrabold tracking-wider block">Verified Earnings</span>
+                  <span className="text-base font-extrabold text-emerald-600 dark:text-emerald-400">₹{(currentUser.earnings || 0).toLocaleString()}</span>
+                </div>
               </div>
-              <div className="text-left">
-                <span className="text-[10px] text-slate-500 dark:text-slate-400 uppercase font-extrabold tracking-wider block">Verified Earnings</span>
-                <span className="text-lg font-extrabold text-emerald-600 dark:text-emerald-400">₹{(currentUser.earnings || 0).toLocaleString()}</span>
-              </div>
+
+              <button
+                type="button"
+                onClick={() => {
+                  if (!user) {
+                    onOpenAuth('login');
+                  } else {
+                    setIsWithdrawModalOpen(true);
+                  }
+                }}
+                className="px-4 py-2.5 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold text-xs flex items-center gap-1.5 shadow-lg hover:shadow-emerald-500/20 transition-all cursor-pointer hover:scale-105 active:scale-95"
+                title="Withdraw your verified earnings to UPI or Bank"
+              >
+                <CreditCard className="w-4 h-4" />
+                <span>Withdraw Payout</span>
+              </button>
             </div>
           </div>
 
@@ -395,7 +482,7 @@ export default function ProfileSection({
           <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">Instant Shortcuts</span>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
           <button
             type="button"
             onClick={onOpenSubmitModal}
@@ -409,7 +496,7 @@ export default function ProfileSection({
 
           <button
             type="button"
-            onClick={() => onNavigate && onNavigate('gigs')}
+            onClick={() => onNavigate && onNavigate('opportunities')}
             className="p-3.5 rounded-2xl bg-slate-50 dark:bg-gradient-to-br dark:from-purple-900/60 dark:to-slate-900 border border-slate-200 dark:border-purple-500/30 hover:border-amber-500 flex flex-col items-center justify-center gap-2 text-center group cursor-pointer transition-all hover:-translate-y-1 shadow-md"
           >
             <div className="p-2.5 rounded-xl bg-amber-100 dark:bg-amber-600/30 text-amber-600 dark:text-amber-400 group-hover:scale-110 transition-transform">
@@ -438,6 +525,23 @@ export default function ProfileSection({
               <Download className="w-5 h-5" />
             </div>
             <span className="text-xs font-bold text-slate-800 dark:text-slate-200 group-hover:text-emerald-700 dark:group-hover:text-white">Download Certificate</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              if (!user) {
+                onOpenAuth('login');
+              } else {
+                setIsWithdrawModalOpen(true);
+              }
+            }}
+            className="p-3.5 rounded-2xl bg-slate-50 dark:bg-gradient-to-br dark:from-emerald-950/40 dark:to-slate-900 border border-slate-200 dark:border-emerald-500/30 hover:border-emerald-500 flex flex-col items-center justify-center gap-2 text-center group cursor-pointer transition-all hover:-translate-y-1 shadow-md col-span-2 sm:col-span-1"
+          >
+            <div className="p-2.5 rounded-xl bg-emerald-100 dark:bg-emerald-600/30 text-emerald-600 dark:text-emerald-400 group-hover:scale-110 transition-transform">
+              <CreditCard className="w-5 h-5" />
+            </div>
+            <span className="text-xs font-bold text-slate-800 dark:text-slate-200 group-hover:text-emerald-600 dark:group-hover:text-emerald-300">Withdraw Payout</span>
           </button>
         </div>
       </div>
@@ -751,9 +855,26 @@ export default function ProfileSection({
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 font-medium">Track your income stream and client payouts</p>
               </div>
 
-              <div className="bg-emerald-100 dark:bg-emerald-500/20 border border-emerald-300 dark:border-emerald-500/30 text-emerald-800 dark:text-emerald-300 px-3 py-1.5 rounded-xl text-xs font-extrabold flex items-center gap-1.5 self-start sm:self-auto">
-                <TrendingUp className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                <span>{currentUser.earnings > 0 ? "+100% Payout" : "0% Income"}</span>
+              <div className="flex items-center gap-2 self-start sm:self-auto">
+                <div className="bg-emerald-100 dark:bg-emerald-500/20 border border-emerald-300 dark:border-emerald-500/30 text-emerald-800 dark:text-emerald-300 px-3 py-1.5 rounded-xl text-xs font-extrabold flex items-center gap-1.5">
+                  <TrendingUp className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                  <span>{currentUser.earnings > 0 ? "+100% Payout" : "0% Income"}</span>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (!user) {
+                      onOpenAuth('login');
+                    } else {
+                      setIsWithdrawModalOpen(true);
+                    }
+                  }}
+                  className="bg-emerald-600 hover:bg-emerald-500 text-white px-3.5 py-1.5 rounded-xl text-xs font-extrabold flex items-center gap-1.5 cursor-pointer shadow-md transition-all hover:scale-105 active:scale-95"
+                >
+                  <CreditCard className="w-3.5 h-3.5" />
+                  <span>Withdraw Funds</span>
+                </button>
               </div>
             </div>
 
@@ -995,6 +1116,22 @@ export default function ProfileSection({
               </div>
 
               <div>
+                <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">Username (@handle)</label>
+                <div className="relative">
+                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-purple-600 dark:text-purple-400 font-bold text-xs">@</span>
+                  <input
+                    type="text"
+                    required
+                    value={editUsername}
+                    onChange={(e) => setEditUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
+                    placeholder="your_handle"
+                    className="w-full bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white pl-8 pr-3 py-3 rounded-xl border border-slate-300 dark:border-slate-700 focus:outline-none focus:border-purple-500 font-semibold text-xs font-mono"
+                  />
+                </div>
+                <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-1">Used for login, public portfolio attribution, and certificates.</p>
+              </div>
+
+              <div>
                 <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">Title / Skill Role</label>
                 <input
                   type="text"
@@ -1108,6 +1245,15 @@ export default function ProfileSection({
           </div>
         </div>
       )}
+
+      {/* --- WALLET WITHDRAWAL MODAL --- */}
+      <WalletWithdrawModal
+        isOpen={isWithdrawModalOpen}
+        onClose={() => setIsWithdrawModalOpen(false)}
+        walletBalance={currentUser.earnings || 0}
+        onConfirmWithdrawal={handleConfirmWithdrawal}
+        showToast={showToast}
+      />
 
     </div>
   );

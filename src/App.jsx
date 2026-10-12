@@ -164,9 +164,10 @@ function AppContent() {
 
   // Sign Out Handler
   const handleLogout = () => {
+    setIsLogoutModalOpen(false);
     saveUserData(null);
     navigate('/');
-    showToast("Signed Out", "You have successfully logged out.");
+    showToast("Signed Out 👋", "You have successfully logged out of HerEarn.");
   };
 
   // Profile Update Handler with API integration
@@ -336,27 +337,58 @@ function AppContent() {
     }
   };
 
-  // User Login Handler
+  // User Login Handler (Stores username & preserves persistent user account details)
   const handleLoginSuccess = (userData) => {
     const isNewSignUp = userData.isSignUp;
+    const existingSaved = JSON.parse(localStorage.getItem('herearn_user') || 'null');
+    const isSameUser = existingSaved && (
+      existingSaved.id === userData.id ||
+      existingSaved.email?.toLowerCase() === userData.email?.toLowerCase() ||
+      existingSaved.username?.toLowerCase() === userData.username?.toLowerCase()
+    );
+
+    const rawUsername = (userData.username || (userData.name ? userData.name.toLowerCase().replace(/[^a-z0-9]/g, '_') : userData.email?.split('@')[0]) || 'learner').replace(/^@/, '');
+    const displayName = userData.name || (rawUsername.charAt(0).toUpperCase() + rawUsername.slice(1));
+
     const loggedInUser = {
-      id: userData.id || `u-${Date.now()}`,
-      name: userData.name || 'Learner',
-      email: userData.email || 'user@herearn.org',
-      title: `${userData.skillInterest || 'Digital Skill'} Specialist`,
-      location: userData.location || 'India',
-      bio: userData.bio || 'Passionate about building digital skills and delivering quality micro-gigs on HerEarn.',
-      avatar: userData.avatar || 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=300',
+      id: userData.id || (isSameUser ? existingSaved.id : `u-${Date.now()}`),
+      name: displayName,
+      username: rawUsername,
+      email: userData.email || `${rawUsername}@herearn.org`,
+      title: userData.title || (isSameUser ? existingSaved.title : `${userData.skillInterest || 'Digital Skill'} Specialist`),
+      location: userData.location || (isSameUser ? existingSaved.location : 'India'),
+      bio: userData.bio || (isSameUser ? existingSaved.bio : 'Passionate about building digital skills and delivering quality micro-gigs on HerEarn.'),
+      avatar: userData.avatar || (isSameUser ? existingSaved.avatar : `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(rawUsername)}`),
       verified: true,
-      skills: userData.skills || [userData.skillInterest || "Digital Marketing", "Canva Design", "Instagram Management"],
-      totalEarned: userData.totalEarned || 0,
-      completedLessons: [],
-      appliedGigIds: [],
+      skills: userData.skills || (isSameUser ? existingSaved.skills : [userData.skillInterest || "Digital Marketing", "Canva Design", "Instagram Management"]),
+      totalEarned: userData.totalEarned !== undefined ? userData.totalEarned : (isSameUser ? existingSaved.totalEarned : (userData.earnings || 0)),
+      earnings: userData.earnings !== undefined ? userData.earnings : (isSameUser ? existingSaved.earnings : (userData.totalEarned || 0)),
+      completedLessons: userData.completedLessons || (isSameUser ? existingSaved.completedLessons : []),
+      appliedGigIds: userData.appliedGigIds || (isSameUser ? existingSaved.appliedGigIds : []),
+      skillPoints: userData.skillPoints || (isSameUser ? existingSaved.skillPoints : 150),
     };
 
     saveUserData(loggedInUser);
+
+    // Save/update in registered user registry for fast, permanent lookup by username
+    try {
+      const regUsers = JSON.parse(localStorage.getItem('herearn_registered_users') || '[]');
+      const filtered = regUsers.filter(u => u.email?.toLowerCase() !== loggedInUser.email?.toLowerCase() && u.username?.toLowerCase() !== rawUsername.toLowerCase());
+      filtered.push({
+        id: loggedInUser.id,
+        name: loggedInUser.name,
+        username: loggedInUser.username,
+        email: loggedInUser.email,
+        skills: loggedInUser.skills,
+        earnings: loggedInUser.earnings,
+      });
+      localStorage.setItem('herearn_registered_users', JSON.stringify(filtered));
+    } catch (e) {
+      console.warn('Could not sync registry:', e);
+    }
+
     navigate('/dashboard');
-    showToast(isNewSignUp ? "Account Created! 🎉" : "Welcome Back! ✨", `Signed in as ${loggedInUser.name}`);
+    showToast(isNewSignUp ? "Account Created! 🎉" : "Welcome Back! ✨", `Signed in as ${loggedInUser.name} (@${loggedInUser.username})`);
   };
 
   // Continue as Guest Handler
@@ -581,6 +613,7 @@ function AppContent() {
                   onUpdateProfile={handleUpdateProfile}
                   onUpdateUserSkills={handleUpdateUserSkills}
                   onNavigate={(page) => navigate(`/${page}`)}
+                  showToast={showToast}
                 />
               </ProtectedRoute>
             } 

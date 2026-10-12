@@ -8,7 +8,9 @@ import {
   Building, 
   Smartphone,
   Lock,
-  Sparkles
+  Sparkles,
+  CreditCard,
+  QrCode
 } from 'lucide-react';
 import { triggerCelebrationConfetti } from '../utils/confettiHelper';
 
@@ -19,7 +21,11 @@ export default function WalletWithdrawModal({
   onConfirmWithdrawal,
   showToast 
 }) {
-  const [upiId, setUpiId] = useState('ananya.creatives@oksbi');
+  const [payoutMethod, setPayoutMethod] = useState('upi'); // 'upi' | 'bank'
+  const [upiId, setUpiId] = useState('learner.creatives@oksbi');
+  const [accountName, setAccountName] = useState('');
+  const [accountNumber, setAccountNumber] = useState('');
+  const [ifscCode, setIfscCode] = useState('');
   const [amount, setAmount] = useState(walletBalance > 0 ? Math.min(walletBalance, 6000) : 0);
   const [step, setStep] = useState('input'); // 'input' | 'processing' | 'success'
   const [txnId, setTxnId] = useState('');
@@ -28,20 +34,29 @@ export default function WalletWithdrawModal({
 
   const handleWithdraw = (e) => {
     e.preventDefault();
-    if (!upiId || amount <= 0 || amount > walletBalance) return;
+    if (amount <= 0 || amount > walletBalance) return;
+    if (payoutMethod === 'upi' && !upiId.trim()) return;
+    if (payoutMethod === 'bank' && (!accountNumber.trim() || !ifscCode.trim())) return;
 
     setStep('processing');
-    const generatedTxn = `UPI-HE-${Math.floor(10000000 + Math.random() * 90000000)}`;
+    const generatedTxn = `PAYOUT-HE-${Math.floor(10000000 + Math.random() * 90000000)}`;
     setTxnId(generatedTxn);
 
     setTimeout(() => {
       setStep('success');
       triggerCelebrationConfetti();
+      const transferDetails = {
+        amount,
+        method: payoutMethod === 'upi' ? 'UPI' : 'Bank Transfer',
+        destination: payoutMethod === 'upi' ? upiId : `${accountNumber.slice(-4).padStart(accountNumber.length, '•')} (${ifscCode.toUpperCase()})`,
+        txnId: generatedTxn,
+      };
+
       if (onConfirmWithdrawal) {
-        onConfirmWithdrawal(amount);
+        onConfirmWithdrawal(amount, transferDetails);
       }
       if (showToast) {
-        showToast("💸 UPI Payout Disbursed!", `₹${amount.toLocaleString()} sent to ${upiId}. Reference: ${generatedTxn}`);
+        showToast("💸 Payout Disbursed!", `₹${amount.toLocaleString()} disbursed via ${transferDetails.method}. Ref: ${generatedTxn}`);
       }
     }, 1200);
   };
@@ -62,8 +77,8 @@ export default function WalletWithdrawModal({
               <IndianRupee className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-base font-black text-slate-900 dark:text-white">HerEarn Instant UPI Payout</h2>
-              <p className="text-[11px] text-emerald-600 dark:text-emerald-400 font-bold">Direct to GPay, PhonePe, Paytm or Bank</p>
+              <h2 className="text-base font-black text-slate-900 dark:text-white">Earnings Payout & Withdrawal</h2>
+              <p className="text-[11px] text-emerald-600 dark:text-emerald-400 font-bold">Direct to UPI or Verified Bank Account</p>
             </div>
           </div>
           <button
@@ -75,7 +90,7 @@ export default function WalletWithdrawModal({
         </div>
 
         {/* Content */}
-        <div className="p-6 space-y-6">
+        <div className="p-6 space-y-5">
           
           {step === 'input' && (
             <form onSubmit={handleWithdraw} className="space-y-4 text-xs">
@@ -85,27 +100,106 @@ export default function WalletWithdrawModal({
                 <span className="text-[10px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400">Available Wallet Balance</span>
                 <p className="text-3xl font-black text-purple-700 dark:text-purple-300">₹{walletBalance.toLocaleString()}</p>
                 <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-extrabold flex items-center justify-center gap-1">
-                  <ShieldCheck className="w-3.5 h-3.5" /> 100% Verified Escrow Disbursal
+                  <ShieldCheck className="w-3.5 h-3.5" /> 100% Escrow Guaranteed Disbursal
                 </span>
               </div>
 
-              {/* UPI ID Input */}
-              <div className="space-y-1.5">
-                <label className="block font-bold text-slate-800 dark:text-slate-200 text-xs">
-                  Virtual Payment Address (UPI ID) <span className="text-pink-500">*</span>
-                </label>
-                <div className="relative">
-                  <input
-                    type="text"
-                    required
-                    placeholder="yourname@okhdfcbank"
-                    value={upiId}
-                    onChange={(e) => setUpiId(e.target.value)}
-                    className="w-full bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white p-3 rounded-xl border border-slate-300 dark:border-slate-700 focus:outline-none focus:border-purple-500 text-xs font-semibold pl-9"
-                  />
-                  <Smartphone className="w-4 h-4 text-slate-400 absolute left-3 top-3.5" />
+              {/* Payment Method Selector */}
+              <div>
+                <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1.5">Select Payout Method:</label>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setPayoutMethod('upi')}
+                    className={`p-2.5 rounded-xl border text-xs font-extrabold flex items-center justify-center gap-2 cursor-pointer transition-all ${
+                      payoutMethod === 'upi'
+                        ? 'bg-purple-600 text-white border-purple-600 shadow-md'
+                        : 'bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-700'
+                    }`}
+                  >
+                    <Smartphone className="w-4 h-4" />
+                    <span>Instant UPI ID</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setPayoutMethod('bank')}
+                    className={`p-2.5 rounded-xl border text-xs font-extrabold flex items-center justify-center gap-2 cursor-pointer transition-all ${
+                      payoutMethod === 'bank'
+                        ? 'bg-purple-600 text-white border-purple-600 shadow-md'
+                        : 'bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-700'
+                    }`}
+                  >
+                    <Building className="w-4 h-4" />
+                    <span>Bank Account</span>
+                  </button>
                 </div>
               </div>
+
+              {/* Method Fields */}
+              {payoutMethod === 'upi' ? (
+                <div className="space-y-1.5">
+                  <label className="block font-bold text-slate-800 dark:text-slate-200 text-xs">
+                    Virtual Payment Address (UPI ID) <span className="text-pink-500">*</span>
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      required
+                      placeholder="yourname@okhdfcbank or yournumber@paytm"
+                      value={upiId}
+                      onChange={(e) => setUpiId(e.target.value)}
+                      className="w-full bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white p-3 rounded-xl border border-slate-300 dark:border-slate-700 focus:outline-none focus:border-purple-500 text-xs font-semibold pl-9"
+                    />
+                    <Smartphone className="w-4 h-4 text-slate-400 absolute left-3 top-3.5" />
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <div>
+                    <label className="block font-bold text-slate-800 dark:text-slate-200 text-xs mb-1">
+                      Beneficiary Account Name
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="Full Name as per Bank Records"
+                      value={accountName}
+                      onChange={(e) => setAccountName(e.target.value)}
+                      className="w-full bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white p-3 rounded-xl border border-slate-300 dark:border-slate-700 focus:outline-none focus:border-purple-500 text-xs font-semibold"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="block font-bold text-slate-800 dark:text-slate-200 text-xs mb-1">
+                        Account Number
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="e.g. 501004928192"
+                        value={accountNumber}
+                        onChange={(e) => setAccountNumber(e.target.value)}
+                        className="w-full bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white p-3 rounded-xl border border-slate-300 dark:border-slate-700 focus:outline-none focus:border-purple-500 text-xs font-semibold"
+                      />
+                    </div>
+                    <div>
+                      <label className="block font-bold text-slate-800 dark:text-slate-200 text-xs mb-1">
+                        IFSC Code
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="e.g. HDFC0001234"
+                        value={ifscCode}
+                        onChange={(e) => setIfscCode(e.target.value.toUpperCase())}
+                        className="w-full bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white p-3 rounded-xl border border-slate-300 dark:border-slate-700 focus:outline-none focus:border-purple-500 text-xs font-semibold uppercase"
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* Amount Input */}
               <div className="space-y-1.5">
@@ -118,12 +212,12 @@ export default function WalletWithdrawModal({
                     onClick={() => setAmount(walletBalance)}
                     className="text-[11px] font-extrabold text-purple-600 dark:text-purple-400 hover:underline cursor-pointer"
                   >
-                    Withdraw All
+                    Withdraw Full Balance
                   </button>
                 </div>
                 <input
                   type="number"
-                  min="500"
+                  min="100"
                   max={walletBalance}
                   required
                   value={amount}
@@ -134,7 +228,7 @@ export default function WalletWithdrawModal({
 
               {/* Quick Select Chips */}
               <div className="flex items-center gap-2 pt-1">
-                {[2000, 4000, 6000].map(amt => (
+                {[1000, 3000, 6000].map(amt => (
                   <button
                     key={amt}
                     type="button"
@@ -156,7 +250,7 @@ export default function WalletWithdrawModal({
                 disabled={amount <= 0 || amount > walletBalance}
                 className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-black text-xs shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
               >
-                <span>Authorize Instant Transfer</span>
+                <span>Authorize Instant Withdrawal</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
             </form>
@@ -166,8 +260,8 @@ export default function WalletWithdrawModal({
             <div className="py-8 text-center space-y-4">
               <div className="w-14 h-14 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
               <div className="space-y-1">
-                <h3 className="text-base font-extrabold">Initiating Instant UPI Transfer...</h3>
-                <p className="text-xs text-slate-500">Routing payout securely via NPCI IMPS gateway to {upiId}</p>
+                <h3 className="text-base font-extrabold">Initiating Instant Disbursal...</h3>
+                <p className="text-xs text-slate-500">Routing payout securely via NPCI Escrow gateway</p>
               </div>
             </div>
           )}
@@ -180,19 +274,19 @@ export default function WalletWithdrawModal({
 
               <div className="space-y-1">
                 <span className="text-[10px] font-black uppercase text-emerald-600 dark:text-emerald-400 tracking-wider">
-                  Payment Successful
+                  Payout Disbursed Successfully
                 </span>
                 <h3 className="text-2xl font-black text-slate-900 dark:text-white">
                   ₹{amount.toLocaleString()} Disbursed
                 </h3>
                 <p className="text-xs text-slate-600 dark:text-slate-300 font-medium">
-                  Sent to UPI ID: <strong>{upiId}</strong>
+                  {payoutMethod === 'upi' ? `Sent to UPI ID: ${upiId}` : `Transferred to A/C ending in ${accountNumber.slice(-4) || '****'}`}
                 </p>
               </div>
 
               <div className="p-3 bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-200 dark:border-slate-800 text-left text-[11px] space-y-1 text-slate-600 dark:text-slate-300">
                 <div className="flex justify-between">
-                  <span>Transaction ID:</span>
+                  <span>Reference ID:</span>
                   <span className="font-mono font-bold text-slate-900 dark:text-white">{txnId}</span>
                 </div>
                 <div className="flex justify-between">
@@ -201,7 +295,7 @@ export default function WalletWithdrawModal({
                 </div>
                 <div className="flex justify-between">
                   <span>Status:</span>
-                  <span className="font-bold text-emerald-600">Completed (Immediate)</span>
+                  <span className="font-bold text-emerald-600">Completed (Immediate Settlement)</span>
                 </div>
               </div>
 

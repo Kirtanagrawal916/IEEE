@@ -89,21 +89,16 @@ export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNaviga
   const [googleError, setGoogleError] = useState('');
   const [googleSuccessMsg, setGoogleSuccessMsg] = useState('');
 
-  // Form Submission
+  // Form Submission (Supports Email or Username)
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
 
-    const targetEmail = email.trim();
+    const targetInput = email.trim();
     const targetPassword = password.trim();
 
-    if (!targetEmail) {
-      setError('Please enter your email address.');
-      return;
-    }
-
-    if (!targetEmail.includes('@') || !targetEmail.includes('.')) {
-      setError('Invalid Email: Please enter a valid email format (e.g. name@domain.com).');
+    if (!targetInput) {
+      setError('Please enter your email address or username.');
       return;
     }
 
@@ -114,30 +109,74 @@ export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNaviga
 
     setIsLoading(true);
 
+    // 1. Search persistent local user registry by username or email
+    const cleanSearch = targetInput.toLowerCase().replace(/^@/, '');
+    const registeredUsers = JSON.parse(localStorage.getItem('herearn_registered_users') || '[]');
+    const matchedUser = registeredUsers.find(u => 
+      (u.email && u.email.toLowerCase() === targetInput.toLowerCase()) ||
+      (u.username && u.username.toLowerCase() === cleanSearch) ||
+      (u.name && u.name.toLowerCase() === targetInput.toLowerCase())
+    );
+
+    // If account found locally with password, enforce password check immediately
+    if (matchedUser && matchedUser.password && matchedUser.password !== targetPassword) {
+      setIsLoading(false);
+      setError('Incorrect password for this account. Please verify your password and try again.');
+      return;
+    }
+
+    const lookupEmail = matchedUser?.email || (targetInput.includes('@') ? targetInput : `${cleanSearch}@herearn.org`);
+
     try {
-      const res = await api.login({ email: targetEmail, password: targetPassword });
+      const res = await api.login({ email: lookupEmail, username: cleanSearch, password: targetPassword });
       if (res && res.token) {
         localStorage.setItem('herearn_jwt_token', res.token);
       }
       setIsLoading(false);
+
+      const resolvedUsername = matchedUser?.username || res.user?.username || cleanSearch;
+      const resolvedName = matchedUser?.name || res.user?.name || (resolvedUsername.charAt(0).toUpperCase() + resolvedUsername.slice(1));
+
       onLoginSuccess({
+        ...(matchedUser || {}),
         ...(res.user || {}),
+        name: resolvedName,
+        username: resolvedUsername,
+        email: res.user?.email || lookupEmail,
         isSignUp: false,
       });
     } catch (err) {
       setIsLoading(false);
       if (err.status === 401) {
-        setError(err.message || 'Incorrect Password: You can also log in instantly using Email OTP or Google.');
-      } else {
-        // Fallback resilient login for offline / prototype mode
-        const handle = targetEmail.split('@')[0];
-        const displayName = handle.charAt(0).toUpperCase() + handle.slice(1);
+        setError(err.message || 'Incorrect password. Please verify your password or use Google/OTP sign-in.');
+        return;
+      }
+
+      if (err.status === 404) {
+        setError(`No account found matching "${targetInput}". Please check your credentials or create a new account.`);
+        return;
+      }
+
+      // Offline / network fallback with password verification
+      if (matchedUser) {
+        if (matchedUser.password && matchedUser.password !== targetPassword) {
+          setError('Incorrect password. Please check your credentials and try again.');
+          return;
+        }
+
+        const resolvedUsername = matchedUser.username || cleanSearch;
+        const resolvedName = matchedUser.name || (resolvedUsername.charAt(0).toUpperCase() + resolvedUsername.slice(1));
+
         onLoginSuccess({
-          name: displayName || 'Learner',
-          email: targetEmail,
-          skillInterest: 'Digital Marketing',
+          ...matchedUser,
+          name: resolvedName,
+          username: resolvedUsername,
+          email: matchedUser.email || lookupEmail,
+          skillInterest: matchedUser.skills?.[0] || 'Digital Marketing',
           isSignUp: false,
         });
+      } else {
+        setError(`No account registered under "${targetInput}". Please check your username/email or sign up.`);
       }
     }
   };
@@ -539,21 +578,21 @@ export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNaviga
                 )}
 
                 <form onSubmit={handleSubmit} className="space-y-5">
-                  {/* EMAIL ADDRESS */}
+                  {/* EMAIL ADDRESS OR USERNAME */}
                   <div className="space-y-2">
                     <label className="text-xs font-extrabold text-slate-700 dark:text-slate-200 block uppercase tracking-wider">
-                      EMAIL ADDRESS
+                      EMAIL ADDRESS OR USERNAME
                     </label>
                     <div className="relative">
-                      <Mail className="w-4 h-4 text-purple-600 dark:text-purple-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                      <User className="w-4 h-4 text-purple-600 dark:text-purple-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                       <input
-                        type="email"
+                        type="text"
                         value={email}
                         onChange={(e) => {
                           setEmail(e.target.value);
                           if (error) setError('');
                         }}
-                        placeholder="name@domain.com"
+                        placeholder="name@domain.com or @username"
                         className="w-full pl-10 pr-4 py-3.5 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-purple-500/30 rounded-2xl text-xs sm:text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-purple-500 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 transition-all"
                         required
                       />
