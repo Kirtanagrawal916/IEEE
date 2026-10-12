@@ -28,7 +28,8 @@ import {
   Activity,
   Flame,
   ExternalLink,
-  CreditCard
+  CreditCard,
+  ArrowRight
 } from 'lucide-react';
 import WalletWithdrawModal from './WalletWithdrawModal';
 

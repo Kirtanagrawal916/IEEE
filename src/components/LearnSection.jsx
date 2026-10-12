@@ -23,7 +23,6 @@ import {
 } from 'lucide-react';
 import { skillTracks } from '../data/mockData';
 import { initialChallenges } from '../data/challengesData';
-import ChallengeZoneModal from './ChallengeZoneModal';
 import { api } from '../services/api';
 
 export default function LearnSection({ user, onCompleteLesson, onNavigateToPortfolio, onUpdateUserSkillPoints }) {
@@ -37,7 +36,6 @@ export default function LearnSection({ user, onCompleteLesson, onNavigateToPortf
 
   // Challenge Zone states
   const [challenges, setChallenges] = useState(initialChallenges);
-  const [activeChallenge, setActiveChallenge] = useState(null);
   const [completedChallengeIds, setCompletedChallengeIds] = useState([]);
   const [userPoints, setUserPoints] = useState(user?.skillPoints || 150);
 
@@ -493,7 +491,7 @@ export default function LearnSection({ user, onCompleteLesson, onNavigateToPortf
 
                     <button
                       type="button"
-                      onClick={() => setActiveChallenge(ch)}
+                      onClick={() => navigate(`/challenges/${ch.id}`)}
                       className={`btn-gradient-award text-xs py-2.5 px-5 font-bold cursor-pointer ${
                         isDone ? 'bg-emerald-600 hover:bg-emerald-700 shadow-none' : ''
                       }`}
@@ -518,16 +516,6 @@ export default function LearnSection({ user, onCompleteLesson, onNavigateToPortf
           </div>
 
         </div>
-      )}
-
-      {/* Challenge Interactive Modal */}
-      {activeChallenge && (
-        <ChallengeZoneModal
-          isOpen={!!activeChallenge}
-          onClose={() => setActiveChallenge(null)}
-          challenge={activeChallenge}
-          onSubmitChallenge={handleChallengeSubmit}
-        />
       )}
 
     </div>
