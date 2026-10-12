@@ -540,7 +540,11 @@ function AppContent() {
             path="/applications" 
             element={
               <ProtectedRoute user={user}>
-                <ApplicationsPage user={user} />
+                <ApplicationsPage 
+                  user={user} 
+                  onUpdateWallet={(updated) => saveUserData(updated)}
+                  showToast={showToast}
+                />
               </ProtectedRoute>
             } 
           />

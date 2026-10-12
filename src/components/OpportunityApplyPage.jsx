@@ -10,9 +10,14 @@ import {
   AlertCircle, 
   RotateCcw, 
   Target, 
-  ChevronRight
+  ChevronRight,
+  Sparkles,
+  Wand2,
+  Copy,
+  Check
 } from 'lucide-react';
 import { getQuizForCategory } from '../data/opportunityQuizzes';
+import { triggerCelebrationConfetti } from '../utils/confettiHelper';
 
 export default function OpportunityApplyPage({ 
   gig, 
@@ -24,6 +29,12 @@ export default function OpportunityApplyPage({
   const [step, setStep] = useState(1); // 1: Application Form, 2: Quiz Assessment, 3: Eligibility Results
   const [coverNote, setCoverNote] = useState('');
   const [selectedPortfolioId, setSelectedPortfolioId] = useState(userPortfolios[0]?.id || 'capstone-default');
+  const [isQuizSubmitted, setIsQuizSubmitted] = useState(false);
+
+  // AI Proposal Generator State
+  const [isGeneratingAI, setIsGeneratingAI] = useState(false);
+  const [proposalTone, setProposalTone] = useState('professional');
+  const [aiSuccessMsg, setAiSuccessMsg] = useState(false);
 
   // Quiz state
   const questions = getQuizForCategory(gig?.category);
@@ -58,6 +69,34 @@ export default function OpportunityApplyPage({
       ...prev,
       [questions[currentQIndex].id]: optionIdx
     }));
+  };
+
+  // AI Proposal Generator Action
+  const handleGenerateAIProposal = (tone = 'professional') => {
+    setIsGeneratingAI(true);
+    setProposalTone(tone);
+
+    const attachedProject = userPortfolios.find(p => p.id === selectedPortfolioId) || userPortfolios[0];
+    const projectTitle = attachedProject?.title || `${gig?.category || 'Skill'} Capstone Project`;
+    const skillsList = (gig?.skillsRequired || ['Hands-on Design', 'Deliverables']).slice(0, 3).join(', ');
+    const candidateName = user?.name || 'Applicant';
+
+    setTimeout(() => {
+      let generated = '';
+      if (tone === 'professional') {
+        generated = `Dear Hiring Manager at ${gig?.company || 'Partner'},\n\nI am writing to express my strong interest in the ${gig?.title || 'Micro-Gig'} opportunity. Having completed hands-on learning in ${gig?.category || 'Practical Skills'} on HerEarn, I possess verified capabilities in ${skillsList}.\n\nAs tangible proof of my execution standards, I have attached my verified capstone project: '${projectTitle}'. I am prepared to begin immediately, meet all deadline deliverables, and communicate proactively.\n\nThank you for reviewing my profile.\n\nSincerely,\n${candidateName}`;
+      } else if (tone === 'creative') {
+        generated = `Hello ${gig?.company || 'Team'}! ✨\n\nI’m thrilled to apply for your ${gig?.title || 'Micro-Gig'} project! As an active creator specialized in ${gig?.category || 'Visual Design'}, I love transforming briefs into polished, high-converting deliverables.\n\nI've attached my verified project '${projectTitle}' so you can see my style and quality firsthand. I’d love to collaborate and guarantee prompt, top-tier turnaround on your milestones.\n\nWarm regards,\n${candidateName}`;
+      } else {
+        // concise
+        generated = `Hi ${gig?.company || 'Team'},\n\nI am ready to deliver on your ${gig?.title || 'Micro-Gig'} requirements. I have verified coursework in ${gig?.category || 'Skills'} and practical experience in ${skillsList}.\n\nAttached is my verified project '${projectTitle}' as proof of quality. Ready to start right away!\n\nBest,\n${candidateName}`;
+      }
+
+      setCoverNote(generated);
+      setIsGeneratingAI(false);
+      setAiSuccessMsg(true);
+      setTimeout(() => setAiSuccessMsg(false), 3500);
+    }, 600);
   };
 
   // Handle Next Question or Finish Quiz
@@ -112,9 +151,12 @@ export default function OpportunityApplyPage({
     setIsQuizSubmitted(true);
     setStep(3);
 
-    // If eligible, confirm application to parent state / backend
-    if (isEligible && onConfirmApplySuccess) {
-      onConfirmApplySuccess(gig.id, coverNote, selectedPortfolioId, summary);
+    // If eligible, celebrate and confirm application
+    if (isEligible) {
+      triggerCelebrationConfetti();
+      if (onConfirmApplySuccess) {
+        onConfirmApplySuccess(gig.id, coverNote, selectedPortfolioId, summary);
+      }
     }
 
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -231,18 +273,82 @@ export default function OpportunityApplyPage({
               )}
             </div>
 
-            {/* Proposal Message */}
+            {/* Proposal Message with AI Assist */}
             <div className="space-y-2">
-              <label className="block font-bold text-slate-800 dark:text-slate-200 text-xs">
-                Proposal Note to Client Partner <span className="text-pink-500">*</span>
-              </label>
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <label className="font-bold text-slate-800 dark:text-slate-200 text-xs flex items-center gap-1.5">
+                  <FileText className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />
+                  <span>Proposal Note to Client Partner</span>
+                  <span className="text-pink-500">*</span>
+                </label>
+
+                {/* AI Assistant Quick Generator */}
+                <div className="flex items-center gap-1.5 bg-purple-50 dark:bg-purple-950/60 p-1 rounded-2xl border border-purple-200 dark:border-purple-800/60 shadow-xs">
+                  <span className="text-[10px] font-extrabold text-purple-700 dark:text-purple-300 px-1.5 flex items-center gap-1">
+                    <Sparkles className="w-3 h-3 text-pink-500 animate-spin" />
+                    AI Proposal:
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => handleGenerateAIProposal('professional')}
+                    disabled={isGeneratingAI}
+                    title="Generate formal, client-ready proposal"
+                    className={`px-2.5 py-1 rounded-xl text-[10px] font-bold transition-all cursor-pointer ${
+                      proposalTone === 'professional' && aiSuccessMsg
+                        ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-xs'
+                        : 'hover:bg-purple-200 dark:hover:bg-purple-900/50 text-slate-700 dark:text-slate-200'
+                    }`}
+                  >
+                    Professional
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleGenerateAIProposal('creative')}
+                    disabled={isGeneratingAI}
+                    title="Generate upbeat, creative pitch"
+                    className={`px-2.5 py-1 rounded-xl text-[10px] font-bold transition-all cursor-pointer ${
+                      proposalTone === 'creative' && aiSuccessMsg
+                        ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-xs'
+                        : 'hover:bg-purple-200 dark:hover:bg-purple-900/50 text-slate-700 dark:text-slate-200'
+                    }`}
+                  >
+                    Creative
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleGenerateAIProposal('concise')}
+                    disabled={isGeneratingAI}
+                    title="Generate quick, punchy pitch"
+                    className={`px-2.5 py-1 rounded-xl text-[10px] font-bold transition-all cursor-pointer ${
+                      proposalTone === 'concise' && aiSuccessMsg
+                        ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-xs'
+                        : 'hover:bg-purple-200 dark:hover:bg-purple-900/50 text-slate-700 dark:text-slate-200'
+                    }`}
+                  >
+                    Concise
+                  </button>
+                </div>
+              </div>
+
+              {aiSuccessMsg && (
+                <div className="p-2.5 rounded-xl bg-purple-100 dark:bg-purple-900/40 text-purple-800 dark:text-purple-200 text-[11px] font-bold flex items-center justify-between animate-fade-in border border-purple-300 dark:border-purple-700">
+                  <span className="flex items-center gap-1.5">
+                    <Sparkles className="w-3.5 h-3.5 text-pink-500" />
+                    Customized proposal generated based on your attached project & gig deliverables! You can edit it below.
+                  </span>
+                  <Check className="w-4 h-4 text-emerald-600" />
+                </div>
+              )}
+
               <textarea
                 required
                 rows={5}
                 placeholder="Hi! I have mastered skill tracks in this area and built hands-on projects. I am excited to handle your deliverables with quality and deliver on time..."
                 value={coverNote}
                 onChange={(e) => setCoverNote(e.target.value)}
-                className="w-full bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white p-4 rounded-2xl border border-slate-300 dark:border-slate-700 focus:outline-none focus:border-purple-500 placeholder-slate-400 text-xs font-medium"
+                className={`w-full bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white p-4 rounded-2xl border ${
+                  isGeneratingAI ? 'opacity-60 animate-pulse' : ''
+                } border-slate-300 dark:border-slate-700 focus:outline-none focus:border-purple-500 placeholder-slate-400 text-xs font-medium transition-all`}
               ></textarea>
             </div>
 
