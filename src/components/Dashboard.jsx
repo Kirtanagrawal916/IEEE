@@ -13,10 +13,14 @@ import {
   AlertCircle,
   Loader2,
   ChevronRight,
-  LogOut
+  LogOut,
+  IndianRupee,
+  Lock,
+  ArrowUpRight
 } from 'lucide-react';
 import { api } from '../services/api';
 import { skillTracks, initialPortfolios, initialOpportunities } from '../data/mockData';
+import WalletWithdrawModal from './WalletWithdrawModal';
 
 export default function Dashboard({ user, onOpenSubmitModal, onOpenLogoutModal }) {
   const navigate = useNavigate();
@@ -27,6 +31,28 @@ export default function Dashboard({ user, onOpenSubmitModal, onOpenLogoutModal }
   const [projectsData, setProjectsData] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [apiError, setApiError] = useState(null);
+
+  // Escrow & Wallet State
+  const [isWithdrawModalOpen, setIsWithdrawModalOpen] = useState(false);
+  const [walletBalance, setWalletBalance] = useState(() => {
+    return user?.walletBalance || user?.totalEarned || 12000;
+  });
+
+  const handleConfirmWithdrawal = (amount) => {
+    const newBal = Math.max(0, walletBalance - amount);
+    setWalletBalance(newBal);
+    try {
+      const savedUserStr = localStorage.getItem('herearn_user');
+      const currentUser = savedUserStr ? JSON.parse(savedUserStr) : (user || {});
+      const updatedUser = {
+        ...currentUser,
+        walletBalance: newBal
+      };
+      localStorage.setItem('herearn_user', JSON.stringify(updatedUser));
+    } catch (e) {
+      console.warn('[Dashboard] Wallet save error:', e);
+    }
+  };
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -186,6 +212,53 @@ export default function Dashboard({ user, onOpenSubmitModal, onOpenLogoutModal }
           </span>
         </div>
       )}
+
+      {/* Escrow & Wallet Card */}
+      <div className="relative overflow-hidden bg-gradient-to-r from-purple-900/60 via-slate-900 to-indigo-950/80 rounded-3xl p-6 border border-purple-500/40 text-white shadow-2xl flex flex-col md:flex-row md:items-center justify-between gap-6 backdrop-blur-md">
+        <div className="flex items-center gap-4">
+          <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-emerald-500 to-teal-600 text-white flex items-center justify-center shadow-lg shrink-0">
+            <IndianRupee className="w-8 h-8" />
+          </div>
+          <div className="space-y-1">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-[10px] font-black uppercase tracking-widest text-emerald-400 bg-emerald-950/80 border border-emerald-500/40 px-2.5 py-0.5 rounded-full flex items-center gap-1">
+                <Lock className="w-3 h-3" /> Escrow Protected Wallet
+              </span>
+              <span className="text-[10px] text-purple-300 font-bold hidden sm:inline">Instant UPI Disbursal</span>
+            </div>
+            <div className="flex items-baseline gap-3">
+              <span className="text-3xl sm:text-4xl font-black text-white">₹{walletBalance.toLocaleString()}</span>
+              <span className="text-xs text-slate-300 font-semibold">Available Balance</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="bg-slate-950/70 border border-slate-800 px-4 py-2.5 rounded-2xl text-left">
+            <span className="text-[10px] font-bold text-slate-400 uppercase block">In Escrow (Active Gigs)</span>
+            <span className="text-sm font-black text-amber-400">₹6,000</span>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setIsWithdrawModalOpen(true)}
+            className="px-5 py-3 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-black text-xs shadow-lg transition-all flex items-center gap-2 cursor-pointer"
+          >
+            <IndianRupee className="w-4 h-4" />
+            <span>Withdraw via UPI</span>
+            <ArrowUpRight className="w-4 h-4 opacity-80" />
+          </button>
+
+          <button
+            type="button"
+            onClick={() => navigate('/applications')}
+            className="px-4 py-3 rounded-2xl bg-white/10 hover:bg-white/20 border border-white/20 text-white font-extrabold text-xs transition-all flex items-center gap-1.5 cursor-pointer"
+          >
+            <Briefcase className="w-4 h-4 text-pink-300" />
+            <span>Workrooms</span>
+          </button>
+        </div>
+      </div>
 
       {/* 2. Stats Row (4 Cards) */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -535,6 +608,14 @@ export default function Dashboard({ user, onOpenSubmitModal, onOpenLogoutModal }
           </div>
         )}
       </div>
+
+      {/* Wallet Instant UPI Withdrawal Modal */}
+      <WalletWithdrawModal
+        isOpen={isWithdrawModalOpen}
+        onClose={() => setIsWithdrawModalOpen(false)}
+        walletBalance={walletBalance}
+        onConfirmWithdrawal={handleConfirmWithdrawal}
+      />
 
     </div>
   );

@@ -7,20 +7,28 @@ import {
   FileText, 
   Building, 
   Sparkles, 
-  ExternalLink,
-  Loader2,
-  AlertCircle,
-  ArrowRight
+  ExternalLink, 
+  Loader2, 
+  AlertCircle, 
+  ArrowRight,
+  Send,
+  Lock,
+  IndianRupee
 } from 'lucide-react';
 import { api } from '../services/api';
 import { initialOpportunities } from '../data/mockData';
+import DeliverableWorkroomModal from './DeliverableWorkroomModal';
 
-export default function ApplicationsPage({ user }) {
+export default function ApplicationsPage({ user, onUpdateWallet, showToast }) {
   const navigate = useNavigate();
 
   const [applications, setApplications] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  
+  // Workroom Modal State
+  const [selectedWorkroomApp, setSelectedWorkroomApp] = useState(null);
+  const [isWorkroomOpen, setIsWorkroomOpen] = useState(false);
 
   useEffect(() => {
     const fetchApplications = async () => {
@@ -43,7 +51,8 @@ export default function ApplicationsPage({ user }) {
           opportunityTitle: g.title,
           company: g.company,
           stipend: g.stipend,
-          status: 'SUBMITTED',
+          status: 'SHORTLISTED', // Demo with shortlisted to allow workroom testing
+          deliveryStatus: 'IN_PROGRESS',
           appliedAt: new Date().toLocaleDateString(),
           coverNote: 'I have built portfolio projects matching this role and am eager to contribute.'
         })));
@@ -55,7 +64,50 @@ export default function ApplicationsPage({ user }) {
     fetchApplications();
   }, [user]);
 
-  const getStatusBadge = (status) => {
+  const handleOpenWorkroom = (app) => {
+    setSelectedWorkroomApp(app);
+    setIsWorkroomOpen(true);
+  };
+
+  const handleApproveAndReleasePayment = (appId, amount) => {
+    // 1. Update application state locally
+    setApplications(prev => prev.map(a => {
+      if (a.id === appId) {
+        return { ...a, status: 'ACCEPTED', deliveryStatus: 'APPROVED' };
+      }
+      return a;
+    }));
+
+    // 2. Update user wallet balance in localStorage and app
+    try {
+      const savedUserStr = localStorage.getItem('herearn_user');
+      const currentUser = savedUserStr ? JSON.parse(savedUserStr) : (user || {});
+      const currentBal = currentUser.walletBalance || currentUser.totalEarned || 12000;
+      const updatedUser = {
+        ...currentUser,
+        walletBalance: currentBal + amount,
+        totalEarned: (currentUser.totalEarned || 0) + amount
+      };
+      localStorage.setItem('herearn_user', JSON.stringify(updatedUser));
+      if (onUpdateWallet) {
+        onUpdateWallet(updatedUser);
+      }
+    } catch (e) {
+      console.warn('[ApplicationsPage] Wallet update error:', e);
+    }
+  };
+
+  const getStatusBadge = (app) => {
+    const status = app.status;
+    const deliveryStatus = app.deliveryStatus;
+
+    if (deliveryStatus === 'APPROVED') {
+      return <span className="px-3 py-1 rounded-full text-xs font-black bg-emerald-100 dark:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 border border-emerald-300">Paid & Delivered ✓</span>;
+    }
+    if (deliveryStatus === 'SUBMITTED') {
+      return <span className="px-3 py-1 rounded-full text-xs font-black bg-amber-100 dark:bg-amber-900/60 text-amber-800 dark:text-amber-300 border border-amber-300">Deliverables Under Review ⏳</span>;
+    }
+
     switch (status?.toUpperCase()) {
       case 'ACCEPTED':
         return <span className="px-3 py-1 rounded-full text-xs font-black bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 border border-emerald-300">Accepted 🎉</span>;
@@ -77,11 +129,11 @@ export default function ApplicationsPage({ user }) {
       <div className="relative rounded-3xl bg-gradient-to-r from-purple-900 via-indigo-900 to-pink-900 p-6 sm:p-10 border border-purple-500/30 text-white shadow-xl overflow-hidden">
         <div className="relative z-10 space-y-4">
           <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-500/30 text-purple-200 text-xs font-bold uppercase tracking-wider">
-            <Briefcase className="w-4 h-4 text-pink-400" /> My Opportunity Applications
+            <Briefcase className="w-4 h-4 text-pink-400" /> My Opportunity Applications & Workrooms
           </span>
-          <h1 className="text-3xl sm:text-4xl font-black">Application Tracker</h1>
+          <h1 className="text-3xl sm:text-4xl font-black">Application & Milestone Tracker</h1>
           <p className="text-sm text-slate-300 max-w-2xl">
-            Track status of all micro-gigs, internships, and work opportunities you have applied for with your portfolio.
+            Track client evaluation, submit deliverables in the secure workroom, and claim escrow payouts.
           </p>
         </div>
       </div>
@@ -119,14 +171,14 @@ export default function ApplicationsPage({ user }) {
                 <div className="flex items-center gap-3">
                   <Building className="w-5 h-5 text-purple-600 dark:text-purple-400" />
                   <span className="text-xs font-bold text-slate-500 dark:text-slate-400">{app.company}</span>
-                  {getStatusBadge(app.status)}
+                  {getStatusBadge(app)}
                 </div>
 
                 <h3 className="text-lg font-bold">{app.opportunityTitle || app.title}</h3>
 
                 {app.coverNote && (
                   <p className="text-xs text-slate-600 dark:text-slate-400 line-clamp-2 bg-slate-50 dark:bg-slate-800/60 p-3 rounded-xl border border-slate-200 dark:border-slate-700">
-                    <span className="font-bold">Cover Note:</span> "{app.coverNote}"
+                    <span className="font-bold">Proposal Pitch:</span> "{app.coverNote}"
                   </p>
                 )}
 
@@ -135,25 +187,47 @@ export default function ApplicationsPage({ user }) {
                     <Clock className="w-3.5 h-3.5" /> Applied: {app.appliedAt}
                   </span>
                   {app.stipend && (
-                    <span className="font-bold text-pink-600 dark:text-pink-400">
-                      Stipend: {app.stipend}
+                    <span className="font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                      <IndianRupee className="w-3.5 h-3.5" /> Stipend: {app.stipend}
                     </span>
                   )}
+                  <span className="text-purple-600 dark:text-purple-400 font-bold flex items-center gap-1">
+                    <Lock className="w-3 h-3" /> Escrow Protected
+                  </span>
                 </div>
               </div>
 
-              <div className="shrink-0 flex items-center gap-3">
+              <div className="shrink-0 flex items-center gap-2.5">
+                {/* Milestone Workroom CTA */}
+                <button
+                  type="button"
+                  onClick={() => handleOpenWorkroom(app)}
+                  className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white text-xs font-extrabold shadow-md transition-all flex items-center gap-1.5 cursor-pointer"
+                >
+                  <Send className="w-3.5 h-3.5" />
+                  <span>Workroom & Submit</span>
+                </button>
+
                 <Link 
                   to="/opportunities" 
-                  className="px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-xs font-bold flex items-center gap-1.5"
+                  className="px-3.5 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-xs font-bold flex items-center gap-1.5"
                 >
-                  View Gigs <ExternalLink className="w-3.5 h-3.5" />
+                  <ExternalLink className="w-3.5 h-3.5" />
                 </Link>
               </div>
             </div>
           ))}
         </div>
       )}
+
+      {/* Deliverable Workroom Modal */}
+      <DeliverableWorkroomModal
+        isOpen={isWorkroomOpen}
+        onClose={() => setIsWorkroomOpen(false)}
+        application={selectedWorkroomApp}
+        onApproveAndReleasePayment={handleApproveAndReleasePayment}
+        showToast={showToast}
+      />
 
     </div>
   );
