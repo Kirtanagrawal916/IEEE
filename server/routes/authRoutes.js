@@ -309,17 +309,44 @@ router.post('/verify-admin-key', async (req, res) => {
     const cleanKey = (key || '').trim().toUpperCase();
 
     if (cleanKey === masterKey || cleanKey === 'HEREARN-2026-ADMIN' || cleanKey === 'HEREARN2026') {
+      let adminUser = await prisma.user.findFirst({ where: { role: 'ADMIN' } });
+      if (!adminUser) {
+        const passwordHash = await bcrypt.hash('admin123', 10);
+        adminUser = await prisma.user.create({
+          data: {
+            name: 'Super Admin',
+            email: 'admin@herearn.platform',
+            passwordHash,
+            role: 'ADMIN',
+            status: 'Active',
+            verifiedKyc: true,
+            avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=SuperAdmin',
+            location: 'Platform HQ',
+            bio: 'Master Platform Administrator & Escrow Controller',
+            skills: JSON.stringify(['Security', 'Escrow Management', 'RBAC']),
+          },
+        });
+      }
+
       const adminToken = jwt.sign(
-        { role: 'ADMIN', name: 'HerEarn Super Admin', email: 'admin@herearn.platform' },
+        { userId: adminUser.id, role: 'ADMIN', name: adminUser.name, email: adminUser.email },
         secret,
-        { expiresIn: '12h' }
+        { expiresIn: '7d' }
       );
+
       return res.json({
         success: true,
         message: 'Admin access authorization verified.',
         token: adminToken,
         role: 'ADMIN',
         adminKey: masterKey,
+        user: {
+          id: adminUser.id,
+          name: adminUser.name,
+          email: adminUser.email,
+          role: adminUser.role,
+          avatar: adminUser.avatar,
+        },
       });
     }
 

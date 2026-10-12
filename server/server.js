@@ -11,6 +11,7 @@ import opportunityRoutes from './routes/opportunityRoutes.js';
 import applicationRoutes from './routes/applicationRoutes.js';
 import dashboardRoutes from './routes/dashboardRoutes.js';
 import chatRoutes from './routes/chat.js';
+import adminRoutes from './routes/adminRoutes.js';
 
 dotenv.config();
 
@@ -31,6 +32,7 @@ app.use('/api/opportunities', opportunityRoutes);
 app.use('/api', applicationRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/chat', chatRoutes);
+app.use('/api/admin', adminRoutes);
 
 // Health Check
 app.get('/api/health', (req, res) => {
