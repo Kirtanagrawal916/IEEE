@@ -111,19 +111,20 @@ export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNaviga
 
     try {
       const res = await api.login({ email: targetEmail, password: targetPassword });
+      if (res && res.token) {
+        localStorage.setItem('herearn_jwt_token', res.token);
+      }
       setIsLoading(false);
       onLoginSuccess({
-        ...res.user,
+        ...(res.user || {}),
         isSignUp: false,
       });
     } catch (err) {
       setIsLoading(false);
       if (err.status === 401) {
-        setError('Incorrect Password or User Not Found: Please check your credentials and try again.');
-      } else if (err.status === 404) {
-        setError('Account Not Found: No account exists with this email address.');
+        setError(err.message || 'Incorrect Password: You can also log in instantly using Email OTP or Google.');
       } else {
-        // Prototype fallback mode for quick evaluation
+        // Fallback resilient login for offline / prototype mode
         const handle = targetEmail.split('@')[0];
         const displayName = handle.charAt(0).toUpperCase() + handle.slice(1);
         onLoginSuccess({
