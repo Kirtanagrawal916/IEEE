@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { api } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import GoogleSignInButton from './GoogleSignInButton';
+import Logo from './Logo';
 import { 
   Sparkles, 
   User, 
@@ -192,15 +193,10 @@ export default function SignupPage({ onLoginSuccess, onNavigateToLogin, onNaviga
           <div className="relative z-10">
             {/* Logo Header */}
             <div 
-              className="flex items-center gap-3 cursor-pointer mb-8 group"
+              className="cursor-pointer mb-8 group inline-flex items-center"
               onClick={onNavigateHome}
             >
-              <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-purple-600 via-pink-600 to-amber-500 flex items-center justify-center text-white shadow-lg group-hover:scale-105 transition-transform">
-                <Sparkles className="w-5 h-5 animate-pulse" />
-              </div>
-              <span className="text-2xl font-extrabold tracking-tight bg-gradient-to-r from-purple-300 via-pink-300 to-amber-200 bg-clip-text text-transparent">
-                Her<span className="text-pink-400">Earn</span>
-              </span>
+              <Logo size="lg" />
             </div>
 
             <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight mb-3 text-white">

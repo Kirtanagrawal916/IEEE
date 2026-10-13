@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import logo from '../assets/logo.jpg';
+import Logo from './Logo';
 import { 
   Compass, 
   User, 
@@ -123,14 +123,10 @@ export default function Navbar({
           {/* Logo */}
           <Link
             to="/"
-            className="flex items-center cursor-pointer group"
+            className="flex items-center cursor-pointer group py-1"
+            title="HerEarn - Skill to Income Platform"
           >
-            <img
-              src={logo}
-              alt="HerEarn - Skill to Income Platform"
-              className="h-16 w-auto group-hover:scale-105 transition-transform"
-              style={theme === 'dark' ? { filter: 'contrast(1.4) brightness(1.1)', mixBlendMode: 'screen' } : {}}
-            />
+            <Logo size="md" />
           </Link>
 
           {/* Central Navigation: Home | Career Opportunity (Dropdown: Courses, Portfolio, Opportunities) | Mentorship | Applications */}

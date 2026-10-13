@@ -38,6 +38,7 @@ import {
   ChevronDown
 } from 'lucide-react';
 import { api } from '../services/api';
+import Logo from './Logo';
 
 // Designated Official Master Admin Key
 export const MASTER_ADMIN_KEY = 'HEREARN-ADMIN-2026-X9K';
@@ -627,8 +628,8 @@ export default function AdminPanel({
           <div className="absolute -inset-1 bg-gradient-to-r from-purple-600 via-pink-600 to-indigo-600 rounded-3xl blur-xl opacity-40 animate-pulse"></div>
 
           <div className="relative bg-slate-900 border border-purple-500/40 rounded-3xl shadow-2xl p-8 space-y-6 text-white text-center">
-            <div className="mx-auto w-16 h-16 rounded-2xl bg-gradient-to-tr from-purple-600 to-pink-600 flex items-center justify-center shadow-lg shadow-purple-500/30">
-              <Shield className="w-8 h-8 text-white" />
+            <div className="mx-auto flex justify-center mb-2">
+              <Logo size="lg" />
             </div>
 
             <div className="space-y-1.5">
@@ -750,8 +751,8 @@ export default function AdminPanel({
           <div className={`relative bg-slate-900 border border-purple-500/40 rounded-3xl shadow-2xl p-8 space-y-6 text-white ${shake ? 'animate-bounce' : ''}`}>
             
             <div className="text-center space-y-3">
-              <div className="mx-auto w-16 h-16 rounded-2xl bg-gradient-to-tr from-purple-600 to-pink-600 flex items-center justify-center shadow-lg shadow-purple-500/30">
-                <Shield className="w-8 h-8 text-white" />
+              <div className="mx-auto flex justify-center mb-2">
+                <Logo size="lg" />
               </div>
               <div className="space-y-1">
                 <div className="inline-flex items-center gap-1.5 text-[10px] font-black tracking-widest uppercase bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-3 py-1 rounded-full">
@@ -858,9 +859,9 @@ export default function AdminPanel({
       {/* 1. DEDICATED ADMIN TOP BAR */}
       <header className="sticky top-0 z-40 bg-slate-900/95 border-b border-purple-500/30 backdrop-blur-md px-4 sm:px-8 py-3.5 flex items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-purple-600 to-pink-600 flex items-center justify-center shadow-md">
-            <Shield className="w-5 h-5 text-white" />
-          </div>
+          <Link to="/" className="cursor-pointer group shrink-0" title="Return to Public Site">
+            <Logo variant="icon" size="sm" />
+          </Link>
           <div>
             <div className="flex items-center gap-2">
               <span className="font-black text-sm tracking-tight text-white">HerEarn Admin OS</span>

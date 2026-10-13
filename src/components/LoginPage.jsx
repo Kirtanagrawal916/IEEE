@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
 import GoogleSignInButton from './GoogleSignInButton';
+import Logo from './Logo';
 import {
   Sparkles,
   Mail,
@@ -318,17 +319,10 @@ export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNaviga
             {/* Header: Logo & Tagline */}
             <div className="space-y-3">
               <div 
-                className="flex items-center gap-3 cursor-pointer group inline-flex"
+                className="cursor-pointer group inline-flex items-center"
                 onClick={onNavigateHome}
               >
-                <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-purple-600 via-pink-600 to-amber-500 flex items-center justify-center text-white shadow-lg group-hover:scale-105 transition-transform">
-                  <Sparkles className="w-6 h-6 animate-pulse" />
-                </div>
-                <div>
-                  <span className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
-                    Her<span className="text-pink-400">Earn</span>
-                  </span>
-                </div>
+                <Logo size="lg" />
               </div>
 
               {/* Tagline */}

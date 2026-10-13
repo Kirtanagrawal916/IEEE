@@ -29,6 +29,7 @@ import ToastNotification from './components/ToastNotification';
 import ChatBot from './components/ChatBot';
 import MentorshipSection from './components/MentorshipSection';
 import AdminPanel from './components/AdminPanel';
+import Logo from './components/Logo';
 
 import { 
   initialUser, 
@@ -762,10 +763,15 @@ function AppContent() {
         <footer className={`border-t py-10 text-xs transition-colors ${
           theme === 'dark' ? 'bg-slate-900 border-slate-800 text-slate-400' : 'bg-white border-slate-200 text-slate-600'
         }`}>
-          <div className="w-full px-4 sm:px-8 lg:px-12 flex flex-col md:flex-row items-center justify-between gap-4 text-center md:text-left">
-            <div>
-              <p className="font-bold text-sm">HerEarn • Skill-to-Income Platform for Women</p>
-              <p className="opacity-75 mt-1">Empowering women across India to learn skills, build portfolios, and earn income.</p>
+          <div className="w-full px-4 sm:px-8 lg:px-12 flex flex-col md:flex-row items-center justify-between gap-6 text-center md:text-left">
+            <div className="flex flex-col sm:flex-row items-center gap-3">
+              <Link to="/" className="cursor-pointer group shrink-0" title="HerEarn Home">
+                <Logo size="sm" />
+              </Link>
+              <div className="text-center sm:text-left">
+                <p className="font-bold text-xs">Skill-to-Income Platform for Women</p>
+                <p className="opacity-75 text-[11px] mt-0.5">Empowering women across India to learn skills, build portfolios, and earn income.</p>
+              </div>
             </div>
             <div className="flex flex-wrap items-center justify-center md:justify-end gap-5 font-semibold">
               <Link to="/dashboard" className="hover:text-indigo-400 cursor-pointer">Dashboard</Link>
