@@ -3,7 +3,8 @@
  * Connects React Frontend with Node.js Express Backend REST API
  */
 
-const API_BASE = import.meta.env.VITE_API_URL || '';
+const rawApiUrl = import.meta.env.VITE_API_URL || '';
+const API_BASE = rawApiUrl.replace(/\/api\/?$/, '').replace(/\/$/, '');
 
 const getAuthHeaders = () => {
   const token = localStorage.getItem('herearn_jwt_token') || sessionStorage.getItem('herearn_admin_token');
