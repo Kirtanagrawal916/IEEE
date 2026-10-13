@@ -37,17 +37,15 @@ import {
 } from './data/mockData';
 
 import { api } from './services/api';
+import { useAuth } from './context/AuthContext';
 
 function AppContent() {
   const navigate = useNavigate();
   const location = useLocation();
   const isAdminRoute = location.pathname.startsWith('/admin');
 
-  // User state
-  const [user, setUser] = useState(() => {
-    const saved = localStorage.getItem('herearn_user');
-    return saved ? JSON.parse(saved) : null;
-  });
+  // Unified Auth state via AuthContext
+  const { user, setUser, logout: authLogout } = useAuth();
 
   const [portfolios, setPortfolios] = useState(initialPortfolios);
   const [opportunities, setOpportunities] = useState(initialOpportunities);
@@ -149,7 +147,11 @@ function AppContent() {
   const handleLogout = async () => {
     setIsLogoutModalOpen(false);
     try {
-      await api.logout();
+      if (authLogout) {
+        await authLogout();
+      } else {
+        await api.logout();
+      }
     } catch {
       // Ignore network errors
     }

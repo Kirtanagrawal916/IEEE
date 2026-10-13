@@ -1,74 +1,133 @@
 /**
  * Authentication and Authorization Middleware
- * Validates JWT tokens and enforces Role-Based Access Control (RBAC)
+ * Validates Supabase JWT access tokens & platform JWTs, and enforces Role-Based Access Control (RBAC)
  */
 
 import { verifyToken } from '../utils/jwt.js';
 import prisma from '../config/db.js';
+import { supabaseAdmin } from '../config/supabase.js';
 
 /**
- * Authenticate incoming HTTP request via Bearer JWT token
+ * Authenticate incoming HTTP request via Bearer JWT token or cookie
  * Attaches the verified user record to req.user
  */
 export const authenticateToken = async (req, res, next) => {
   const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.startsWith('Bearer ')
+  let token = authHeader && authHeader.startsWith('Bearer ')
     ? authHeader.split(' ')[1]
     : null;
+
+  if (!token && req.cookies) {
+    token = req.cookies.herearn_access_token || req.cookies['sb-access-token'] || null;
+  }
 
   if (!token) {
     return res.status(401).json({
       success: false,
       message: 'Access denied. No authentication token provided.',
+      code: 'NO_TOKEN',
     });
   }
 
   try {
-    const decoded = verifyToken(token);
-    const userId = decoded.userId || decoded.id;
-    if (!userId) {
-      return res.status(401).json({
-        success: false,
-        message: 'Invalid token payload.',
-      });
+    let user = null;
+
+    // 1. Try Supabase Auth verification
+    if (supabaseAdmin && supabaseAdmin.auth) {
+      try {
+        const { data, error } = await supabaseAdmin.auth.getUser(token);
+        if (!error && data && data.user) {
+          const sbUser = data.user;
+          const cleanEmail = sbUser.email ? sbUser.email.toLowerCase().trim() : null;
+
+          if (cleanEmail) {
+            user = await prisma.user.findFirst({
+              where: {
+                OR: [
+                  { email: cleanEmail },
+                  { id: sbUser.id },
+                ],
+              },
+            }).catch(() => null);
+
+            if (!user) {
+              const meta = sbUser.user_metadata || {};
+              const rawName = meta.full_name || meta.name || cleanEmail.split('@')[0] || 'Learner';
+              const formattedName = rawName.charAt(0).toUpperCase() + rawName.slice(1);
+              const avatar =
+                meta.avatar_url ||
+                meta.picture ||
+                `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(formattedName)}`;
+
+              user = await prisma.user.create({
+                data: {
+                  id: sbUser.id,
+                  name: formattedName,
+                  email: cleanEmail,
+                  passwordHash: 'supabase_oauth_managed_account',
+                  role: 'LEARNER',
+                  avatar,
+                  location: 'India',
+                  bio: 'Verified HerEarn Learner via Supabase Auth',
+                  skills: JSON.stringify(['Digital Marketing', 'Graphic Design']),
+                },
+              }).catch(() => null);
+            }
+          }
+        }
+      } catch {
+        // Supabase check failed, try internal
+      }
     }
 
-    // Database verification to ensure user exists and load profile fields
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        role: true,
-        avatar: true,
-        phone: true,
-        location: true,
-        bio: true,
-        skills: true,
-        totalEarned: true,
-      },
-    });
+    // 2. Try Internal JWT verification
+    if (!user) {
+      try {
+        const decoded = verifyToken(token);
+        const userId = decoded.userId || decoded.id || decoded.sub;
+        if (userId) {
+          user = await prisma.user.findUnique({
+            where: { id: userId },
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              role: true,
+              avatar: true,
+              phone: true,
+              location: true,
+              bio: true,
+              skills: true,
+              totalEarned: true,
+            },
+          });
+        }
+      } catch (err) {
+        if (err.name === 'TokenExpiredError') {
+          return res.status(401).json({
+            success: false,
+            message: 'Authentication token has expired. Please log in again.',
+            code: 'TOKEN_EXPIRED',
+          });
+        }
+      }
+    }
 
     if (!user) {
       return res.status(401).json({
         success: false,
-        message: 'Invalid token. User account not found.',
+        message: 'Invalid or expired authentication token.',
+        code: 'INVALID_TOKEN',
       });
     }
 
     req.user = user;
     next();
   } catch (error) {
-    if (error.name === 'TokenExpiredError') {
-      return res.status(401).json({
-        success: false,
-        message: 'Authentication token has expired. Please log in again.',
-      });
-    }
-    return res.status(403).json({
+    return res.status(401).json({
       success: false,
-      message: 'Invalid authentication token.',
+      message: 'Authentication failed.',
+      error: error.message,
     });
   }
 };

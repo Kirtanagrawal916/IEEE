@@ -80,8 +80,10 @@ app.use((err, req, res, next) => {
   });
 });
 
-app.listen(PORT, () => {
-  console.log(`🚀 HerEarn Secure Express Backend running on http://localhost:${PORT}`);
-});
+if (process.env.NODE_ENV !== 'test') {
+  app.listen(PORT, () => {
+    console.log(`🚀 HerEarn Secure Express Backend running on http://localhost:${PORT}`);
+  });
+}
 
 export default app;

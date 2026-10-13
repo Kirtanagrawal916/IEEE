@@ -5,6 +5,7 @@ import rateLimit from 'express-rate-limit';
 import { OAuth2Client } from 'google-auth-library';
 import { prisma } from '../config/db.js';
 import { authMiddleware } from '../middleware/authMiddleware.js';
+import { supabaseAdmin } from '../config/supabase.js';
 
 const googleOAuthClient = new OAuth2Client();
 const router = express.Router();
@@ -63,10 +64,12 @@ const setAuthCookie = (res, token) => {
 
 // Helper: Clear auth cookie on logout
 const clearAuthCookie = (res) => {
-  res.clearCookie('herearn_access_token', {
+  const options = {
     ...getCookieOptions(),
     maxAge: 0,
-  });
+  };
+  res.clearCookie('herearn_access_token', options);
+  res.clearCookie('sb-access-token', options);
 };
 
 // In-Memory OTP Store for email validation
@@ -361,6 +364,117 @@ router.post('/google', authLimiter, async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({ success: false, message: 'Google authentication failed', error: error.message });
+  }
+});
+
+// POST /api/auth/supabase-sync
+// Exchanges or verifies a Supabase session access token, maps to DB user, and sets secure cookie
+router.post('/supabase-sync', authLimiter, async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization;
+    const token = req.body?.access_token || (authHeader && authHeader.startsWith('Bearer ') ? authHeader.split(' ')[1] : null);
+
+    if (!token) {
+      return res.status(400).json({
+        success: false,
+        message: 'Supabase access token is required.',
+      });
+    }
+
+    if (!supabaseAdmin || !supabaseAdmin.auth) {
+      return res.status(500).json({
+        success: false,
+        message: 'Supabase server configuration is missing.',
+      });
+    }
+
+    const { data, error } = await supabaseAdmin.auth.getUser(token);
+    if (error || !data?.user) {
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid or expired Supabase authentication token.',
+        error: error?.message,
+      });
+    }
+
+    const sbUser = data.user;
+    const cleanEmail = sbUser.email ? sbUser.email.toLowerCase().trim() : null;
+
+    if (!cleanEmail) {
+      return res.status(400).json({
+        success: false,
+        message: 'Supabase user has no associated email address.',
+      });
+    }
+
+    let user = await prisma.user.findFirst({
+      where: {
+        OR: [
+          { email: cleanEmail },
+          { id: sbUser.id },
+        ],
+      },
+    }).catch(() => null);
+
+    const meta = sbUser.user_metadata || {};
+    const rawName = meta.full_name || meta.name || cleanEmail.split('@')[0] || 'HerEarn Learner';
+    const formattedName = rawName.charAt(0).toUpperCase() + rawName.slice(1);
+    const avatar =
+      meta.avatar_url ||
+      meta.picture ||
+      `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(formattedName)}`;
+
+    if (!user) {
+      try {
+        user = await prisma.user.create({
+          data: {
+            id: sbUser.id,
+            name: formattedName,
+            email: cleanEmail,
+            passwordHash: 'supabase_oauth_managed_account',
+            role: 'LEARNER',
+            avatar,
+            location: 'India',
+            bio: 'Verified HerEarn Learner via Supabase Auth',
+            skills: JSON.stringify(['Digital Marketing', 'Graphic Design']),
+          },
+        });
+      } catch (createErr) {
+        user = await prisma.user.findUnique({ where: { email: cleanEmail } }).catch(() => null);
+      }
+    } else if (avatar && (!user.avatar || user.avatar.includes('dicebear'))) {
+      try {
+        user = await prisma.user.update({
+          where: { id: user.id },
+          data: { avatar },
+        }).catch(() => user);
+      } catch {
+        // ignore
+      }
+    }
+
+    if (user?.status === 'Suspended') {
+      return res.status(403).json({
+        success: false,
+        message: 'Account suspended. Please contact platform support.',
+      });
+    }
+
+    // Set HttpOnly cookie for session persistence
+    setAuthCookie(res, token);
+
+    res.json({
+      success: true,
+      message: 'Supabase authentication synchronized successfully',
+      token,
+      user: sanitizeUser(user),
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to synchronize Supabase session',
+      error: error.message,
+    });
   }
 });
 

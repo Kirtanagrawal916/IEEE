@@ -55,6 +55,7 @@ export const api = {
   login: (credentials) => request('/api/auth/login', { method: 'POST', body: JSON.stringify(credentials) }),
   logout: () => request('/api/auth/logout', { method: 'POST' }),
   googleLogin: (credential) => request('/api/auth/google', { method: 'POST', body: JSON.stringify({ credential }) }),
+  supabaseSync: (accessToken) => request('/api/auth/supabase-sync', { method: 'POST', body: JSON.stringify({ access_token: accessToken }) }),
   sendOtp: (email) => request('/api/auth/send-otp', { method: 'POST', body: JSON.stringify({ email }) }),
   verifyOtp: (data) => request('/api/auth/verify-otp', { method: 'POST', body: JSON.stringify(data) }),
   verifyAdminKey: (key) => request('/api/auth/verify-admin-key', { method: 'POST', body: JSON.stringify({ key }) }),
