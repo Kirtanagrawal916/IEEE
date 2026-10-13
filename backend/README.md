@@ -50,11 +50,8 @@ npm install
 ```
 
 ### 2. Configure Environment Variables
-Copy `.env.example` to `.env`:
-```bash
-cp .env.example .env
-```
-Ensure your `DATABASE_URL` points to your PostgreSQL instance.
+Environment variables are managed centrally in the root repository [`.env`](../.env) (template: [`.env.example`](../.env.example)).
+The backend automatically resolves this root file. If you are running PostgreSQL, ensure your `DATABASE_URL` (or `POSTGRES_DATABASE_URL`) points to your PostgreSQL instance.
 
 ### 3. Initialize Database & Seed Sample Data
 ```bash

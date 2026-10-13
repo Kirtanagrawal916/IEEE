@@ -3,8 +3,27 @@
  * Loads .env variables and provides typed fallbacks
  */
 
+import path from 'path';
+import { fileURLToPath } from 'url';
+import fs from 'fs';
 import dotenv from 'dotenv';
+
+// 1. Load from cwd
 dotenv.config();
+
+// 2. Load from repository root if running inside backend or a subdirectory
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const rootEnvPath = path.resolve(__dirname, '../../../.env');
+if (fs.existsSync(rootEnvPath)) {
+  dotenv.config({ path: rootEnvPath, override: false });
+}
+
+// If the root .env provides SQLite (for server/), supply PostgreSQL URL for backend
+if (!process.env.DATABASE_URL || process.env.DATABASE_URL.startsWith('file:')) {
+  process.env.DATABASE_URL =
+    process.env.POSTGRES_DATABASE_URL ||
+    'postgresql://postgres:postgres@localhost:5432/herearn?schema=public';
+}
 
 export const env = {
   PORT: process.env.PORT || 5000,
