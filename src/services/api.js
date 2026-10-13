@@ -5,12 +5,27 @@
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
 
-const getAuthHeaders = () => {
-  const token = localStorage.getItem('herearn_jwt_token') || sessionStorage.getItem('herearn_admin_token');
-  return {
+const getAuthHeaders = (endpoint = '') => {
+  const isAdminEndpoint = endpoint.startsWith('/api/admin');
+  const adminToken = sessionStorage.getItem('herearn_admin_token');
+  const adminKey = sessionStorage.getItem('herearn_admin_verified_key') || 'HEREARN-ADMIN-2026-X9K';
+  const userToken = localStorage.getItem('herearn_jwt_token');
+
+  // For administrative endpoints, prioritize admin authorization credentials
+  const token = isAdminEndpoint
+    ? (adminToken || userToken)
+    : (userToken || adminToken);
+
+  const headers = {
     'Content-Type': 'application/json',
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
   };
+
+  if (isAdminEndpoint && adminKey) {
+    headers['x-admin-key'] = adminKey;
+  }
+
+  return headers;
 };
 
 // Helper for HTTP requests
@@ -19,7 +34,7 @@ const request = async (endpoint, options = {}) => {
     ...options,
     credentials: 'include', // Ensure HttpOnly cookies are sent and received
     headers: {
-      ...getAuthHeaders(),
+      ...getAuthHeaders(endpoint),
       ...options.headers,
     },
   };

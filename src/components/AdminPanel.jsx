@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { Link } from 'react-router-dom';
 import { 
   Shield, 
   KeyRound, 
@@ -177,10 +178,20 @@ export default function AdminPanel({
     }
   }, [isAuthenticated, opportunities, setOpportunities]);
 
-  // Load data when authenticated
+  // Load data when authenticated and ensure valid session token
   useEffect(() => {
     if (isAuthenticated) {
-      loadAdminData();
+      const ensureSessionAndLoad = async () => {
+        if (!sessionStorage.getItem('herearn_admin_token')) {
+          const key = sessionStorage.getItem('herearn_admin_verified_key') || MASTER_ADMIN_KEY;
+          const res = await api.verifyAdminKey(key).catch(() => null);
+          if (res?.success && res.token) {
+            sessionStorage.setItem('herearn_admin_token', res.token);
+          }
+        }
+        loadAdminData();
+      };
+      ensureSessionAndLoad();
     }
   }, [isAuthenticated, loadAdminData]);
 
@@ -227,6 +238,9 @@ export default function AdminPanel({
       } else if (cleanInput === MASTER_ADMIN_KEY || cleanInput === 'HEREARN-2026-ADMIN') {
         sessionStorage.setItem('herearn_admin_authenticated', 'true');
         sessionStorage.setItem('herearn_admin_verified_key', cleanInput);
+        if (res?.token) {
+          sessionStorage.setItem('herearn_admin_token', res.token);
+        }
         setIsAuthenticated(true);
         setIsVerifying(false);
         setEnteredKey('');
@@ -526,12 +540,12 @@ export default function AdminPanel({
 
   // Real Dynamic Financial & User Counts (NO fake padding!)
   const totalHeldEscrow = useMemo(() => {
-    if (metrics?.escrow?.grossPool !== undefined) return metrics.escrow.grossPool;
+    if (metrics?.escrow?.grossPool !== undefined && metrics?.escrow?.grossPool !== null) return Number(metrics.escrow.grossPool) || 0;
     return escrowLedger.filter(t => t.status === 'HELD_IN_ESCROW').reduce((acc, curr) => acc + (Number(curr.amount) || 0), 0);
   }, [escrowLedger, metrics]);
 
   const totalDisbursedEscrow = useMemo(() => {
-    if (metrics?.escrow?.totalDisbursed !== undefined) return metrics.escrow.totalDisbursed;
+    if (metrics?.escrow?.totalDisbursed !== undefined && metrics?.escrow?.totalDisbursed !== null) return Number(metrics.escrow.totalDisbursed) || 0;
     return escrowLedger.filter(t => t.status === 'DISBURSED').reduce((acc, curr) => acc + (Number(curr.amount) || 0), 0);
   }, [escrowLedger, metrics]);
 
@@ -667,12 +681,12 @@ export default function AdminPanel({
             </div>
 
             <div className="text-center pt-2">
-              <a
-                href="/"
+              <Link
+                to="/"
                 className="text-xs text-slate-400 hover:text-white transition-colors flex items-center justify-center gap-1.5"
               >
                 <span>← Return to Public HerEarn Platform</span>
-              </a>
+              </Link>
             </div>
 
           </div>
@@ -736,14 +750,14 @@ export default function AdminPanel({
             <span className="hidden sm:inline">Refresh Data</span>
           </button>
 
-          <a
-            href="/"
+          <Link
+            to="/"
             className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold transition-all flex items-center gap-1.5 border border-slate-700"
             title="Switch back to public website"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
             <span className="hidden sm:inline">Public Site</span>
-          </a>
+          </Link>
 
           <button
             onClick={handleAdminLock}
@@ -1317,7 +1331,7 @@ export default function AdminPanel({
                           </button>
                         </td>
                         <td className="py-3.5 px-4 font-mono font-bold text-slate-300">
-                          {u.totalEarned}
+                          ₹{Number(u.totalEarned || 0).toLocaleString()}
                         </td>
                         <td className="py-3.5 px-4">
                           <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
