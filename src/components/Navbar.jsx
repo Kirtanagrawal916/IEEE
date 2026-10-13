@@ -270,10 +270,13 @@ export default function Navbar({
                   ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-md'
                   : 'text-slate-700 dark:text-slate-200 hover:text-purple-700 dark:hover:text-white hover:bg-purple-100/70 dark:hover:bg-purple-900/40'
               }`}
-              title="Super Admin Portal (Passkey Protected)"
+              title="Super Admin Portal (Staff Account & 2FA Passkey Protected)"
             >
               <Shield className="w-4 h-4 text-pink-500" />
               <span>Admin</span>
+              {user?.role === 'ADMIN' && (
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+              )}
             </Link>
           </div>
 
@@ -547,7 +550,7 @@ export default function Navbar({
                         <span>Admin Portal</span>
                       </div>
                       <span className="text-[9px] font-black uppercase px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-600 dark:text-purple-300">
-                        Passkey
+                        2FA Staff
                       </span>
                     </Link>
                   </div>

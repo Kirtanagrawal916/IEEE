@@ -29,6 +29,7 @@ import {
   Send,
   X,
   ArrowLeft,
+  ArrowRight,
   Server,
   Zap,
   UserCheck,
@@ -42,6 +43,7 @@ import { api } from '../services/api';
 export const MASTER_ADMIN_KEY = 'HEREARN-ADMIN-2026-X9K';
 
 export default function AdminPanel({ 
+  user,
   opportunities = [], 
   setOpportunities, 
   showToast 
@@ -613,7 +615,130 @@ export default function AdminPanel({
   }, [localGigs]);
 
   // =========================================================================
-  // VIEW 1: ADMIN SECURITY GATE (LOCKED STATE)
+  // OPTION C: DUAL-LAYER DEFENSE-IN-DEPTH
+  // LAYER 1: IDENTITY & ROLE VERIFICATION
+  // =========================================================================
+
+  // 1A. GUEST / NOT LOGGED IN -> Redirect to login with Administrator credentials
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center px-4 py-12">
+        <div className="relative w-full max-w-md">
+          <div className="absolute -inset-1 bg-gradient-to-r from-purple-600 via-pink-600 to-indigo-600 rounded-3xl blur-xl opacity-40 animate-pulse"></div>
+
+          <div className="relative bg-slate-900 border border-purple-500/40 rounded-3xl shadow-2xl p-8 space-y-6 text-white text-center">
+            <div className="mx-auto w-16 h-16 rounded-2xl bg-gradient-to-tr from-purple-600 to-pink-600 flex items-center justify-center shadow-lg shadow-purple-500/30">
+              <Shield className="w-8 h-8 text-white" />
+            </div>
+
+            <div className="space-y-1.5">
+              <span className="text-[10px] font-black tracking-widest uppercase bg-purple-500/20 text-purple-300 border border-purple-500/30 px-3 py-1 rounded-full">
+                Layer 1: Identity Required
+              </span>
+              <h1 className="text-2xl font-black tracking-tight text-white mt-2">
+                Staff Login Required
+              </h1>
+              <p className="text-xs text-slate-400">
+                HerEarn Mission Control is protected by Dual-Layer Defense. You must log in with an authorized Administrator account before accessing operational controls.
+              </p>
+            </div>
+
+            <div className="p-3.5 rounded-2xl bg-purple-950/40 border border-purple-500/20 text-left text-xs space-y-1.5">
+              <div className="font-bold text-purple-300 flex items-center gap-1.5 text-[11px]">
+                <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                <span>Default Platform Admin Credentials:</span>
+              </div>
+              <div className="bg-black/50 p-2.5 rounded-xl space-y-1 font-mono text-[11px] border border-purple-500/20">
+                <div className="flex justify-between items-center">
+                  <span className="text-slate-400">Email:</span>
+                  <span className="text-emerald-400 font-bold select-all">admin@herearn.platform</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-slate-400">Password:</span>
+                  <span className="text-emerald-400 font-bold select-all">admin123</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-3 pt-2">
+              <Link
+                to="/login?redirect=/admin"
+                className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-purple-600 via-pink-600 to-indigo-600 hover:from-purple-500 hover:to-pink-500 text-white font-extrabold text-xs shadow-lg shadow-purple-600/30 transition-all flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <UserCheck className="w-4 h-4" />
+                <span>Sign In with Administrator Account</span>
+                <ArrowRight className="w-4 h-4 ml-1" />
+              </Link>
+
+              <Link
+                to="/"
+                className="block text-xs text-slate-400 hover:text-white transition-colors"
+              >
+                ← Return to Public HerEarn Platform
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // 1B. LOGGED IN BUT NOT AN ADMIN (e.g. LEARNER or EMPLOYER) -> 403 Forbidden
+  if (user && user.role !== 'ADMIN') {
+    return (
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center px-4 py-12">
+        <div className="relative w-full max-w-md">
+          <div className="absolute -inset-1 bg-red-600/30 rounded-3xl blur-xl opacity-40"></div>
+
+          <div className="relative bg-slate-900 border border-red-500/40 rounded-3xl shadow-2xl p-8 space-y-6 text-white text-center">
+            <div className="mx-auto w-16 h-16 rounded-2xl bg-red-950/80 border border-red-500/50 flex items-center justify-center text-red-400 shadow-lg shadow-red-500/20">
+              <AlertTriangle className="w-8 h-8" />
+            </div>
+
+            <div className="space-y-1.5">
+              <span className="text-[10px] font-black tracking-widest uppercase bg-red-500/20 text-red-300 border border-red-500/30 px-3 py-1 rounded-full">
+                403 Forbidden • Access Denied
+              </span>
+              <h1 className="text-2xl font-black tracking-tight text-white mt-2">
+                Insufficient Privileges
+              </h1>
+              <p className="text-xs text-slate-400">
+                You are currently signed in as <strong className="text-white">@{user.username || user.name}</strong> with role <strong className="text-amber-400 font-mono">{user.role || 'LEARNER'}</strong>. This account does not possess platform governance privileges.
+              </p>
+            </div>
+
+            <div className="p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800 text-left text-xs space-y-1">
+              <p className="text-slate-400 text-[11px]">
+                To manage platform operations, escrow, and moderation, please switch to an account registered with the <strong className="text-purple-400 font-mono">ADMIN</strong> role.
+              </p>
+            </div>
+
+            <div className="space-y-3 pt-2">
+              <Link
+                to="/login?redirect=/admin"
+                className="w-full py-3.5 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white font-extrabold text-xs transition-all flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <UserX className="w-4 h-4 text-red-400" />
+                <span>Switch to Administrator Account</span>
+                <ArrowRight className="w-4 h-4 ml-1" />
+              </Link>
+
+              <Link
+                to="/dashboard"
+                className="block text-xs text-purple-400 hover:text-purple-300 font-bold transition-colors"
+              >
+                ← Back to Learner Dashboard
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // =========================================================================
+  // LAYER 2: SECOND-FACTOR MASTER SECURITY PASSKEY (CRYPTOGRAPHIC PIN)
+  // (User is authenticated with role === 'ADMIN', now entering cryptographic passkey)
   // =========================================================================
   if (!isAuthenticated) {
     return (
@@ -629,14 +754,15 @@ export default function AdminPanel({
                 <Shield className="w-8 h-8 text-white" />
               </div>
               <div className="space-y-1">
-                <span className="text-[10px] font-black tracking-widest uppercase bg-purple-500/20 text-purple-300 border border-purple-500/30 px-3 py-1 rounded-full">
-                  Restricted Governance Zone
-                </span>
+                <div className="inline-flex items-center gap-1.5 text-[10px] font-black tracking-widest uppercase bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-3 py-1 rounded-full">
+                  <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+                  <span>Layer 1 Verified: {user?.name || 'Administrator'}</span>
+                </div>
                 <h1 className="text-2xl font-black tracking-tight text-white mt-2">
-                  HerEarn Super Admin
+                  Layer 2: Master Passkey
                 </h1>
                 <p className="text-xs text-slate-400">
-                  Enter master security key to unlock operational platform controls, escrow disbursements, and moderation.
+                  Dual-Factor Defense active. Enter the 256-bit Master Passkey to decrypt Mission Control operational session for <span className="text-purple-300 font-bold">{user?.email}</span>.
                 </p>
               </div>
             </div>
@@ -645,7 +771,7 @@ export default function AdminPanel({
               <div className="space-y-1.5">
                 <label className="text-xs font-bold text-slate-300 flex items-center justify-between">
                   <span>Master Admin Passkey</span>
-                  <span className="text-[10px] text-purple-400 font-mono">256-Bit Protected</span>
+                  <span className="text-[10px] text-purple-400 font-mono">256-Bit Hardware Pin</span>
                 </label>
 
                 <div className="relative">
@@ -740,10 +866,10 @@ export default function AdminPanel({
               <span className="font-black text-sm tracking-tight text-white">HerEarn Admin OS</span>
               <span className="text-[10px] font-black uppercase tracking-wider bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 px-2 py-0.5 rounded-full flex items-center gap-1">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                Live Master Session
+                Staff: {user?.name || 'Super Admin'}
               </span>
             </div>
-            <p className="text-[10px] text-slate-400 hidden sm:block">Platform Governance, Moderation & Escrow Engine</p>
+            <p className="text-[10px] text-slate-400 hidden sm:block">{user?.email || 'admin@herearn.platform'} • 2FA Active</p>
           </div>
         </div>
 

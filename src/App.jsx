@@ -377,7 +377,15 @@ function AppContent() {
       console.warn('Could not sync registry:', e);
     }
 
-    navigate('/dashboard');
+    const searchParams = new URLSearchParams(window.location.search);
+    const redirectUrl = searchParams.get('redirect');
+    if (redirectUrl) {
+      navigate(redirectUrl);
+    } else if (loggedInUser?.role === 'ADMIN') {
+      navigate('/admin');
+    } else {
+      navigate('/dashboard');
+    }
     showToast(isNewSignUp ? "Account Created! 🎉" : "Welcome Back! ✨", `Signed in as ${loggedInUser.name} (@${loggedInUser.username})`);
   };
 
@@ -737,6 +745,7 @@ function AppContent() {
             path="/admin" 
             element={
               <AdminPanel 
+                user={user}
                 opportunities={opportunities} 
                 portfolios={portfolios} 
                 setOpportunities={setOpportunities}
