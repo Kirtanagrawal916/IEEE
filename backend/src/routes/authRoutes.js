@@ -4,6 +4,7 @@ import jwt from 'jsonwebtoken';
 import prisma from '../config/db.js';
 import { env } from '../config/env.js';
 import { authenticateToken } from '../middleware/auth.js';
+import { supabaseAdmin } from '../config/supabase.js';
 
 const router = express.Router();
 const secret = env.JWT_SECRET || 'her_earn_jwt_secret_key_2026_prototype';
@@ -249,6 +250,101 @@ router.get('/me', authenticateToken, async (req, res) => {
   } catch (error) {
     res.status(500).json({ success: false, message: 'Failed to fetch user', error: error.message });
   }
+});
+
+/**
+ * @route   POST /api/auth/supabase-sync
+ * @desc    Sync Supabase session and upsert user in database
+ * @access  Public (token verified cryptographically)
+ */
+router.post('/supabase-sync', async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization;
+    const token = req.body?.access_token || (authHeader && authHeader.startsWith('Bearer ') ? authHeader.split(' ')[1] : null);
+
+    if (!token) {
+      return res.status(400).json({ success: false, message: 'Supabase access token is required.' });
+    }
+
+    if (!supabaseAdmin || !supabaseAdmin.auth) {
+      return res.status(500).json({ success: false, message: 'Supabase server configuration is missing.' });
+    }
+
+    const { data, error } = await supabaseAdmin.auth.getUser(token);
+    if (error || !data?.user) {
+      return res.status(401).json({ success: false, message: 'Invalid or expired Supabase authentication token.' });
+    }
+
+    const sbUser = data.user;
+    const cleanEmail = sbUser.email ? sbUser.email.toLowerCase().trim() : null;
+
+    if (!cleanEmail) {
+      return res.status(400).json({ success: false, message: 'Supabase user has no associated email.' });
+    }
+
+    let user = await prisma.user.findFirst({
+      where: {
+        OR: [{ email: cleanEmail }, { id: sbUser.id }],
+      },
+    }).catch(() => null);
+
+    const meta = sbUser.user_metadata || {};
+    const rawName = meta.full_name || meta.name || cleanEmail.split('@')[0] || 'Learner';
+    const formattedName = rawName.charAt(0).toUpperCase() + rawName.slice(1);
+    const avatar =
+      meta.avatar_url ||
+      meta.picture ||
+      `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(formattedName)}`;
+
+    if (!user) {
+      try {
+        user = await prisma.user.create({
+          data: {
+            id: sbUser.id,
+            name: formattedName,
+            email: cleanEmail,
+            passwordHash: 'supabase_oauth_managed_account',
+            role: 'LEARNER',
+            avatar,
+            location: 'India',
+            bio: 'Verified HerEarn Learner via Supabase Auth',
+            skills: JSON.stringify(['Digital Marketing', 'Graphic Design']),
+          },
+        });
+      } catch (err) {
+        user = await prisma.user.findUnique({ where: { email: cleanEmail } }).catch(() => null);
+      }
+    }
+
+    res.json({
+      success: true,
+      token,
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        avatar: user.avatar,
+        location: user.location,
+        bio: user.bio,
+        skills: typeof user.skills === 'string' ? JSON.parse(user.skills || '[]') : (user.skills || []),
+        totalEarned: user.totalEarned || 0,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Failed to synchronize Supabase session', error: error.message });
+  }
+});
+
+/**
+ * @route   POST /api/auth/logout
+ * @desc    Clear authentication session
+ * @access  Public
+ */
+router.post('/logout', (req, res) => {
+  res.clearCookie('herearn_access_token');
+  res.clearCookie('sb-access-token');
+  res.json({ success: true, message: 'Logged out successfully.' });
 });
 
 export default router;
