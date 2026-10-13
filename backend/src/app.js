@@ -41,7 +41,19 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 // 4. Rate Limiting for API routes
 app.use('/api', apiLimiter);
 
-// 5. Mount Main API Router
+// 5. Root Welcome & Health Shortcut
+app.get('/', (req, res) => {
+  res.status(200).json({
+    success: true,
+    service: 'HerEarn Backend API',
+    status: 'online',
+    version: '1.0.0',
+    healthCheck: '/api/health',
+    message: 'Backend is fully operational and serving requests.',
+  });
+});
+
+// 6. Mount Main API Router
 app.use('/api', apiRouter);
 
 // 6. Catch-all for undefined routes (404)
