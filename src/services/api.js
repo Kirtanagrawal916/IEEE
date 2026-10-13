@@ -133,7 +133,10 @@ export const api = {
   getAdminOpportunities: () => request('/api/admin/opportunities'),
   createAdminOpportunity: (gigData) => request('/api/admin/opportunities', { method: 'POST', body: JSON.stringify(gigData) }),
   updateOpportunityStatus: (id, statusData) => request(`/api/admin/opportunities/${id}/status`, { method: 'PATCH', body: JSON.stringify(statusData) }),
-  deleteOpportunity: (id) => request(`/api/admin/opportunities/${id}`, { method: 'DELETE' }),
+  deleteOpportunity: (id, extra = {}) => {
+    const q = extra?.title ? `?title=${encodeURIComponent(extra.title)}` : '';
+    return request(`/api/admin/opportunities/${id}${q}`, { method: 'DELETE', body: JSON.stringify(extra) });
+  },
   getAdminEscrow: () => request('/api/admin/escrow'),
   releaseEscrow: (id) => request(`/api/admin/escrow/${id}/release`, { method: 'POST' }),
   freezeEscrow: (id) => request(`/api/admin/escrow/${id}/freeze`, { method: 'POST' }),

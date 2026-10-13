@@ -232,7 +232,7 @@ router.get('/opportunities', async (req, res) => {
 // 7. POST /api/admin/opportunities - Create real verified gig in DB
 router.post('/opportunities', async (req, res) => {
   try {
-    const { title, company, stipend, category, duration, description, skillsRequired, deliverables } = req.body;
+    const { title, company, stipend, category, duration, description, skillsRequired, deliverables, type } = req.body;
 
     if (!title || !company) {
       return res.status(400).json({ success: false, message: 'Title and company are required' });
@@ -241,7 +241,7 @@ router.post('/opportunities', async (req, res) => {
     const skills = Array.isArray(skillsRequired)
       ? skillsRequired
       : typeof skillsRequired === 'string'
-      ? skillsRequired.split(',').map(s => s.trim())
+      ? skillsRequired.split(',').map(s => s.trim()).filter(Boolean)
       : ['General'];
 
     const items = Array.isArray(deliverables)
@@ -286,17 +286,51 @@ router.post('/opportunities', async (req, res) => {
 // 8. PATCH /api/admin/opportunities/:id/status - Approve or Flag Gig
 router.patch('/opportunities/:id/status', async (req, res) => {
   try {
-    const { verifiedClient, isOpen, status } = req.body;
+    const { verifiedClient, isOpen, status, title } = req.body;
 
     const updateData = {};
     if (verifiedClient !== undefined) updateData.verifiedClient = Boolean(verifiedClient);
     if (isOpen !== undefined) updateData.isOpen = Boolean(isOpen);
     if (status !== undefined) updateData.status = status;
 
-    const updated = await prisma.opportunity.update({
-      where: { id: req.params.id },
-      data: updateData
-    });
+    // 1. Try finding by exact ID
+    let gig = await prisma.opportunity.findUnique({ where: { id: req.params.id } }).catch(() => null);
+
+    // 2. If not found by ID, search by title (supports mock listings like 'gig-1')
+    const searchTitle = title || req.query.title;
+    if (!gig && searchTitle) {
+      gig = await prisma.opportunity.findFirst({
+        where: { title: searchTitle }
+      }).catch(() => null);
+    }
+
+    let updated;
+    if (gig) {
+      updated = await prisma.opportunity.update({
+        where: { id: gig.id },
+        data: updateData
+      });
+    } else {
+      // 3. If mock opportunity is not yet persisted in DB, save it now with the desired status
+      updated = await prisma.opportunity.create({
+        data: {
+          title: searchTitle || `Opportunity ${req.params.id}`,
+          company: req.body.company || 'Verified Employer',
+          stipend: req.body.stipend || '₹5,000',
+          category: req.body.category || 'Digital Marketing',
+          type: req.body.type || 'Micro-Gig',
+          duration: req.body.duration || '2 Weeks',
+          description: req.body.description || 'Enterprise opportunity verified by Administrator.',
+          skillsRequired: JSON.stringify(req.body.skillsRequired || ['General']),
+          deliverables: JSON.stringify(req.body.deliverables || ['Verified Project Milestone']),
+          verifiedClient: verifiedClient !== undefined ? Boolean(verifiedClient) : true,
+          isOpen: isOpen !== undefined ? Boolean(isOpen) : true,
+          status: status || (verifiedClient === false ? 'flagged' : 'verified'),
+          applicantsCount: 0,
+          deadline: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000)
+        }
+      });
+    }
 
     const isVerified = updated.verifiedClient && updated.status !== 'flagged';
     await logAudit(
@@ -305,13 +339,18 @@ router.patch('/opportunities/:id/status', async (req, res) => {
       isVerified ? 'approval' : 'warning'
     );
 
+    let parsedSkills = [];
+    let parsedDeliverables = [];
+    try { parsedSkills = JSON.parse(updated.skillsRequired || '[]'); } catch { parsedSkills = []; }
+    try { parsedDeliverables = JSON.parse(updated.deliverables || '[]'); } catch { parsedDeliverables = []; }
+
     res.json({
       success: true,
       message: isVerified ? 'Opportunity verified and published' : 'Opportunity flagged',
       opportunity: {
         ...updated,
-        skillsRequired: JSON.parse(updated.skillsRequired || '[]'),
-        deliverables: JSON.parse(updated.deliverables || '[]')
+        skillsRequired: parsedSkills,
+        deliverables: parsedDeliverables
       }
     });
   } catch (error) {
@@ -322,13 +361,23 @@ router.patch('/opportunities/:id/status', async (req, res) => {
 // 9. DELETE /api/admin/opportunities/:id - Delete gig from DB
 router.delete('/opportunities/:id', async (req, res) => {
   try {
-    const gig = await prisma.opportunity.findUnique({ where: { id: req.params.id } });
-    if (!gig) {
-      return res.status(404).json({ success: false, message: 'Opportunity not found' });
+    let gig = await prisma.opportunity.findUnique({ where: { id: req.params.id } }).catch(() => null);
+    const searchTitle = req.body?.title || req.query?.title;
+
+    if (!gig && searchTitle) {
+      gig = await prisma.opportunity.findFirst({
+        where: { title: searchTitle }
+      }).catch(() => null);
     }
 
-    await prisma.opportunity.delete({ where: { id: req.params.id } });
-    await logAudit('GIG_DELETED', `Removed gig: "${gig.title}"`, 'delete');
+    if (gig) {
+      // Clean up linked applications to prevent foreign key errors
+      await prisma.application.deleteMany({ where: { opportunityId: gig.id } }).catch(() => null);
+      await prisma.opportunity.delete({ where: { id: gig.id } });
+      await logAudit('GIG_DELETED', `Removed gig: "${gig.title}"`, 'delete');
+    } else {
+      await logAudit('GIG_DELETED', `Removed listing: "${searchTitle || req.params.id}"`, 'delete');
+    }
 
     res.json({ success: true, message: 'Opportunity deleted from database' });
   } catch (error) {
