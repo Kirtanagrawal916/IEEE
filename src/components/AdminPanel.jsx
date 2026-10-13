@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { 
   Shield, 
@@ -33,7 +33,8 @@ import {
   Zap,
   UserCheck,
   UserX,
-  CreditCard
+  CreditCard,
+  ChevronDown
 } from 'lucide-react';
 import { api } from '../services/api';
 
@@ -45,18 +46,44 @@ export default function AdminPanel({
   setOpportunities, 
   showToast 
 }) {
-  // Authentication State
-  const [isAuthenticated, setIsAuthenticated] = useState(() => {
-    return sessionStorage.getItem('herearn_admin_authenticated') === 'true';
-  });
+  // Authentication State: Always start locked when entering the Admin page
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [enteredKey, setEnteredKey] = useState('');
   const [showKey, setShowKey] = useState(false);
   const [authError, setAuthError] = useState('');
   const [isVerifying, setIsVerifying] = useState(false);
   const [shake, setShake] = useState(false);
 
+  // Wipe administrative session keys whenever navigating away from AdminPanel
+  useEffect(() => {
+    return () => {
+      sessionStorage.removeItem('herearn_admin_authenticated');
+      sessionStorage.removeItem('herearn_admin_token');
+      sessionStorage.removeItem('herearn_admin_verified_key');
+    };
+  }, []);
+
   // Active Administrative Section
   const [activeTab, setActiveTab] = useState('overview'); // 'overview' | 'gigs' | 'users' | 'escrow' | 'controls' | 'audit'
+
+  // Dropdown selector state for administrative modules (Career Opportunity dropdown pattern)
+  const [isModuleDropdownOpen, setIsModuleDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
+
+  // Close module dropdown on outside click
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setIsModuleDropdownOpen(false);
+      }
+    };
+    if (isModuleDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isModuleDropdownOpen]);
 
   // Time horizon filter for analytics
   const [timeRange, setTimeRange] = useState('7d'); // 'today' | '7d' | '30d' | 'all'
@@ -84,6 +111,7 @@ export default function AdminPanel({
     company: '',
     stipend: '₹5,000',
     category: 'Digital Marketing',
+    type: 'Micro-Gig',
     duration: '2 Weeks',
     description: '',
     skills: 'Canva, Social Media',
@@ -338,11 +366,12 @@ export default function AdminPanel({
       const payload = {
         title: newGig.title,
         company: newGig.company,
-        stipend: newGig.stipend,
-        category: newGig.category,
-        duration: newGig.duration,
+        stipend: newGig.stipend || '₹5,000',
+        category: newGig.category || 'Digital Marketing',
+        type: newGig.type || 'Micro-Gig',
+        duration: newGig.duration || '2 Weeks',
         description: newGig.description || 'Verified enterprise opportunity created by Platform Administrator.',
-        skillsRequired: newGig.skills.split(',').map(s => s.trim()).filter(Boolean),
+        skillsRequired: newGig.skills ? newGig.skills.split(',').map(s => s.trim()).filter(Boolean) : ['General'],
         deliverables: ['Verified project milestone', 'Direct payout upon completion'],
       };
 
@@ -350,12 +379,21 @@ export default function AdminPanel({
       if (res?.success && res.opportunity) {
         setLocalGigs(prev => [res.opportunity, ...prev]);
         if (setOpportunities) {
-          setOpportunities(prev => [res.opportunity, ...prev]);
+          setOpportunities(prev => [res.opportunity, ...(prev || [])]);
         }
         setIsAddGigOpen(false);
-        setNewGig({ title: '', company: '', stipend: '₹5,000', category: 'Digital Marketing', duration: '2 Weeks', description: '', skills: 'Canva, Social Media' });
+        setNewGig({ 
+          title: '', 
+          company: '', 
+          stipend: '₹5,000', 
+          category: 'Digital Marketing', 
+          type: 'Micro-Gig', 
+          duration: '2 Weeks', 
+          description: '', 
+          skills: 'Canva, Social Media' 
+        });
         pushAuditLog('GIG_CREATED', `Admin posted official verified gig: "${res.opportunity.title}"`, 'approval');
-        if (showToast) showToast('🚀 Verified Gig Published', `"${res.opportunity.title}" is now live in database.`);
+        if (showToast) showToast('🚀 Verified Opportunity Published', `"${res.opportunity.title}" is now live on the public Opportunity board.`);
         loadAdminData(true);
       }
     } catch (err) {
@@ -603,7 +641,7 @@ export default function AdminPanel({
               </div>
             </div>
 
-            <form onSubmit={handleKeySubmit} className="space-y-4">
+            <form onSubmit={handleKeySubmit} autoComplete="off" className="space-y-4">
               <div className="space-y-1.5">
                 <label className="text-xs font-bold text-slate-300 flex items-center justify-between">
                   <span>Master Admin Passkey</span>
@@ -621,7 +659,16 @@ export default function AdminPanel({
                       setEnteredKey(e.target.value);
                       if (authError) setAuthError('');
                     }}
-                    placeholder="Enter Secret Key (e.g. HEREARN-ADMIN-2026-X9K)"
+                    name="adm_passkey_pin"
+                    id="adm_passkey_pin"
+                    autoComplete="new-password"
+                    data-lpignore="true"
+                    data-1p-ignore="true"
+                    data-form-type="other"
+                    spellCheck="false"
+                    autoCorrect="off"
+                    autoCapitalize="characters"
+                    placeholder="Enter Secret Passkey"
                     className="w-full pl-10 pr-10 py-3 rounded-xl bg-slate-950 border border-purple-500/40 text-white placeholder-slate-500 text-sm font-mono tracking-wider focus:outline-none focus:ring-2 focus:ring-purple-400 transition-all"
                     autoFocus
                   />
@@ -660,25 +707,6 @@ export default function AdminPanel({
                 )}
               </button>
             </form>
-
-            <div className="p-3.5 rounded-2xl bg-purple-950/40 border border-purple-500/30 space-y-2 text-center">
-              <div className="flex items-center justify-center gap-1.5 text-xs font-bold text-purple-300">
-                <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-                <span>Your Master Admin Key:</span>
-              </div>
-              <div className="inline-block px-3 py-1 rounded-lg bg-black/60 border border-purple-400/50 font-mono text-xs font-black tracking-widest text-emerald-400 select-all">
-                {MASTER_ADMIN_KEY}
-              </div>
-              <div>
-                <button
-                  type="button"
-                  onClick={handleAutoFillKey}
-                  className="text-[11px] font-bold text-pink-400 hover:text-pink-300 underline cursor-pointer"
-                >
-                  Click to Auto-fill this key ⚡
-                </button>
-              </div>
-            </div>
 
             <div className="text-center pt-2">
               <Link
@@ -752,6 +780,7 @@ export default function AdminPanel({
 
           <Link
             to="/"
+            onClick={handleAdminLock}
             className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold transition-all flex items-center gap-1.5 border border-slate-700"
             title="Switch back to public website"
           >
@@ -790,41 +819,116 @@ export default function AdminPanel({
       {/* 3. MAIN ADMINISTRATIVE BODY */}
       <div className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-8 py-6 space-y-6">
 
-        {/* ADMINISTRATIVE NAVIGATION TABS */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-2 border-b border-slate-800">
-          {[
-            { id: 'overview', label: 'Mission Control', icon: Activity },
-            { id: 'gigs', label: 'Micro-Gig Moderation', icon: Briefcase, count: localGigs.length },
-            { id: 'users', label: 'User Directory & RBAC', icon: Users, count: usersList.length },
-            { id: 'escrow', label: 'Escrow Financial Ledger', icon: Wallet, count: escrowLedger.length },
-            { id: 'controls', label: 'Platform Security Controls', icon: Sliders },
-            { id: 'audit', label: 'Live Incident & Audit Trail', icon: FileText, count: auditLogs.length },
-          ].map(tab => {
-            const Icon = tab.icon;
-            const isActive = activeTab === tab.id;
-            return (
+        {/* UNIFIED ADMIN MODULE SELECTOR (DROPDOWN STYLE LIKE CAREER OPPORTUNITY) */}
+        {(() => {
+          const adminModules = [
+            { id: 'overview', label: 'Mission Control', icon: Activity, description: 'Platform telemetry, analytics & revenue simulator' },
+            { id: 'gigs', label: 'Micro-Gig Moderation', icon: Briefcase, count: localGigs.length, description: 'Moderate client deposits, approve or post micro-gigs' },
+            { id: 'users', label: 'User Directory & RBAC', icon: Users, count: usersList.length, description: 'Learner profiles, client access & role controls' },
+            { id: 'escrow', label: 'Escrow Financial Ledger', icon: Wallet, count: escrowLedger.length, description: 'Track held escrow funds & release completed disbursements' },
+            { id: 'controls', label: 'Platform Security Controls', icon: Sliders, description: 'Emergency breakers, fee rates & AI moderation shields' },
+            { id: 'audit', label: 'Live Incident & Audit Trail', icon: FileText, count: auditLogs.length, description: 'Tamper-evident logs of all operational actions' },
+          ];
+          const currentModule = adminModules.find(m => m.id === activeTab) || adminModules[0];
+          const CurrentIcon = currentModule.icon;
+
+          return (
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-3 border-b border-slate-800">
+              <div className="flex items-center gap-3 flex-wrap">
+                {/* Module Selector Dropdown */}
+                <div className="relative" ref={dropdownRef}>
+                  <button
+                    type="button"
+                    onClick={() => setIsModuleDropdownOpen(!isModuleDropdownOpen)}
+                    className="flex items-center gap-2.5 px-4 py-2.5 rounded-2xl bg-gradient-to-r from-purple-600 to-pink-600 text-white font-extrabold text-xs shadow-lg shadow-purple-600/30 hover:brightness-110 transition-all cursor-pointer border border-purple-400/30"
+                    title="Switch Admin Management Module"
+                  >
+                    <CurrentIcon className="w-4 h-4 text-white" />
+                    <span className="tracking-wide">{currentModule.label}</span>
+                    {currentModule.count !== undefined && (
+                      <span className="px-2 py-0.5 rounded-full bg-white/20 text-white text-[10px] font-black">
+                        {currentModule.count}
+                      </span>
+                    )}
+                    <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${isModuleDropdownOpen ? 'rotate-180' : ''}`} />
+                  </button>
+
+                  {/* Dropdown Menu Popover */}
+                  {isModuleDropdownOpen && (
+                    <div className="absolute left-0 mt-2 w-80 sm:w-96 rounded-2xl bg-slate-900 border border-purple-500/40 shadow-2xl p-2 z-50 animate-fade-in space-y-1 backdrop-blur-xl">
+                      <div className="px-3 py-1.5 border-b border-purple-500/20 text-[10px] font-extrabold text-purple-400 uppercase tracking-wider flex items-center justify-between">
+                        <span>Platform Governance Hub</span>
+                        <span className="text-[9px] text-slate-500 font-normal">Select Module</span>
+                      </div>
+
+                      {adminModules.map(mod => {
+                        const Icon = mod.icon;
+                        const isActive = activeTab === mod.id;
+                        return (
+                          <button
+                            key={mod.id}
+                            type="button"
+                            onClick={() => {
+                              setActiveTab(mod.id);
+                              setIsModuleDropdownOpen(false);
+                            }}
+                            className={`w-full flex items-center justify-between p-2.5 rounded-xl text-xs transition-all text-left cursor-pointer ${
+                              isActive
+                                ? 'bg-purple-950/70 text-white border border-purple-500/50 shadow-sm'
+                                : 'text-slate-300 hover:text-white hover:bg-slate-800/80 border border-transparent'
+                            }`}
+                          >
+                            <div className="flex items-center gap-3">
+                              <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
+                                isActive 
+                                  ? 'bg-gradient-to-tr from-purple-600 to-pink-600 text-white shadow' 
+                                  : 'bg-slate-800 text-purple-400'
+                              }`}>
+                                <Icon className="w-4 h-4" />
+                              </div>
+                              <div>
+                                <p className={`font-bold leading-tight ${isActive ? 'text-white' : 'text-slate-200'}`}>
+                                  {mod.label}
+                                </p>
+                                <p className="text-[10px] text-slate-400">
+                                  {mod.description}
+                                </p>
+                              </div>
+                            </div>
+                            {mod.count !== undefined && (
+                              <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold shrink-0 ${
+                                isActive ? 'bg-purple-500/30 text-purple-200 border border-purple-500/40' : 'bg-slate-800 text-slate-400'
+                              }`}>
+                                {mod.count}
+                              </span>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+
+                {/* Subtitle / Description */}
+                <div className="hidden md:flex items-center gap-2 text-xs text-slate-400">
+                  <span className="text-slate-600">•</span>
+                  <span className="text-slate-300 font-medium">{currentModule.description}</span>
+                </div>
+              </div>
+
+              {/* Quick Action: Create Opportunity */}
               <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-extrabold transition-all shrink-0 cursor-pointer ${
-                  isActive
-                    ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg shadow-purple-600/30'
-                    : 'bg-slate-900/80 border border-slate-800 text-slate-400 hover:text-white hover:bg-slate-800'
-                }`}
+                type="button"
+                onClick={() => setIsAddGigOpen(true)}
+                className="px-4 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-extrabold text-xs shadow-md shadow-purple-600/30 transition-all flex items-center gap-1.5 cursor-pointer self-start sm:self-auto"
+                title="Post an official opportunity to the live Opportunity board"
               >
-                <Icon className="w-4 h-4" />
-                <span>{tab.label}</span>
-                {tab.count !== undefined && (
-                  <span className={`px-2 py-0.5 rounded-full text-[10px] ${
-                    isActive ? 'bg-white/20 text-white' : 'bg-slate-800 text-slate-400'
-                  }`}>
-                    {tab.count}
-                  </span>
-                )}
+                <Plus className="w-4 h-4" />
+                <span>Create Opportunity</span>
               </button>
-            );
-          })}
-        </div>
+            </div>
+          );
+        })()}
 
         {/* Loading Indicator */}
         {isLoadingData && (
@@ -1615,6 +1719,168 @@ export default function AdminPanel({
         )}
 
       </div>
+
+      {/* =============================================================== */}
+      {/* MODAL: CREATE VERIFIED OPPORTUNITY AS ADMIN */}
+      {/* =============================================================== */}
+      {isAddGigOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in overflow-y-auto">
+          <div className="relative w-full max-w-xl rounded-3xl bg-slate-900 border border-purple-500/40 p-6 sm:p-8 shadow-2xl space-y-6 my-8">
+            
+            <div className="flex items-start justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-purple-600 to-pink-600 flex items-center justify-center text-white shadow-lg">
+                  <Briefcase className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-black text-white">Create Official Opportunity</h3>
+                  <p className="text-xs text-slate-400">Instantly posted to the public Opportunity Board for all users</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsAddGigOpen(false)}
+                className="p-1.5 rounded-xl bg-slate-800 text-slate-400 hover:text-white transition-colors cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleCreateGigSubmit} className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-slate-300">Opportunity Title *</label>
+                  <input
+                    type="text"
+                    required
+                    value={newGig.title}
+                    onChange={(e) => setNewGig({ ...newGig, title: e.target.value })}
+                    placeholder="e.g. Junior Social Media Specialist"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white text-xs focus:ring-2 focus:ring-purple-400 focus:outline-none"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-slate-300">Company / Organization *</label>
+                  <input
+                    type="text"
+                    required
+                    value={newGig.company}
+                    onChange={(e) => setNewGig({ ...newGig, company: e.target.value })}
+                    placeholder="e.g. TechSpire Studio or HerEarn Verified"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white text-xs focus:ring-2 focus:ring-purple-400 focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-slate-300">Category</label>
+                  <select
+                    value={newGig.category}
+                    onChange={(e) => setNewGig({ ...newGig, category: e.target.value })}
+                    className="w-full px-3 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white text-xs focus:ring-2 focus:ring-purple-400 focus:outline-none"
+                  >
+                    <option value="Digital Marketing">Digital Marketing</option>
+                    <option value="Design">Design</option>
+                    <option value="Startup cohort">Startup cohort</option>
+                    <option value="Scholarship">Scholarship</option>
+                    <option value="Learning Program">Learning Program</option>
+                    <option value="Web Development">Web Development</option>
+                  </select>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-slate-300">Type</label>
+                  <select
+                    value={newGig.type || 'Micro-Gig'}
+                    onChange={(e) => setNewGig({ ...newGig, type: e.target.value })}
+                    className="w-full px-3 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white text-xs focus:ring-2 focus:ring-purple-400 focus:outline-none"
+                  >
+                    <option value="Micro-Gig">Micro-Gig</option>
+                    <option value="Internship">Internship</option>
+                    <option value="Freelance">Freelance</option>
+                    <option value="Scholarship">Scholarship</option>
+                  </select>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-slate-300">Stipend / Pay</label>
+                  <input
+                    type="text"
+                    value={newGig.stipend}
+                    onChange={(e) => setNewGig({ ...newGig, stipend: e.target.value })}
+                    placeholder="e.g. ₹5,000 or ₹12,000"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white text-xs focus:ring-2 focus:ring-purple-400 focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-slate-300">Duration</label>
+                  <input
+                    type="text"
+                    value={newGig.duration}
+                    onChange={(e) => setNewGig({ ...newGig, duration: e.target.value })}
+                    placeholder="e.g. 2 Weeks or 1 Month"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white text-xs focus:ring-2 focus:ring-purple-400 focus:outline-none"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-slate-300">Required Skills (comma separated)</label>
+                  <input
+                    type="text"
+                    value={newGig.skills}
+                    onChange={(e) => setNewGig({ ...newGig, skills: e.target.value })}
+                    placeholder="e.g. Canva, Social Media, Content"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white text-xs focus:ring-2 focus:ring-purple-400 focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-slate-300">Description</label>
+                <textarea
+                  rows={3}
+                  value={newGig.description}
+                  onChange={(e) => setNewGig({ ...newGig, description: e.target.value })}
+                  placeholder="Outline project expectations, deliverables, and requirements for applicants..."
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white text-xs focus:ring-2 focus:ring-purple-400 focus:outline-none resize-none"
+                />
+              </div>
+
+              <div className="pt-2 flex items-center justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => setIsAddGigOpen(false)}
+                  className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold transition-all cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSubmittingGig || !newGig.title.trim() || !newGig.company.trim()}
+                  className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 disabled:opacity-50 text-white text-xs font-extrabold shadow-lg shadow-purple-600/30 transition-all flex items-center gap-2 cursor-pointer"
+                >
+                  {isSubmittingGig ? (
+                    <>
+                      <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                      <span>Publishing...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Plus className="w-3.5 h-3.5" />
+                      <span>Publish Opportunity to Public Board 🚀</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
