@@ -134,15 +134,15 @@ export default function Navbar({
           </Link>
 
           {/* Central Navigation: Home | Career Opportunity (Dropdown: Courses, Portfolio, Opportunities) | Mentorship | Applications */}
-          <div className="hidden md:flex items-center gap-1.5 bg-white/90 dark:bg-slate-900/80 p-1.5 rounded-2xl border border-[#DE9EE2]/30 dark:border-purple-500/30 backdrop-blur-md shadow-lg">
+          <div className="hidden md:flex items-center gap-1.5 bg-white/90 dark:bg-slate-900/80 p-1.5 rounded-2xl border border-purple-200 dark:border-purple-500/30 backdrop-blur-md shadow-lg">
             
             {/* Home */}
             <Link
               to="/"
               className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                 pathname === '/'
-                  ? 'bg-gradient-to-r from-[#7C5CE6] to-[#DE9EE2] text-white shadow-md'
-                  : 'text-slate-700 dark:text-slate-200 hover:text-[#7C5CE6] dark:hover:text-white hover:bg-[#FAF0FC] dark:hover:bg-purple-900/40'
+                  ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-md'
+                  : 'text-slate-700 dark:text-slate-200 hover:text-purple-700 dark:hover:text-white hover:bg-purple-100/70 dark:hover:bg-purple-900/40'
               }`}
             >
               <Compass className="w-4 h-4" />
@@ -156,20 +156,20 @@ export default function Navbar({
                 onClick={() => setIsCareerOpen(!isCareerOpen)}
                 className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                   isCareerActive
-                    ? 'bg-gradient-to-r from-[#7C5CE6] to-[#DE9EE2] text-white shadow-md'
-                    : 'text-slate-700 dark:text-slate-200 hover:text-[#7C5CE6] dark:hover:text-white hover:bg-[#FAF0FC] dark:hover:bg-purple-900/40'
+                    ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-md'
+                    : 'text-slate-700 dark:text-slate-200 hover:text-purple-700 dark:hover:text-white hover:bg-purple-100/70 dark:hover:bg-purple-900/40'
                 }`}
                 title="Career Opportunities: Courses, Portfolio & Gigs"
               >
-                <Briefcase className="w-4 h-4 text-[#7C5CE6] dark:text-purple-300" />
+                <Briefcase className="w-4 h-4 text-purple-600 dark:text-purple-300" />
                 <span>Career Opportunity</span>
                 <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${isCareerOpen ? 'rotate-180' : ''}`} />
               </button>
 
               {/* Career Opportunity Menu Popover */}
               {isCareerOpen && (
-                <div className="absolute left-0 mt-2 w-72 rounded-2xl bg-white dark:bg-slate-900 border border-[#DE9EE2]/30 dark:border-purple-500/30 shadow-2xl p-2 z-50 animate-fade-in space-y-1">
-                  <div className="px-3 py-1.5 border-b border-purple-500/20 text-[10px] font-extrabold text-[#7C5CE6] uppercase tracking-wider">
+                <div className="absolute left-0 mt-2 w-72 rounded-2xl bg-white dark:bg-slate-900 border border-purple-200 dark:border-purple-500/30 shadow-2xl p-2 z-50 animate-fade-in space-y-1">
+                  <div className="px-3 py-1.5 border-b border-purple-500/20 text-[10px] font-extrabold text-purple-500 uppercase tracking-wider">
                     Career Progression Hub
                   </div>
 
@@ -179,11 +179,11 @@ export default function Navbar({
                     onClick={() => setIsCareerOpen(false)}
                     className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs transition-all ${
                       pathname.startsWith('/courses') || pathname === '/learn'
-                        ? 'bg-[#FAF0FC] dark:bg-purple-950/60 text-[#7C5CE6] dark:text-purple-300 font-bold border border-[#DE9EE2]/40 dark:border-purple-500/30'
-                        : 'text-slate-700 dark:text-slate-200 hover:bg-[#FAF0FC] dark:hover:bg-slate-800'
+                        ? 'bg-purple-50 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 font-bold border border-purple-300 dark:border-purple-500/30'
+                        : 'text-slate-700 dark:text-slate-200 hover:bg-purple-50 dark:hover:bg-slate-800'
                     }`}
                   >
-                    <div className="w-8 h-8 rounded-lg bg-purple-100 dark:bg-purple-900/50 flex items-center justify-center text-[#7C5CE6] dark:text-purple-400 shrink-0">
+                    <div className="w-8 h-8 rounded-lg bg-purple-100 dark:bg-purple-900/50 flex items-center justify-center text-purple-600 dark:text-purple-400 shrink-0">
                       <BookOpen className="w-4 h-4" />
                     </div>
                     <div>
@@ -198,11 +198,11 @@ export default function Navbar({
                     onClick={() => setIsCareerOpen(false)}
                     className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs transition-all ${
                       pathname === '/portfolio'
-                        ? 'bg-[#FAF0FC] dark:bg-pink-950/60 text-[#DE9EE2] dark:text-pink-300 font-bold border border-[#DE9EE2]/40 dark:border-pink-500/30'
-                        : 'text-slate-700 dark:text-slate-200 hover:bg-[#FAF0FC] dark:hover:bg-slate-800'
+                        ? 'bg-pink-50 dark:bg-pink-950/60 text-pink-700 dark:text-pink-300 font-bold border border-pink-300 dark:border-pink-500/30'
+                        : 'text-slate-700 dark:text-slate-200 hover:bg-purple-50 dark:hover:bg-slate-800'
                     }`}
                   >
-                    <div className="w-8 h-8 rounded-lg bg-pink-100 dark:bg-pink-900/50 flex items-center justify-center text-[#DE9EE2] dark:text-pink-400 shrink-0">
+                    <div className="w-8 h-8 rounded-lg bg-pink-100 dark:bg-pink-900/50 flex items-center justify-center text-pink-600 dark:text-pink-400 shrink-0">
                       <Award className="w-4 h-4" />
                     </div>
                     <div>
@@ -217,8 +217,8 @@ export default function Navbar({
                     onClick={() => setIsCareerOpen(false)}
                     className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs transition-all ${
                       pathname.startsWith('/opportunities') || pathname.startsWith('/opportunity')
-                        ? 'bg-[#FAF0FC] dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 font-bold border border-amber-300 dark:border-amber-500/30'
-                        : 'text-slate-700 dark:text-slate-200 hover:bg-[#FAF0FC] dark:hover:bg-slate-800'
+                        ? 'bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 font-bold border border-amber-300 dark:border-amber-500/30'
+                        : 'text-slate-700 dark:text-slate-200 hover:bg-purple-50 dark:hover:bg-slate-800'
                     }`}
                   >
                     <div className="w-8 h-8 rounded-lg bg-amber-100 dark:bg-amber-900/50 flex items-center justify-center text-amber-600 dark:text-amber-400 shrink-0">
@@ -239,11 +239,11 @@ export default function Navbar({
               to="/mentorship"
               className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                 pathname === '/mentorship'
-                  ? 'bg-gradient-to-r from-[#7C5CE6] to-[#DE9EE2] text-white shadow-md'
-                  : 'text-slate-700 dark:text-slate-200 hover:text-[#7C5CE6] dark:hover:text-white hover:bg-[#FAF0FC] dark:hover:bg-purple-900/40'
+                  ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-md'
+                  : 'text-slate-700 dark:text-slate-200 hover:text-purple-700 dark:hover:text-white hover:bg-purple-100/70 dark:hover:bg-purple-900/40'
               }`}
             >
-              <Users className="w-4 h-4 text-[#7C5CE6]" />
+              <Users className="w-4 h-4 text-indigo-500" />
               <span>Mentorship</span>
             </Link>
 
@@ -253,14 +253,28 @@ export default function Navbar({
                 to="/applications"
                 className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                   pathname === '/applications'
-                    ? 'bg-gradient-to-r from-[#7C5CE6] to-[#DE9EE2] text-white shadow-md'
-                    : 'text-slate-700 dark:text-slate-200 hover:text-[#7C5CE6] dark:hover:text-white hover:bg-[#FAF0FC] dark:hover:bg-purple-900/40'
+                    ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-md'
+                    : 'text-slate-700 dark:text-slate-200 hover:text-purple-700 dark:hover:text-white hover:bg-purple-100/70 dark:hover:bg-purple-900/40'
                 }`}
               >
                 <FileText className="w-4 h-4 text-emerald-500" />
                 <span>{t('applications')}</span>
               </Link>
             )}
+
+            {/* Super Admin Portal */}
+            <Link
+              to="/admin"
+              className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                pathname === '/admin'
+                  ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-md'
+                  : 'text-slate-700 dark:text-slate-200 hover:text-purple-700 dark:hover:text-white hover:bg-purple-100/70 dark:hover:bg-purple-900/40'
+              }`}
+              title="Super Admin Portal (Passkey Protected)"
+            >
+              <Shield className="w-4 h-4 text-pink-500" />
+              <span>Admin</span>
+            </Link>
           </div>
 
           {/* Right Section: Language Selector, Theme Switch, Guest Login/Sign Up & 3-Dot Menu */}
@@ -331,8 +345,8 @@ export default function Navbar({
                   to="/login"
                   className={`px-3.5 py-2 rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer ${
                     pathname === '/login'
-                      ? 'bg-[#7C5CE6] text-white shadow-md'
-                      : 'bg-white dark:bg-slate-900 border border-[#DE9EE2]/60 text-[#7C5CE6] dark:text-purple-300 hover:bg-[#FAF0FC] dark:hover:bg-slate-800'
+                      ? 'bg-purple-600 text-white shadow-md'
+                      : 'bg-white dark:bg-slate-900 border-2 border-purple-500/80 text-purple-600 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-slate-800'
                   }`}
                 >
                   <LogIn className="w-3.5 h-3.5" />
@@ -343,8 +357,8 @@ export default function Navbar({
                   to="/signup"
                   className={`px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-all shadow-md ${
                     pathname === '/signup'
-                      ? 'bg-[#DE9EE2] text-white ring-2 ring-[#DE9EE2]'
-                      : 'bg-gradient-to-r from-[#7C5CE6] to-[#DE9EE2] text-white hover:shadow-lg'
+                      ? 'bg-gradient-to-r from-pink-600 to-purple-600 text-white ring-2 ring-pink-400'
+                      : 'bg-gradient-to-r from-purple-600 via-indigo-600 to-pink-600 text-white hover:shadow-lg'
                   }`}
                 >
                   <UserPlus className="w-3.5 h-3.5" />

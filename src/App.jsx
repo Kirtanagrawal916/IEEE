@@ -405,7 +405,7 @@ function AppContent() {
 
   return (
     <div className={`min-h-screen flex flex-col font-sans transition-colors duration-300 ${
-      theme === 'dark' ? 'bg-[#0E0A1A] text-slate-100' : 'bg-[#FAF7FD] text-slate-900'
+      theme === 'dark' ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-900'
     }`}>
       
       {/* Sticky Navigation Header (Hidden on Admin portal for dedicated admin console) */}
