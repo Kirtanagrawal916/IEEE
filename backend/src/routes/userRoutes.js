@@ -52,7 +52,17 @@ router.patch('/me', authenticateToken, async (req, res) => {
     if (avatar !== undefined) updatedData.avatar = avatar;
     if (location !== undefined) updatedData.location = location;
     if (bio !== undefined) updatedData.bio = bio;
-    if (skills !== undefined) updatedData.skills = typeof skills === 'string' ? skills : JSON.stringify(skills);
+    if (skills !== undefined) {
+      try {
+        updatedData.skills = Array.isArray(skills)
+          ? skills
+          : typeof skills === 'string' && skills.startsWith('[')
+          ? JSON.parse(skills)
+          : [skills].filter(Boolean);
+      } catch {
+        updatedData.skills = [String(skills)];
+      }
+    }
 
     const user = await prisma.user.update({
       where: { id: req.user.id },

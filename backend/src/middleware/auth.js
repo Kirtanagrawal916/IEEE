@@ -69,7 +69,7 @@ export const authenticateToken = async (req, res, next) => {
                   avatar,
                   location: 'India',
                   bio: 'Verified HerEarn Learner via Supabase Auth',
-                  skills: JSON.stringify(['Digital Marketing', 'Graphic Design']),
+                  skills: ['Digital Marketing', 'Graphic Design'],
                 },
               }).catch(() => null);
             }
