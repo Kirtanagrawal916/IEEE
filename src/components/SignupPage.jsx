@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { api } from '../services/api';
+import { useAuth } from '../context/AuthContext';
 import GoogleSignInButton from './GoogleSignInButton';
 import { 
   Sparkles, 
@@ -14,10 +15,15 @@ import {
   Briefcase, 
   Zap,
   Star,
-  Layers
+  Layers,
+  Inbox,
+  RefreshCw,
+  ExternalLink
 } from 'lucide-react';
 
 export default function SignupPage({ onLoginSuccess, onNavigateToLogin, onNavigateHome, onContinueAsGuest }) {
+  const { register: authRegister, resendConfirmationEmail } = useAuth();
+
   const [name, setName] = useState('');
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
@@ -29,6 +35,21 @@ export default function SignupPage({ onLoginSuccess, onNavigateToLogin, onNaviga
   const [agreeTerms, setAgreeTerms] = useState(true);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+
+  // Email Confirmation State
+  const [signupComplete, setSignupComplete] = useState(false);
+  const [sentEmail, setSentEmail] = useState('');
+  const [resendCooldown, setResendCooldown] = useState(0);
+  const [resendStatus, setResendStatus] = useState('');
+
+  // Countdown timer for resend button
+  useEffect(() => {
+    if (resendCooldown <= 0) return;
+    const timer = setInterval(() => {
+      setResendCooldown((prev) => prev - 1);
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [resendCooldown]);
 
   // Auto-suggest username when user types their name
   const handleNameChange = (val) => {
@@ -100,15 +121,16 @@ export default function SignupPage({ onLoginSuccess, onNavigateToLogin, onNaviga
     setIsLoading(true);
 
     try {
-      const res = await api.register({
+      const res = await authRegister({
         name: displayName,
         username: targetUsername,
         email: targetEmail,
         password: targetPassword,
-        skills: [skillInterest],
+        skillInterest,
+        role,
       });
 
-      // Save to local registry with verified unique credentials
+      // Save to local registry
       const updatedRegistry = registeredUsers.filter(u => u.email?.toLowerCase() !== targetEmail && u.username?.toLowerCase() !== targetUsername);
       const userRecord = {
         id: res?.user?.id || `u-${Date.now()}`,
@@ -124,6 +146,13 @@ export default function SignupPage({ onLoginSuccess, onNavigateToLogin, onNaviga
       localStorage.setItem('herearn_registered_users', JSON.stringify(updatedRegistry));
 
       setIsLoading(false);
+
+      if (res?.needsEmailConfirmation) {
+        setSentEmail(targetEmail);
+        setSignupComplete(true);
+        return;
+      }
+
       onLoginSuccess({
         ...(res?.user || {}),
         name: displayName,
@@ -134,48 +163,19 @@ export default function SignupPage({ onLoginSuccess, onNavigateToLogin, onNaviga
       });
     } catch (err) {
       setIsLoading(false);
+      setError(err.message || 'Registration failed. Please try again.');
+    }
+  };
 
-      // If backend returned conflict error (409 or 400), display message and DO NOT register
-      if (err.status === 409 || err.status === 400) {
-        setError(err.message || 'An account with this email or username already exists. Please choose another.');
-        return;
-      }
-
-      // Offline fallback: double check local uniqueness
-      const localEmailConflict = registeredUsers.some(u => u.email?.toLowerCase() === targetEmail);
-      if (localEmailConflict) {
-        setError(`An account with email "${targetEmail}" is already registered. Please sign in.`);
-        return;
-      }
-
-      const localUserConflict = registeredUsers.some(u => u.username?.toLowerCase() === targetUsername);
-      if (localUserConflict) {
-        setError(`The username "@${targetUsername}" is already taken. Please choose another username.`);
-        return;
-      }
-
-      const updatedRegistry = registeredUsers.filter(u => u.email?.toLowerCase() !== targetEmail && u.username?.toLowerCase() !== targetUsername);
-      const userRecord = {
-        id: `u-${Date.now()}`,
-        name: displayName,
-        username: targetUsername,
-        email: targetEmail,
-        password: targetPassword,
-        skills: [skillInterest],
-        role,
-        createdAt: new Date().toISOString()
-      };
-      updatedRegistry.push(userRecord);
-      localStorage.setItem('herearn_registered_users', JSON.stringify(updatedRegistry));
-
-      onLoginSuccess({
-        name: displayName,
-        username: targetUsername,
-        email: targetEmail,
-        skillInterest,
-        isSignUp: true,
-        role,
-      });
+  const handleResendEmail = async () => {
+    if (resendCooldown > 0 || !sentEmail) return;
+    try {
+      setResendStatus('Sending verification email...');
+      await resendConfirmationEmail(sentEmail);
+      setResendCooldown(60);
+      setResendStatus('Verification email re-sent! Please check your inbox.');
+    } catch (err) {
+      setResendStatus(err.message || 'Failed to resend confirmation email.');
     }
   };
   return (
@@ -265,7 +265,76 @@ export default function SignupPage({ onLoginSuccess, onNavigateToLogin, onNaviga
 
         {/* Right Form Column */}
         <div className="lg:col-span-7 bg-white dark:bg-slate-900 border border-slate-200 dark:border-purple-500/30 rounded-3xl p-6 sm:p-10 text-slate-900 dark:text-white shadow-2xl flex flex-col justify-between">
-          <div>
+          {signupComplete ? (
+            <div className="py-6 px-2 text-center space-y-6 animate-fade-in my-auto">
+              <div className="w-16 h-16 rounded-3xl bg-gradient-to-tr from-purple-600 to-pink-600 flex items-center justify-center text-white mx-auto shadow-xl shadow-purple-500/20">
+                <Inbox className="w-8 h-8" />
+              </div>
+
+              <div className="space-y-2">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-purple-100 dark:bg-purple-950/80 text-purple-700 dark:text-purple-300 border border-purple-300 dark:border-purple-700">
+                  <Sparkles className="w-3.5 h-3.5 text-pink-500" />
+                  Action Required
+                </span>
+                <h3 className="text-2xl font-extrabold text-slate-900 dark:text-white">
+                  Confirm Your Email Address
+                </h3>
+                <p className="text-sm text-slate-600 dark:text-slate-300 max-w-md mx-auto leading-relaxed">
+                  We've sent a verification link to <strong className="text-purple-600 dark:text-purple-400">{sentEmail}</strong>. Please check your inbox and click the link to activate your HerEarn account.
+                </p>
+              </div>
+
+              <div className="bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800/60 rounded-2xl p-4 text-xs text-slate-700 dark:text-purple-200 max-w-md mx-auto text-left space-y-2">
+                <div className="flex items-start gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
+                  <span>Clicking the link will automatically confirm your account and log you in.</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
+                  <span>If you don't see the email, check your <strong>Spam</strong> or <strong>Promotions</strong> folder.</span>
+                </div>
+              </div>
+
+              {resendStatus && (
+                <p className="text-xs font-semibold text-purple-600 dark:text-purple-400">
+                  {resendStatus}
+                </p>
+              )}
+
+              <div className="flex flex-col sm:flex-row gap-3 justify-center max-w-md mx-auto pt-2">
+                <button
+                  type="button"
+                  onClick={() => window.open('https://mail.google.com', '_blank')}
+                  className="flex-1 py-3 px-4 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold flex items-center justify-center gap-2 transition-all shadow-md cursor-pointer"
+                >
+                  <span>Open Gmail</span>
+                  <ExternalLink className="w-3.5 h-3.5" />
+                </button>
+
+                <button
+                  type="button"
+                  disabled={resendCooldown > 0}
+                  onClick={handleResendEmail}
+                  className="flex-1 py-3 px-4 rounded-xl border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <RefreshCw className={`w-3.5 h-3.5 ${resendCooldown > 0 ? 'animate-spin' : ''}`} />
+                  <span>{resendCooldown > 0 ? `Resend in ${resendCooldown}s` : 'Resend Email'}</span>
+                </button>
+              </div>
+
+              <div className="pt-4 border-t border-slate-200 dark:border-slate-800">
+                <button
+                  type="button"
+                  onClick={onNavigateToLogin}
+                  className="text-xs text-purple-600 dark:text-purple-400 hover:underline font-bold cursor-pointer"
+                >
+                  Already confirmed? Log in to your account →
+                </button>
+              </div>
+            </div>
+          ) : (
+            <>
+              <div>
             
             {/* Header */}
             <div className="flex items-center justify-between mb-6">
@@ -572,6 +641,8 @@ export default function SignupPage({ onLoginSuccess, onNavigateToLogin, onNaviga
               <span>Continue with Guest Account</span>
             </button>
           </div>
+          </>
+          )}
 
         </div>
 

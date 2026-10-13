@@ -154,6 +154,46 @@ export const AuthProvider = ({ children }) => {
   };
 
   const login = async (credentials) => {
+    const { email, password, username } = credentials || {};
+    const targetEmail = (email || '').trim().toLowerCase();
+    const targetPassword = password || '';
+
+    // 1. If email & password provided, attempt Supabase Auth signInWithPassword
+    if (targetEmail && targetEmail.includes('@') && targetPassword) {
+      try {
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email: targetEmail,
+          password: targetPassword,
+        });
+
+        if (error) {
+          const msg = error.message || '';
+          if (msg.toLowerCase().includes('email not confirmed')) {
+            const unconfirmedError = new Error('Please confirm your email address before logging in. Check your inbox for the verification link.');
+            unconfirmedError.isEmailUnconfirmed = true;
+            unconfirmedError.email = targetEmail;
+            throw unconfirmedError;
+          }
+          // If invalid login credentials on Supabase, proceed to check API backend fallback
+          if (!msg.toLowerCase().includes('invalid login credentials')) {
+            throw error;
+          }
+        } else if (data?.session) {
+          await syncSupabaseSession(data.session);
+          return {
+            success: true,
+            user: user || data.user,
+            token: data.session.access_token,
+            session: data.session,
+          };
+        }
+      } catch (sbErr) {
+        if (sbErr.isEmailUnconfirmed) throw sbErr;
+        console.warn('[AuthContext] Supabase password signin notice:', sbErr.message);
+      }
+    }
+
+    // 2. Fallback to Express backend API authentication
     const res = await api.login(credentials);
     if (res.success && res.token) {
       localStorage.setItem('herearn_jwt_token', res.token);
@@ -166,15 +206,101 @@ export const AuthProvider = ({ children }) => {
   };
 
   const register = async (userData) => {
-    const res = await api.register(userData);
-    if (res.success && res.token) {
-      localStorage.setItem('herearn_jwt_token', res.token);
-      localStorage.setItem('herearn_user', JSON.stringify(res.user));
-      setToken(res.token);
-      setUser(res.user);
-      return res;
+    const { name, email, password, username, skillInterest, role } = userData || {};
+    const cleanEmail = (email || '').trim().toLowerCase();
+    const cleanName = (name || '').trim() || cleanEmail.split('@')[0] || 'Learner';
+    const redirectUrl = typeof window !== 'undefined'
+      ? `${window.location.origin}/`
+      : 'https://herearn.vercel.app/';
+
+    // 1. Sign up user via Supabase Auth with email confirmation redirect
+    const { data, error } = await supabase.auth.signUp({
+      email: cleanEmail,
+      password,
+      options: {
+        data: {
+          full_name: cleanName,
+          name: cleanName,
+          username: username || cleanName.toLowerCase().replace(/[^a-z0-9]/g, '_'),
+          skill_interest: skillInterest || 'Digital Marketing',
+          role: role || 'learner',
+        },
+        emailRedirectTo: redirectUrl,
+      },
+    });
+
+    if (error) {
+      const msg = error.message || '';
+      if (msg.toLowerCase().includes('rate limit')) {
+        throw new Error('Too many sign-up requests. Please wait a few minutes before trying again.');
+      }
+      if (msg.toLowerCase().includes('already registered')) {
+        throw new Error(`An account with email "${cleanEmail}" already exists. Please log in instead.`);
+      }
+      throw error;
     }
-    throw new Error(res.message || 'Registration failed');
+
+    // If identities is empty array, email is already registered in Supabase
+    if (data?.user && Array.isArray(data.user.identities) && data.user.identities.length === 0) {
+      throw new Error(`An account with email "${cleanEmail}" is already registered. Please log in.`);
+    }
+
+    const needsEmailConfirmation = !data?.session;
+
+    // Also register on local/backend database for parity
+    try {
+      await api.register({
+        name: cleanName,
+        email: cleanEmail,
+        password,
+        skills: [skillInterest || 'Digital Marketing'],
+      });
+    } catch (apiErr) {
+      console.warn('[AuthContext] Backend register mirror notice:', apiErr.message);
+    }
+
+    // If auto-confirmed or already has session, sync immediately
+    if (data?.session) {
+      await syncSupabaseSession(data.session);
+    }
+
+    return {
+      success: true,
+      user: data?.user,
+      session: data?.session,
+      needsEmailConfirmation,
+      email: cleanEmail,
+      message: needsEmailConfirmation
+        ? `Confirmation email sent to ${cleanEmail}. Please check your inbox and confirm your account.`
+        : 'Account created successfully!',
+    };
+  };
+
+  const resendConfirmationEmail = async (targetEmail) => {
+    const cleanEmail = (targetEmail || '').trim().toLowerCase();
+    if (!cleanEmail) throw new Error('Email address is required.');
+
+    const redirectUrl = typeof window !== 'undefined'
+      ? `${window.location.origin}/`
+      : 'https://herearn.vercel.app/';
+
+    const { error } = await supabase.auth.resend({
+      type: 'signup',
+      email: cleanEmail,
+      options: {
+        emailRedirectTo: redirectUrl,
+      },
+    });
+
+    if (error) {
+      const msg = error.message || '';
+      if (msg.toLowerCase().includes('rate limit')) {
+        throw new Error('Please wait 60 seconds before requesting another confirmation email.');
+      }
+      throw error;
+    }
+
+    return true;
   };
 
   const googleLogin = async (credential) => {
@@ -230,6 +356,7 @@ export const AuthProvider = ({ children }) => {
         signInWithGoogle,
         login,
         register,
+        resendConfirmationEmail,
         googleLogin,
         logout,
         updateUserProfile,
