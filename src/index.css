@@ -1,51 +1,43 @@
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,600;0,700;0,800;0,900;1,700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 
 :root {
   --font-heading: 'Outfit', sans-serif;
-  --font-serif: 'Playfair Display', Georgia, serif;
   --font-body: 'Plus Jakarta Sans', sans-serif;
 
-  /* EmpowHERto / Inspo Palette */
-  --brand-lilac: #DE9EE2;
-  --brand-lilac-light: #F4D8F7;
-  --brand-lilac-dark: #C777CD;
-  --brand-royal: #7C5CE6;
-  --brand-royal-dark: #6541D6;
-  --brand-royal-light: #9B81EE;
-  
-  --purple-primary: #7C5CE6;
-  --purple-glow: rgba(124, 92, 230, 0.35);
-  --pink-accent: #DE9EE2;
-  --pink-glow: rgba(222, 158, 226, 0.35);
-  --lavender-soft: #FAF7FD;
-  --lavender-gradient: linear-gradient(135deg, #DE9EE2 0%, #B685EA 50%, #7C5CE6 100%);
-  --hero-glass-bg: rgba(222, 158, 226, 0.12);
+  /* Custom Color Palette */
+  --purple-primary: #7C3AED;
+  --purple-glow: rgba(124, 58, 237, 0.35);
+  --pink-accent: #EC4899;
+  --pink-glow: rgba(236, 72, 153, 0.35);
+  --lavender-soft: #f3e8ff;
+  --lavender-gradient: linear-gradient(135deg, #7C3AED 0%, #C084FC 50%, #EC4899 100%);
+  --hero-glass-bg: rgba(124, 58, 237, 0.08);
 }
 
-/* Theme - Dark Mode */
+/* Theme - Dark Mode (Default) */
 .dark {
-  --bg-main: #0E0A1A;
-  --bg-nav: rgba(14, 10, 26, 0.92);
-  --bg-card: #18122B;
-  --bg-card-glass: rgba(24, 18, 43, 0.85);
-  --bg-input: #231B3D;
-  --text-main: #FDFCFE;
-  --text-muted: #C4B5FD;
-  --border-subtle: rgba(222, 158, 226, 0.2);
+  --bg-main: #0a0518;
+  --bg-nav: rgba(10, 5, 24, 0.88);
+  --bg-card: #150d2a;
+  --bg-card-glass: rgba(21, 13, 42, 0.75);
+  --bg-input: #1e1338;
+  --text-main: #f8fafc;
+  --text-muted: #a78bfa;
+  --border-subtle: rgba(192, 132, 252, 0.18);
   --shadow-card: 0 20px 40px -10px rgba(0, 0, 0, 0.6);
 }
 
-/* Theme - Light Mode (Matches EmpowHERto Inspiration) */
+/* Theme - Light Mode */
 .light {
-  --bg-main: #FAF7FD;
+  --bg-main: #faf5ff;
   --bg-nav: rgba(255, 255, 255, 0.95);
   --bg-card: #ffffff;
   --bg-card-glass: rgba(255, 255, 255, 0.95);
-  --bg-input: #F4E8F8;
-  --text-main: #141024;
-  --text-muted: #645C75;
-  --border-subtle: rgba(222, 158, 226, 0.28);
-  --shadow-card: 0 15px 35px -5px rgba(124, 92, 230, 0.08);
+  --bg-input: #f3e8ff;
+  --text-main: #0f172a;
+  --text-muted: #475569;
+  --border-subtle: rgba(124, 58, 237, 0.2);
+  --shadow-card: 0 15px 35px -5px rgba(124, 58, 237, 0.1);
 }
 
 .light .glass-card {
@@ -133,93 +125,6 @@ h1, h2, h3, h4, h5, h6 {
   transform: translateY(-6px) scale(1.01);
   border-color: rgba(236, 72, 153, 0.6);
   box-shadow: 0 25px 45px -10px rgba(124, 58, 237, 0.35);
-}
-
-/* EmpowHERto Inspo Utilities */
-.font-editorial {
-  font-family: var(--font-serif);
-}
-
-.organic-blob {
-  border-radius: 54% 46% 62% 38% / 45% 58% 42% 55%;
-}
-
-.organic-blob-alt {
-  border-radius: 42% 58% 49% 51% / 57% 41% 59% 43%;
-}
-
-.btn-inspo-lilac {
-  background-color: var(--brand-lilac);
-  color: #ffffff;
-  border-radius: 9999px;
-  font-weight: 600;
-  padding: 0.75rem 2rem;
-  border: none;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 4px 14px rgba(222, 158, 226, 0.45);
-}
-
-.btn-inspo-lilac:hover {
-  background-color: var(--brand-lilac-dark);
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(222, 158, 226, 0.6);
-}
-
-.btn-inspo-royal {
-  background-color: var(--brand-royal);
-  color: #ffffff;
-  border-radius: 9999px;
-  font-weight: 600;
-  padding: 0.75rem 2rem;
-  border: none;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 4px 14px rgba(124, 92, 230, 0.35);
-}
-
-.btn-inspo-royal:hover {
-  background-color: var(--brand-royal-dark);
-  transform: translateY(-2px);
-  box-shadow: 0 8px 22px rgba(124, 92, 230, 0.5);
-}
-
-.btn-inspo-outline {
-  border: 1.5px solid #141024;
-  border-radius: 9999px;
-  padding: 0.5rem 1.4rem;
-  font-weight: 600;
-  background: transparent;
-  color: #141024;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  transition: all 0.2s ease;
-}
-
-.dark .btn-inspo-outline {
-  border-color: #FDFCFE;
-  color: #FDFCFE;
-}
-
-.btn-inspo-outline:hover {
-  background-color: #141024;
-  color: #ffffff;
-}
-
-.dark .btn-inspo-outline:hover {
-  background-color: #FDFCFE;
-  color: #0E0A1A;
 }
 
 /* Custom Buttons */
