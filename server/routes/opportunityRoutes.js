@@ -161,9 +161,16 @@ router.patch('/:id', async (req, res) => {
 // DELETE /api/opportunities/:id
 router.delete('/:id', async (req, res) => {
   try {
-    await prisma.opportunity.delete({
-      where: { id: req.params.id },
-    });
+    let gig = await prisma.opportunity.findUnique({ where: { id: req.params.id } }).catch(() => null);
+    const searchTitle = req.body?.title || req.query?.title;
+    if (!gig && searchTitle) {
+      gig = await prisma.opportunity.findFirst({ where: { title: searchTitle } }).catch(() => null);
+    }
+
+    if (gig) {
+      await prisma.application.deleteMany({ where: { opportunityId: gig.id } }).catch(() => null);
+      await prisma.opportunity.delete({ where: { id: gig.id } });
+    }
     res.json({ success: true, message: 'Opportunity deleted successfully' });
   } catch (error) {
     res.status(500).json({ success: false, message: 'Failed to delete opportunity', error: error.message });

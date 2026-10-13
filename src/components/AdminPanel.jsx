@@ -310,11 +310,11 @@ export default function AdminPanel({
   // Gigs Actions: Approve Gig
   const handleApproveGig = async (id, title) => {
     try {
-      await api.updateOpportunityStatus(id, { verifiedClient: true, isOpen: true, status: 'verified' });
-      setLocalGigs(prev => prev.map(g => g.id === id ? { ...g, verifiedClient: true, isOpen: true, status: 'verified' } : g));
+      setLocalGigs(prev => prev.map(g => (g.id === id || g.title === title) ? { ...g, verifiedClient: true, isOpen: true, status: 'verified' } : g));
       if (setOpportunities) {
-        setOpportunities(prev => prev.map(g => g.id === id ? { ...g, verifiedClient: true, isOpen: true, status: 'verified' } : g));
+        setOpportunities(prev => (prev || []).map(g => (g.id === id || g.title === title) ? { ...g, verifiedClient: true, isOpen: true, status: 'verified' } : g));
       }
+      await api.updateOpportunityStatus(id, { verifiedClient: true, isOpen: true, status: 'verified', title });
       pushAuditLog('GIG_APPROVED', `Approved & Escrow verified: "${title || id}"`, 'approval');
       if (showToast) showToast('✅ Gig Verified & Live', `"${title || 'Opportunity'}" is now public.`);
       loadAdminData(true);
@@ -327,11 +327,11 @@ export default function AdminPanel({
   // Gigs Actions: Flag Gig
   const handleFlagGig = async (id, title) => {
     try {
-      await api.updateOpportunityStatus(id, { verifiedClient: false, isOpen: false, status: 'flagged' });
-      setLocalGigs(prev => prev.map(g => g.id === id ? { ...g, verifiedClient: false, isOpen: false, status: 'flagged' } : g));
+      setLocalGigs(prev => prev.map(g => (g.id === id || g.title === title) ? { ...g, verifiedClient: false, isOpen: false, status: 'flagged' } : g));
       if (setOpportunities) {
-        setOpportunities(prev => prev.map(g => g.id === id ? { ...g, verifiedClient: false, isOpen: false, status: 'flagged' } : g));
+        setOpportunities(prev => (prev || []).map(g => (g.id === id || g.title === title) ? { ...g, verifiedClient: false, isOpen: false, status: 'flagged' } : g));
       }
+      await api.updateOpportunityStatus(id, { verifiedClient: false, isOpen: false, status: 'flagged', title });
       pushAuditLog('GIG_FLAGGED', `Flagged for security review: "${title || id}"`, 'warning');
       if (showToast) showToast('⚠️ Gig Flagged', 'Opportunity isolated pending audit.');
       loadAdminData(true);
@@ -344,11 +344,11 @@ export default function AdminPanel({
   // Gigs Actions: Delete Gig permanently
   const handleDeleteGig = async (id, title) => {
     try {
-      await api.deleteOpportunity(id);
-      setLocalGigs(prev => prev.filter(g => g.id !== id));
+      setLocalGigs(prev => prev.filter(g => g.id !== id && g.title !== title));
       if (setOpportunities) {
-        setOpportunities(prev => prev.filter(g => g.id !== id));
+        setOpportunities(prev => (prev || []).filter(g => g.id !== id && g.title !== title));
       }
+      await api.deleteOpportunity(id, { title });
       pushAuditLog('GIG_DELETED', `Removed gig: "${title || id}"`, 'delete');
       if (showToast) showToast('🗑️ Gig Deleted', 'Listing removed from database.');
       loadAdminData(true);
@@ -1344,124 +1344,6 @@ export default function AdminPanel({
                 })
               )}
             </div>
-
-            {/* Modal: Create Verified Gig */}
-            {isAddGigOpen && (
-              <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
-                <div className="bg-slate-900 border border-purple-500/40 rounded-3xl p-6 sm:p-8 max-w-lg w-full text-white shadow-2xl space-y-4">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-lg font-black flex items-center gap-2">
-                      <Plus className="w-5 h-5 text-pink-400" />
-                      <span>Post Verified Enterprise Micro-Gig</span>
-                    </h3>
-                    <button onClick={() => setIsAddGigOpen(false)} className="text-slate-400 hover:text-white cursor-pointer">
-                      <X className="w-5 h-5" />
-                    </button>
-                  </div>
-
-                  <form onSubmit={handleCreateGigSubmit} className="space-y-3 text-xs">
-                    <div>
-                      <label className="font-bold text-slate-300 block mb-1">Gig Title</label>
-                      <input
-                        type="text"
-                        value={newGig.title}
-                        onChange={(e) => setNewGig({ ...newGig, title: e.target.value })}
-                        placeholder="e.g. Social Media Reel Creator & Canva Designer"
-                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white"
-                        required
-                      />
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <label className="font-bold text-slate-300 block mb-1">Company / Enterprise</label>
-                        <input
-                          type="text"
-                          value={newGig.company}
-                          onChange={(e) => setNewGig({ ...newGig, company: e.target.value })}
-                          placeholder="e.g. KalaKriti Handlooms"
-                          className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white"
-                          required
-                        />
-                      </div>
-                      <div>
-                        <label className="font-bold text-slate-300 block mb-1">Stipend Amount</label>
-                        <input
-                          type="text"
-                          value={newGig.stipend}
-                          onChange={(e) => setNewGig({ ...newGig, stipend: e.target.value })}
-                          placeholder="e.g. ₹6,500 (Flat Fee)"
-                          className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white"
-                          required
-                        />
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <label className="font-bold text-slate-300 block mb-1">Category</label>
-                        <select
-                          value={newGig.category}
-                          onChange={(e) => setNewGig({ ...newGig, category: e.target.value })}
-                          className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white"
-                        >
-                          <option value="Digital Marketing">Digital Marketing</option>
-                          <option value="Design">Graphic Design & Canva</option>
-                          <option value="E-Commerce">E-Commerce & Shopify</option>
-                          <option value="AI Data">AI Data Annotation</option>
-                        </select>
-                      </div>
-                      <div>
-                        <label className="font-bold text-slate-300 block mb-1">Duration</label>
-                        <input
-                          type="text"
-                          value={newGig.duration}
-                          onChange={(e) => setNewGig({ ...newGig, duration: e.target.value })}
-                          placeholder="e.g. 2 Weeks"
-                          className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white"
-                        />
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="font-bold text-slate-300 block mb-1">Required Skills (Comma separated)</label>
-                      <input
-                        type="text"
-                        value={newGig.skills}
-                        onChange={(e) => setNewGig({ ...newGig, skills: e.target.value })}
-                        placeholder="Canva, Instagram, Graphic Design"
-                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white"
-                      />
-                    </div>
-
-                    <div className="pt-2 flex justify-end gap-2">
-                      <button
-                        type="button"
-                        onClick={() => setIsAddGigOpen(false)}
-                        className="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 font-bold cursor-pointer"
-                      >
-                        Cancel
-                      </button>
-                      <button
-                        type="submit"
-                        disabled={isSubmittingGig}
-                        className="px-5 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white font-extrabold shadow-md cursor-pointer flex items-center gap-1.5"
-                      >
-                        {isSubmittingGig ? (
-                          <>
-                            <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                            <span>Publishing to DB...</span>
-                          </>
-                        ) : (
-                          <span>Publish Verified Gig</span>
-                        )}
-                      </button>
-                    </div>
-                  </form>
-                </div>
-              </div>
-            )}
-
           </div>
         )}
 
