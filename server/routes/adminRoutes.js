@@ -254,6 +254,7 @@ router.post('/opportunities', async (req, res) => {
         company,
         stipend: stipend || '₹5,000',
         category: category || 'Digital Marketing',
+        type: type || 'Micro-Gig',
         duration: duration || '2 Weeks',
         description: description || 'Verified enterprise opportunity created by Platform Administrator.',
         skillsRequired: JSON.stringify(skills),
