@@ -89,7 +89,7 @@ router.post('/verify-otp', async (req, res) => {
           avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(formattedName)}`,
           location: 'India',
           bio: 'Verified Learner via OTP Authentication',
-          skills: JSON.stringify(['Digital Marketing', 'Content Creation']),
+          skills: ['Digital Marketing', 'Content Creation'],
         },
       });
     }
@@ -146,7 +146,7 @@ router.post('/register', async (req, res) => {
         avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(name)}`,
         location: location || '',
         bio: bio || '',
-        skills: JSON.stringify(skills || []),
+        skills: Array.isArray(skills) ? skills : (typeof skills === 'string' && skills ? [skills] : []),
       },
     });
 
@@ -308,7 +308,7 @@ router.post('/supabase-sync', async (req, res) => {
             avatar,
             location: 'India',
             bio: 'Verified HerEarn Learner via Supabase Auth',
-            skills: JSON.stringify(['Digital Marketing', 'Graphic Design']),
+            skills: ['Digital Marketing', 'Graphic Design'],
           },
         });
       } catch (err) {

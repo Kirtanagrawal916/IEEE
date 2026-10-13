@@ -65,6 +65,14 @@ app.get('/', (req, res) => {
   });
 });
 
+app.get('/api', (req, res) => {
+  res.json({
+    status: 'ok',
+    message: 'HerEarn Backend API is operational',
+    healthCheck: '/api/health',
+  });
+});
+
 app.get('/api/health', (req, res) => {
   res.json({
     status: 'ok',
