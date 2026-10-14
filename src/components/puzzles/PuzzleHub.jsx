@@ -12,17 +12,20 @@ import {
   Brain, 
   Layers,
   Compass,
-  ArrowRight
+  ArrowRight,
+  Radio,
+  Skull
 } from 'lucide-react';
 import QueenPlacingGame from './QueenPlacingGame';
 import DotConnectGame from './DotConnectGame';
 import CircuitLightsGame from './CircuitLightsGame';
 import TowerOfHanoiGame from './TowerOfHanoiGame';
 import KnightsQuestGame from './KnightsQuestGame';
+import LaserMirrorGame from './LaserMirrorGame';
 import { toggleMute, getMuted } from '../../utils/puzzleAudio';
 
 export default function PuzzleHub({ user, onUpdateUserSkillPoints, showToast, defaultGame = 'queen' }) {
-  const [selectedGame, setSelectedGame] = useState(defaultGame); // 'queen' | 'dot-connect' | 'knight' | 'hanoi' | 'circuit'
+  const [selectedGame, setSelectedGame] = useState(defaultGame); // 'queen' | 'dot-connect' | 'knight' | 'hanoi' | 'circuit' | 'laser'
   const [soundEnabled, setSoundEnabled] = useState(!getMuted());
   const [sessionPoints, setSessionPoints] = useState(0);
   const [solvedCount, setSolvedCount] = useState(0);
@@ -114,6 +117,18 @@ export default function PuzzleHub({ user, onUpdateUserSkillPoints, showToast, de
       borderColor: 'border-cyan-400/40',
       desc: 'Energize all circuit nodes by toggling cross patterns to 100% power.',
       badge: '💡 Lights Out'
+    },
+    {
+      id: 'laser',
+      title: 'Laser Matrix',
+      subtitle: 'Quantum Ray Ricochet',
+      tag: 'TOO HARD • EXPERT',
+      icon: Radio,
+      color: 'from-rose-600 via-red-600 to-purple-800',
+      textColor: 'text-rose-500',
+      borderColor: 'border-rose-500/50',
+      desc: 'Position angled mirrors to ricochet a high-energy laser beam through all crystals while dodging black holes.',
+      badge: '💀 TOO HARD'
     }
   ];
 
@@ -185,7 +200,7 @@ export default function PuzzleHub({ user, onUpdateUserSkillPoints, showToast, de
       </div>
 
       {/* Game Selector Cards */}
-      <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3.5">
+      <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3.5">
         {games.map(g => {
           const isSelected = selectedGame === g.id;
           const Icon = g.icon;
@@ -270,6 +285,14 @@ export default function PuzzleHub({ user, onUpdateUserSkillPoints, showToast, de
 
         {selectedGame === 'circuit' && (
           <CircuitLightsGame 
+            onGameWin={handleGameWin}
+            soundEnabled={soundEnabled}
+            onToggleSound={handleToggleSound}
+          />
+        )}
+
+        {selectedGame === 'laser' && (
+          <LaserMirrorGame 
             onGameWin={handleGameWin}
             soundEnabled={soundEnabled}
             onToggleSound={handleToggleSound}

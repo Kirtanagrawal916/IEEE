@@ -23,7 +23,8 @@ import {
   Gamepad2,
   Crown,
   Brain,
-  Compass
+  Compass,
+  Radio
 } from 'lucide-react';
 import { skillTracks } from '../data/mockData';
 import { initialChallenges } from '../data/challengesData';
@@ -146,7 +147,6 @@ export default function LearnSection({ user, onCompleteLesson, onNavigateToPortf
           >
             <Zap className="w-4 h-4 text-amber-400" />
             <span>⚡ HerEarn Challenge Zone</span>
-            <span className="bg-pink-500 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full uppercase">NEW</span>
           </button>
 
           <button
@@ -160,7 +160,6 @@ export default function LearnSection({ user, onCompleteLesson, onNavigateToPortf
           >
             <Gamepad2 className="w-4 h-4 text-pink-400" />
             <span>🧩 Mini Puzzle Games</span>
-            <span className="bg-gradient-to-r from-amber-500 to-pink-500 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full uppercase">NEW</span>
           </button>
         </div>
 
@@ -370,6 +369,15 @@ export default function LearnSection({ user, onCompleteLesson, onNavigateToPortf
                   >
                     <Compass className="w-4 h-4 text-white" />
                     <span>Play Knight's Quest</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => handleTabChange('puzzles', 'laser')}
+                    className="px-4 py-2 rounded-xl bg-gradient-to-r from-rose-600 via-red-600 to-purple-700 text-white text-xs font-bold hover:from-rose-500 hover:to-red-500 transition-all cursor-pointer flex items-center gap-2 shadow-md border border-rose-400/40"
+                  >
+                    <Radio className="w-4 h-4 text-white" />
+                    <span>Laser Matrix (💀 Too Hard)</span>
                   </button>
 
                   <button
