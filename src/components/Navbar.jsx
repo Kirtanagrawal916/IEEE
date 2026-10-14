@@ -203,10 +203,7 @@ export default function Navbar({
                       <Gamepad2 className="w-4 h-4" />
                     </div>
                     <div>
-                      <div className="flex items-center gap-1.5">
-                        <p className="font-bold text-slate-900 dark:text-white leading-tight">Mini Puzzle Games</p>
-                        <span className="text-[9px] bg-gradient-to-r from-pink-500 to-amber-500 text-white font-black px-1.5 py-0.2 rounded-full uppercase">NEW</span>
-                      </div>
+                      <p className="font-bold text-slate-900 dark:text-white leading-tight">Mini Puzzle Games</p>
                       <p className="text-[10px] text-slate-500 dark:text-slate-400">Queen placing & point connector puzzles</p>
                     </div>
                   </Link>
