@@ -126,7 +126,7 @@ export default function OpportunitiesSection({
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white animate-fade-in pb-16">
+    <div className="min-h-screen bg-[#FFF9F5] dark:bg-slate-950 text-slate-900 dark:text-white animate-fade-in pb-16">
       
       {/* ========================================================
           1. ELEGANT PASTEL HERO BANNER (Matching Reference Image)

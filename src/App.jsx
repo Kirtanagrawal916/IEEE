@@ -418,7 +418,7 @@ function AppContent() {
 
   return (
     <div className={`min-h-screen flex flex-col font-sans transition-colors duration-300 ${
-      theme === 'dark' ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-900'
+      theme === 'dark' ? 'bg-slate-950 text-slate-100' : 'bg-[#FFF9F5] text-slate-900'
     }`}>
       
       {/* Sticky Navigation Header (Hidden on Admin portal for dedicated admin console) */}
@@ -795,7 +795,7 @@ function AppContent() {
       {/* Footer (Hidden on Admin portal) */}
       {!isAdminRoute && (
         <footer className={`border-t py-10 text-xs transition-colors ${
-          theme === 'dark' ? 'bg-slate-900 border-slate-800 text-slate-400' : 'bg-white border-slate-200 text-slate-600'
+          theme === 'dark' ? 'bg-slate-900 border-slate-800 text-slate-400' : 'bg-[#FFF9F5] border-slate-200 text-slate-600'
         }`}>
           <div className="w-full px-4 sm:px-8 lg:px-12 flex flex-col md:flex-row items-center justify-between gap-6 text-center md:text-left">
             <div className="flex flex-col sm:flex-row items-center gap-3">
