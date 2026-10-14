@@ -780,6 +780,7 @@ function AppContent() {
             element={
               <AdminPanel 
                 user={user}
+                onLoginSuccess={handleLoginSuccess}
                 opportunities={opportunities} 
                 portfolios={portfolios} 
                 setOpportunities={setOpportunities}
