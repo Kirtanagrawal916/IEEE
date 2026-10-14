@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { 
   Play, 
   CheckCircle, 
@@ -19,15 +19,30 @@ import {
   Layers,
   Flame,
   Send,
-  Loader2
+  Loader2,
+  Gamepad2,
+  Crown,
+  Brain,
+  Compass,
+  Radio
 } from 'lucide-react';
 import { skillTracks } from '../data/mockData';
 import { initialChallenges } from '../data/challengesData';
 import { api } from '../services/api';
+import PuzzleHub from './puzzles/PuzzleHub';
 
-export default function LearnSection({ user, onCompleteLesson, onNavigateToPortfolio, onUpdateUserSkillPoints }) {
+export default function LearnSection({ user, onCompleteLesson, onNavigateToPortfolio, onUpdateUserSkillPoints, showToast }) {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState('courses'); // 'courses' | 'challenges'
+  const [searchParams, setSearchParams] = useSearchParams();
+  const urlTab = searchParams.get('tab');
+  const [activeTab, setActiveTab] = useState(
+    urlTab === 'puzzles' || urlTab === 'games' 
+      ? 'puzzles' 
+      : urlTab === 'challenges' 
+      ? 'challenges' 
+      : 'courses'
+  ); // 'courses' | 'challenges' | 'puzzles'
+  const [puzzleSubGame, setPuzzleSubGame] = useState(() => searchParams.get('game') || 'queen');
   const [tracks, setTracks] = useState(skillTracks);
   const [selectedTrackId, setSelectedTrackId] = useState('track-1');
   const [activeLessonId, setActiveLessonId] = useState('m1-l1');
@@ -85,6 +100,12 @@ export default function LearnSection({ user, onCompleteLesson, onNavigateToPortf
 
   const isCurrentLessonCompleted = userCompletedLessons.includes(activeLesson.id);
 
+  const handleTabChange = (tab, game = 'queen') => {
+    setActiveTab(tab);
+    if (game) setPuzzleSubGame(game);
+    setSearchParams(tab === 'courses' ? {} : { tab, ...(tab === 'puzzles' ? { game } : {}) });
+  };
+
   const handleChallengeSubmit = (challenge, result) => {
     if (!completedChallengeIds.includes(challenge.id)) {
       setCompletedChallengeIds([...completedChallengeIds, challenge.id]);
@@ -99,12 +120,12 @@ export default function LearnSection({ user, onCompleteLesson, onNavigateToPortf
   return (
     <div className="max-w-[1440px] mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 space-y-8 animate-fade-in text-slate-900 dark:text-white">
       
-      {/* View Switcher Bar: Courses vs Challenge Zone */}
+      {/* View Switcher Bar: Courses vs Challenge Zone vs Mini Puzzles */}
       <div className="flex items-center justify-between flex-wrap gap-4 bg-white dark:bg-slate-900 p-3 rounded-2xl border border-slate-200 dark:border-purple-500/30 shadow-md">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <button
             type="button"
-            onClick={() => setActiveTab('courses')}
+            onClick={() => handleTabChange('courses')}
             className={`px-5 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 ${
               activeTab === 'courses'
                 ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-md'
@@ -117,7 +138,7 @@ export default function LearnSection({ user, onCompleteLesson, onNavigateToPortf
 
           <button
             type="button"
-            onClick={() => setActiveTab('challenges')}
+            onClick={() => handleTabChange('challenges')}
             className={`px-5 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 relative ${
               activeTab === 'challenges'
                 ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-md'
@@ -126,7 +147,19 @@ export default function LearnSection({ user, onCompleteLesson, onNavigateToPortf
           >
             <Zap className="w-4 h-4 text-amber-400" />
             <span>⚡ HerEarn Challenge Zone</span>
-            <span className="bg-pink-500 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full uppercase">NEW</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => handleTabChange('puzzles')}
+            className={`px-5 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 relative ${
+              activeTab === 'puzzles'
+                ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-md'
+                : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+            }`}
+          >
+            <Gamepad2 className="w-4 h-4 text-pink-400" />
+            <span>🧩 Mini Puzzle Games</span>
           </button>
         </div>
 
@@ -281,6 +314,82 @@ export default function LearnSection({ user, onCompleteLesson, onNavigateToPortf
                   </button>
                 </div>
               )}
+
+              {/* Brain Break: Mini Puzzle Arcade Feature Card */}
+              <div className="bg-gradient-to-r from-purple-900/90 via-indigo-950 to-slate-900 rounded-3xl p-6 text-white border border-purple-500/40 shadow-xl space-y-4">
+                <div className="flex items-center justify-between flex-wrap gap-2">
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-pink-500/20 text-pink-300 text-xs font-bold uppercase tracking-wider border border-pink-400/30">
+                    <Gamepad2 className="w-3.5 h-3.5 text-pink-400" />
+                    <span>Brain Break & Mini Puzzle Arcade</span>
+                  </div>
+                  <span className="text-[10px] bg-gradient-to-r from-amber-400 to-pink-500 text-slate-950 font-black px-2 py-0.5 rounded-full uppercase">
+                    +Bonus Points
+                  </span>
+                </div>
+
+                <div className="space-y-1">
+                  <h3 className="text-lg font-extrabold text-white">Need a Quick Brain Break Between Lessons?</h3>
+                  <p className="text-xs text-slate-300 leading-relaxed font-medium">
+                    Sharpen your algorithmic thinking! Play classic challenges like <strong className="text-amber-300">Queen Placing (N-Queens)</strong> or <strong className="text-pink-300">Joint Two Points (Dot Connect)</strong> and earn bonus Skill Points for your profile.
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-3 pt-1 flex-wrap">
+                  <button
+                    type="button"
+                    onClick={() => handleTabChange('puzzles', 'queen')}
+                    className="px-4 py-2 rounded-xl bg-amber-400 text-slate-950 text-xs font-bold hover:bg-amber-300 transition-all cursor-pointer flex items-center gap-2 shadow-md"
+                  >
+                    <Crown className="w-4 h-4 fill-slate-950" />
+                    <span>Play Queen Placing</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => handleTabChange('puzzles', 'dot-connect')}
+                    className="px-4 py-2 rounded-xl bg-gradient-to-r from-pink-600 to-purple-600 text-white text-xs font-bold hover:from-pink-500 hover:to-purple-500 transition-all cursor-pointer flex items-center gap-2 shadow-md"
+                  >
+                    <Zap className="w-4 h-4 text-amber-300" />
+                    <span>Play Joint Two Points</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => handleTabChange('puzzles', 'hanoi')}
+                    className="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-rose-600 text-white text-xs font-bold hover:from-amber-400 hover:to-rose-500 transition-all cursor-pointer flex items-center gap-2 shadow-md"
+                  >
+                    <Layers className="w-4 h-4 text-white" />
+                    <span>Play Tower of Hanoi</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => handleTabChange('puzzles', 'knight')}
+                    className="px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white text-xs font-bold hover:from-emerald-500 hover:to-teal-500 transition-all cursor-pointer flex items-center gap-2 shadow-md"
+                  >
+                    <Compass className="w-4 h-4 text-white" />
+                    <span>Play Knight's Quest</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => handleTabChange('puzzles', 'laser')}
+                    className="px-4 py-2 rounded-xl bg-gradient-to-r from-rose-600 via-red-600 to-purple-700 text-white text-xs font-bold hover:from-rose-500 hover:to-red-500 transition-all cursor-pointer flex items-center gap-2 shadow-md border border-rose-400/40"
+                  >
+                    <Radio className="w-4 h-4 text-white" />
+                    <span>Laser Matrix (💀 Too Hard)</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => handleTabChange('puzzles')}
+                    className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 border border-white/20"
+                  >
+                    <span>View All Puzzles</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
 
             </div>
 
@@ -516,6 +625,23 @@ export default function LearnSection({ user, onCompleteLesson, onNavigateToPortf
           </div>
 
         </div>
+      )}
+
+      {/* ========================================================
+          SECTION 3: 🧩 MINI PUZZLE GAMES & LOGIC LAB VIEW
+         ======================================================== */}
+      {activeTab === 'puzzles' && (
+        <PuzzleHub 
+          user={user}
+          onUpdateUserSkillPoints={(points, badge) => {
+            setUserPoints(points);
+            if (onUpdateUserSkillPoints) {
+              onUpdateUserSkillPoints(points, badge);
+            }
+          }}
+          showToast={showToast}
+          defaultGame={puzzleSubGame}
+        />
       )}
 
     </div>

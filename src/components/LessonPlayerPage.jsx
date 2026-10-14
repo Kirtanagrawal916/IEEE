@@ -10,7 +10,8 @@ import {
   Play, 
   Loader2,
   Award,
-  ChevronLeft
+  ChevronLeft,
+  Gamepad2
 } from 'lucide-react';
 import { api } from '../services/api';
 import { skillTracks } from '../data/mockData';
@@ -270,6 +271,21 @@ export default function LessonPlayerPage({ user, onCompleteLesson, showToast }) 
               );
             })}
           </div>
+
+          {/* Quick Brain Break Link */}
+          <div className="pt-3 border-t border-slate-200 dark:border-slate-800">
+            <Link
+              to="/courses?tab=puzzles"
+              className="p-3 rounded-xl bg-gradient-to-r from-purple-500/10 to-pink-500/10 border border-purple-500/30 hover:border-purple-500/50 flex items-center justify-between text-xs transition-all group"
+            >
+              <div className="flex items-center gap-2 text-purple-700 dark:text-purple-300 font-bold">
+                <Gamepad2 className="w-4 h-4 text-pink-500" />
+                <span>🧠 Quick Brain Break (Puzzles)</span>
+              </div>
+              <span className="text-[10px] text-pink-600 dark:text-pink-400 font-extrabold group-hover:translate-x-0.5 transition-transform">Play →</span>
+            </Link>
+          </div>
+
         </div>
 
       </div>

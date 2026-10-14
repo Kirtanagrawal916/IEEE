@@ -23,6 +23,7 @@ import ChallengeDetailPage from './components/ChallengeDetailPage';
 import SubmitProjectPage from './components/SubmitProjectPage';
 import PortfolioDetailPage from './components/PortfolioDetailPage';
 import PostGigPage from './components/PostGigPage';
+import RecruiterDashboard from './components/RecruiterDashboard';
 
 import LogoutModal from './components/LogoutModal';
 import ToastNotification from './components/ToastNotification';
@@ -346,6 +347,7 @@ function AppContent() {
       name: displayName,
       username: rawUsername,
       email: userData.email || `${rawUsername}@herearn.org`,
+      role: (userData.role || (isSameUser ? existingSaved.role : 'LEARNER')).toUpperCase(),
       title: userData.title || (isSameUser ? existingSaved.title : `${userData.skillInterest || 'Digital Skill'} Specialist`),
       location: userData.location || (isSameUser ? existingSaved.location : 'India'),
       bio: userData.bio || (isSameUser ? existingSaved.bio : 'Passionate about building digital skills and delivering quality micro-gigs on HerEarn.'),
@@ -382,11 +384,13 @@ function AppContent() {
     const redirectUrl = searchParams.get('redirect');
     if (redirectUrl) {
       navigate(redirectUrl);
-    } else if (loggedInUser?.role === 'ADMIN') {
-      navigate('/admin');
-    } else {
-      navigate('/dashboard');
-    }
+      } else if (loggedInUser.role === 'ADMIN') {
+    navigate('/admin');
+  } else if (loggedInUser.role === 'EMPLOYER') {
+    navigate('/recruiter');
+  } else {
+    navigate('/dashboard');
+  }
     showToast(isNewSignUp ? "Account Created! 🎉" : "Welcome Back! ✨", `Signed in as ${loggedInUser.name} (@${loggedInUser.username})`);
   };
 
@@ -476,6 +480,16 @@ function AppContent() {
                   navigate('/portfolio');
                   setIsSubmitOpen(true);
                 }}
+                onUpdateUserSkillPoints={(points, badge) => {
+                  if (user) {
+                    saveUserData({
+                      ...user,
+                      skillPoints: points,
+                      badges: badge ? [...new Set([...(user.badges || []), badge])] : (user.badges || [])
+                    });
+                  }
+                }}
+                showToast={showToast}
               />
             } 
           />
@@ -490,6 +504,16 @@ function AppContent() {
                   navigate('/portfolio');
                   setIsSubmitOpen(true);
                 }}
+                onUpdateUserSkillPoints={(points, badge) => {
+                  if (user) {
+                    saveUserData({
+                      ...user,
+                      skillPoints: points,
+                      badges: badge ? [...new Set([...(user.badges || []), badge])] : (user.badges || [])
+                    });
+                  }
+                }}
+                showToast={showToast}
               />
             } 
           />
@@ -741,6 +765,15 @@ function AppContent() {
               <MentorshipSection showToast={showToast} />
             } 
           />
+
+          <Route
+  path="/recruiter/*"
+  element={
+    <ProtectedRoute user={user}>
+      <RecruiterDashboard user={user} showToast={showToast} />
+    </ProtectedRoute>
+  }
+/>
 
           <Route 
             path="/admin" 

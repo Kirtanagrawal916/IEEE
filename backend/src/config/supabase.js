@@ -1,7 +1,16 @@
 import { createClient } from '@supabase/supabase-js';
 import * as supabaseServer from '@supabase/server';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import fs from 'fs';
 import dotenv from 'dotenv';
+
 dotenv.config();
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const rootEnvPath = path.resolve(__dirname, '../../../.env');
+if (fs.existsSync(rootEnvPath)) {
+  dotenv.config({ path: rootEnvPath, override: false });
+}
 
 const supabaseUrl = process.env.SUPABASE_URL || '';
 const supabaseSecretKey = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_PUBLISHABLE_KEY || '';

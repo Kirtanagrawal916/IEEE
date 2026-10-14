@@ -1,6 +1,9 @@
 import express from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import fs from 'fs';
 import dotenv from 'dotenv';
 
 import authRoutes from './routes/authRoutes.js';
@@ -11,10 +14,16 @@ import portfolioRoutes from './routes/portfolioRoutes.js';
 import opportunityRoutes from './routes/opportunityRoutes.js';
 import applicationRoutes from './routes/applicationRoutes.js';
 import dashboardRoutes from './routes/dashboardRoutes.js';
+import recruiterRoutes from './routes/recruiterRoutes.js';
 import chatRoutes from './routes/chat.js';
 import adminRoutes from './routes/adminRoutes.js';
 
 dotenv.config();
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const rootEnvPath = path.resolve(__dirname, '../.env');
+if (fs.existsSync(rootEnvPath)) {
+  dotenv.config({ path: rootEnvPath, override: false });
+}
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -57,6 +66,14 @@ app.get('/', (req, res) => {
   });
 });
 
+app.get('/api', (req, res) => {
+  res.json({
+    status: 'ok',
+    message: 'HerEarn Backend API is operational',
+    healthCheck: '/api/health',
+  });
+});
+
 app.get('/api/health', (req, res) => {
   res.json({
     status: 'ok',
@@ -77,6 +94,7 @@ app.use('/api', applicationRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/chat', chatRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/recruiter', recruiterRoutes);
 
 // Centralized Error Handling Middleware
 app.use((err, req, res, next) => {
