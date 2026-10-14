@@ -247,3 +247,12 @@ body > .skiptranslate {
   box-shadow: none !important;
 }
 
+/* Prevent translation engines from changing language selector options */
+.notranslate,
+[translate="no"],
+[translate="no"] * {
+  -webkit-translate: no !important;
+  translate: no !important;
+}
+
+
