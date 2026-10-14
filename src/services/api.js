@@ -131,8 +131,13 @@ export const api = {
 
   // Portfolio APIs
   getMyPortfolio: () => request('/api/portfolio/me'),
-  getPublicPortfolio: () => request('/api/portfolio'),
+  getPublicPortfolio: (filters = {}) => {
+    const query = new URLSearchParams(filters).toString();
+    return request(`/api/portfolio${query ? `?${query}` : ''}`);
+  },
+  getPortfolioStats: () => request('/api/portfolio/stats'),
   getProject: (id) => request(`/api/portfolio/${id}`),
+  likeProject: (id) => request(`/api/portfolio/${id}/like`, { method: 'POST' }),
   createProject: (projectData) => request('/api/portfolio', { method: 'POST', body: JSON.stringify(projectData) }),
   updateProject: (id, projectData) => request(`/api/portfolio/${id}`, { method: 'PATCH', body: JSON.stringify(projectData) }),
   deleteProject: (id) => request(`/api/portfolio/${id}`, { method: 'DELETE' }),
