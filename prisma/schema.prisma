@@ -31,6 +31,7 @@ model User {
   portfolios   PortfolioProject[]
   applications Application[]
 
+  postedOpportunities Opportunity[] @relation("PostedOpportunities")
   @@index([email])
 }
 
@@ -138,7 +139,8 @@ model Opportunity {
   deadline        DateTime
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
-
+  postedById String?
+  postedBy   User?   @relation("PostedOpportunities", fields: [postedById], references: [id], onDelete: SetNull)
   applications    Application[]
 
   @@index([category])

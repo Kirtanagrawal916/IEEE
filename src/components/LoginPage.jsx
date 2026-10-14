@@ -19,12 +19,15 @@ import {
   KeyRound,
   Unlock,
   User,
+  Briefcase,
 } from 'lucide-react';
-import { MASTER_ADMIN_KEY } from './AdminPanel';
+
+// Master Admin Key (keep this secret / move to env later)
+const MASTER_ADMIN_KEY = 'HEREARN-ADMIN-2026-X9K';
 
 export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNavigateHome, onContinueAsGuest }) {
   const navigate = useNavigate();
-  const [loginType, setLoginType] = useState('user'); // 'user' | 'admin'
+  const [loginType, setLoginType] = useState('user'); // 'user' | 'recruiter' | 'admin'
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -33,7 +36,7 @@ export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNaviga
   const [isLoading, setIsLoading] = useState(false);
   const [forgotSent, setForgotSent] = useState(false);
 
-  // Admin Key Login State
+  // Admin Key Login State (kept for real admin)
   const [adminKey, setAdminKey] = useState('');
   const [showAdminKey, setShowAdminKey] = useState(false);
   const [adminError, setAdminError] = useState('');
@@ -46,7 +49,7 @@ export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNaviga
 
     const cleanKey = adminKey.trim().toUpperCase();
     const validKeys = [
-      MASTER_ADMIN_KEY || 'HEREARN-ADMIN-2026-X9K',
+      MASTER_ADMIN_KEY,
       'HEREARN-ADMIN-2026-X9K',
       'HEREARN-2026-ADMIN',
       'HEREARN2026',
@@ -80,17 +83,7 @@ export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNaviga
     }
   };
 
-  // Google Email OTP Modal States
-  const [showGoogleModal, setShowGoogleModal] = useState(false);
-  const [googleEmail, setGoogleEmail] = useState('');
-  const [googleOtp, setGoogleOtp] = useState('');
-  const [otpSent, setOtpSent] = useState(false);
-  const [receivedOtp, setReceivedOtp] = useState('');
-  const [googleLoading, setGoogleLoading] = useState(false);
-  const [googleError, setGoogleError] = useState('');
-  const [googleSuccessMsg, setGoogleSuccessMsg] = useState('');
-
-  // Form Submission (Supports Email or Username)
+  // Form Submission (Supports Email or Username) – works for both User & Recruiter
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
@@ -113,7 +106,7 @@ export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNaviga
     // 1. Search persistent local user registry by username or email
     const cleanSearch = targetInput.toLowerCase().replace(/^@/, '');
     const registeredUsers = JSON.parse(localStorage.getItem('herearn_registered_users') || '[]');
-    const matchedUser = registeredUsers.find(u => 
+    const matchedUser = registeredUsers.find(u =>
       (u.email && u.email.toLowerCase() === targetInput.toLowerCase()) ||
       (u.username && u.username.toLowerCase() === cleanSearch) ||
       (u.name && u.name.toLowerCase() === targetInput.toLowerCase())
@@ -130,7 +123,17 @@ export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNaviga
 
     try {
       const res = await api.login({ email: lookupEmail, username: cleanSearch, password: targetPassword });
-      if (res && res.token) {
+      const userRole = (res.user?.role || matchedUser?.role || 'LEARNER').toUpperCase();
+
+      // Recruiter tab: only EMPLOYER (recruiter) or ADMIN accounts may continue.
+      // Checked BEFORE saving the token so a learner never gets logged in from this tab.
+      if (loginType === 'recruiter' && userRole !== 'EMPLOYER' && userRole !== 'ADMIN') {
+        setIsLoading(false);
+        setError('This is not a recruiter account. Use the Learner & Employer tab, or sign up as a recruiter.');
+        return;
+      }
+
+      if (res?.token) {
         localStorage.setItem('herearn_jwt_token', res.token);
       }
       setIsLoading(false);
@@ -138,18 +141,20 @@ export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNaviga
       const resolvedUsername = matchedUser?.username || res.user?.username || cleanSearch;
       const resolvedName = matchedUser?.name || res.user?.name || (resolvedUsername.charAt(0).toUpperCase() + resolvedUsername.slice(1));
 
+      // App.jsx redirects by role: EMPLOYER -> /recruiter, ADMIN -> /admin, others -> /dashboard
       onLoginSuccess({
         ...(matchedUser || {}),
         ...(res.user || {}),
         name: resolvedName,
         username: resolvedUsername,
-        email: res.user?.email || lookupEmail,
+        email: lookupEmail,
+        role: userRole,
         isSignUp: false,
       });
     } catch (err) {
       setIsLoading(false);
       if (err.status === 401) {
-        setError(err.message || 'Incorrect password. Please verify your password or use Google/OTP sign-in.');
+        setError(err.message || 'Incorrect password. Please verify your password.');
         return;
       }
 
@@ -167,125 +172,19 @@ export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNaviga
 
         const resolvedUsername = matchedUser.username || cleanSearch;
         const resolvedName = matchedUser.name || (resolvedUsername.charAt(0).toUpperCase() + resolvedUsername.slice(1));
+        const userRole = (matchedUser.role || 'LEARNER').toUpperCase();
 
         onLoginSuccess({
           ...matchedUser,
           name: resolvedName,
           username: resolvedUsername,
           email: matchedUser.email || lookupEmail,
-          skillInterest: matchedUser.skills?.[0] || 'Digital Marketing',
+          role: userRole,
           isSignUp: false,
         });
       } else {
         setError(`No account registered under "${targetInput}". Please check your username/email or sign up.`);
       }
-    }
-  };
-
-  // Open Google OTP Verification Modal
-  const handleOpenGoogleModal = () => {
-    setShowGoogleModal(true);
-    setGoogleEmail('');
-    setGoogleOtp('');
-    setOtpSent(false);
-    setReceivedOtp('');
-    setGoogleError('');
-    setGoogleSuccessMsg('');
-  };
-
-  // Step 1: Send OTP to Google Email
-  const handleSendOtp = async (e) => {
-    if (e) e.preventDefault();
-    setGoogleError('');
-    setGoogleSuccessMsg('');
-
-    const cleanEmail = googleEmail.trim();
-    if (!cleanEmail || !cleanEmail.includes('@') || !cleanEmail.includes('.')) {
-      setGoogleError('Please enter a valid Google email address.');
-      return;
-    }
-
-    setGoogleLoading(true);
-    let otpCode = '';
-
-    try {
-      const res = await api.sendOtp(cleanEmail);
-      if (res && res.otp) {
-        otpCode = res.otp;
-      }
-    } catch (err) {
-      console.warn('Backend sendOtp API unavailable or returned non-JSON, generating fallback OTP:', err.message);
-    }
-
-    // Fallback OTP generation if API didn't return one directly
-    if (!otpCode) {
-      otpCode = Math.floor(100000 + Math.random() * 900000).toString();
-    }
-
-    setGoogleLoading(false);
-    setReceivedOtp(otpCode);
-    setOtpSent(true);
-    setGoogleSuccessMsg(`Verification code sent to ${cleanEmail}. Enter the 6-digit OTP to verify.`);
-  };
-
-  // Step 2: Verify OTP & Connect to Database for Profile Linkage/Creation
-  const handleVerifyOtp = async (e) => {
-    if (e) e.preventDefault();
-    setGoogleError('');
-    setGoogleSuccessMsg('');
-
-    const cleanOtp = googleOtp.trim();
-    if (!cleanOtp || cleanOtp.length !== 6) {
-      setGoogleError('Please enter the 6-digit OTP code sent to your email.');
-      return;
-    }
-
-    setGoogleLoading(true);
-    let verifySuccess = false;
-    let userData = null;
-
-    try {
-      const res = await api.verifyOtp({ email: googleEmail.trim(), otp: cleanOtp });
-      if (res && res.user) {
-        verifySuccess = true;
-        userData = res.user;
-        if (res.token) {
-          localStorage.setItem('herearn_jwt_token', res.token);
-        }
-      }
-    } catch (err) {
-      console.warn('Backend verifyOtp API failed, using fallback profile creation:', err.message);
-    }
-
-    // Fallback verification if backend was unreachable or returned error
-    if (!verifySuccess) {
-      if (cleanOtp === receivedOtp || cleanOtp.length === 6) {
-        verifySuccess = true;
-        const handle = googleEmail.split('@')[0];
-        const displayName = handle.charAt(0).toUpperCase() + handle.slice(1);
-        userData = {
-          id: `usr_google_${Date.now()}`,
-          name: displayName || 'Verified Google Learner',
-          email: googleEmail.trim(),
-          role: 'LEARNER',
-          avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(googleEmail)}`,
-          location: 'India',
-          bio: 'Verified Google Profile Learner',
-          skills: ['Digital Marketing', 'Graphic Design'],
-        };
-      }
-    }
-
-    setGoogleLoading(false);
-
-    if (verifySuccess && userData) {
-      setShowGoogleModal(false);
-      onLoginSuccess({
-        ...userData,
-        isSignUp: false,
-      });
-    } else {
-      setGoogleError('Invalid OTP code. Verification failed. Please try again.');
     }
   };
 
@@ -306,17 +205,12 @@ export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNaviga
 
       <div className="max-w-6xl w-full grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-stretch relative z-10">
         
-        {/* ========================================================
-            LEFT SIDE: BRANDING & TRUST SHOWCASE SECTION
-           ======================================================== */}
+        {/* LEFT SIDE: BRANDING */}
         <div className="lg:col-span-6 rounded-3xl bg-gradient-to-br from-purple-900 via-indigo-950 to-slate-900 dark:from-slate-900 dark:via-purple-950 dark:to-slate-950 p-8 sm:p-10 text-white border border-purple-300/40 dark:border-purple-500/30 shadow-2xl flex flex-col justify-between relative overflow-hidden backdrop-blur-xl">
           
-          {/* Subtle Inner Glow */}
           <div className="absolute top-0 right-0 w-64 h-64 bg-pink-500/20 dark:bg-pink-500/10 rounded-full blur-2xl pointer-events-none"></div>
 
           <div className="space-y-8 relative z-10">
-            
-            {/* Header: Logo & Tagline */}
             <div className="space-y-3">
               <div 
                 className="cursor-pointer group inline-flex items-center"
@@ -325,13 +219,11 @@ export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNaviga
                 <Logo size="lg" />
               </div>
 
-              {/* Tagline */}
               <div className="inline-block px-3.5 py-1 rounded-full bg-purple-500/30 border border-purple-400/40 text-purple-200 text-xs font-bold uppercase tracking-wider">
                 "Learn. Build. Showcase. Earn."
               </div>
             </div>
 
-            {/* Main Heading & Subtext */}
             <div className="space-y-3">
               <h1 className="text-2xl sm:text-4xl font-extrabold text-white tracking-tight leading-snug">
                 Welcome Back to Your <span className="bg-gradient-to-r from-purple-300 via-pink-300 to-amber-200 bg-clip-text text-transparent">Growth Journey ✨</span>
@@ -341,7 +233,6 @@ export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNaviga
               </p>
             </div>
 
-            {/* Benefits Checkmark Section */}
             <div className="space-y-3 bg-white/10 dark:bg-slate-900/60 p-5 rounded-2xl border border-purple-400/30 dark:border-purple-500/20 backdrop-blur-md">
               <p className="text-xs font-extrabold text-purple-200 uppercase tracking-wider">Why Women Choose HerEarn</p>
               <div className="space-y-2.5">
@@ -359,52 +250,30 @@ export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNaviga
               </div>
             </div>
 
-            {/* Modern Illustrated Visual Card with Floating Badges */}
             <div className="bg-slate-950/60 dark:bg-slate-950/80 rounded-2xl p-4 border border-purple-400/30 relative overflow-hidden shadow-inner flex items-center justify-between gap-4">
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 rounded-xl bg-gradient-to-tr from-purple-600 to-pink-600 flex items-center justify-center text-white font-bold shadow-md">
                   <Award className="w-6 h-6" />
                 </div>
                 <div>
-                  <p className="text-xs font-bold text-white">Skill-to-Income Path</p>
-                  <p className="text-[11px] text-purple-200 font-semibold">100% Free • Verified Credentials</p>
+                  <p className="text-sm font-bold text-white">Join 15,000+ Learners</p>
+                  <p className="text-xs text-purple-200">Building careers every day</p>
                 </div>
               </div>
-
-              <div className="flex gap-1.5">
-                <span className="px-2.5 py-1 rounded-lg bg-purple-500/30 text-purple-200 text-[10px] font-extrabold border border-purple-400/30">Canva</span>
-                <span className="px-2.5 py-1 rounded-lg bg-pink-500/30 text-pink-200 text-[10px] font-extrabold border border-pink-400/30">Marketing</span>
+              <div className="text-right">
+                <p className="text-lg sm:text-xl font-extrabold text-amber-200 dark:text-amber-300 tracking-tight">2,000+</p>
+                <p className="text-[10px] font-bold text-purple-100 dark:text-slate-400 uppercase tracking-wider">Projects</p>
               </div>
             </div>
-
           </div>
-
-          {/* Statistics Strip Section */}
-          <div className="mt-8 pt-6 border-t border-purple-400/30 dark:border-purple-500/30 grid grid-cols-3 gap-3 text-center">
-            <div className="bg-white/10 dark:bg-slate-900/80 p-3 rounded-xl border border-purple-400/20">
-              <p className="text-lg sm:text-xl font-extrabold text-purple-200 dark:text-purple-300 tracking-tight">15,000+</p>
-              <p className="text-[10px] font-bold text-purple-100 dark:text-slate-400 uppercase tracking-wider">Learners</p>
-            </div>
-            <div className="bg-white/10 dark:bg-slate-900/80 p-3 rounded-xl border border-purple-400/20">
-              <p className="text-lg sm:text-xl font-extrabold text-pink-200 dark:text-pink-300 tracking-tight">500+</p>
-              <p className="text-[10px] font-bold text-purple-100 dark:text-slate-400 uppercase tracking-wider">Opportunities</p>
-            </div>
-            <div className="bg-white/10 dark:bg-slate-900/80 p-3 rounded-xl border border-purple-400/20">
-              <p className="text-lg sm:text-xl font-extrabold text-amber-200 dark:text-amber-300 tracking-tight">2,000+</p>
-              <p className="text-[10px] font-bold text-purple-100 dark:text-slate-400 uppercase tracking-wider">Projects</p>
-            </div>
-          </div>
-
         </div>
 
-        {/* ========================================================
-            RIGHT SIDE: LOGIN FORM CARD SECTION (LIGHT & DARK ACCENTED)
-           ======================================================== */}
+        {/* RIGHT SIDE: LOGIN FORM */}
         <div className="lg:col-span-6 flex flex-col justify-center">
           
           <div className="bg-white dark:bg-slate-900/95 rounded-3xl p-7 sm:p-10 border border-purple-200 dark:border-purple-500/30 shadow-2xl space-y-6 text-slate-900 dark:text-white backdrop-blur-xl relative">
             
-            {/* Dual Login Tab Switcher: User vs Admin */}
+            {/* Dual Login Tab Switcher: User vs Recruiter */}
             <div className="grid grid-cols-2 p-1.5 rounded-2xl bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-purple-500/20 text-xs font-bold">
               <button
                 type="button"
@@ -420,15 +289,15 @@ export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNaviga
               </button>
               <button
                 type="button"
-                onClick={() => { setLoginType('admin'); setError(''); setAdminError(''); }}
+                onClick={() => { setLoginType('recruiter'); setError(''); setAdminError(''); }}
                 className={`py-2.5 px-3 rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
-                  loginType === 'admin'
+                  loginType === 'recruiter'
                     ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-md font-black'
                     : 'text-slate-500 hover:text-purple-600 dark:hover:text-purple-300'
                 }`}
               >
-                <Shield className="w-3.5 h-3.5 text-pink-400" />
-                <span>Admin Login 🔑</span>
+                <Briefcase className="w-3.5 h-3.5 text-pink-400" />
+                <span>Recruiter Login</span>
               </button>
             </div>
 
@@ -441,6 +310,11 @@ export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNaviga
                       <Shield className="w-6 h-6 text-pink-500" />
                       <span>Admin Portal Login</span>
                     </>
+                  ) : loginType === 'recruiter' ? (
+                    <>
+                      <Briefcase className="w-6 h-6 text-pink-500" />
+                      <span>Recruiter Portal</span>
+                    </>
                   ) : (
                     <span>Account Login</span>
                   )}
@@ -450,6 +324,11 @@ export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNaviga
                     <>
                       <KeyRound className="w-3.5 h-3.5 text-amber-500" />
                       Passkey Protected
+                    </>
+                  ) : loginType === 'recruiter' ? (
+                    <>
+                      <Briefcase className="w-3.5 h-3.5 text-pink-500" />
+                      Hiring Access
                     </>
                   ) : (
                     <>
@@ -462,12 +341,14 @@ export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNaviga
               <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 font-medium">
                 {loginType === 'admin'
                   ? 'Enter your master authorization key to unlock platform governance and escrow controls.'
+                  : loginType === 'recruiter'
+                  ? 'Sign in with your recruiter email and password to access the hiring dashboard.'
                   : 'Sign in to continue your learning and earning journey.'}
               </p>
             </div>
 
             {/* ========================================================
-                VIEW A: ADMIN PASSKEY LOGIN FORM
+                VIEW A: ADMIN PASSKEY LOGIN FORM (hidden behind link)
                ======================================================== */}
             {loginType === 'admin' ? (
               <form onSubmit={handleAdminLogin} className="space-y-5 animate-fade-in">
@@ -507,7 +388,6 @@ export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNaviga
                   </div>
                 </div>
 
-                {/* Auto-fill helper box */}
                 <div className="p-3.5 rounded-2xl bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-500/30 flex items-center justify-between text-xs">
                   <div className="flex items-center gap-1.5 text-purple-800 dark:text-purple-200 font-bold">
                     <Sparkles className="w-3.5 h-3.5 text-amber-500" />
@@ -547,16 +427,15 @@ export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNaviga
                     onClick={() => setLoginType('user')}
                     className="text-xs text-slate-500 hover:text-purple-600 dark:hover:text-purple-300 font-bold cursor-pointer"
                   >
-                    ← Back to Regular Learner Login
+                    ← Back to Regular Login
                   </button>
                 </div>
               </form>
             ) : (
               /* ========================================================
-                  VIEW B: STANDARD USER LOGIN FORM
+                  VIEW B: USER / RECRUITER EMAIL + PASSWORD FORM
                  ======================================================== */
               <>
-                {/* Alert Message Box */}
                 {error && (
                   <div className="p-4 rounded-2xl bg-rose-50 dark:bg-rose-500/10 border border-rose-200 dark:border-rose-500/30 text-rose-800 dark:text-rose-300 text-xs font-bold flex items-start gap-3 animate-shake">
                     <AlertCircle className="w-4 h-4 text-rose-600 dark:text-rose-400 flex-shrink-0 mt-0.5" />
@@ -586,7 +465,7 @@ export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNaviga
                           setEmail(e.target.value);
                           if (error) setError('');
                         }}
-                        placeholder="name@domain.com or @username"
+                        placeholder={loginType === 'recruiter' ? "recruiter@company.com" : "name@domain.com or @username"}
                         className="w-full pl-10 pr-4 py-3.5 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-purple-500/30 rounded-2xl text-xs sm:text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-purple-500 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 transition-all"
                         required
                       />
@@ -621,7 +500,7 @@ export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNaviga
                     </div>
                   </div>
 
-                  {/* REMEMBER ME ON THIS DEVICE */}
+                  {/* REMEMBER ME */}
                   <div className="flex items-center justify-between pt-1">
                     <label className="flex items-center gap-2.5 cursor-pointer">
                       <input
@@ -636,7 +515,7 @@ export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNaviga
                     </label>
                   </div>
 
-                  {/* PRIMARY GRADIENT LOGIN BUTTON */}
+                  {/* PRIMARY LOGIN BUTTON */}
                   <button
                     type="submit"
                     disabled={isLoading}
@@ -649,7 +528,7 @@ export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNaviga
                       </>
                     ) : (
                       <>
-                        <span>Log In to Dashboard</span>
+                        <span>{loginType === 'recruiter' ? 'Log In as Recruiter' : 'Log In to Dashboard'}</span>
                         <ArrowRight className="w-5 h-5" />
                       </>
                     )}
@@ -664,7 +543,7 @@ export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNaviga
                   </span>
                 </div>
 
-                {/* GOOGLE SIGN-IN */}
+                {/* GOOGLE SIGN-IN (kept) */}
                 <GoogleSignInButton
                   onSuccess={(user) => {
                     onLoginSuccess({
@@ -678,18 +557,7 @@ export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNaviga
                   disabled={isLoading}
                 />
 
-                {/* Email OTP Alternative */}
-                <div className="text-center">
-                  <button
-                    type="button"
-                    onClick={handleOpenGoogleModal}
-                    className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 hover:text-purple-600 dark:hover:text-pink-400 transition-colors cursor-pointer"
-                  >
-                    Or verify via email OTP code →
-                  </button>
-                </div>
-
-                {/* SWITCH TO ADMIN LOGIN PROMPT */}
+                {/* Admin access (small discreet link) */}
                 <div className="p-3 rounded-2xl bg-purple-50/70 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-500/20 text-center">
                   <button
                     type="button"
@@ -697,7 +565,7 @@ export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNaviga
                     className="text-xs font-bold text-purple-700 dark:text-purple-300 hover:text-pink-600 dark:hover:text-pink-400 transition-colors flex items-center justify-center gap-1.5 mx-auto cursor-pointer"
                   >
                     <Shield className="w-3.5 h-3.5 text-pink-500" />
-                    <span>Platform Administrator? Login to Admin Console →</span>
+                    <span>Platform Administrator? Access Admin Console →</span>
                   </button>
                 </div>
 
@@ -722,174 +590,6 @@ export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNaviga
           </div>
         </div>
       </div>
-
-      {/* ========================================================
-          GOOGLE EMAIL OTP AUTHENTICATION & VERIFICATION MODAL
-         ======================================================== */}
-      {showGoogleModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-md animate-fade-in">
-          <div className="bg-white dark:bg-slate-900 border border-purple-200 dark:border-purple-500/30 rounded-3xl p-6 sm:p-8 max-w-md w-full text-slate-900 dark:text-white shadow-2xl relative space-y-6">
-            
-            {/* Close Modal Button */}
-            <button
-              type="button"
-              onClick={() => setShowGoogleModal(false)}
-              className="absolute top-4 right-4 w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white flex items-center justify-center transition-colors cursor-pointer"
-            >
-              ✕
-            </button>
-
-            {/* Header */}
-            <div className="space-y-2 text-center">
-              <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-white flex items-center justify-center mx-auto shadow-md border border-slate-200 dark:border-none">
-                <svg className="w-6 h-6" viewBox="0 0 24 24">
-                  <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                  <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                  <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
-                  <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
-                </svg>
-              </div>
-              <h3 className="text-xl font-extrabold text-slate-900 dark:text-white">Continue with Google</h3>
-              <p className="text-xs text-slate-600 dark:text-slate-300 font-medium">
-                Enter your Google email address. We will verify your email with an OTP before creating or linking your HerEarn database profile.
-              </p>
-            </div>
-
-            {/* Alert Messages */}
-            {googleError && (
-              <div className="p-3.5 rounded-2xl bg-rose-50 dark:bg-rose-500/10 border border-rose-200 dark:border-rose-500/30 text-rose-800 dark:text-rose-300 text-xs font-bold flex items-start gap-2.5">
-                <AlertCircle className="w-4 h-4 text-rose-600 dark:text-rose-400 flex-shrink-0 mt-0.5" />
-                <span>{googleError}</span>
-              </div>
-            )}
-
-            {googleSuccessMsg && (
-              <div className="p-3.5 rounded-2xl bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/30 text-emerald-800 dark:text-emerald-300 text-xs font-bold flex items-start gap-2.5">
-                <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 flex-shrink-0 mt-0.5" />
-                <span>{googleSuccessMsg}</span>
-              </div>
-            )}
-
-            {/* STEP 1: Enter Email & Send OTP */}
-            {!otpSent ? (
-              <form onSubmit={handleSendOtp} className="space-y-4">
-                <div className="space-y-1.5 text-left">
-                  <label className="text-xs font-extrabold text-slate-700 dark:text-slate-300 block uppercase tracking-wider">
-                    Google Email Address
-                  </label>
-                  <div className="relative">
-                    <Mail className="w-4 h-4 text-purple-600 dark:text-purple-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                    <input
-                      type="email"
-                      value={googleEmail}
-                      onChange={(e) => setGoogleEmail(e.target.value)}
-                      placeholder="your.email@gmail.com"
-                      className="w-full pl-10 pr-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-purple-500/30 rounded-2xl text-xs sm:text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-purple-500 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500"
-                      required
-                    />
-                  </div>
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={googleLoading}
-                  className="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-purple-600 via-indigo-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-extrabold text-xs sm:text-sm shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
-                >
-                  {googleLoading ? (
-                    <>
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      <span>Sending OTP...</span>
-                    </>
-                  ) : (
-                    <>
-                      <span>Send Verification OTP</span>
-                      <ArrowRight className="w-4 h-4" />
-                    </>
-                  )}
-                </button>
-              </form>
-            ) : (
-              /* STEP 2: Enter OTP Code & Verify */
-              <form onSubmit={handleVerifyOtp} className="space-y-4">
-                
-                {/* OTP Code Tester Helper Banner */}
-                {receivedOtp && (
-                  <div className="p-3 rounded-2xl bg-purple-100 dark:bg-purple-900/40 border border-purple-300 dark:border-purple-500/40 text-purple-900 dark:text-purple-200 text-xs font-extrabold flex items-center justify-between shadow-xs">
-                    <div className="flex items-center gap-2">
-                      <span>Verification OTP:</span>
-                      <span className="bg-purple-700 text-white font-mono px-2.5 py-1 rounded-lg tracking-widest text-sm font-black shadow-xs">
-                        {receivedOtp}
-                      </span>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => setGoogleOtp(receivedOtp)}
-                      className="px-2.5 py-1 rounded-lg bg-pink-600 hover:bg-pink-500 text-white text-[11px] font-bold transition-all cursor-pointer shadow-xs"
-                    >
-                      Auto-fill
-                    </button>
-                  </div>
-                )}
-
-                <div className="space-y-1.5 text-left">
-                  <div className="flex items-center justify-between">
-                    <label className="text-xs font-extrabold text-slate-700 dark:text-slate-300 block uppercase tracking-wider">
-                      6-Digit OTP Code
-                    </label>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setOtpSent(false);
-                        setGoogleError('');
-                      }}
-                      className="text-[11px] font-bold text-purple-600 dark:text-purple-400 hover:underline cursor-pointer"
-                    >
-                      Change Email
-                    </button>
-                  </div>
-                  <div className="relative">
-                    <Lock className="w-4 h-4 text-purple-600 dark:text-purple-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                    <input
-                      type="text"
-                      maxLength={6}
-                      value={googleOtp}
-                      onChange={(e) => setGoogleOtp(e.target.value.replace(/\D/g, ''))}
-                      placeholder="123456"
-                      className="w-full pl-10 pr-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-purple-500/30 rounded-2xl text-base font-mono tracking-widest font-extrabold focus:outline-none focus:ring-2 focus:ring-purple-500 text-slate-900 dark:text-white placeholder:text-slate-400 text-center"
-                      required
-                    />
-                  </div>
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={googleLoading}
-                  className="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-emerald-600 to-purple-600 hover:from-emerald-500 hover:to-purple-500 text-white font-extrabold text-xs sm:text-sm shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
-                >
-                  {googleLoading ? (
-                    <>
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      <span>Verifying OTP & Database...</span>
-                    </>
-                  ) : (
-                    <>
-                      <CheckCircle2 className="w-4 h-4 text-emerald-300" />
-                      <span>Verify OTP & Link Profile</span>
-                    </>
-                  )}
-                </button>
-              </form>
-            )}
-
-            {/* Security note */}
-            <p className="text-[10px] text-slate-500 dark:text-slate-400 font-medium text-center border-t border-slate-200 dark:border-slate-800 pt-3">
-              🔒 Database Secured • OTP verification ensures valid email ownership before profile creation.
-            </p>
-
-          </div>
-        </div>
-      )}
-
     </div>
   );
 }

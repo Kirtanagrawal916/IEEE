@@ -66,6 +66,14 @@ const request = async (endpoint, options = {}) => {
 };
 
 export const api = {
+    // Recruiter APIs
+  getRecruiterStats: () => request('/api/recruiter/stats'),
+  getRecruiterJobs: () => request('/api/recruiter/jobs'),
+  createRecruiterJob: (data) => request('/api/recruiter/jobs', { method: 'POST', body: JSON.stringify(data) }),
+  updateRecruiterJob: (id, data) => request(`/api/recruiter/jobs/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
+  deleteRecruiterJob: (id) => request(`/api/recruiter/jobs/${id}`, { method: 'DELETE' }),
+  getRecruiterApplicants: () => request('/api/recruiter/applicants'),
+  updateApplicantStatus: (id, status) => request(`/api/recruiter/applicants/${id}/status`, { method: 'PATCH', body: JSON.stringify({ status }) }),
   // Auth APIs
   register: (userData) => request('/api/auth/register', { method: 'POST', body: JSON.stringify(userData) }),
   login: (credentials) => request('/api/auth/login', { method: 'POST', body: JSON.stringify(credentials) }),

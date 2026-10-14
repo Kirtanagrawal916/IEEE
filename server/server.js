@@ -14,6 +14,7 @@ import portfolioRoutes from './routes/portfolioRoutes.js';
 import opportunityRoutes from './routes/opportunityRoutes.js';
 import applicationRoutes from './routes/applicationRoutes.js';
 import dashboardRoutes from './routes/dashboardRoutes.js';
+import recruiterRoutes from './routes/recruiterRoutes.js';
 import chatRoutes from './routes/chat.js';
 import adminRoutes from './routes/adminRoutes.js';
 
@@ -93,6 +94,7 @@ app.use('/api', applicationRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/chat', chatRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/recruiter', recruiterRoutes);
 
 // Centralized Error Handling Middleware
 app.use((err, req, res, next) => {
