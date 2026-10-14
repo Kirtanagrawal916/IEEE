@@ -136,18 +136,50 @@ const sanitizeUser = (user) => {
     parsedSkills = [];
   }
 
+  let parsedLessons = [];
+  try {
+    parsedLessons = typeof user.completedLessons === 'string' ? JSON.parse(user.completedLessons || '[]') : (user.completedLessons || []);
+  } catch {
+    parsedLessons = [];
+  }
+
+  let parsedAppliedGigs = [];
+  try {
+    parsedAppliedGigs = typeof user.appliedGigIds === 'string' ? JSON.parse(user.appliedGigIds || '[]') : (user.appliedGigIds || []);
+  } catch {
+    parsedAppliedGigs = [];
+  }
+
+  let parsedBadges = [];
+  try {
+    parsedBadges = typeof user.badges === 'string' ? JSON.parse(user.badges || '[]') : (user.badges || []);
+  } catch {
+    parsedBadges = [];
+  }
+
+  const cleanUsername = user.username || (user.email ? user.email.split('@')[0].replace(/[^a-z0-9_]/gi, '_').toLowerCase() : 'learner');
+
   return {
     id: user.id,
     name: user.name,
+    username: cleanUsername,
     email: user.email,
-    role: user.role,
-    avatar: user.avatar,
-    location: user.location,
-    bio: user.bio,
+    role: (user.role || 'LEARNER').toUpperCase(),
+    avatar: user.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(cleanUsername)}`,
+    location: user.location || 'India',
+    bio: user.bio || `Learner on HerEarn (@${cleanUsername})`,
+    title: user.title || 'Digital Skill Specialist',
     skills: parsedSkills,
+    skillPoints: user.skillPoints !== undefined ? user.skillPoints : 150,
     totalEarned: user.totalEarned || 0,
+    earnings: user.earnings !== undefined ? user.earnings : (user.totalEarned || 0),
+    walletBalance: user.walletBalance !== undefined ? user.walletBalance : (user.totalEarned || 0),
+    completedLessons: parsedLessons,
+    appliedGigIds: parsedAppliedGigs,
+    badges: parsedBadges,
     status: user.status || 'Active',
     verifiedKyc: Boolean(user.verifiedKyc),
+    verified: user.verified !== undefined ? Boolean(user.verified) : true,
   };
 };
 
@@ -158,7 +190,7 @@ const sanitizeUser = (user) => {
 // POST /api/auth/register
 router.post('/register', authLimiter, async (req, res) => {
   try {
-    const { name, username, email, password, location, bio, skills } = req.body;
+    const { name, username, email, password, location, bio, skills, role, title, skillInterest } = req.body;
 
     if (!name || !email || !password) {
       return res.status(400).json({ success: false, message: 'Name, email, and password are required' });
@@ -171,28 +203,52 @@ router.post('/register', authLimiter, async (req, res) => {
     const cleanEmail = email.trim().toLowerCase();
     const cleanUsername = (username ? username.trim().toLowerCase().replace(/^@/, '') : cleanEmail.split('@')[0].replace(/[^a-z0-9_]/g, '_'));
 
-    // Check if email already registered
-    const existingUser = await prisma.user.findUnique({ where: { email: cleanEmail } }).catch(() => null);
+    // Check if email or username already registered
+    const existingUser = await prisma.user.findFirst({
+      where: {
+        OR: [
+          { email: cleanEmail },
+          { username: cleanUsername },
+        ],
+      },
+    }).catch(() => null);
+
     if (existingUser) {
+      const isEmailMatch = existingUser.email?.toLowerCase() === cleanEmail;
       return res.status(409).json({
         success: false,
-        message: `An account with email "${cleanEmail}" is already registered. Please log in instead.`,
-        field: 'email',
+        message: isEmailMatch 
+          ? `An account with email "${cleanEmail}" is already registered. Please log in instead.`
+          : `The username "@${cleanUsername}" is already taken. Please pick another handle.`,
+        field: isEmailMatch ? 'email' : 'username',
       });
     }
 
     const passwordHash = await bcrypt.hash(password, 10);
+    const userRole = (role || 'LEARNER').toUpperCase();
+    const initialSkills = Array.isArray(skills) && skills.length > 0 
+      ? skills 
+      : [skillInterest || 'Digital Marketing'];
 
     const user = await prisma.user.create({
       data: {
         name: name.trim(),
+        username: cleanUsername,
         email: cleanEmail,
         passwordHash,
-        role: 'LEARNER',
+        role: userRole,
         avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(cleanUsername)}`,
-        location: location || '',
+        location: location || 'India',
         bio: bio || `Learner on HerEarn (@${cleanUsername})`,
-        skills: JSON.stringify(skills || ['Digital Marketing']),
+        title: title || `${initialSkills[0] || 'Digital Skill'} Specialist`,
+        skills: JSON.stringify(initialSkills),
+        skillPoints: 150,
+        totalEarned: 0.0,
+        earnings: 0.0,
+        walletBalance: 0.0,
+        completedLessons: JSON.stringify([]),
+        appliedGigIds: JSON.stringify([]),
+        badges: JSON.stringify([]),
       },
     });
 
@@ -222,18 +278,17 @@ router.post('/login', authLimiter, async (req, res) => {
 
     const cleanInput = credential.toLowerCase().replace(/^@/, '');
 
-    // Database user lookup
-    let user = await prisma.user.findUnique({ where: { email: cleanInput } }).catch(() => null);
-    if (!user) {
-      user = await prisma.user.findFirst({
-        where: {
-          OR: [
-            { email: credential },
-            { email: `${cleanInput}@herearn.org` },
-          ],
-        },
-      }).catch(() => null);
-    }
+    // Database user lookup by username OR email
+    let user = await prisma.user.findFirst({
+      where: {
+        OR: [
+          { username: cleanInput },
+          { email: cleanInput },
+          { email: credential },
+          { email: `${cleanInput}@herearn.org` },
+        ],
+      },
+    }).catch(() => null);
 
     if (!user) {
       return res.status(404).json({
@@ -249,7 +304,7 @@ router.post('/login', authLimiter, async (req, res) => {
       });
     }
 
-    // Verify password
+    // Verify password strictly with bcrypt
     let isMatch = await bcrypt.compare(password, user.passwordHash);
 
     // If initial password created via OAuth

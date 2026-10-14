@@ -15,7 +15,7 @@ import {
   CheckCircle2,
   ShieldAlert
 } from 'lucide-react';
-import { triggerCelebrationConfetti, triggerStarBurst } from '../../utils/confettiHelper';
+import { triggerCelebrationConfetti } from '../../utils/confettiHelper';
 import { playPop, playSnap, playErrorTone, playChimeVictory } from '../../utils/puzzleAudio';
 
 // Level configurations
@@ -190,7 +190,6 @@ export default function KnightsQuestGame({ onGameWin, soundEnabled = true, onTog
     if (isStarHere) {
       updatedStars = [...collectedStars, { r, c }];
       setCollectedStars(updatedStars);
-      triggerStarBurst();
       if (soundEnabled) playSnap();
     } else {
       if (soundEnabled) playPop();

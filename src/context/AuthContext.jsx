@@ -209,70 +209,82 @@ export const AuthProvider = ({ children }) => {
     const { name, email, password, username, skillInterest, role } = userData || {};
     const cleanEmail = (email || '').trim().toLowerCase();
     const cleanName = (name || '').trim() || cleanEmail.split('@')[0] || 'Learner';
+    const targetUsername = (username || cleanName.toLowerCase().replace(/[^a-z0-9]/g, '_')).replace(/^@/, '');
     const redirectUrl = typeof window !== 'undefined'
       ? `${window.location.origin}/`
       : 'https://herearn.vercel.app/';
 
-    // 1. Sign up user via Supabase Auth with email confirmation redirect
-    const { data, error } = await supabase.auth.signUp({
+    let registeredUser = null;
+    let needsEmailConfirmation = false;
+
+    // 1. Optional Supabase Auth sign-up if configured
+    if (import.meta.env.VITE_SUPABASE_URL && (import.meta.env.VITE_SUPABASE_ANON_KEY || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY)) {
+      try {
+        const { data, error } = await supabase.auth.signUp({
+          email: cleanEmail,
+          password,
+          options: {
+            data: {
+              full_name: cleanName,
+              name: cleanName,
+              username: targetUsername,
+              skill_interest: skillInterest || 'Digital Marketing',
+              role: role || 'learner',
+            },
+            emailRedirectTo: redirectUrl,
+          },
+        });
+
+        if (error) {
+          const msg = error.message || '';
+          if (msg.toLowerCase().includes('rate limit')) {
+            throw new Error('Too many sign-up requests. Please wait a few minutes before trying again.');
+          }
+          if (msg.toLowerCase().includes('already registered')) {
+            throw new Error(`An account with email "${cleanEmail}" already exists. Please log in instead.`);
+          }
+        }
+
+        if (data?.user && Array.isArray(data.user.identities) && data.user.identities.length === 0) {
+          throw new Error(`An account with email "${cleanEmail}" is already registered. Please log in.`);
+        }
+
+        if (data?.session) {
+          await syncSupabaseSession(data.session);
+        }
+      } catch (err) {
+        if (err.message?.includes('already exists') || err.message?.includes('already registered')) {
+          throw err;
+        }
+        console.warn('[AuthContext] Supabase signup notice:', err.message);
+      }
+    }
+
+    // 2. Always register directly in Express backend database
+    const apiRes = await api.register({
+      name: cleanName,
+      username: targetUsername,
       email: cleanEmail,
       password,
-      options: {
-        data: {
-          full_name: cleanName,
-          name: cleanName,
-          username: username || cleanName.toLowerCase().replace(/[^a-z0-9]/g, '_'),
-          skill_interest: skillInterest || 'Digital Marketing',
-          role: role || 'learner',
-        },
-        emailRedirectTo: redirectUrl,
-      },
+      role: role || 'learner',
+      skillInterest,
+      skills: [skillInterest || 'Digital Marketing'],
     });
 
-    if (error) {
-      const msg = error.message || '';
-      if (msg.toLowerCase().includes('rate limit')) {
-        throw new Error('Too many sign-up requests. Please wait a few minutes before trying again.');
-      }
-      if (msg.toLowerCase().includes('already registered')) {
-        throw new Error(`An account with email "${cleanEmail}" already exists. Please log in instead.`);
-      }
-      throw error;
-    }
-
-    // If identities is empty array, email is already registered in Supabase
-    if (data?.user && Array.isArray(data.user.identities) && data.user.identities.length === 0) {
-      throw new Error(`An account with email "${cleanEmail}" is already registered. Please log in.`);
-    }
-
-    const needsEmailConfirmation = !data?.session;
-
-    // Also register on local/backend database for parity
-    try {
-      await api.register({
-        name: cleanName,
-        email: cleanEmail,
-        password,
-        skills: [skillInterest || 'Digital Marketing'],
-      });
-    } catch (apiErr) {
-      console.warn('[AuthContext] Backend register mirror notice:', apiErr.message);
-    }
-
-    // If auto-confirmed or already has session, sync immediately
-    if (data?.session) {
-      await syncSupabaseSession(data.session);
+    if (apiRes?.success && apiRes.token) {
+      localStorage.setItem('herearn_jwt_token', apiRes.token);
+      localStorage.setItem('herearn_user', JSON.stringify(apiRes.user));
+      setToken(apiRes.token);
+      setUser(apiRes.user);
+      registeredUser = apiRes.user;
     }
 
     return {
       success: true,
-      user: data?.user,
-      session: data?.session,
-      needsEmailConfirmation,
+      user: registeredUser || apiRes?.user,
+      needsEmailConfirmation: false,
       email: cleanEmail,
-      message: needsEmailConfirmation
-        ? `Confirmation email sent to ${cleanEmail}. Please check your inbox and confirm your account.`
-        : 'Account created successfully!',
+      message: 'Account created successfully!',
     };
   };
 

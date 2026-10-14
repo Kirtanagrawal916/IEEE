@@ -254,6 +254,24 @@ router.post('/lessons/:lessonId/complete', authMiddleware, async (req, res) => {
       },
     });
 
+    // Sync User completedLessons list and award skill points (+50 per lesson completed)
+    let currentLessons = [];
+    try {
+      currentLessons = typeof req.user.completedLessons === 'string' ? JSON.parse(req.user.completedLessons || '[]') : (req.user.completedLessons || []);
+    } catch {
+      currentLessons = [];
+    }
+    if (!currentLessons.includes(lessonId)) {
+      currentLessons.push(lessonId);
+      await prisma.user.update({
+        where: { id: req.user.id },
+        data: {
+          completedLessons: JSON.stringify(currentLessons),
+          skillPoints: { increment: 50 },
+        },
+      }).catch(() => null);
+    }
+
     res.json({
       success: true,
       message: 'Lesson marked as complete',

@@ -13,6 +13,7 @@ async function main() {
     update: {},
     create: {
       name: 'Ananya Sharma',
+      username: 'ananya',
       email: 'ananya@herearn.org',
       passwordHash,
       role: 'LEARNER',
@@ -21,6 +22,9 @@ async function main() {
       bio: 'Aspiring Digital Marketer & Graphic Designer passionate about helping local artisan businesses thrive.',
       skills: JSON.stringify(['Digital Marketing', 'Canva Design', 'Social Media Strategy', 'Shopify']),
       totalEarned: 14500.0,
+      earnings: 14500.0,
+      walletBalance: 14500.0,
+      skillPoints: 350,
     },
   });
 
