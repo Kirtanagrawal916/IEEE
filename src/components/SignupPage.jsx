@@ -159,6 +159,7 @@ export default function SignupPage({ onLoginSuccess, onNavigateToLogin, onNaviga
         name: displayName,
         username: targetUsername,
         email: targetEmail,
+        password: targetPassword,
         isSignUp: true,
         role,
       });

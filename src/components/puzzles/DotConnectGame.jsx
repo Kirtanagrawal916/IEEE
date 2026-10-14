@@ -11,7 +11,7 @@ import {
   Zap,
   Info
 } from 'lucide-react';
-import { triggerCelebrationConfetti, triggerStarBurst } from '../../utils/confettiHelper';
+import { triggerCelebrationConfetti } from '../../utils/confettiHelper';
 import { playPop, playSnap, playChimeVictory } from '../../utils/puzzleAudio';
 
 // Color definitions with vibrant themes
@@ -358,10 +358,9 @@ export default function DotConnectGame({ onGameWin, soundEnabled = true, onToggl
     });
 
     if (isTargetEndpoint) {
-      // Completed circuit for this pair!
+      // Completed circuit for this pair! Instant snap
       setIsDrawing(false);
       setActiveColor(null);
-      triggerStarBurst();
       if (soundEnabled) playSnap();
     } else {
       if (soundEnabled) playPop();
@@ -418,7 +417,6 @@ export default function DotConnectGame({ onGameWin, soundEnabled = true, onToggl
         return next;
       });
       setHintMessage(`💡 Linked the ${COLORS[unconnected]?.name || unconnected} pair for you! Notice how it leaves room for other paths.`);
-      triggerStarBurst();
       if (soundEnabled) playSnap();
     }
   };

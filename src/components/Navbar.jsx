@@ -204,7 +204,7 @@ export default function Navbar({
                     </div>
                     <div>
                       <p className="font-bold text-slate-900 dark:text-white leading-tight">Mini Puzzle Games</p>
-                      <p className="text-[10px] text-slate-500 dark:text-slate-400">Queen placing & point connector puzzles</p>
+                      <p className="text-[10px] text-slate-500 dark:text-slate-400">12 mini puzzle, logic & word games</p>
                     </div>
                   </Link>
 
@@ -507,6 +507,17 @@ export default function Navbar({
                       <div className="flex items-center gap-2.5">
                         <BookOpen className="w-4 h-4 text-purple-500" />
                         <span>Courses</span>
+                      </div>
+                    </Link>
+
+                    <Link
+                      to="/courses?tab=puzzles"
+                      onClick={() => setIsMenuOpen(false)}
+                      className="w-full text-left px-3 py-2 rounded-xl text-xs font-semibold flex items-center justify-between hover:bg-purple-100 dark:hover:bg-purple-900/40 text-slate-800 dark:text-slate-200 transition-colors"
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <Gamepad2 className="w-4 h-4 text-pink-500" />
+                        <span>Mini Puzzle Games (12)</span>
                       </div>
                     </Link>
 

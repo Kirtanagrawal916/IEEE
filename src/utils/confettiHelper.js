@@ -1,15 +1,37 @@
 /**
- * Pure lightweight Canvas confetti animation helper with zero external dependencies.
- * Ensures 100% build reliability without requiring external CJS/ESM canvas-confetti modules.
+ * Pure ultra-lightweight Canvas confetti animation helper with zero external dependencies.
+ * Engineered for sub-millisecond execution and 60fps rendering without latency or main-thread blocking.
  */
 
-const runConfettiBurst = (opts = {}) => {
+let activeCanvas = null;
+let activeAnimFrame = null;
+let autoCleanupTimer = null;
+
+export const cancelActiveConfetti = () => {
+  if (activeAnimFrame) {
+    cancelAnimationFrame(activeAnimFrame);
+    activeAnimFrame = null;
+  }
+  if (autoCleanupTimer) {
+    clearTimeout(autoCleanupTimer);
+    autoCleanupTimer = null;
+  }
+  if (activeCanvas && activeCanvas.parentNode) {
+    activeCanvas.parentNode.removeChild(activeCanvas);
+    activeCanvas = null;
+  }
+};
+
+const runSingleFastBurst = (opts = {}) => {
   if (typeof window === 'undefined' || typeof document === 'undefined') return;
 
-  const particleCount = opts.particleCount || 60;
-  const colors = opts.colors || ['#9333ea', '#ec4899', '#3b82f6', '#10b981', '#f59e0b', '#06b6d4'];
-  const origin = opts.origin || { x: 0.5, y: 0.6 };
-  const spread = (opts.spread || 70) * (Math.PI / 180);
+  // Clean up any ongoing burst so canvases never stack
+  cancelActiveConfetti();
+
+  const particleCount = opts.particleCount || 24;
+  const colors = opts.colors || ['#9333ea', '#ec4899', '#3b82f6', '#10b981', '#f59e0b'];
+  const origin = opts.origin || { x: 0.5, y: 0.5 };
+  const spread = (opts.spread || 65) * (Math.PI / 180);
   const baseAngle = ((opts.angle !== undefined ? opts.angle : 90) * Math.PI) / 180;
 
   const canvas = document.createElement('canvas');
@@ -19,45 +41,44 @@ const runConfettiBurst = (opts = {}) => {
   canvas.style.width = '100vw';
   canvas.style.height = '100vh';
   canvas.style.pointerEvents = 'none';
-  canvas.style.zIndex = '999999';
+  canvas.style.zIndex = '99999';
   document.body.appendChild(canvas);
+  activeCanvas = canvas;
 
-  const dpr = window.devicePixelRatio || 1;
-  canvas.width = window.innerWidth * dpr;
-  canvas.height = window.innerHeight * dpr;
+  // Render at 1x resolution to avoid giant 4K/Retina framebuffer allocations
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
   const ctx = canvas.getContext('2d');
   if (!ctx) {
-    if (canvas.parentNode) canvas.parentNode.removeChild(canvas);
+    cancelActiveConfetti();
     return;
   }
-  ctx.scale(dpr, dpr);
 
-  const startX = (origin.x !== undefined ? origin.x : 0.5) * window.innerWidth;
-  const startY = (origin.y !== undefined ? origin.y : 0.6) * window.innerHeight;
+  const startX = origin.x * window.innerWidth;
+  const startY = origin.y * window.innerHeight;
 
   const particles = [];
   for (let i = 0; i < particleCount; i++) {
     const angle = baseAngle + (Math.random() - 0.5) * spread;
-    const speed = 6 + Math.random() * 9;
+    const speed = 5 + Math.random() * 8;
     particles.push({
       x: startX,
       y: startY,
       vx: Math.cos(angle) * speed,
       vy: -Math.sin(angle) * speed,
-      color: colors[Math.floor(Math.random() * colors.length)],
+      color: colors[i % colors.length],
       rotation: Math.random() * 360,
-      vRotation: (Math.random() - 0.5) * 14,
+      vRotation: (Math.random() - 0.5) * 10,
       opacity: 1,
-      gravity: 0.32 + Math.random() * 0.15,
-      decay: 0.012 + Math.random() * 0.008,
-      w: 8 + Math.random() * 6,
-      h: 5 + Math.random() * 5,
+      gravity: 0.38,
+      decay: 0.024 + Math.random() * 0.012, // Finishes fast in ~400-500ms
+      w: 7 + Math.random() * 4,
+      h: 4 + Math.random() * 4,
     });
   }
 
-  let animationFrame;
   const update = () => {
-    ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
     let hasAlive = false;
 
     for (let i = 0; i < particles.length; i++) {
@@ -67,7 +88,7 @@ const runConfettiBurst = (opts = {}) => {
         p.x += p.vx;
         p.y += p.vy;
         p.vy += p.gravity;
-        p.vx *= 0.985;
+        p.vx *= 0.97;
         p.rotation += p.vRotation;
         p.opacity -= p.decay;
 
@@ -82,71 +103,50 @@ const runConfettiBurst = (opts = {}) => {
     }
 
     if (hasAlive) {
-      animationFrame = requestAnimationFrame(update);
+      activeAnimFrame = requestAnimationFrame(update);
     } else {
-      cancelAnimationFrame(animationFrame);
-      if (canvas.parentNode) {
-        canvas.parentNode.removeChild(canvas);
-      }
+      cancelActiveConfetti();
     }
   };
 
-  animationFrame = requestAnimationFrame(update);
+  activeAnimFrame = requestAnimationFrame(update);
+
+  // Safety timer to prevent canvas leak even if tab loses focus
+  autoCleanupTimer = setTimeout(() => {
+    cancelActiveConfetti();
+  }, 700);
 };
 
 /**
- * Trigger celebratory confetti animation across the screen
+ * Trigger lightweight, latency-free celebratory confetti animation
  */
 export const triggerCelebrationConfetti = () => {
   try {
-    // Burst 1: Center explosion
-    runConfettiBurst({
-      particleCount: 70,
-      spread: 75,
+    runSingleFastBurst({
+      particleCount: 26,
+      spread: 70,
       angle: 90,
       origin: { x: 0.5, y: 0.55 },
-      colors: ['#9333ea', '#ec4899', '#3b82f6', '#10b981', '#f59e0b']
+      colors: ['#a855f7', '#ec4899', '#3b82f6', '#10b981', '#f59e0b']
     });
-
-    // Burst 2: Left cannon
-    setTimeout(() => {
-      runConfettiBurst({
-        particleCount: 45,
-        angle: 60,
-        spread: 55,
-        origin: { x: 0.1, y: 0.7 },
-        colors: ['#a855f7', '#ec4899', '#38bdf8']
-      });
-    }, 180);
-
-    // Burst 3: Right cannon
-    setTimeout(() => {
-      runConfettiBurst({
-        particleCount: 45,
-        angle: 120,
-        spread: 55,
-        origin: { x: 0.9, y: 0.7 },
-        colors: ['#f43f5e', '#8b5cf6', '#10b981']
-      });
-    }, 360);
   } catch (err) {
-    console.warn('[Confetti] Failed to trigger celebration:', err);
+    // Non-blocking fail-safe
   }
 };
 
 /**
- * Trigger soft star confetti for minor milestones like completing a lesson
+ * Trigger soft micro-star confetti for milestones
  */
 export const triggerStarBurst = () => {
   try {
-    runConfettiBurst({
-      particleCount: 35,
-      spread: 60,
+    runSingleFastBurst({
+      particleCount: 14,
+      spread: 50,
       angle: 90,
-      origin: { x: 0.5, y: 0.65 },
+      origin: { x: 0.5, y: 0.6 },
       colors: ['#eab308', '#ec4899', '#a855f7']
     });
   } catch (err) {
-    console.warn('[Confetti] Failed to trigger starburst:', err);
+    // Non-blocking fail-safe
   }
 };

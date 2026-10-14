@@ -10,21 +10,32 @@ datasource db {
 }
 
 model User {
-  id           String             @id @default(uuid())
-  name         String
-  email        String             @unique
-  passwordHash String
-  role         String             @default("LEARNER") // LEARNER, EMPLOYER, ADMIN
-  avatar       String?
-  phone        String?
-  location     String?
-  bio          String?
-  skills       String             @default("[]") // JSON string of skill array
-  totalEarned  Float              @default(0.0)
-  status       String             @default("Active") // Active, Suspended
-  verifiedKyc  Boolean            @default(false)
-  createdAt    DateTime           @default(now())
-  updatedAt    DateTime           @updatedAt
+  id               String             @id @default(uuid())
+  name             String
+  username         String?            @unique
+  email            String             @unique
+  passwordHash     String
+  role             String             @default("LEARNER") // LEARNER, EMPLOYER, ADMIN
+  avatar           String?
+  phone            String?
+  location         String?
+  bio              String?
+  title            String?            @default("Digital Skill Specialist")
+  skills           String             @default("[]") // JSON string of skill array
+  skillPoints      Int                @default(150)
+  totalEarned      Float              @default(0.0)
+  earnings         Float              @default(0.0)
+  walletBalance    Float              @default(0.0)
+  completedLessons String             @default("[]") // JSON string of completed lesson IDs
+  appliedGigIds    String             @default("[]") // JSON string of applied gig IDs
+  bookmarkedGigIds String             @default("[]") // JSON string of bookmarked gig IDs
+  solvedPuzzles    String             @default("[]") // JSON string of solved puzzle IDs
+  badges           String             @default("[]") // JSON string of badge titles
+  status           String             @default("Active") // Active, Suspended
+  verifiedKyc      Boolean            @default(false)
+  verified         Boolean            @default(true)
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
 
   enrollments  Enrollment[]
   progress     LessonProgress[]
@@ -33,6 +44,7 @@ model User {
 
   postedOpportunities Opportunity[] @relation("PostedOpportunities")
   @@index([email])
+  @@index([username])
 }
 
 model SkillTrack {
