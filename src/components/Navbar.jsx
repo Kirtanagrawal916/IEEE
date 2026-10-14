@@ -25,7 +25,8 @@ import {
   Sparkles,
   Gamepad2,
   Check,
-  RotateCcw
+  RotateCcw,
+  MessageSquare
 } from 'lucide-react';
 import LogoutModal from './LogoutModal';
 import WalletWithdrawModal from './WalletWithdrawModal';
@@ -263,6 +264,19 @@ export default function Navbar({
             >
               <Users className="w-4 h-4 text-indigo-500" />
               <span>Mentorship</span>
+            </Link>
+
+            {/* Community */}
+            <Link
+              to="/community"
+              className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                pathname.startsWith('/community')
+                  ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-md'
+                  : 'text-slate-700 dark:text-slate-200 hover:text-purple-700 dark:hover:text-white hover:bg-purple-100/70 dark:hover:bg-purple-900/40'
+              }`}
+            >
+              <MessageSquare className="w-4 h-4 text-pink-500" />
+              <span>Community</span>
             </Link>
 
             {/* Applications (If Logged In) */}
@@ -595,6 +609,17 @@ export default function Navbar({
                       <div className="flex items-center gap-2.5">
                         <Users className="w-4 h-4 text-indigo-500" />
                         <span>Mentorship</span>
+                      </div>
+                    </Link>
+
+                    <Link
+                      to="/community"
+                      onClick={() => setIsMenuOpen(false)}
+                      className="w-full text-left px-3 py-2 rounded-xl text-xs font-semibold flex items-center justify-between hover:bg-purple-100 dark:hover:bg-purple-900/40 text-slate-800 dark:text-slate-200 transition-colors"
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <MessageSquare className="w-4 h-4 text-pink-500" />
+                        <span>Community & Chat</span>
                       </div>
                     </Link>
 

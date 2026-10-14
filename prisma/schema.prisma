@@ -34,6 +34,10 @@ model User {
   status           String             @default("Active") // Active, Suspended
   verifiedKyc      Boolean            @default(false)
   verified         Boolean            @default(true)
+  learningGoal     String?            @default("Full-Stack Web Developer")
+  learningPath     String?            @default("Frontend Development")
+  interests        String             @default("[\"Web Development\",\"Open Source\",\"Career Growth\"]") // JSON string of interests
+  portfolioLinks   String             @default("[]") // JSON string of links [{ label, url }]
   createdAt        DateTime           @default(now())
   updatedAt        DateTime           @updatedAt
 
@@ -43,6 +47,10 @@ model User {
   applications Application[]
 
   postedOpportunities Opportunity[] @relation("PostedOpportunities")
+  sentConnections     Connection[]  @relation("SentConnections")
+  receivedConnections Connection[]  @relation("ReceivedConnections")
+  sentMessages        Message[]     @relation("SentMessages")
+  receivedMessages    Message[]     @relation("ReceivedMessages")
   @@index([email])
   @@index([username])
 }
@@ -218,3 +226,36 @@ model PlatformSetting {
   value     String
   updatedAt DateTime @updatedAt
 }
+
+model Connection {
+  id         String   @id @default(uuid())
+  senderId   String
+  sender     User     @relation("SentConnections", fields: [senderId], references: [id], onDelete: Cascade)
+  receiverId String
+  receiver   User     @relation("ReceivedConnections", fields: [receiverId], references: [id], onDelete: Cascade)
+  status     String   @default("PENDING") // PENDING, ACCEPTED, REJECTED
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([senderId, receiverId])
+  @@index([senderId])
+  @@index([receiverId])
+  @@index([status])
+}
+
+model Message {
+  id         String   @id @default(uuid())
+  senderId   String
+  sender     User     @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
+  receiverId String
+  receiver   User     @relation("ReceivedMessages", fields: [receiverId], references: [id], onDelete: Cascade)
+  content    String
+  read       Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([senderId])
+  @@index([receiverId])
+  @@index([createdAt])
+}
+

@@ -29,6 +29,7 @@ import LogoutModal from './components/LogoutModal';
 import ToastNotification from './components/ToastNotification';
 import ChatBot from './components/ChatBot';
 import MentorshipSection from './components/MentorshipSection';
+import CommunitySection from './components/CommunitySection';
 import AdminPanel from './components/AdminPanel';
 import Logo from './components/Logo';
 
@@ -797,6 +798,16 @@ function AppContent() {
             path="/mentorship" 
             element={
               <MentorshipSection showToast={showToast} />
+            } 
+          />
+
+          <Route 
+            path="/community" 
+            element={
+              <CommunitySection 
+                user={user} 
+                showToast={showToast} 
+              />
             } 
           />
 

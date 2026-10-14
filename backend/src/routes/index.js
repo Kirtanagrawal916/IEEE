@@ -20,6 +20,7 @@ import applicationRoutes from './applicationRoutes.js';
 import dashboardRoutes from './dashboardRoutes.js';
 import chatRoutes from './chatRoutes.js';
 import adminRoutes from './adminRoutes.js';
+import communityRoutes from './communityRoutes.js';
 
 const router = Router();
 
@@ -100,5 +101,6 @@ router.use('/applications', applicationRoutes);
 router.use('/dashboard', dashboardRoutes);
 router.use('/chat', chatRoutes);
 router.use('/admin', adminRoutes);
+router.use('/community', communityRoutes);
 
 export default router;
