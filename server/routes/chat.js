@@ -75,8 +75,58 @@ Guidelines:
 
     let botReply = '';
 
-    // Call Anthropic API if valid API key is present
-    if (process.env.ANTHROPIC_API_KEY && 
+    // 1. Call Google Gemini API if GEMINI_API_KEY is present
+    const geminiKey = process.env.GEMINI_API_KEY;
+    if (geminiKey && geminiKey !== 'your_gemini_api_key_here' && !geminiKey.includes('dummy')) {
+      try {
+        const geminiContents = history.map(h => ({
+          role: h.role === 'assistant' ? 'model' : 'user',
+          parts: [{ text: h.content }]
+        }));
+
+        const candidateModels = ['gemini-3.5-flash', 'gemini-flash-latest', 'gemini-2.5-flash-lite'];
+        for (const modelName of candidateModels) {
+          const geminiRes = await fetch(
+            `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${encodeURIComponent(geminiKey.trim())}`,
+            {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'x-goog-api-key': geminiKey.trim(),
+              },
+              body: JSON.stringify({
+                system_instruction: {
+                  parts: [{ text: systemPrompt }]
+                },
+                contents: geminiContents,
+                generationConfig: {
+                  maxOutputTokens: 1024,
+                  temperature: 0.7,
+                }
+              }),
+            }
+          );
+
+          if (geminiRes.ok) {
+            const data = await geminiRes.json();
+            const candidateText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+            if (candidateText) {
+              botReply = candidateText.trim();
+              break; // Successfully got response
+            }
+          } else {
+            const errText = await geminiRes.text();
+            console.warn(`[Gemini API ${modelName} Warning]:`, geminiRes.status, errText.slice(0, 150));
+          }
+        }
+      } catch (geminiErr) {
+        console.warn('[Gemini API Fallback]:', geminiErr.message);
+      }
+    }
+
+    // 2. Call Anthropic API if valid API key is present and Gemini wasn't used
+    if (!botReply && 
+        process.env.ANTHROPIC_API_KEY && 
         process.env.ANTHROPIC_API_KEY !== 'your_key_here' && 
         !process.env.ANTHROPIC_API_KEY.includes('dummy')) {
       try {
