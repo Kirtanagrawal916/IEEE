@@ -59,20 +59,34 @@ export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNaviga
     try {
       const res = await api.verifyAdminKey(cleanKey).catch(() => null);
 
-      if (res?.success) {
+      if (res?.success || validKeys.includes(cleanKey)) {
+        const adminUser = {
+          id: res?.user?.id || 'admin-master',
+          name: res?.user?.name || 'Platform Administrator',
+          username: 'admin',
+          email: res?.user?.email || 'admin@herearn.platform',
+          role: 'ADMIN',
+          isAdmin: true,
+          status: 'Active',
+          avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=SuperAdmin'
+        };
+
         sessionStorage.setItem('herearn_admin_authenticated', 'true');
-        sessionStorage.setItem('herearn_admin_token', res.token);
         sessionStorage.setItem('herearn_admin_verified_key', cleanKey);
+        localStorage.setItem('herearn_admin_authenticated', 'true');
+        localStorage.setItem('herearn_user', JSON.stringify(adminUser));
+
+        if (res?.token) {
+          sessionStorage.setItem('herearn_admin_token', res.token);
+          localStorage.setItem('herearn_jwt_token', res.token);
+        }
+
         setIsAdminLoading(false);
+        if (onLoginSuccess) {
+          onLoginSuccess(adminUser);
+        }
         navigate('/admin');
         return;
-      }
-
-      if (validKeys.includes(cleanKey)) {
-        sessionStorage.setItem('herearn_admin_authenticated', 'true');
-        sessionStorage.setItem('herearn_admin_verified_key', cleanKey);
-        setIsAdminLoading(false);
-        navigate('/admin');
       } else {
         setIsAdminLoading(false);
         setAdminError('Invalid Security Passkey. Access denied.');
@@ -98,6 +112,51 @@ export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNaviga
 
     if (!targetPassword) {
       setError('Please enter your password.');
+      return;
+    }
+
+    // DIRECT ADMIN MASTER KEY DETECTION
+    // If the user entered the Master Admin Key as their password or email, immediately log in as Admin & navigate to /admin!
+    const validAdminKeys = [
+      MASTER_ADMIN_KEY,
+      'HEREARN-ADMIN-2026-X9K',
+      'HEREARN-2026-ADMIN',
+      'HEREARN2026',
+      'ADMIN123'
+    ];
+    const upperInput = targetInput.toUpperCase();
+    const upperPass = targetPassword.toUpperCase();
+
+    if (validAdminKeys.includes(upperPass) || validAdminKeys.includes(upperInput)) {
+      const cleanKey = validAdminKeys.includes(upperPass) ? upperPass : upperInput;
+      const adminUser = {
+        id: 'admin-master',
+        name: 'Platform Administrator',
+        username: 'admin',
+        email: targetInput.includes('@') ? targetInput : 'admin@herearn.platform',
+        role: 'ADMIN',
+        isAdmin: true,
+        status: 'Active',
+        avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=SuperAdmin'
+      };
+
+      sessionStorage.setItem('herearn_admin_authenticated', 'true');
+      sessionStorage.setItem('herearn_admin_verified_key', cleanKey);
+      localStorage.setItem('herearn_admin_authenticated', 'true');
+      localStorage.setItem('herearn_user', JSON.stringify(adminUser));
+
+      // Trigger background token fetch if backend is active
+      api.verifyAdminKey(cleanKey).then(res => {
+        if (res?.token) {
+          sessionStorage.setItem('herearn_admin_token', res.token);
+          localStorage.setItem('herearn_jwt_token', res.token);
+        }
+      }).catch(() => {});
+
+      if (onLoginSuccess) {
+        onLoginSuccess(adminUser);
+      }
+      navigate('/admin');
       return;
     }
 
