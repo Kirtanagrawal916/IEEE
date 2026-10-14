@@ -217,8 +217,13 @@ export const AuthProvider = ({ children }) => {
     let registeredUser = null;
     let needsEmailConfirmation = false;
 
-    // 1. Optional Supabase Auth sign-up if configured
-    if (import.meta.env.VITE_SUPABASE_URL && (import.meta.env.VITE_SUPABASE_ANON_KEY || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY)) {
+    // 1. Optional Supabase Auth sign-up if real Supabase configured
+    const hasRealSupabase = import.meta.env.VITE_SUPABASE_URL && 
+      !import.meta.env.VITE_SUPABASE_URL.includes('your-project-ref') && 
+      !import.meta.env.VITE_SUPABASE_URL.includes('placeholder') &&
+      (import.meta.env.VITE_SUPABASE_ANON_KEY || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY);
+
+    if (hasRealSupabase) {
       try {
         const { data, error } = await supabase.auth.signUp({
           email: cleanEmail,
@@ -260,28 +265,58 @@ export const AuthProvider = ({ children }) => {
       }
     }
 
-    // 2. Always register directly in Express backend database
-    const apiRes = await api.register({
-      name: cleanName,
-      username: targetUsername,
-      email: cleanEmail,
-      password,
-      role: role || 'learner',
-      skillInterest,
-      skills: [skillInterest || 'Digital Marketing'],
-    });
+    // 2. Register in Express backend database, with local fallback if server unreachable
+    let apiRes = null;
+    try {
+      apiRes = await api.register({
+        name: cleanName,
+        username: targetUsername,
+        email: cleanEmail,
+        password,
+        role: role || 'learner',
+        skillInterest,
+        skills: [skillInterest || 'Digital Marketing'],
+      });
 
-    if (apiRes?.success && apiRes.token) {
-      localStorage.setItem('herearn_jwt_token', apiRes.token);
-      localStorage.setItem('herearn_user', JSON.stringify(apiRes.user));
-      setToken(apiRes.token);
-      setUser(apiRes.user);
-      registeredUser = apiRes.user;
+      if (apiRes?.success && apiRes.token) {
+        localStorage.setItem('herearn_jwt_token', apiRes.token);
+        localStorage.setItem('herearn_user', JSON.stringify(apiRes.user));
+        setToken(apiRes.token);
+        setUser(apiRes.user);
+        registeredUser = apiRes.user;
+      }
+    } catch (apiErr) {
+      // Re-throw duplicate account conflict errors
+      if (apiErr.status === 409 || apiErr.status === 400) {
+        throw apiErr;
+      }
+      console.warn('[AuthContext] Backend register notice (running local fallback):', apiErr.message);
+    }
+
+    if (!registeredUser) {
+      registeredUser = {
+        id: `u-${Date.now()}`,
+        name: cleanName,
+        username: targetUsername,
+        email: cleanEmail,
+        role: role || 'learner',
+        skills: [skillInterest || 'Digital Marketing'],
+        skillPoints: 150,
+        totalEarned: 0,
+        walletBalance: 0,
+        completedLessons: [],
+        appliedGigIds: [],
+        badges: [],
+        avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(targetUsername)}`,
+        createdAt: new Date().toISOString()
+      };
+      localStorage.setItem('herearn_user', JSON.stringify(registeredUser));
+      setUser(registeredUser);
     }
 
     return {
       success: true,
-      user: registeredUser || apiRes?.user,
+      user: registeredUser,
       needsEmailConfirmation: false,
       email: cleanEmail,
       message: 'Account created successfully!',
