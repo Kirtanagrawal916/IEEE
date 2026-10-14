@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { getQuizForCategory } from '../data/opportunityQuizzes';
 import { triggerCelebrationConfetti } from '../utils/confettiHelper';
+import TrustScamBanner from './ui/TrustScamBanner';
 
 export default function OpportunityApplyPage({ 
   gig, 
@@ -176,33 +177,36 @@ export default function OpportunityApplyPage({
   const currentQuestion = questions[currentQIndex];
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8 animate-fade-in text-slate-900 dark:text-white">
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8 animate-fade-in text-[#1F2937] dark:text-white">
       
       {/* Top Header Navigation */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-4 flex-wrap">
         <button
           onClick={onBack}
-          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-purple-500/30 text-xs font-extrabold text-purple-600 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-slate-800 transition-all shadow-xs cursor-pointer"
+          className="tap-target inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white dark:bg-[#191026] border border-[#E5E7EB] dark:border-purple-800/40 text-xs font-bold text-[#7C3AED] dark:text-purple-300 hover:bg-[#F3E8FF] transition-all cursor-pointer shadow-xs"
         >
           <ArrowLeft className="w-4 h-4" />
-          Back to Opportunity Details
+          <span>Back to Opportunity Details</span>
         </button>
 
         {/* Step Indicator Badges */}
-        <div className="flex items-center gap-2 text-xs font-extrabold">
-          <span className={`px-3 py-1 rounded-full border ${step === 1 ? 'bg-purple-600 text-white border-purple-500' : 'bg-slate-200 dark:bg-slate-800 text-slate-500 border-transparent'}`}>
+        <div className="flex items-center gap-2 text-xs font-extrabold flex-wrap">
+          <span className={`px-3 py-1 rounded-full border ${step === 1 ? 'bg-[#7C3AED] text-white border-[#7C3AED]' : 'bg-slate-200 dark:bg-slate-800 text-slate-500 border-transparent'}`}>
             1. Details
           </span>
           <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
-          <span className={`px-3 py-1 rounded-full border ${step === 2 ? 'bg-purple-600 text-white border-purple-500' : 'bg-slate-200 dark:bg-slate-800 text-slate-500 border-transparent'}`}>
+          <span className={`px-3 py-1 rounded-full border ${step === 2 ? 'bg-[#7C3AED] text-white border-[#7C3AED]' : 'bg-slate-200 dark:bg-slate-800 text-slate-500 border-transparent'}`}>
             2. Skill Quiz
           </span>
           <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
-          <span className={`px-3 py-1 rounded-full border ${step === 3 ? 'bg-purple-600 text-white border-purple-500' : 'bg-slate-200 dark:bg-slate-800 text-slate-500 border-transparent'}`}>
+          <span className={`px-3 py-1 rounded-full border ${step === 3 ? 'bg-[#7C3AED] text-white border-[#7C3AED]' : 'bg-slate-200 dark:bg-slate-800 text-slate-500 border-transparent'}`}>
             3. Eligibility
           </span>
         </div>
       </div>
+
+      {/* Safety & Trust Banner */}
+      <TrustScamBanner variant="compact" />
 
       {/* Target Opportunity Banner */}
       <div className="bg-gradient-to-r from-purple-900 via-indigo-900 to-slate-900 rounded-3xl p-6 border border-purple-500/30 text-white shadow-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">

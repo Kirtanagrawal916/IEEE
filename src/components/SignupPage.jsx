@@ -180,7 +180,7 @@ export default function SignupPage({ onLoginSuccess, onNavigateToLogin, onNaviga
     }
   };
   return (
-    <div className="min-h-[calc(100vh-5rem)] flex items-center justify-center p-4 sm:p-6 lg:p-8 animate-fade-in">
+    <div className="min-h-[calc(100vh-5rem)] flex items-center justify-center p-4 sm:p-6 lg:p-8 animate-fade-in bg-[#FFF9F5] dark:bg-[#0F0918] text-[#1F2937] dark:text-white">
       <div className="max-w-5xl w-full grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
         
         {/* Left Branding Showcase Column */}
@@ -576,7 +576,7 @@ export default function SignupPage({ onLoginSuccess, onNavigateToLogin, onNaviga
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full btn-gradient-award justify-center py-3.5 text-xs font-bold mt-2 cursor-pointer shadow-lg disabled:opacity-50"
+                className="tap-target w-full py-3.5 px-6 rounded-xl bg-[#7C3AED] hover:bg-[#6D28D9] text-white font-bold font-heading text-sm sm:text-base shadow-sm transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 mt-2 min-h-[48px]"
               >
                 {isLoading ? (
                   <span>Creating Account...</span>

@@ -14,8 +14,12 @@ import {
   Sparkles, 
   Award,
   Share2,
-  FileText
+  FileText,
+  AlertCircle,
+  HelpCircle,
+  Briefcase
 } from 'lucide-react';
+import TrustScamBanner from './ui/TrustScamBanner';
 import { calculateSkillMatch, DEFAULT_USER_SKILLS } from '../utils/skillMatcher';
 
 export default function OpportunityDetailPage({ 
@@ -27,13 +31,13 @@ export default function OpportunityDetailPage({
 }) {
   if (!gig) {
     return (
-      <div className="max-w-4xl mx-auto px-4 py-16 text-center space-y-4 text-slate-900 dark:text-white">
-        <h2 className="text-xl font-bold">No Opportunity Selected</h2>
+      <div className="max-w-4xl mx-auto px-4 py-16 text-center space-y-4 text-[#1F2937] dark:text-white">
+        <h2 className="text-xl font-bold font-heading">No Opportunity Selected</h2>
         <button
           onClick={onBack}
-          className="px-6 py-2.5 rounded-xl bg-purple-600 text-white font-bold text-xs"
+          className="tap-target px-6 py-2.5 rounded-xl bg-[#7C3AED] text-white font-bold text-xs cursor-pointer"
         >
-          Back to Opportunities List
+          Back to Opportunities Board
         </button>
       </div>
     );
@@ -46,95 +50,97 @@ export default function OpportunityDetailPage({
   const matchRes = calculateSkillMatch(userSkills, gig.skillsRequired);
 
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8 animate-fade-in text-slate-900 dark:text-white">
+    <div className="site-container py-8 sm:py-12 space-y-8 animate-fade-in text-[#1F2937] dark:text-white pb-24 md:pb-12">
       
       {/* Top Back Navigation Bar */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-4 flex-wrap">
         <button
           onClick={onBack}
-          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-purple-500/30 text-xs font-extrabold text-purple-600 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-slate-800 transition-all shadow-xs cursor-pointer"
+          className="tap-target inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white dark:bg-[#191026] border border-[#E5E7EB] dark:border-purple-800/40 text-xs font-bold text-[#7C3AED] dark:text-purple-300 hover:bg-[#F3E8FF] transition-all cursor-pointer shadow-xs"
+          aria-label="Back to opportunities list"
         >
           <ArrowLeft className="w-4 h-4" />
-          Back to Opportunities Board
+          <span>Back to Opportunities List</span>
         </button>
 
-        <div className="flex items-center gap-2">
-          <span className="bg-purple-100 dark:bg-purple-950 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800 text-xs font-extrabold px-3 py-1 rounded-full uppercase">
-            {gig.category || 'Micro-Gig'}
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="badge-free text-xs py-1">
+            <ShieldCheck className="w-3.5 h-3.5" />
+            100% Free Application
           </span>
-          <span className="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 text-xs font-bold px-3 py-1 rounded-full">
-            {gig.type || 'Remote'}
+          <span className="badge-plum text-xs py-1">
+            {gig.category || 'Job Opportunity'}
           </span>
         </div>
       </div>
 
-      {/* Hero Header Card */}
-      <div className="bg-gradient-to-br from-purple-900 via-indigo-900 to-slate-900 rounded-3xl p-6 sm:p-10 border border-purple-500/30 text-white shadow-2xl space-y-6 relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-80 h-80 bg-pink-500/10 rounded-full blur-3xl pointer-events-none"></div>
+      {/* Safety Notice Banner */}
+      <TrustScamBanner variant="compact" />
 
-        <div className="flex flex-col sm:flex-row items-start justify-between gap-6 relative z-10">
+      {/* Hero Header Card */}
+      <div className="bg-white dark:bg-[#191026] rounded-2xl p-6 sm:p-8 border border-[#E5E7EB] dark:border-purple-900/40 shadow-sm space-y-6">
+        <div className="flex flex-col sm:flex-row items-start justify-between gap-6">
           <div className="flex items-start gap-4">
             <img 
-              src={gig.logo} 
+              src={gig.logo || 'https://images.unsplash.com/photo-1596040033229-a9821ebd058d?auto=format&fit=crop&q=80&w=150'} 
               alt={gig.company} 
-              className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl object-cover border-2 border-purple-300 dark:border-purple-500/40 shadow-lg bg-white shrink-0"
+              className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl object-cover border border-[#E5E7EB] dark:border-purple-800/40 bg-white shrink-0 shadow-xs"
             />
-            <div className="space-y-2">
-              <div className="flex items-center gap-2 flex-wrap">
-                <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">{gig.title}</h1>
-              </div>
-              <p className="text-sm text-purple-200 font-semibold flex items-center gap-2">
-                <Building className="w-4 h-4 text-purple-400" />
-                {gig.company}
+            <div className="space-y-1.5">
+              <h1 className="text-2xl sm:text-3xl font-black font-heading text-[#1F2937] dark:text-white leading-tight">
+                {gig.title}
+              </h1>
+              <div className="flex items-center gap-2 flex-wrap text-sm text-[#4B5563] dark:text-slate-300 font-semibold">
+                <Building className="w-4 h-4 text-[#7C3AED]" />
+                <span>{gig.company}</span>
                 {gig.verifiedClient && (
-                  <span className="text-emerald-400 font-extrabold text-xs flex items-center gap-1 bg-emerald-500/20 px-2.5 py-0.5 rounded-full border border-emerald-400/30">
-                    <CheckCircle2 className="w-3.5 h-3.5" /> Verified Client Partner
+                  <span className="text-[#16A34A] text-xs font-bold flex items-center gap-1 bg-[#DCFCE7] dark:bg-emerald-950/60 px-2 py-0.5 rounded-md">
+                    <CheckCircle2 className="w-3.5 h-3.5" /> Verified Employer
                   </span>
                 )}
-              </p>
+              </div>
             </div>
           </div>
 
-          {/* 🎯 Skill Match Badge */}
-          <div className={`px-4 py-2.5 rounded-2xl text-sm font-extrabold flex items-center gap-2 shadow-lg border shrink-0 ${
-            matchRes.matchPercentage >= 80
-              ? 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white border-emerald-300'
-              : matchRes.matchPercentage >= 50
-              ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white border-pink-300'
-              : 'bg-slate-900 text-amber-300 border-slate-700'
-          }`}>
-            <Target className="w-5 h-5" />
-            <span>🎯 {matchRes.matchPercentage}% Skill Match</span>
-          </div>
+          {/* Skill Match Badge */}
+          {matchRes.matchPercentage > 0 && (
+            <div className="px-4 py-2 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 bg-[#F3E8FF] dark:bg-purple-950/60 text-[#6D28D9] dark:text-purple-300 border border-[#E9D5FF] shrink-0">
+              <Target className="w-4 h-4 text-[#7C3AED]" />
+              <span>{matchRes.matchPercentage}% Skill Match</span>
+            </div>
+          )}
         </div>
 
-        {/* Key Quick Stats Bar */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-4 border-t border-purple-500/20 relative z-10 text-xs">
-          <div className="bg-white/10 p-3.5 rounded-2xl backdrop-blur-md border border-white/10 space-y-1">
-            <span className="text-purple-300 font-bold uppercase block text-[10px]">Stipend Amount</span>
-            <span className="text-base font-extrabold text-emerald-400 flex items-center gap-1">
+        {/* Key Info Strip */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-4 border-t border-[#E5E7EB] dark:border-purple-900/30 text-xs">
+          <div className="bg-[#FFF9F5] dark:bg-[#201533] p-3 rounded-xl border border-[#FED7AA]/50 space-y-1">
+            <span className="text-[#6B7280] dark:text-slate-400 font-bold uppercase text-[10px] block">Stipend / Salary</span>
+            <span className="text-sm sm:text-base font-extrabold text-[#16A34A] font-heading flex items-center gap-0.5">
               <IndianRupee className="w-4 h-4" />
-              {gig.stipend}
+              {gig.stipend || 'Competitive Pay'}
             </span>
           </div>
-          <div className="bg-white/10 p-3.5 rounded-2xl backdrop-blur-md border border-white/10 space-y-1">
-            <span className="text-purple-300 font-bold uppercase block text-[10px]">Location / Format</span>
-            <span className="text-sm font-bold text-white flex items-center gap-1">
-              <MapPin className="w-4 h-4 text-purple-300" />
+
+          <div className="bg-[#FFF9F5] dark:bg-[#201533] p-3 rounded-xl border border-[#FED7AA]/50 space-y-1">
+            <span className="text-[#6B7280] dark:text-slate-400 font-bold uppercase text-[10px] block">Location</span>
+            <span className="text-xs sm:text-sm font-bold text-[#1F2937] dark:text-white flex items-center gap-1">
+              <MapPin className="w-4 h-4 text-[#F97316]" />
               {gig.location || 'Remote Work'}
             </span>
           </div>
-          <div className="bg-white/10 p-3.5 rounded-2xl backdrop-blur-md border border-white/10 space-y-1">
-            <span className="text-purple-300 font-bold uppercase block text-[10px]">Duration</span>
-            <span className="text-sm font-bold text-white flex items-center gap-1">
-              <Clock className="w-4 h-4 text-pink-300" />
-              {gig.duration || 'Flexible'}
+
+          <div className="bg-[#FFF9F5] dark:bg-[#201533] p-3 rounded-xl border border-[#FED7AA]/50 space-y-1">
+            <span className="text-[#6B7280] dark:text-slate-400 font-bold uppercase text-[10px] block">Duration / Type</span>
+            <span className="text-xs sm:text-sm font-bold text-[#1F2937] dark:text-white flex items-center gap-1">
+              <Clock className="w-4 h-4 text-[#7C3AED]" />
+              {gig.duration || gig.type || 'Flexible'}
             </span>
           </div>
-          <div className="bg-white/10 p-3.5 rounded-2xl backdrop-blur-md border border-white/10 space-y-1">
-            <span className="text-purple-300 font-bold uppercase block text-[10px]">Applied Candidates</span>
-            <span className="text-sm font-bold text-pink-300">
-              {gig.applicantsCount || 0} Learners
+
+          <div className="bg-[#FFF9F5] dark:bg-[#201533] p-3 rounded-xl border border-[#FED7AA]/50 space-y-1">
+            <span className="text-[#6B7280] dark:text-slate-400 font-bold uppercase text-[10px] block">Applicants</span>
+            <span className="text-xs sm:text-sm font-bold text-[#7C3AED] dark:text-purple-300">
+              {gig.applicantsCount || 0} Women Applied
             </span>
           </div>
         </div>
@@ -143,144 +149,196 @@ export default function OpportunityDetailPage({
       {/* Main Content Layout Grid */}
       <div className="grid lg:grid-cols-3 gap-8">
         
-        {/* Left Column: Description, Deliverables, Escrow */}
+        {/* Left Column (2 cols): Description, Deliverables, How to Apply */}
         <div className="lg:col-span-2 space-y-6">
           
-          {/* Detailed Role Overview */}
-          <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-8 border border-slate-200 dark:border-purple-500/30 shadow-md space-y-4">
-            <h3 className="text-base sm:text-lg font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
-              <FileText className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-              Detailed Opportunity Scope
-            </h3>
-            <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed font-medium whitespace-pre-line">
+          {/* Section 1: Detailed Overview */}
+          <section className="bg-white dark:bg-[#191026] rounded-2xl p-6 sm:p-8 border border-[#E5E7EB] dark:border-purple-900/40 shadow-sm space-y-4">
+            <h2 className="text-lg font-bold font-heading text-[#1F2937] dark:text-white flex items-center gap-2">
+              <FileText className="w-5 h-5 text-[#7C3AED]" />
+              <span>About the Role</span>
+            </h2>
+            <p className="text-sm sm:text-base text-[#4B5563] dark:text-slate-300 leading-relaxed font-normal whitespace-pre-line">
               {gig.description}
             </p>
-          </div>
+          </section>
 
-          {/* Key Deliverables Section */}
+          {/* Section 2: Key Deliverables & Requirements */}
           {gig.deliverables && gig.deliverables.length > 0 && (
-            <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-8 border border-slate-200 dark:border-purple-500/30 shadow-md space-y-4">
-              <h3 className="text-base sm:text-lg font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
-                <Layers className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-                Required Client Deliverables
-              </h3>
-              <div className="space-y-3">
+            <section className="bg-white dark:bg-[#191026] rounded-2xl p-6 sm:p-8 border border-[#E5E7EB] dark:border-purple-900/40 shadow-sm space-y-4">
+              <h2 className="text-lg font-bold font-heading text-[#1F2937] dark:text-white flex items-center gap-2">
+                <Layers className="w-5 h-5 text-[#7C3AED]" />
+                <span>Key Deliverables & Responsibilities</span>
+              </h2>
+              <div className="space-y-2.5">
                 {gig.deliverables.map((item, i) => (
-                  <div key={i} className="flex items-start gap-3 bg-purple-50/60 dark:bg-purple-950/30 p-4 rounded-2xl border border-purple-100 dark:border-purple-900/50">
-                    <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" />
-                    <span className="text-sm font-semibold text-slate-800 dark:text-slate-200">{item}</span>
+                  <div key={i} className="flex items-start gap-3 bg-[#FFF9F5] dark:bg-[#201533] p-3.5 rounded-xl border border-[#FED7AA]/50">
+                    <CheckCircle2 className="w-5 h-5 text-[#16A34A] shrink-0 mt-0.5" />
+                    <span className="text-sm font-medium text-[#1F2937] dark:text-slate-200">{item}</span>
                   </div>
                 ))}
               </div>
-            </div>
+            </section>
           )}
 
-          {/* Escrow Guarantee Card */}
-          <div className="bg-emerald-50 dark:bg-emerald-950/40 rounded-3xl p-6 border border-emerald-200 dark:border-emerald-800/60 text-emerald-900 dark:text-emerald-300 space-y-2">
-            <div className="flex items-center gap-2 text-base font-extrabold">
-              <ShieldCheck className="w-6 h-6 text-emerald-500" />
-              100% Guaranteed Escrow Payout Protection
+          {/* Section 3: How to Apply (Clear 3 Steps) */}
+          <section className="bg-white dark:bg-[#191026] rounded-2xl p-6 sm:p-8 border border-[#E5E7EB] dark:border-purple-900/40 shadow-sm space-y-4">
+            <h2 className="text-lg font-bold font-heading text-[#1F2937] dark:text-white flex items-center gap-2">
+              <Briefcase className="w-5 h-5 text-[#7C3AED]" />
+              <span>How to Apply (100% Free)</span>
+            </h2>
+            
+            <div className="space-y-3 text-xs sm:text-sm text-[#4B5563] dark:text-slate-300">
+              <div className="flex items-start gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800">
+                <span className="w-6 h-6 rounded-full bg-[#7C3AED] text-white flex items-center justify-center font-bold text-xs shrink-0">1</span>
+                <div>
+                  <strong className="text-[#1F2937] dark:text-white">Submit Cover Note:</strong> Write a brief introductory note and optionally link your capstone portfolio project.
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800">
+                <span className="w-6 h-6 rounded-full bg-[#7C3AED] text-white flex items-center justify-center font-bold text-xs shrink-0">2</span>
+                <div>
+                  <strong className="text-[#1F2937] dark:text-white">Quick Skill Assessment:</strong> Complete a simple 6-question quiz to confirm role compatibility.
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800">
+                <span className="w-6 h-6 rounded-full bg-[#16A34A] text-white flex items-center justify-center font-bold text-xs shrink-0">3</span>
+                <div>
+                  <strong className="text-[#1F2937] dark:text-white">Escrow Payment Protected:</strong> Upon client selection, stipend funds are held in escrow before work begins.
+                </div>
+              </div>
             </div>
-            <p className="text-xs text-emerald-800 dark:text-emerald-400 leading-relaxed font-medium">
-              HerEarn holds client funds securely in escrow prior to project commencement. Once deliverables are reviewed and completed, stipend funds are released directly to your account.
+          </section>
+
+          {/* Payment Safety Guarantee */}
+          <div className="bg-[#DCFCE7] dark:bg-emerald-950/40 rounded-2xl p-5 border border-[#BBF7D0] dark:border-emerald-800/40 text-[#14532D] dark:text-emerald-300 space-y-1.5">
+            <div className="flex items-center gap-2 text-sm font-bold font-heading">
+              <ShieldCheck className="w-5 h-5 text-[#16A34A]" />
+              <span>Guaranteed Payout Safety</span>
+            </div>
+            <p className="text-xs leading-relaxed font-normal text-[#166534] dark:text-emerald-400">
+              HerEarn holds client funds securely in escrow prior to project work. Once deliverables are submitted, stipend funds are released directly to your account.
             </p>
           </div>
 
         </div>
 
-        {/* Right Column: Skill Matcher Breakdown & Dedicated Apply Action */}
-        <div className="space-y-6">
+        {/* Right Column: Sticky Apply Card & Skill Match Requirements */}
+        <aside className="space-y-6">
           
-          {/* Skill Matcher breakdown */}
-          <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200 dark:border-purple-500/30 shadow-md space-y-5">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
-              <div className="flex items-center gap-2">
-                <Target className="w-5 h-5 text-pink-500" />
-                <h4 className="text-sm font-extrabold text-slate-900 dark:text-white">Skill Requirements</h4>
-              </div>
-              <span className="text-xs font-bold text-pink-600 dark:text-pink-400 bg-pink-50 dark:bg-pink-950/60 px-2.5 py-1 rounded-full border border-pink-200 dark:border-pink-800">
-                {matchRes.matchedSkills.length}/{matchRes.totalRequired} Matched
+          {/* Sticky Apply Action Card */}
+          <div className="bg-white dark:bg-[#191026] rounded-2xl p-6 border border-[#E5E7EB] dark:border-purple-900/40 shadow-sm space-y-5 sticky top-24">
+            
+            <div className="space-y-1 text-center">
+              <span className="badge-free text-[11px] py-1">
+                Zero Application Fees
               </span>
+              <p className="text-xl font-black font-heading text-[#1F2937] dark:text-white pt-1">
+                {gig.stipend || 'Competitive Stipend'}
+              </p>
+              <p className="text-xs text-[#6B7280] dark:text-slate-400">
+                Direct client contract with escrow guarantee
+              </p>
             </div>
 
-            {/* Matched Skills */}
-            <div className="space-y-2">
-              <span className="text-[11px] font-extrabold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider block">
-                ✓ Your Matched Skills ({matchRes.matchedSkills.length})
-              </span>
-              {matchRes.matchedSkills.length > 0 ? (
+            {/* Main Apply Button */}
+            <button
+              type="button"
+              onClick={() => onApply(gig)}
+              disabled={gig.applied}
+              className={`tap-target w-full rounded-xl font-bold font-heading text-sm px-6 py-3.5 flex items-center justify-center gap-2 transition-all cursor-pointer shadow-md min-h-[48px] ${
+                gig.applied
+                  ? 'bg-[#E5E7EB] text-[#9CA3AF] cursor-not-allowed shadow-none'
+                  : 'bg-[#7C3AED] hover:bg-[#6D28D9] text-white'
+              }`}
+            >
+              {gig.applied ? (
+                <>
+                  <CheckCircle2 className="w-5 h-5 text-[#16A34A]" />
+                  <span>Already Applied</span>
+                </>
+              ) : (
+                <>
+                  <Send className="w-4 h-4" />
+                  <span>Free Apply & Skill Assessment</span>
+                </>
+              )}
+            </button>
+
+            <p className="text-[11px] text-center text-[#6B7280] dark:text-slate-400 leading-relaxed">
+              Takes less than 5 minutes. Includes a short 6-question quiz to demonstrate your skills.
+            </p>
+
+            {/* Skill Requirements Breakdown */}
+            <div className="pt-4 border-t border-[#E5E7EB] dark:border-purple-900/30 space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-[#1F2937] dark:text-white">Required Skills</span>
+                <span className="text-[11px] font-bold text-[#7C3AED] dark:text-purple-300">
+                  {matchRes.matchedSkills.length}/{matchRes.totalRequired} matched
+                </span>
+              </div>
+
+              {/* Matched Skills */}
+              {matchRes.matchedSkills.length > 0 && (
                 <div className="space-y-1.5">
                   {matchRes.matchedSkills.map((s, idx) => (
-                    <div key={idx} className="flex items-center gap-2 text-xs font-bold text-emerald-800 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 p-2.5 rounded-xl border border-emerald-200 dark:border-emerald-800/60">
-                      <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                    <div key={idx} className="flex items-center gap-2 text-xs font-semibold text-[#166534] bg-[#DCFCE7] dark:bg-emerald-950/60 p-2 rounded-lg">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-[#16A34A] shrink-0" />
                       <span>{s}</span>
                     </div>
                   ))}
                 </div>
-              ) : (
-                <p className="text-xs text-slate-400 italic">No skills matched in your profile yet</p>
               )}
-            </div>
 
-            {/* Missing Skills */}
-            {matchRes.missingSkills.length > 0 && (
-              <div className="space-y-2 pt-2 border-t border-slate-100 dark:border-slate-800">
-                <span className="text-[11px] font-extrabold text-amber-600 dark:text-amber-400 uppercase tracking-wider block">
-                  ! Skills Needed for 100% Match ({matchRes.missingSkills.length})
-                </span>
-                <div className="space-y-2">
+              {/* Missing Skills */}
+              {matchRes.missingSkills.length > 0 && (
+                <div className="space-y-1.5 pt-1">
+                  <span className="text-[11px] text-[#6B7280] dark:text-slate-400 block font-medium">To learn or add:</span>
                   {matchRes.missingSkills.map((s, idx) => (
-                    <div key={idx} className="flex items-center justify-between text-xs font-semibold text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-slate-800/60 p-2.5 rounded-xl border border-slate-200 dark:border-slate-700">
-                      <span className="flex items-center gap-1.5">
-                        <X className="w-4 h-4 text-amber-500 shrink-0" />
-                        <span>{s}</span>
-                      </span>
+                    <div key={idx} className="flex items-center justify-between text-xs text-[#4B5563] dark:text-slate-300 bg-slate-50 dark:bg-slate-800/40 p-2 rounded-lg">
+                      <span>{s}</span>
                       {onToggleSkill && (
                         <button
+                          type="button"
                           onClick={() => onToggleSkill(s)}
-                          className="text-[10px] bg-purple-600 hover:bg-purple-700 text-white font-bold px-2 py-1 rounded-md"
+                          className="text-[10px] text-[#7C3AED] font-bold hover:underline cursor-pointer"
                         >
-                          + Add Skill
+                          + Add
                         </button>
                       )}
                     </div>
                   ))}
                 </div>
-              </div>
-            )}
-
-            {/* Apply & Start Assessment CTA Button */}
-            <div className="pt-4 border-t border-slate-100 dark:border-slate-800 space-y-3">
-              <button
-                type="button"
-                onClick={() => onApply(gig)}
-                disabled={gig.applied}
-                className={`w-full py-4 rounded-2xl btn-gradient-award text-sm font-extrabold shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer ${
-                  gig.applied ? 'opacity-75 cursor-not-allowed shadow-none' : ''
-                }`}
-              >
-                {gig.applied ? (
-                  <>
-                    <CheckCircle2 className="w-5 h-5 text-white" />
-                    Already Applied
-                  </>
-                ) : (
-                  <>
-                    <Send className="w-4 h-4" />
-                    Apply & Take Skill Assessment Quiz
-                  </>
-                )}
-              </button>
-
-              <p className="text-[11px] text-center text-slate-500 dark:text-slate-400 font-medium">
-                ⚡ Requires passing a 6-question quiz (Easy, Medium, Hard) to confirm eligibility.
-              </p>
+              )}
             </div>
 
           </div>
 
-        </div>
+        </aside>
 
+      </div>
+
+      {/* Mobile Sticky Bottom Apply Bar (Visible on mobile only, ensuring high conversion & zero frustration) */}
+      <div className="md:hidden fixed bottom-0 inset-x-0 bg-white dark:bg-[#191026] border-t border-[#E5E7EB] dark:border-purple-900/40 p-3 z-40 shadow-xl flex items-center justify-between gap-3">
+        <div>
+          <span className="text-[10px] font-bold uppercase text-[#EA580C] block">100% Free</span>
+          <span className="text-sm font-extrabold text-[#16A34A]">{gig.stipend || 'Paid Gig'}</span>
+        </div>
+        <button
+          type="button"
+          onClick={() => onApply(gig)}
+          disabled={gig.applied}
+          className={`tap-target px-6 py-2.5 rounded-xl font-bold font-heading text-xs flex items-center gap-1.5 shadow-md cursor-pointer ${
+            gig.applied
+              ? 'bg-[#E5E7EB] text-[#9CA3AF]'
+              : 'bg-[#7C3AED] text-white'
+          }`}
+        >
+          <span>{gig.applied ? 'Applied' : 'Free Apply'}</span>
+          {!gig.applied && <ArrowRight className="w-3.5 h-3.5" />}
+        </button>
       </div>
 
     </div>

@@ -418,7 +418,7 @@ function AppContent() {
 
   return (
     <div className={`min-h-screen flex flex-col font-sans transition-colors duration-300 ${
-      theme === 'dark' ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-900'
+      theme === 'dark' ? 'bg-[#0F0918] text-[#F9FAFB]' : 'bg-[#FFF9F5] text-[#1F2937]'
     }`}>
       
       {/* Sticky Navigation Header (Hidden on Admin portal for dedicated admin console) */}
@@ -794,30 +794,89 @@ function AppContent() {
 
       {/* Footer (Hidden on Admin portal) */}
       {!isAdminRoute && (
-        <footer className={`border-t py-10 text-xs transition-colors ${
-          theme === 'dark' ? 'bg-slate-900 border-slate-800 text-slate-400' : 'bg-white border-slate-200 text-slate-600'
+        <footer className={`border-t py-12 transition-colors ${
+          theme === 'dark' 
+            ? 'bg-[#140C22] border-purple-900/30 text-slate-300' 
+            : 'bg-[#FFFFFF] border-[#E5E7EB] text-[#4B5563]'
         }`}>
-          <div className="w-full px-4 sm:px-8 lg:px-12 flex flex-col md:flex-row items-center justify-between gap-6 text-center md:text-left">
-            <div className="flex flex-col sm:flex-row items-center gap-3">
-              <Link to="/" className="cursor-pointer group shrink-0" title="HerEarn Home">
-                <Logo size="sm" />
-              </Link>
-              <div className="text-center sm:text-left">
-                <p className="font-bold text-xs">Skill-to-Income Platform for Women</p>
-                <p className="opacity-75 text-[11px] mt-0.5">Empowering women across India to learn skills, build portfolios, and earn income.</p>
+          <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+            
+            {/* Top Row: Mission + Trust Badge */}
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 pb-8 border-b border-slate-200 dark:border-purple-900/30">
+              <div className="flex items-center gap-3">
+                <Link to="/" className="cursor-pointer group shrink-0" title="HerEarn Home">
+                  <Logo size="md" />
+                </Link>
+                <div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="font-extrabold text-sm text-[#1F2937] dark:text-white">Skill to Women</span>
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-[#FFF7ED] text-[#EA580C] border border-[#FED7AA]">
+                      100% Free for Job Seekers
+                    </span>
+                  </div>
+                  <p className="text-xs text-[#6B7280] dark:text-slate-400 mt-0.5">
+                    Empowering women across India to build digital skills and access verified, free job opportunities.
+                  </p>
+                </div>
+              </div>
+
+              {/* Safe Job Guarantee Callout */}
+              <div className="bg-[#FFF9F5] dark:bg-[#1E1233] border border-[#FED7AA] dark:border-purple-800/40 rounded-2xl p-3.5 max-w-md flex items-start gap-3">
+                <span className="text-base leading-none">🛡️</span>
+                <p className="text-xs text-[#4B5563] dark:text-slate-300 leading-relaxed">
+                  <strong className="text-[#1F2937] dark:text-white">Safety First:</strong> HerEarn is 100% free. Never pay anyone for interviews, job applications, or registrations.
+                </p>
               </div>
             </div>
-            <div className="flex flex-wrap items-center justify-center md:justify-end gap-5 font-semibold">
-              <Link to="/dashboard" className="hover:text-indigo-400 cursor-pointer">Dashboard</Link>
-              <Link to="/" className="hover:text-indigo-400 cursor-pointer">Overview</Link>
-              <Link to="/mentorship" className="hover:text-indigo-400 cursor-pointer text-indigo-400 font-bold">Mentorship</Link>
-              <Link to="/about" className="hover:text-indigo-400 cursor-pointer text-purple-400 font-bold">About Us</Link>
-              <Link to="/learn" className="hover:text-indigo-400 cursor-pointer">Courses</Link>
-              <Link to="/portfolio" className="hover:text-indigo-400 cursor-pointer">Show Skill</Link>
-              <Link to="/opportunities" className="hover:text-indigo-400 cursor-pointer">Opportunity</Link>
-              <Link to="/post-gig" className="hover:text-pink-400 cursor-pointer font-bold text-pink-400">Post Gig</Link>
-              <Link to="/admin" className="hover:text-purple-400 cursor-pointer font-bold text-purple-400">Admin</Link>
+
+            {/* Middle Row: Links Columns */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 text-xs font-semibold">
+              <div className="space-y-2.5">
+                <p className="text-xs font-bold text-[#1F2937] dark:text-white uppercase tracking-wider">Opportunities</p>
+                <div className="flex flex-col space-y-2">
+                  <Link to="/opportunities" className="hover:text-[#7C3AED] transition-colors py-1">Browse Free Jobs</Link>
+                  <Link to="/opportunities" className="hover:text-[#7C3AED] transition-colors py-1">Remote Micro-Gigs</Link>
+                  <Link to="/post-gig" className="hover:text-[#7C3AED] transition-colors py-1 font-bold text-[#7C3AED]">Post an Opening</Link>
+                </div>
+              </div>
+
+              <div className="space-y-2.5">
+                <p className="text-xs font-bold text-[#1F2937] dark:text-white uppercase tracking-wider">Free Learning</p>
+                <div className="flex flex-col space-y-2">
+                  <Link to="/learn" className="hover:text-[#7C3AED] transition-colors py-1">Skill Tracks</Link>
+                  <Link to="/portfolio" className="hover:text-[#7C3AED] transition-colors py-1">Portfolio Showcase</Link>
+                  <Link to="/mentorship" className="hover:text-[#7C3AED] transition-colors py-1">Peer Mentorship</Link>
+                </div>
+              </div>
+
+              <div className="space-y-2.5">
+                <p className="text-xs font-bold text-[#1F2937] dark:text-white uppercase tracking-wider">Candidate Hub</p>
+                <div className="flex flex-col space-y-2">
+                  <Link to="/dashboard" className="hover:text-[#7C3AED] transition-colors py-1">Learner Dashboard</Link>
+                  <Link to="/applications" className="hover:text-[#7C3AED] transition-colors py-1">My Applications</Link>
+                  <Link to="/profile" className="hover:text-[#7C3AED] transition-colors py-1">My Profile & Resume</Link>
+                </div>
+              </div>
+
+              <div className="space-y-2.5">
+                <p className="text-xs font-bold text-[#1F2937] dark:text-white uppercase tracking-wider">About & Trust</p>
+                <div className="flex flex-col space-y-2">
+                  <Link to="/about" className="hover:text-[#7C3AED] transition-colors py-1">About HerEarn</Link>
+                  <Link to="/terms" className="hover:text-[#7C3AED] transition-colors py-1">Terms of Service</Link>
+                  <Link to="/privacy" className="hover:text-[#7C3AED] transition-colors py-1">Privacy Policy</Link>
+                </div>
+              </div>
             </div>
+
+            {/* Bottom Row: Copyright */}
+            <div className="pt-6 border-t border-slate-100 dark:border-purple-900/20 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[#6B7280] dark:text-slate-400">
+              <p>© 2026 Skill to Women (HerEarn). Open access initiative for women’s economic empowerment.</p>
+              <p className="flex items-center gap-3">
+                <span>Made for all women across India</span>
+                <span className="text-[#EA580C] font-bold">100% Free</span>
+              </p>
+            </div>
+
           </div>
         </footer>
       )}

@@ -118,55 +118,55 @@ export default function LearnSection({ user, onCompleteLesson, onNavigateToPortf
   };
 
   return (
-    <div className="max-w-[1440px] mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 space-y-8 animate-fade-in text-slate-900 dark:text-white">
+    <div className="max-w-[1440px] mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 space-y-8 animate-fade-in text-[#1F2937] dark:text-white">
       
       {/* View Switcher Bar: Courses vs Challenge Zone vs Mini Puzzles */}
-      <div className="flex items-center justify-between flex-wrap gap-4 bg-white dark:bg-slate-900 p-3 rounded-2xl border border-slate-200 dark:border-purple-500/30 shadow-md">
+      <div className="flex items-center justify-between flex-wrap gap-4 bg-white dark:bg-[#191026] p-3 rounded-2xl border border-[#E5E7EB] dark:border-purple-900/40 shadow-sm">
         <div className="flex items-center gap-2 flex-wrap">
           <button
             type="button"
             onClick={() => handleTabChange('courses')}
-            className={`px-5 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 ${
+            className={`tap-target px-5 py-2.5 rounded-xl text-xs font-bold font-heading transition-all cursor-pointer flex items-center gap-2 ${
               activeTab === 'courses'
-                ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-md'
-                : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+                ? 'bg-[#7C3AED] text-white shadow-sm'
+                : 'bg-[#FFF9F5] dark:bg-[#201533] text-[#4B5563] dark:text-slate-300 hover:bg-[#F3E8FF] hover:text-[#7C3AED]'
             }`}
           >
             <BookOpen className="w-4 h-4" />
-            <span>Skill Tracks & Courses</span>
+            <span>Free Skill Tracks</span>
           </button>
 
           <button
             type="button"
             onClick={() => handleTabChange('challenges')}
-            className={`px-5 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 relative ${
+            className={`tap-target px-5 py-2.5 rounded-xl text-xs font-bold font-heading transition-all cursor-pointer flex items-center gap-2 ${
               activeTab === 'challenges'
-                ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-md'
-                : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+                ? 'bg-[#7C3AED] text-white shadow-sm'
+                : 'bg-[#FFF9F5] dark:bg-[#201533] text-[#4B5563] dark:text-slate-300 hover:bg-[#F3E8FF] hover:text-[#7C3AED]'
             }`}
           >
-            <Zap className="w-4 h-4 text-amber-400" />
-            <span>⚡ HerEarn Challenge Zone</span>
+            <Zap className="w-4 h-4 text-[#EA580C]" />
+            <span>⚡ Challenge Zone</span>
           </button>
 
           <button
             type="button"
             onClick={() => handleTabChange('puzzles')}
-            className={`px-5 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 relative ${
+            className={`tap-target px-5 py-2.5 rounded-xl text-xs font-bold font-heading transition-all cursor-pointer flex items-center gap-2 ${
               activeTab === 'puzzles'
-                ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-md'
-                : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+                ? 'bg-[#7C3AED] text-white shadow-sm'
+                : 'bg-[#FFF9F5] dark:bg-[#201533] text-[#4B5563] dark:text-slate-300 hover:bg-[#F3E8FF] hover:text-[#7C3AED]'
             }`}
           >
-            <Gamepad2 className="w-4 h-4 text-pink-400" />
-            <span>🧩 Mini Puzzle Games</span>
+            <Gamepad2 className="w-4 h-4 text-[#F97316]" />
+            <span>🧩 Skill Puzzles</span>
           </button>
         </div>
 
         {/* User Skill Points Counter */}
-        <div className="flex items-center gap-2 bg-purple-50 dark:bg-purple-950/60 px-4 py-2 rounded-xl border border-purple-200 dark:border-purple-800/60 text-xs font-bold text-purple-900 dark:text-purple-200">
-          <Trophy className="w-4 h-4 text-amber-500" />
-          <span>Skill Balance: <strong className="text-pink-600 dark:text-pink-400 font-extrabold">{userPoints} PTS</strong></span>
+        <div className="flex items-center gap-2 bg-[#FFF9F5] dark:bg-[#201533] px-4 py-2 rounded-xl border border-[#FED7AA]/60 dark:border-purple-800/40 text-xs font-bold text-[#1F2937] dark:text-white">
+          <Trophy className="w-4 h-4 text-[#EA580C]" />
+          <span>Skill Points: <strong className="text-[#EA580C] font-extrabold">{userPoints} PTS</strong></span>
         </div>
       </div>
 
@@ -177,30 +177,30 @@ export default function LearnSection({ user, onCompleteLesson, onNavigateToPortf
         <div className="space-y-8 animate-fade-in">
           
           {/* Header Banner */}
-          <div className="bg-gradient-to-r from-purple-900 via-indigo-950 to-slate-900 rounded-3xl p-6 md:p-8 border border-purple-500/30 text-white shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+          <div className="bg-gradient-to-r from-[#7C3AED] via-[#6D28D9] to-[#5B21B6] rounded-2xl p-6 md:p-8 text-white shadow-md flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
             <div className="space-y-2">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-500/20 text-purple-300 text-xs font-semibold">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/20 text-white text-xs font-bold">
                 <BookOpen className="w-3.5 h-3.5" />
-                Skill Learning Hub
+                <span>100% Free Practical Learning</span>
               </div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-white">
+              <h1 className="text-2xl sm:text-3xl font-black font-heading text-white">
                 {currentTrack.title}
               </h1>
-              <p className="text-xs sm:text-sm text-slate-200 max-w-xl">
+              <p className="text-xs sm:text-sm text-purple-100 max-w-xl font-normal">
                 {currentTrack.description}
               </p>
             </div>
 
             {/* Track Progress Box */}
-            <div className="bg-slate-900/80 border border-purple-500/30 p-4 rounded-2xl w-full md:w-72 space-y-2 text-white">
+            <div className="bg-white/10 backdrop-blur-md border border-white/20 p-4 rounded-xl w-full md:w-72 space-y-2 text-white">
               <div className="flex items-center justify-between text-xs font-bold">
-                <span className="text-slate-200">Track Progress</span>
-                <span className="text-purple-400">{progressPercent}%</span>
+                <span className="text-purple-100">Track Progress</span>
+                <span className="text-white font-extrabold">{progressPercent}%</span>
               </div>
-              <div className="progress-bar-bg">
-                <div className="progress-bar-fill" style={{ width: `${progressPercent}%` }}></div>
+              <div className="progress-bar-bg bg-white/20">
+                <div className="progress-bar-fill bg-[#F97316]" style={{ width: `${progressPercent}%` }}></div>
               </div>
-              <p className="text-[11px] text-slate-300 font-medium">
+              <p className="text-[11px] text-purple-100 font-medium">
                 {completedCount} of {trackLessonsCount} Lessons Completed
               </p>
             </div>
