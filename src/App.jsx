@@ -480,6 +480,16 @@ function AppContent() {
                   navigate('/portfolio');
                   setIsSubmitOpen(true);
                 }}
+                onUpdateUserSkillPoints={(points, badge) => {
+                  if (user) {
+                    saveUserData({
+                      ...user,
+                      skillPoints: points,
+                      badges: badge ? [...new Set([...(user.badges || []), badge])] : (user.badges || [])
+                    });
+                  }
+                }}
+                showToast={showToast}
               />
             } 
           />
@@ -494,6 +504,16 @@ function AppContent() {
                   navigate('/portfolio');
                   setIsSubmitOpen(true);
                 }}
+                onUpdateUserSkillPoints={(points, badge) => {
+                  if (user) {
+                    saveUserData({
+                      ...user,
+                      skillPoints: points,
+                      badges: badge ? [...new Set([...(user.badges || []), badge])] : (user.badges || [])
+                    });
+                  }
+                }}
+                showToast={showToast}
               />
             } 
           />
