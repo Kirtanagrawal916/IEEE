@@ -165,6 +165,36 @@ export default function SignupPage({ onLoginSuccess, onNavigateToLogin, onNaviga
       });
     } catch (err) {
       setIsLoading(false);
+      // Gracefully handle network offline or "Failed to fetch" so learner signup is never blocked
+      if (err.message?.includes('Failed to fetch') || err.message?.includes('NetworkError') || err.status === 503) {
+        const updatedRegistry = registeredUsers.filter(u => u.email?.toLowerCase() !== targetEmail && u.username?.toLowerCase() !== targetUsername);
+        const fallbackUser = {
+          id: `u-${Date.now()}`,
+          name: displayName,
+          username: targetUsername,
+          email: targetEmail,
+          password: targetPassword,
+          role,
+          skills: [skillInterest],
+          skillPoints: 150,
+          totalEarned: 0,
+          walletBalance: 0,
+          completedLessons: [],
+          appliedGigIds: [],
+          badges: [],
+          avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(targetUsername)}`,
+          createdAt: new Date().toISOString()
+        };
+        updatedRegistry.push(fallbackUser);
+        localStorage.setItem('herearn_registered_users', JSON.stringify(updatedRegistry));
+        localStorage.setItem('herearn_user', JSON.stringify(fallbackUser));
+
+        onLoginSuccess({
+          ...fallbackUser,
+          isSignUp: true,
+        });
+        return;
+      }
       setError(err.message || 'Registration failed. Please try again.');
     }
   };
