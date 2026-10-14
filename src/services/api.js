@@ -41,7 +41,34 @@ const request = async (endpoint, options = {}) => {
   };
 
   try {
-    const res = await fetch(`${API_BASE}${endpoint}`, config);
+    let res;
+    try {
+      res = await fetch(`${API_BASE}${endpoint}`, config);
+    } catch (fetchErr) {
+      // If relative URL failed, attempt direct backend port 5000 fallback
+      if (!API_BASE && typeof window !== 'undefined') {
+        try {
+          res = await fetch(`http://localhost:5000${endpoint}`, config);
+        } catch {
+          throw fetchErr;
+        }
+      } else {
+        throw fetchErr;
+      }
+    }
+
+    // If Vite proxy returned 503 (e.g. proxy mismatch), retry directly to backend port 5000
+    if (!API_BASE && res && res.status === 503 && typeof window !== 'undefined') {
+      try {
+        const directRes = await fetch(`http://localhost:5000${endpoint}`, config);
+        if (directRes && directRes.status !== 503) {
+          res = directRes;
+        }
+      } catch {
+        // Retain original response
+      }
+    }
+
     const contentType = res.headers.get('content-type') || '';
 
     let data;
