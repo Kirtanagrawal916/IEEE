@@ -131,7 +131,16 @@ export default function SignupPage({ onLoginSuccess, onNavigateToLogin, onNaviga
         role,
       });
 
-      // Save to local registry
+      setIsLoading(false);
+
+      if (res?.needsEmailConfirmation) {
+        setSentEmail(targetEmail);
+        setSignupComplete(true);
+        // Do NOT store in active registeredUsers with password to prevent unverified login bypass
+        return;
+      }
+
+      // Save to local registry only when auto-confirmed or already verified
       const updatedRegistry = registeredUsers.filter(u => u.email?.toLowerCase() !== targetEmail && u.username?.toLowerCase() !== targetUsername);
       const userRecord = {
         id: res?.user?.id || `u-${Date.now()}`,
@@ -145,14 +154,6 @@ export default function SignupPage({ onLoginSuccess, onNavigateToLogin, onNaviga
       };
       updatedRegistry.push(userRecord);
       localStorage.setItem('herearn_registered_users', JSON.stringify(updatedRegistry));
-
-      setIsLoading(false);
-
-      if (res?.needsEmailConfirmation) {
-        setSentEmail(targetEmail);
-        setSignupComplete(true);
-        return;
-      }
 
       onLoginSuccess({
         ...(res?.user || {}),
