@@ -185,4 +185,25 @@ export const api = {
   updateAdminSettings: (settings) => request('/api/admin/settings', { method: 'PATCH', body: JSON.stringify(settings) }),
   getAdminAuditLogs: () => request('/api/admin/audit-logs'),
   createAuditLog: (logData) => request('/api/admin/audit-logs', { method: 'POST', body: JSON.stringify(logData) }),
+
+  // Community APIs
+  getCommunityUsers: (filters = {}) => {
+    const query = new URLSearchParams(filters).toString();
+    return request(`/api/community/users${query ? `?${query}` : ''}`);
+  },
+  getCommunityConnections: () => request('/api/community/connections'),
+  getPendingRequests: () => request('/api/community/requests/pending'),
+  getSentRequests: () => request('/api/community/requests/sent'),
+  sendConnectionRequest: (userId) => request(`/api/community/connect/${userId}`, { method: 'POST' }),
+  acceptConnectionRequest: (requestId) => request(`/api/community/requests/${requestId}/accept`, { method: 'POST' }),
+  rejectConnectionRequest: (requestId) => request(`/api/community/requests/${requestId}/reject`, { method: 'POST' }),
+  cancelConnectionRequest: (requestId) => request(`/api/community/requests/${requestId}/cancel`, { method: 'DELETE' }),
+  removeConnection: (connectionId) => request(`/api/community/connections/${connectionId}`, { method: 'DELETE' }),
+  getConversations: () => request('/api/community/conversations'),
+  getMessages: (partnerId) => request(`/api/community/messages/${partnerId}`),
+  sendMessage: (partnerId, content) => request(`/api/community/messages/${partnerId}`, { method: 'POST', body: JSON.stringify({ content }) }),
+  markMessagesRead: (partnerId) => request(`/api/community/messages/${partnerId}/read`, { method: 'POST' }),
+  getCommunityProfile: (userId) => request(`/api/community/profile/${userId}`),
+  updateCommunityProfile: (profileData) => request('/api/community/profile', { method: 'PATCH', body: JSON.stringify(profileData) }),
 };
+
