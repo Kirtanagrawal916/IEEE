@@ -41,7 +41,34 @@ const request = async (endpoint, options = {}) => {
   };
 
   try {
-    const res = await fetch(`${API_BASE}${endpoint}`, config);
+    let res;
+    try {
+      res = await fetch(`${API_BASE}${endpoint}`, config);
+    } catch (fetchErr) {
+      // If relative URL failed, attempt direct backend port 5000 fallback
+      if (!API_BASE && typeof window !== 'undefined') {
+        try {
+          res = await fetch(`http://localhost:5000${endpoint}`, config);
+        } catch {
+          throw fetchErr;
+        }
+      } else {
+        throw fetchErr;
+      }
+    }
+
+    // If Vite proxy returned 503 (e.g. proxy mismatch), retry directly to backend port 5000
+    if (!API_BASE && res && res.status === 503 && typeof window !== 'undefined') {
+      try {
+        const directRes = await fetch(`http://localhost:5000${endpoint}`, config);
+        if (directRes && directRes.status !== 503) {
+          res = directRes;
+        }
+      } catch {
+        // Retain original response
+      }
+    }
+
     const contentType = res.headers.get('content-type') || '';
 
     let data;
@@ -104,8 +131,13 @@ export const api = {
 
   // Portfolio APIs
   getMyPortfolio: () => request('/api/portfolio/me'),
-  getPublicPortfolio: () => request('/api/portfolio'),
+  getPublicPortfolio: (filters = {}) => {
+    const query = new URLSearchParams(filters).toString();
+    return request(`/api/portfolio${query ? `?${query}` : ''}`);
+  },
+  getPortfolioStats: () => request('/api/portfolio/stats'),
   getProject: (id) => request(`/api/portfolio/${id}`),
+  likeProject: (id) => request(`/api/portfolio/${id}/like`, { method: 'POST' }),
   createProject: (projectData) => request('/api/portfolio', { method: 'POST', body: JSON.stringify(projectData) }),
   updateProject: (id, projectData) => request(`/api/portfolio/${id}`, { method: 'PATCH', body: JSON.stringify(projectData) }),
   deleteProject: (id) => request(`/api/portfolio/${id}`, { method: 'DELETE' }),
@@ -153,4 +185,25 @@ export const api = {
   updateAdminSettings: (settings) => request('/api/admin/settings', { method: 'PATCH', body: JSON.stringify(settings) }),
   getAdminAuditLogs: () => request('/api/admin/audit-logs'),
   createAuditLog: (logData) => request('/api/admin/audit-logs', { method: 'POST', body: JSON.stringify(logData) }),
+
+  // Community APIs
+  getCommunityUsers: (filters = {}) => {
+    const query = new URLSearchParams(filters).toString();
+    return request(`/api/community/users${query ? `?${query}` : ''}`);
+  },
+  getCommunityConnections: () => request('/api/community/connections'),
+  getPendingRequests: () => request('/api/community/requests/pending'),
+  getSentRequests: () => request('/api/community/requests/sent'),
+  sendConnectionRequest: (userId) => request(`/api/community/connect/${userId}`, { method: 'POST' }),
+  acceptConnectionRequest: (requestId) => request(`/api/community/requests/${requestId}/accept`, { method: 'POST' }),
+  rejectConnectionRequest: (requestId) => request(`/api/community/requests/${requestId}/reject`, { method: 'POST' }),
+  cancelConnectionRequest: (requestId) => request(`/api/community/requests/${requestId}/cancel`, { method: 'DELETE' }),
+  removeConnection: (connectionId) => request(`/api/community/connections/${connectionId}`, { method: 'DELETE' }),
+  getConversations: () => request('/api/community/conversations'),
+  getMessages: (partnerId) => request(`/api/community/messages/${partnerId}`),
+  sendMessage: (partnerId, content) => request(`/api/community/messages/${partnerId}`, { method: 'POST', body: JSON.stringify({ content }) }),
+  markMessagesRead: (partnerId) => request(`/api/community/messages/${partnerId}/read`, { method: 'POST' }),
+  getCommunityProfile: (userId) => request(`/api/community/profile/${userId}`),
+  updateCommunityProfile: (profileData) => request('/api/community/profile', { method: 'PATCH', body: JSON.stringify(profileData) }),
 };
+

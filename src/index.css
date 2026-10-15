@@ -29,11 +29,11 @@
 
 /* Theme - Light Mode */
 .light {
-  --bg-main: #faf5ff;
-  --bg-nav: rgba(255, 255, 255, 0.95);
+  --bg-main: #FFF9F5;
+  --bg-nav: rgba(255, 249, 245, 0.95);
   --bg-card: #ffffff;
   --bg-card-glass: rgba(255, 255, 255, 0.95);
-  --bg-input: #f3e8ff;
+  --bg-input: #fff5ed;
   --text-main: #0f172a;
   --text-muted: #475569;
   --border-subtle: rgba(124, 58, 237, 0.2);
@@ -246,4 +246,13 @@ body > .skiptranslate {
   background-color: transparent !important;
   box-shadow: none !important;
 }
+
+/* Prevent translation engines from changing language selector options */
+.notranslate,
+[translate="no"],
+[translate="no"] * {
+  -webkit-translate: no !important;
+  translate: no !important;
+}
+
 

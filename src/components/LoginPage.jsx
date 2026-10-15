@@ -201,16 +201,24 @@ export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNaviga
       (u.name && u.name.toLowerCase() === targetInput.toLowerCase())
     );
 
+    // If account found locally with password recorded, reject immediately if password does not match
+    if (matchedUser?.password && matchedUser.password !== targetPassword) {
+      setIsLoading(false);
+      setError('Incorrect password. Please verify your password and try again.');
+      return;
+    }
+
     const lookupEmail = targetInput.includes('@') ? targetInput.trim().toLowerCase() : (matchedUser?.email || '');
 
     try {
       const res = await authLogin({
-        email: lookupEmail,
+        email: lookupEmail || targetInput,
         username: cleanSearch,
         password: targetPassword,
       });
 
-      const userRole = (res.user?.role || matchedUser?.role || 'LEARNER').toUpperCase();
+      const backendUser = res.user || {};
+      const userRole = (backendUser.role || matchedUser?.role || 'LEARNER').toUpperCase();
 
       // Recruiter tab: only EMPLOYER (recruiter) or ADMIN accounts may continue.
       if (loginType === 'recruiter' && userRole !== 'EMPLOYER' && userRole !== 'ADMIN') {
@@ -221,18 +229,19 @@ export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNaviga
 
       setIsLoading(false);
 
-      const resolvedUsername = res.user?.username || matchedUser?.username || cleanSearch;
-      const resolvedName = res.user?.name || matchedUser?.name || (resolvedUsername.charAt(0).toUpperCase() + resolvedUsername.slice(1));
+      const resolvedUsername = backendUser.username || matchedUser?.username || cleanSearch;
+      const resolvedName = backendUser.name || matchedUser?.name || (resolvedUsername.charAt(0).toUpperCase() + resolvedUsername.slice(1));
 
       // App.jsx redirects by role: EMPLOYER -> /recruiter, ADMIN -> /admin, others -> /dashboard
       onLoginSuccess({
         ...(matchedUser || {}),
-        ...(res.user || {}),
+        ...backendUser,
         name: resolvedName,
         username: resolvedUsername,
-        email: lookupEmail || res.user?.email,
+        email: lookupEmail || backendUser.email,
         role: userRole,
         isSignUp: false,
+        password: targetPassword, // preserve password for local offline verification
       });
     } catch (err) {
       setIsLoading(false);
@@ -242,6 +251,11 @@ export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNaviga
         const emailToConfirm = err.email || lookupEmail;
         setUnconfirmedEmail(emailToConfirm);
         setError('Please confirm your email address before logging in. Check your inbox or Spam folder for the verification link.');
+        return;
+      }
+
+      if (err.status === 401) {
+        setError(err.message || 'Incorrect password. Please verify your password and try again.');
         return;
       }
 
@@ -255,7 +269,33 @@ export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNaviga
         return;
       }
 
-      setError(err.message || 'Login failed. Please check your credentials.');
+      // Offline / network fallback: ONLY allow if password strictly matches
+      if (matchedUser) {
+        if (!matchedUser.password) {
+          setError('Password verification requires an active server connection. Please ensure the backend is running.');
+          return;
+        }
+
+        if (matchedUser.password !== targetPassword) {
+          setError('Incorrect password. Please verify your password and try again.');
+          return;
+        }
+
+        const resolvedUsername = matchedUser.username || cleanSearch;
+        const resolvedName = matchedUser.name || (resolvedUsername.charAt(0).toUpperCase() + resolvedUsername.slice(1));
+        const userRole = (matchedUser.role || 'LEARNER').toUpperCase();
+
+        onLoginSuccess({
+          ...matchedUser,
+          name: resolvedName,
+          username: resolvedUsername,
+          role: userRole,
+          isSignUp: false,
+          password: targetPassword,
+        });
+      } else {
+        setError(err.message || `No account registered under "${targetInput}". Please check your username/email or sign up.`);
+      }
     }
   };
 

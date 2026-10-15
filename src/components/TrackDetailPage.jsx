@@ -11,7 +11,12 @@ import {
   UserCheck, 
   Sparkles,
   Loader2,
-  Lock
+  Lock,
+  Star,
+  TrendingUp,
+  ShieldCheck,
+  Check,
+  Briefcase
 } from 'lucide-react';
 import { api } from '../services/api';
 import { skillTracks } from '../data/mockData';
@@ -33,34 +38,33 @@ export default function TrackDetailPage({ user, onCompleteLesson }) {
       const targetId = trackId || 'track-1';
 
       try {
-        // Try fetching track details from backend
         const res = await api.getTrackDetails(targetId);
         if (res.success && res.track) {
-          setTrack(res.track);
-          setLessons(res.track.lessons || []);
+          // Merge with rich local mock data
+          const localTrack = skillTracks.find(t => t.id === targetId) || {};
+          setTrack({ ...localTrack, ...res.track });
+          setLessons((res.track.lessons && res.track.lessons.length > 0) ? res.track.lessons : (localTrack.lessons || []));
         } else {
           throw new Error('Track not found on backend');
         }
       } catch (err) {
-        // Fallback to local mock data
         const localTrack = skillTracks.find(t => t.id === targetId) || skillTracks[0];
         setTrack(localTrack);
         setLessons(localTrack.lessons || []);
       }
 
-      // Fetch progress/enrollment
+      // Fetch progress
       try {
         const progRes = await api.getTrackProgress(targetId);
         if (progRes.success && progRes.progressPercent !== undefined) {
           setProgressPercent(progRes.progressPercent);
         }
       } catch (err) {
-        // Local calculation fallback
         const completed = user?.completedLessons || [];
         setUserCompletedLessons(completed);
         const targetTrack = skillTracks.find(t => t.id === targetId) || skillTracks[0];
-        const matchCount = targetTrack.lessons.filter(l => completed.includes(l.id)).length;
-        setProgressPercent(Math.round((matchCount / (targetTrack.lessons.length || 1)) * 100));
+        const matchCount = (targetTrack.lessons || []).filter(l => completed.includes(l.id)).length;
+        setProgressPercent(Math.round((matchCount / (targetTrack.lessons?.length || 1)) * 100));
       } finally {
         setIsLoading(false);
       }
@@ -82,7 +86,6 @@ export default function TrackDetailPage({ user, onCompleteLesson }) {
       console.log('[TrackDetail] Enroll notice:', err.message);
     } finally {
       setIsEnrolling(false);
-      // Navigate to first lesson or current lesson
       const firstLesson = lessons[0]?.id || 'm1-l1';
       navigate(`/courses/${track?.id || trackId || 'track-1'}/lessons/${firstLesson}`);
     }
@@ -116,75 +119,121 @@ export default function TrackDetailPage({ user, onCompleteLesson }) {
       
       {/* Back link */}
       <Link 
-        to="/learn"
-        className="inline-flex items-center gap-2 text-xs font-bold text-purple-600 dark:text-purple-400 hover:underline"
+        to="/courses"
+        className="inline-flex items-center gap-2 text-xs font-bold text-purple-600 dark:text-purple-400 hover:underline cursor-pointer"
       >
-        <ArrowLeft className="w-4 h-4" /> Back to Skill Tracks
+        <ArrowLeft className="w-4 h-4" /> Back to Course Catalog
       </Link>
 
-      {/* Header Banner */}
-      <div className="relative rounded-3xl bg-gradient-to-r from-purple-900 via-indigo-900 to-slate-900 p-6 sm:p-10 border border-purple-500/30 text-white overflow-hidden shadow-xl">
+      {/* Header Showcase Banner */}
+      <div className="relative rounded-3xl bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 p-6 sm:p-10 border border-slate-200/80 dark:border-slate-800 text-white overflow-hidden shadow-2xl">
+        <div className="absolute top-0 right-0 -mt-8 -mr-8 w-72 h-72 bg-purple-500/15 rounded-full blur-3xl pointer-events-none" />
+
         <div className="relative z-10 space-y-6 max-w-3xl">
-          <div className="flex flex-wrap items-center gap-3 text-xs font-bold">
-            <span className="px-3 py-1 rounded-full bg-purple-500/30 text-purple-200 border border-purple-400/30">
+          <div className="flex flex-wrap items-center gap-2.5 text-xs font-bold">
+            <span className="px-3 py-1 rounded-full bg-white/10 text-purple-300 border border-white/20 backdrop-blur-md">
               {track.category || 'Skill Track'}
             </span>
-            <span className="px-3 py-1 rounded-full bg-pink-500/30 text-pink-200 border border-pink-400/30">
-              {track.level || 'Beginner'}
+            <span className="px-3 py-1 rounded-full bg-white/10 text-amber-300 border border-white/20 backdrop-blur-md">
+              {track.level || 'Beginner Friendly'}
             </span>
             <span className="flex items-center gap-1 text-slate-300">
-              <Clock className="w-4 h-4 text-purple-400" />
-              {track.duration || '3h 30m'}
+              <Clock className="w-3.5 h-3.5 text-purple-400" />
+              {track.duration || '4 Hours'}
+            </span>
+            <span className="flex items-center gap-1 text-amber-400">
+              <Star className="w-3.5 h-3.5 fill-amber-400" />
+              {track.rating || '4.9'} ({track.reviewsCount || '320'} reviews)
             </span>
           </div>
 
-          <h1 className="text-3xl sm:text-4xl font-black tracking-tight">{track.title}</h1>
-          <p className="text-sm sm:text-base text-slate-300 leading-relaxed">{track.description}</p>
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight leading-tight">
+            {track.title}
+          </h1>
+          <p className="text-sm sm:text-base text-slate-300 leading-relaxed max-w-2xl">
+            {track.description}
+          </p>
+
+          {/* Earning potential chip & Instructor */}
+          <div className="flex flex-wrap items-center gap-4 text-xs">
+            {track.earningPotential && (
+              <div className="bg-emerald-950/80 border border-emerald-400/40 text-emerald-300 px-3 py-1.5 rounded-xl font-bold flex items-center gap-1.5">
+                <TrendingUp className="w-4 h-4 text-emerald-400" />
+                <span>Earn {track.earningPotential}</span>
+              </div>
+            )}
+            <span className="text-slate-300 font-medium">
+              Instructor: <strong className="text-white">{track.instructor || 'Senior Industry Mentor'}</strong>
+            </span>
+          </div>
 
           {/* Progress bar */}
-          <div className="space-y-2 pt-2">
+          <div className="space-y-2 pt-2 max-w-lg">
             <div className="flex justify-between text-xs font-bold">
-              <span>Course Progress</span>
-              <span className="text-pink-400">{progressPercent}% Completed</span>
+              <span>Your Track Progress</span>
+              <span className="text-amber-300">{progressPercent}% Completed</span>
             </div>
-            <div className="w-full h-3 bg-slate-800 rounded-full overflow-hidden border border-slate-700">
+            <div className="w-full h-2.5 bg-slate-800 rounded-full overflow-hidden">
               <div 
-                className="h-full bg-gradient-to-r from-purple-500 to-pink-500 transition-all duration-500"
+                className="h-full bg-gradient-to-r from-amber-400 via-rose-400 to-purple-500 transition-all duration-500"
                 style={{ width: `${progressPercent}%` }}
-              ></div>
+              />
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-4 pt-4">
+          <div className="flex flex-wrap items-center gap-4 pt-2">
             <button
               type="button"
               onClick={handleEnrollOrContinue}
               disabled={isEnrolling}
-              className="px-6 py-3.5 rounded-2xl bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-extrabold text-sm shadow-lg flex items-center gap-2 cursor-pointer transition-all hover:scale-105 disabled:opacity-50"
+              className="px-6 py-3.5 rounded-2xl bg-gradient-to-r from-amber-400 via-rose-500 to-purple-600 hover:opacity-95 text-white font-extrabold text-sm shadow-xl flex items-center gap-2 cursor-pointer transition-all hover:scale-105 disabled:opacity-50"
             >
               {isEnrolling ? (
                 <Loader2 className="w-5 h-5 animate-spin" />
               ) : (
                 <Play className="w-5 h-5 fill-current" />
               )}
-              <span>{completedCount > 0 ? 'Continue Learning' : 'Start Track Free'}</span>
+              <span>{completedCount > 0 ? 'Resume Lessons' : 'Start Track Free'}</span>
             </button>
           </div>
         </div>
       </div>
 
+      {/* Skills Covered Pills */}
+      {track.skillsCovered && (
+        <div className="bg-white dark:bg-slate-900 rounded-2xl p-5 border border-slate-200 dark:border-slate-800 space-y-2 shadow-xs">
+          <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">
+            Skills & Software Covered in this Track:
+          </h3>
+          <div className="flex flex-wrap gap-2">
+            {track.skillsCovered.map((skill, idx) => (
+              <span
+                key={idx}
+                className="px-3 py-1 rounded-xl bg-purple-50 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 text-xs font-semibold border border-purple-200 dark:border-purple-800"
+              >
+                #{skill}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Course Syllabus / Lessons List */}
-      <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-slate-200 dark:border-purple-500/20 shadow-md space-y-6">
-        <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-4">
+      <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-8 border border-slate-200 dark:border-slate-800 shadow-sm space-y-6">
+        <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4 flex-wrap gap-2">
           <div>
-            <h2 className="text-xl font-bold flex items-center gap-2">
+            <h2 className="text-lg sm:text-xl font-bold flex items-center gap-2 text-slate-900 dark:text-white">
               <BookOpen className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-              Lesson Modules & Syllabus
+              Course Syllabus & Practice Modules
             </h2>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
               {lessons.length} video lessons • {completedCount} of {lessons.length} completed
             </p>
           </div>
+
+          <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+            <ShieldCheck className="w-4 h-4" /> 100% Practical Client Briefs
+          </span>
         </div>
 
         <div className="space-y-3">
@@ -195,14 +244,14 @@ export default function TrackDetailPage({ user, onCompleteLesson }) {
               <div 
                 key={lesson.id || idx}
                 onClick={() => navigate(`/courses/${track.id}/lessons/${lesson.id}`)}
-                className={`p-4 rounded-xl border flex items-center justify-between gap-4 cursor-pointer transition-all hover:border-purple-500 hover:shadow-md ${
+                className={`p-4 rounded-2xl border flex items-center justify-between gap-4 cursor-pointer transition-all hover:border-purple-500 hover:shadow-md ${
                   isCompleted 
-                    ? 'bg-purple-50/50 dark:bg-purple-950/20 border-purple-200 dark:border-purple-900/40' 
-                    : 'bg-slate-50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700/60'
+                    ? 'bg-purple-50/40 dark:bg-purple-950/20 border-purple-200 dark:border-purple-900/40' 
+                    : 'bg-slate-50 dark:bg-slate-800/40 border-slate-200 dark:border-slate-700/60'
                 }`}
               >
                 <div className="flex items-center gap-4">
-                  <div className={`w-9 h-9 rounded-full flex items-center justify-center font-bold text-xs ${
+                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center font-bold text-xs shrink-0 ${
                     isCompleted 
                       ? 'bg-emerald-500 text-white' 
                       : 'bg-purple-100 dark:bg-purple-900/60 text-purple-700 dark:text-purple-300'
@@ -211,15 +260,15 @@ export default function TrackDetailPage({ user, onCompleteLesson }) {
                   </div>
 
                   <div>
-                    <h3 className="font-bold text-sm">{lesson.title}</h3>
+                    <h3 className="font-bold text-xs sm:text-sm text-slate-900 dark:text-white">{lesson.title}</h3>
                     <p className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-2 mt-0.5">
-                      <Clock className="w-3.5 h-3.5" /> {lesson.duration || '15 min'}
-                      {lesson.type && <span>• {lesson.type}</span>}
+                      <Clock className="w-3 h-3" /> {lesson.duration || '15 min'}
+                      {lesson.summary && <span className="hidden sm:inline text-slate-400 truncate max-w-md">• {lesson.summary}</span>}
                     </p>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 shrink-0">
                   {isCompleted && (
                     <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300">
                       Completed

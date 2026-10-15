@@ -14,7 +14,13 @@ import {
   Compass,
   ArrowRight,
   Radio,
-  Skull
+  Type,
+  Code2,
+  Calendar,
+  PiggyBank,
+  Search,
+  FileSearch,
+  Filter
 } from 'lucide-react';
 import QueenPlacingGame from './QueenPlacingGame';
 import DotConnectGame from './DotConnectGame';
@@ -22,10 +28,17 @@ import CircuitLightsGame from './CircuitLightsGame';
 import TowerOfHanoiGame from './TowerOfHanoiGame';
 import KnightsQuestGame from './KnightsQuestGame';
 import LaserMirrorGame from './LaserMirrorGame';
+import WordScrambleGame from './WordScrambleGame';
+import CodeLogicGame from './CodeLogicGame';
+import DailySudokuGame from './DailySudokuGame';
+import MoneyMazeGame from './MoneyMazeGame';
+import CareerMysteryRoomGame from './CareerMysteryRoomGame';
+import SkillWordSearchGame from './SkillWordSearchGame';
 import { toggleMute, getMuted } from '../../utils/puzzleAudio';
 
 export default function PuzzleHub({ user, onUpdateUserSkillPoints, showToast, defaultGame = 'queen' }) {
-  const [selectedGame, setSelectedGame] = useState(defaultGame); // 'queen' | 'dot-connect' | 'knight' | 'hanoi' | 'circuit' | 'laser'
+  const [selectedGame, setSelectedGame] = useState(defaultGame);
+  const [activeFilter, setActiveFilter] = useState('all'); // 'all' | 'coding' | 'career-word' | 'strategy'
   const [soundEnabled, setSoundEnabled] = useState(!getMuted());
   const [sessionPoints, setSessionPoints] = useState(0);
   const [solvedCount, setSolvedCount] = useState(0);
@@ -52,17 +65,103 @@ export default function PuzzleHub({ user, onUpdateUserSkillPoints, showToast, de
     if (showToast) {
       showToast(
         `🏆 Puzzle Solved: ${title}!`,
-        `Earned +${points} Skill Points in ${moves} moves (${timeTaken}s)! Badge: ${badge || 'Logic Master'}`
+        `Earned +${points} Skill Points! Badge: ${badge || 'Logic Master'}`
       );
     }
   };
 
   const games = [
+    // 1. Word Scramble
+    {
+      id: 'scramble',
+      title: 'Word Scramble',
+      subtitle: 'Career & Tech Vocabulary',
+      category: 'career-word',
+      tag: 'EASY • VOCABULARY',
+      icon: Type,
+      color: 'from-blue-500 to-indigo-600',
+      textColor: 'text-blue-500',
+      borderColor: 'border-blue-400/40',
+      desc: 'Rearrange mixed-up letters to form words related to coding, business, communication, and tech.',
+      badge: '🔤 Vocabulary Ace'
+    },
+    // 2. Code Logic Challenge
+    {
+      id: 'code-logic',
+      title: 'Code Logic Challenge',
+      subtitle: 'Syntax & Output Puzzles',
+      category: 'coding',
+      tag: 'CODING • LOGIC',
+      icon: Code2,
+      color: 'from-emerald-500 to-teal-600',
+      textColor: 'text-emerald-500',
+      borderColor: 'border-emerald-400/40',
+      desc: 'Predict program loop outputs, find subtle software bugs, and arrange code blocks in logical order.',
+      badge: '💻 Code Logic'
+    },
+    // 3. Daily Sudoku
+    {
+      id: 'sudoku',
+      title: 'Daily Sudoku',
+      subtitle: 'Number Matrix & Daily Streak',
+      category: 'strategy',
+      tag: 'DAILY STREAK • FOCUS',
+      icon: Calendar,
+      color: 'from-amber-500 to-orange-600',
+      textColor: 'text-amber-500',
+      borderColor: 'border-amber-400/40',
+      desc: 'Classic 9x9 number-placement puzzle with Easy, Medium, and Hard tiers and daily streak tracking.',
+      badge: '🔥 Sudoku Streak'
+    },
+    // 4. Money Maze
+    {
+      id: 'money-maze',
+      title: 'Money Maze',
+      subtitle: 'Savings & Financial Literacy',
+      category: 'strategy',
+      tag: 'BUDGETING • SIMULATION',
+      icon: PiggyBank,
+      color: 'from-emerald-600 to-green-700',
+      textColor: 'text-emerald-500',
+      borderColor: 'border-emerald-400/40',
+      desc: 'Help a freelance learner reach a ₹5,000 savings target through smart budgeting and avoiding debt traps.',
+      badge: '🪙 Money Maze'
+    },
+    // 5. Career Mystery Room
+    {
+      id: 'career-mystery',
+      title: 'Career Mystery Room',
+      subtitle: 'Escape Room Investigation',
+      category: 'career-word',
+      tag: 'CAREER READINESS',
+      icon: Search,
+      color: 'from-purple-600 to-pink-600',
+      textColor: 'text-purple-500',
+      borderColor: 'border-purple-400/40',
+      desc: 'Investigate resume red flags, decode encrypted client project briefs, and ace behavioral interview chambers.',
+      badge: '🕵️ Career Sleuth'
+    },
+    // 6. Skill Word Search
+    {
+      id: 'word-search',
+      title: 'Skill Word Search',
+      subtitle: 'Career Matrix Grid',
+      category: 'career-word',
+      tag: 'CAREER AWARENESS',
+      icon: FileSearch,
+      color: 'from-pink-500 to-rose-600',
+      textColor: 'text-pink-500',
+      borderColor: 'border-pink-400/40',
+      desc: 'Discover hidden words in career grids spanning Python, UI/UX Design, Marketing, and Freelancing.',
+      badge: '🔍 Word Finder'
+    },
+    // 7. Queen Placing (Classic)
     {
       id: 'queen',
       title: 'Queen Placing',
       subtitle: 'N-Queens Chess Logic',
-      tag: 'Algorithmic Classic',
+      category: 'coding',
+      tag: 'ALGORITHMIC CLASSIC',
       icon: Crown,
       color: 'from-amber-500 to-purple-600',
       textColor: 'text-amber-500',
@@ -70,11 +169,13 @@ export default function PuzzleHub({ user, onUpdateUserSkillPoints, showToast, de
       desc: 'Place N queens so no two queens share the same row, col, or diagonal.',
       badge: '👑 Chess Logic'
     },
+    // 8. Joint Two Points (Classic)
     {
       id: 'dot-connect',
       title: 'Joint Two Points',
       subtitle: 'Color Flow & Circuit',
-      tag: 'Spatial Routing',
+      category: 'strategy',
+      tag: 'SPATIAL ROUTING',
       icon: Zap,
       color: 'from-pink-500 to-rose-600',
       textColor: 'text-pink-500',
@@ -82,11 +183,13 @@ export default function PuzzleHub({ user, onUpdateUserSkillPoints, showToast, de
       desc: 'Draw non-crossing wires connecting matching colored nodes across the grid.',
       badge: '🔴🟢 Flow Free'
     },
+    // 9. The Knight's Quest
     {
       id: 'knight',
       title: "The Knight's Quest",
       subtitle: 'L-Hop Path & Star Quest',
-      tag: 'Graph Traversal',
+      category: 'strategy',
+      tag: 'GRAPH TRAVERSAL',
       icon: Compass,
       color: 'from-emerald-500 to-teal-600',
       textColor: 'text-emerald-500',
@@ -94,11 +197,13 @@ export default function PuzzleHub({ user, onUpdateUserSkillPoints, showToast, de
       desc: 'Navigate the Chess Knight in L-shaped hops to collect all star crystals without hitting obstacles.',
       badge: '♞ Knight Quest'
     },
+    // 10. Tower of Hanoi
     {
       id: 'hanoi',
       title: 'Tower of Hanoi',
       subtitle: 'Recursive Disk Stacking',
-      tag: 'Recursion Master',
+      category: 'strategy',
+      tag: 'RECURSION MASTER',
       icon: Layers,
       color: 'from-amber-500 to-rose-600',
       textColor: 'text-amber-500',
@@ -106,11 +211,13 @@ export default function PuzzleHub({ user, onUpdateUserSkillPoints, showToast, de
       desc: 'Transfer all disks from Peg A to Peg C without placing larger disks on smaller ones.',
       badge: '🗼 Recursion'
     },
+    // 11. Circuit Grid
     {
       id: 'circuit',
       title: 'Circuit Grid',
       subtitle: 'Logic Matrix Flip',
-      tag: 'Engineering Flip',
+      category: 'coding',
+      tag: 'ENGINEERING FLIP',
       icon: Brain,
       color: 'from-cyan-500 to-blue-600',
       textColor: 'text-cyan-500',
@@ -118,10 +225,12 @@ export default function PuzzleHub({ user, onUpdateUserSkillPoints, showToast, de
       desc: 'Energize all circuit nodes by toggling cross patterns to 100% power.',
       badge: '💡 Lights Out'
     },
+    // 12. Laser Matrix
     {
       id: 'laser',
       title: 'Laser Matrix',
       subtitle: 'Quantum Ray Ricochet',
+      category: 'coding',
       tag: 'TOO HARD • EXPERT',
       icon: Radio,
       color: 'from-rose-600 via-red-600 to-purple-800',
@@ -131,6 +240,10 @@ export default function PuzzleHub({ user, onUpdateUserSkillPoints, showToast, de
       badge: '💀 TOO HARD'
     }
   ];
+
+  const filteredGames = activeFilter === 'all' 
+    ? games 
+    : games.filter(g => g.category === activeFilter);
 
   return (
     <div className="space-y-8 animate-fade-in text-slate-900 dark:text-white">
@@ -144,15 +257,15 @@ export default function PuzzleHub({ user, onUpdateUserSkillPoints, showToast, de
           <div className="space-y-3 max-w-2xl">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-500/20 text-purple-200 border border-purple-400/30 text-xs font-bold uppercase tracking-wider">
               <Gamepad2 className="w-3.5 h-3.5 text-pink-400" />
-              Cognitive & Problem Solving Arena
+              Cognitive & Career Puzzle Lab (12 Interactive Games)
             </div>
 
             <h1 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight leading-tight">
-              Mini Puzzle Games & Logic Lab 🧩
+              Mini Puzzle Games & Skill Challenges 🧩
             </h1>
 
             <p className="text-sm sm:text-base text-purple-100 font-medium leading-relaxed">
-              Sharpen your analytical mindset with interactive logic puzzles! Solve the classic <strong className="text-amber-300">Queen Placing (N-Queens)</strong> challenge or <strong className="text-pink-300">Joint Two Points (Dot Connect)</strong> to train algorithmic thinking and earn bonus Career Skill Points.
+              Sharpen your mind with 12 interactive puzzles! Solve <strong className="text-amber-300">Word Scramble</strong>, <strong className="text-emerald-300">Code Logic Challenges</strong>, <strong className="text-pink-300">Daily Sudoku</strong>, <strong className="text-teal-300">Money Maze</strong>, <strong className="text-purple-300">Career Mystery Rooms</strong>, and <strong className="text-blue-300">Skill Word Search</strong> to earn Career Skill Points and unlock exclusive profile badges!
             </p>
 
             {/* Session Stats Chips */}
@@ -193,15 +306,47 @@ export default function PuzzleHub({ user, onUpdateUserSkillPoints, showToast, de
 
             <div className="text-[10px] text-purple-300/80 flex items-center justify-center gap-1">
               <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-              <span>+30 to +80 PTS per completed puzzle</span>
+              <span>+30 to +100 PTS per completed puzzle</span>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Game Selector Cards */}
+      {/* Filter Tabs */}
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="text-xs font-bold text-slate-500 dark:text-slate-400 flex items-center gap-1 pr-1">
+            <Filter className="w-3.5 h-3.5" /> Filter Arena:
+          </span>
+          {[
+            { id: 'all', label: `All Games (${games.length})` },
+            { id: 'career-word', label: '🔤 Career & Word (3)' },
+            { id: 'coding', label: '💻 Coding & Logic (4)' },
+            { id: 'strategy', label: '🎯 Strategy & Finance (5)' },
+          ].map(f => (
+            <button
+              key={f.id}
+              type="button"
+              onClick={() => setActiveFilter(f.id)}
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                activeFilter === f.id
+                  ? 'bg-purple-600 text-white shadow-md'
+                  : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:border-purple-300'
+              }`}
+            >
+              {f.label}
+            </button>
+          ))}
+        </div>
+
+        <span className="text-xs font-bold text-slate-400">
+          Showing {filteredGames.length} of {games.length} games
+        </span>
+      </div>
+
+      {/* Game Selector Cards Grid */}
       <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3.5">
-        {games.map(g => {
+        {filteredGames.map(g => {
           const isSelected = selectedGame === g.id;
           const Icon = g.icon;
 
@@ -212,7 +357,7 @@ export default function PuzzleHub({ user, onUpdateUserSkillPoints, showToast, de
               onClick={() => setSelectedGame(g.id)}
               className={`p-4 rounded-3xl border text-left transition-all duration-200 cursor-pointer flex flex-col justify-between space-y-3 relative group ${
                 isSelected
-                  ? 'bg-gradient-to-br from-white to-purple-50 dark:from-slate-900 dark:to-purple-950/60 border-purple-500 shadow-xl ring-2 ring-purple-500/50'
+                  ? 'bg-gradient-to-br from-white to-purple-50 dark:from-slate-900 dark:to-purple-950/60 border-purple-500 shadow-xl ring-2 ring-purple-500/50 scale-[1.02]'
                   : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-purple-300 dark:hover:border-purple-700 hover:shadow-md'
               }`}
             >
@@ -233,7 +378,7 @@ export default function PuzzleHub({ user, onUpdateUserSkillPoints, showToast, de
                   <p className="text-[11px] text-slate-500 dark:text-slate-400 font-semibold mt-0.5">{g.subtitle}</p>
                 </div>
 
-                <p className="text-[10px] text-slate-600 dark:text-slate-300 leading-relaxed font-medium">
+                <p className="text-[10px] text-slate-600 dark:text-slate-300 leading-relaxed font-medium line-clamp-2">
                   {g.desc}
                 </p>
               </div>
@@ -249,8 +394,56 @@ export default function PuzzleHub({ user, onUpdateUserSkillPoints, showToast, de
         })}
       </div>
 
-      {/* Active Game Player Area */}
+      {/* Active Game Player Stage */}
       <div className="transition-all duration-300">
+        {selectedGame === 'scramble' && (
+          <WordScrambleGame 
+            onGameWin={handleGameWin}
+            soundEnabled={soundEnabled}
+            onToggleSound={handleToggleSound}
+          />
+        )}
+
+        {selectedGame === 'code-logic' && (
+          <CodeLogicGame 
+            onGameWin={handleGameWin}
+            soundEnabled={soundEnabled}
+            onToggleSound={handleToggleSound}
+          />
+        )}
+
+        {selectedGame === 'sudoku' && (
+          <DailySudokuGame 
+            onGameWin={handleGameWin}
+            soundEnabled={soundEnabled}
+            onToggleSound={handleToggleSound}
+          />
+        )}
+
+        {selectedGame === 'money-maze' && (
+          <MoneyMazeGame 
+            onGameWin={handleGameWin}
+            soundEnabled={soundEnabled}
+            onToggleSound={handleToggleSound}
+          />
+        )}
+
+        {selectedGame === 'career-mystery' && (
+          <CareerMysteryRoomGame 
+            onGameWin={handleGameWin}
+            soundEnabled={soundEnabled}
+            onToggleSound={handleToggleSound}
+          />
+        )}
+
+        {selectedGame === 'word-search' && (
+          <SkillWordSearchGame 
+            onGameWin={handleGameWin}
+            soundEnabled={soundEnabled}
+            onToggleSound={handleToggleSound}
+          />
+        )}
+
         {selectedGame === 'queen' && (
           <QueenPlacingGame 
             onGameWin={handleGameWin}
@@ -300,14 +493,14 @@ export default function PuzzleHub({ user, onUpdateUserSkillPoints, showToast, de
         )}
       </div>
 
-      {/* Why Puzzles Matter in Tech & Careers Educational Footnote */}
+      {/* Why Puzzles Matter Educational Footnote */}
       <div className="bg-gradient-to-r from-purple-50 via-slate-50 to-pink-50 dark:from-purple-950/30 dark:via-slate-900 dark:to-pink-950/30 rounded-3xl p-6 border border-purple-200 dark:border-purple-500/20 text-xs space-y-3">
         <div className="flex items-center gap-2 text-purple-700 dark:text-purple-300 font-bold uppercase tracking-wider">
           <Brain className="w-4 h-4" />
-          <span>Why Puzzle Solving in the Course Hub?</span>
+          <span>Why Puzzle Games & Cognitive Challenges Matter in Tech & Careers</span>
         </div>
         <p className="text-slate-700 dark:text-slate-300 leading-relaxed font-medium">
-          Top employers and engineering recruiters prioritize <strong>algorithmic thinking, constraint satisfaction, and problem decomposition</strong>. Puzzles like <em>N-Queens</em> illustrate recursive backtracking algorithms, while <em>Dot Connect</em> simulates network graph routing. Practicing these mini-games sharpens mental agility for technical interviews, coding assessments, and strategic project management!
+          Modern recruiters and engineering leaders look beyond memorized theory. Games like <strong>Word Scramble</strong> build career vocabulary; <strong>Code Logic Challenge</strong> sharpens code comprehension and debugging intuition; <strong>Daily Sudoku</strong> strengthens analytical focus; <strong>Money Maze</strong> provides real-world financial literacy; <strong>Career Mystery Room</strong> exercises critical resume and client negotiation instincts; and <strong>Skill Word Search</strong> expands technical fluency. Every victory rewards Skill Points directly to your verified profile!
         </p>
       </div>
 

@@ -29,6 +29,7 @@ import LogoutModal from './components/LogoutModal';
 import ToastNotification from './components/ToastNotification';
 import ChatBot from './components/ChatBot';
 import MentorshipSection from './components/MentorshipSection';
+import CommunitySection from './components/CommunitySection';
 import AdminPanel from './components/AdminPanel';
 import Logo from './components/Logo';
 
@@ -124,6 +125,28 @@ function AppContent() {
     setUser(userData);
     if (userData) {
       localStorage.setItem('herearn_user', JSON.stringify(userData));
+      // Asynchronously synchronize with backend database if logged in
+      const token = localStorage.getItem('herearn_jwt_token');
+      if (token && !userData.isGuest) {
+        api.updateProfile({
+          name: userData.name,
+          username: userData.username,
+          location: userData.location,
+          bio: userData.bio,
+          title: userData.title,
+          avatar: userData.avatar,
+          skills: userData.skills,
+          skillPoints: userData.skillPoints,
+          earnings: userData.earnings,
+          totalEarned: userData.totalEarned,
+          walletBalance: userData.walletBalance,
+          completedLessons: userData.completedLessons,
+          appliedGigIds: userData.appliedGigIds,
+          badges: userData.badges,
+        }).catch(err => {
+          console.warn('[App] Background profile sync notice:', err?.message);
+        });
+      }
     } else {
       localStorage.removeItem('herearn_user');
       localStorage.removeItem('herearn_jwt_token');
@@ -166,8 +189,10 @@ function AppContent() {
   const handleUpdateProfile = async (profileData) => {
     try {
       const updatedUser = await api.updateProfile(profileData);
-      setUser(updatedUser.user || updatedUser);
-      showToast("✨ Profile Updated!", "Your dashboard profile has been saved to the backend database.");
+      const finalUser = updatedUser.user || updatedUser;
+      setUser(finalUser);
+      localStorage.setItem('herearn_user', JSON.stringify(finalUser));
+      showToast("✨ Profile Updated!", "Your dashboard profile has been saved to the database.");
     } catch (error) {
       console.warn('[App] Operation fallback:', error?.message);
       const updated = { ...(user || initialUser), ...profileData };
@@ -356,9 +381,11 @@ function AppContent() {
       skills: userData.skills || (isSameUser ? existingSaved.skills : [userData.skillInterest || "Digital Marketing", "Canva Design", "Instagram Management"]),
       totalEarned: userData.totalEarned !== undefined ? userData.totalEarned : (isSameUser ? existingSaved.totalEarned : (userData.earnings || 0)),
       earnings: userData.earnings !== undefined ? userData.earnings : (isSameUser ? existingSaved.earnings : (userData.totalEarned || 0)),
+      walletBalance: userData.walletBalance !== undefined ? userData.walletBalance : (isSameUser ? existingSaved.walletBalance : (userData.totalEarned || 0)),
       completedLessons: userData.completedLessons || (isSameUser ? existingSaved.completedLessons : []),
       appliedGigIds: userData.appliedGigIds || (isSameUser ? existingSaved.appliedGigIds : []),
-      skillPoints: userData.skillPoints || (isSameUser ? existingSaved.skillPoints : 150),
+      skillPoints: userData.skillPoints !== undefined ? userData.skillPoints : (isSameUser ? existingSaved.skillPoints : 150),
+      badges: userData.badges || (isSameUser ? existingSaved.badges : []),
     };
 
     saveUserData(loggedInUser);
@@ -367,13 +394,21 @@ function AppContent() {
     try {
       const regUsers = JSON.parse(localStorage.getItem('herearn_registered_users') || '[]');
       const filtered = regUsers.filter(u => u.email?.toLowerCase() !== loggedInUser.email?.toLowerCase() && u.username?.toLowerCase() !== rawUsername.toLowerCase());
+      const existingInReg = regUsers.find(u => u.email?.toLowerCase() === loggedInUser.email?.toLowerCase() || u.username?.toLowerCase() === rawUsername.toLowerCase());
       filtered.push({
         id: loggedInUser.id,
         name: loggedInUser.name,
         username: loggedInUser.username,
         email: loggedInUser.email,
+        password: userData.password || existingInReg?.password,
         skills: loggedInUser.skills,
+        skillPoints: loggedInUser.skillPoints,
         earnings: loggedInUser.earnings,
+        totalEarned: loggedInUser.totalEarned,
+        walletBalance: loggedInUser.walletBalance,
+        completedLessons: loggedInUser.completedLessons,
+        appliedGigIds: loggedInUser.appliedGigIds,
+        badges: loggedInUser.badges,
       });
       localStorage.setItem('herearn_registered_users', JSON.stringify(filtered));
     } catch (e) {
@@ -418,7 +453,7 @@ function AppContent() {
 
   return (
     <div className={`min-h-screen flex flex-col font-sans transition-colors duration-300 ${
-      theme === 'dark' ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-900'
+      theme === 'dark' ? 'bg-slate-950 text-slate-100' : 'bg-[#FFF9F5] text-slate-900'
     }`}>
       
       {/* Sticky Navigation Header (Hidden on Admin portal for dedicated admin console) */}
@@ -766,6 +801,16 @@ function AppContent() {
             } 
           />
 
+          <Route 
+            path="/community" 
+            element={
+              <CommunitySection 
+                user={user} 
+                showToast={showToast} 
+              />
+            } 
+          />
+
           <Route
   path="/recruiter/*"
   element={
@@ -795,7 +840,7 @@ function AppContent() {
       {/* Footer (Hidden on Admin portal) */}
       {!isAdminRoute && (
         <footer className={`border-t py-10 text-xs transition-colors ${
-          theme === 'dark' ? 'bg-slate-900 border-slate-800 text-slate-400' : 'bg-white border-slate-200 text-slate-600'
+          theme === 'dark' ? 'bg-slate-900 border-slate-800 text-slate-400' : 'bg-[#FFF9F5] border-slate-200 text-slate-600'
         }`}>
           <div className="w-full px-4 sm:px-8 lg:px-12 flex flex-col md:flex-row items-center justify-between gap-6 text-center md:text-left">
             <div className="flex flex-col sm:flex-row items-center gap-3">
