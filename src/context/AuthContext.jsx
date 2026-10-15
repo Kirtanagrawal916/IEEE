@@ -155,8 +155,20 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (credentials) => {
     const { email, password, username } = credentials || {};
-    const targetEmail = (email || '').trim().toLowerCase();
+    let targetEmail = (email || '').trim().toLowerCase();
     const targetPassword = password || '';
+    const cleanUsername = (username || '').trim().toLowerCase().replace(/^@/, '');
+
+    // Resolve email from username if email wasn't directly provided
+    if (!targetEmail && cleanUsername) {
+      try {
+        const regUsers = JSON.parse(localStorage.getItem('herearn_registered_users') || '[]');
+        const matched = regUsers.find(u => u.username?.toLowerCase() === cleanUsername);
+        if (matched?.email) {
+          targetEmail = matched.email.toLowerCase();
+        }
+      } catch {}
+    }
 
     // 1. If email & password provided, attempt Supabase Auth signInWithPassword
     if (targetEmail && targetEmail.includes('@') && targetPassword) {
@@ -179,6 +191,15 @@ export const AuthProvider = ({ children }) => {
             throw error;
           }
         } else if (data?.session) {
+          // Double check that the user is confirmed
+          if (!data.user?.confirmed_at && !data.user?.email_confirmed_at) {
+            await supabase.auth.signOut().catch(() => {});
+            const unconfirmedError = new Error('Please confirm your email address before logging in. Check your inbox for the verification link.');
+            unconfirmedError.isEmailUnconfirmed = true;
+            unconfirmedError.email = targetEmail;
+            throw unconfirmedError;
+          }
+
           await syncSupabaseSession(data.session);
           return {
             success: true,
@@ -194,7 +215,7 @@ export const AuthProvider = ({ children }) => {
     }
 
     // 2. Fallback to Express backend API authentication
-    const res = await api.login(credentials);
+    const res = await api.login({ email: targetEmail || credentials?.email, username: cleanUsername, password: targetPassword });
     if (res.success && res.token) {
       localStorage.setItem('herearn_jwt_token', res.token);
       localStorage.setItem('herearn_user', JSON.stringify(res.user));
@@ -254,7 +275,18 @@ export const AuthProvider = ({ children }) => {
           throw new Error(`An account with email "${cleanEmail}" is already registered. Please log in.`);
         }
 
-        if (data?.session) {
+        if (data?.user && !data?.session) {
+          needsEmailConfirmation = true;
+          // Ensure no active user session remains active before confirmation
+          setUser(null);
+          setSession(null);
+          setToken(null);
+          localStorage.removeItem('herearn_jwt_token');
+          localStorage.removeItem('herearn_user');
+          try {
+            await api.logout();
+          } catch {}
+        } else if (data?.session) {
           await syncSupabaseSession(data.session);
         }
       } catch (err) {
@@ -263,6 +295,16 @@ export const AuthProvider = ({ children }) => {
         }
         console.warn('[AuthContext] Supabase signup notice:', err.message);
       }
+    }
+
+    if (needsEmailConfirmation) {
+      return {
+        success: true,
+        user: null,
+        needsEmailConfirmation: true,
+        email: cleanEmail,
+        message: 'Account created! Please check your email to confirm your account before logging in.',
+      };
     }
 
     // 2. Register in Express backend database, with local fallback if server unreachable

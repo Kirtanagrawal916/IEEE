@@ -33,15 +33,50 @@ Tone & Style:
 - Concise responses (2 to 4 sentences max) unless explaining a detailed topic or playing a game.
 - NEVER repeat identical answers. Address the user's exact words and question directly.`;
 
+// Helper to format and sanitize history for Gemini API multiturn conversation
+function formatGeminiContents(history) {
+  const contents = [];
+  for (const item of history) {
+    if (!item || !item.content || !String(item.content).trim()) continue;
+    const role = item.role === 'assistant' ? 'model' : 'user';
+    if (contents.length === 0 && role !== 'user') {
+      // Gemini API strictly requires the first turn to be from the 'user'
+      continue;
+    }
+    const last = contents[contents.length - 1];
+    if (last && last.role === role) {
+      // Merge consecutive same-role messages
+      last.parts[0].text += '\n\n' + String(item.content).trim();
+    } else {
+      contents.push({
+        role,
+        parts: [{ text: String(item.content).trim() }]
+      });
+    }
+  }
+  if (contents.length === 0) {
+    contents.push({ role: 'user', parts: [{ text: 'Hello' }] });
+  }
+  return contents;
+}
+
 // Call Google Gemini API (Free Tier available at https://aistudio.google.com/)
 async function callGeminiAPI(apiKey, systemPrompt, history) {
-  const model = process.env.GEMINI_MODEL || 'gemini-1.5-flash';
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+  const cleanKey = String(apiKey || '').trim();
+  if (!cleanKey) {
+    throw new Error('Missing Gemini API Key');
+  }
 
-  const contents = history.map(item => ({
-    role: item.role === 'assistant' ? 'model' : 'user',
-    parts: [{ text: item.content }]
-  }));
+  const candidateModels = [
+    process.env.GEMINI_MODEL,
+    'gemini-2.5-flash',
+    'gemini-2.0-flash',
+    'gemini-1.5-flash',
+    'gemini-2.5-flash-lite'
+  ].filter(Boolean);
+  const modelsToTry = [...new Set(candidateModels)];
+
+  const contents = formatGeminiContents(history);
 
   const payload = {
     systemInstruction: {
@@ -50,27 +85,47 @@ async function callGeminiAPI(apiKey, systemPrompt, history) {
     contents,
     generationConfig: {
       temperature: 0.7,
-      maxOutputTokens: 800,
+      maxOutputTokens: 1024,
     }
   };
 
-  const response = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload)
-  });
+  let lastError = null;
 
-  if (!response.ok) {
-    const errText = await response.text();
-    throw new Error(`Gemini API HTTP ${response.status}: ${errText}`);
+  for (const model of modelsToTry) {
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(cleanKey)}`;
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 12000); // 12s timeout
+
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-goog-api-key': cleanKey,
+        },
+        body: JSON.stringify(payload),
+        signal: controller.signal
+      });
+      clearTimeout(timeoutId);
+
+      if (response.ok) {
+        const data = await response.json();
+        const replyText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (replyText) {
+          return replyText.trim();
+        }
+      } else {
+        const errText = await response.text();
+        lastError = new Error(`Gemini ${model} HTTP ${response.status}: ${errText.slice(0, 150)}`);
+        console.warn(`[Gemini API ${model} Warning]:`, response.status, errText.slice(0, 120));
+      }
+    } catch (fetchErr) {
+      clearTimeout(timeoutId);
+      lastError = fetchErr;
+    }
   }
 
-  const data = await response.json();
-  const replyText = data.candidates?.[0]?.content?.parts?.[0]?.text;
-  if (!replyText) {
-    throw new Error('Gemini API returned empty response candidate');
-  }
-  return replyText.trim();
+  throw lastError || new Error('Gemini API failed on all candidate models');
 }
 
 

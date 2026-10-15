@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
+import { useAuth } from '../context/AuthContext';
 import GoogleSignInButton from './GoogleSignInButton';
 import Logo from './Logo';
 import {
@@ -20,6 +21,8 @@ import {
   Unlock,
   User,
   Briefcase,
+  ExternalLink,
+  RefreshCw,
 } from 'lucide-react';
 
 // Master Admin Key (keep this secret / move to env later)
@@ -27,6 +30,7 @@ const MASTER_ADMIN_KEY = 'HEREARN-ADMIN-2026-X9K';
 
 export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNavigateHome, onContinueAsGuest }) {
   const navigate = useNavigate();
+  const { login: authLogin, resendConfirmationEmail } = useAuth();
   const [loginType, setLoginType] = useState('user'); // 'user' | 'recruiter' | 'admin'
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -35,6 +39,31 @@ export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNaviga
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [forgotSent, setForgotSent] = useState(false);
+
+  // Email confirmation state for unverified accounts
+  const [unconfirmedEmail, setUnconfirmedEmail] = useState('');
+  const [resendStatus, setResendStatus] = useState('');
+  const [resendCooldown, setResendCooldown] = useState(0);
+
+  useEffect(() => {
+    if (resendCooldown <= 0) return;
+    const timer = setInterval(() => {
+      setResendCooldown((prev) => prev - 1);
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [resendCooldown]);
+
+  const handleResendConfirmation = async () => {
+    if (!unconfirmedEmail || resendCooldown > 0) return;
+    try {
+      setResendStatus('Sending verification link...');
+      await resendConfirmationEmail(unconfirmedEmail);
+      setResendStatus(`Verification link sent to ${unconfirmedEmail}! Please check your inbox or Spam folder.`);
+      setResendCooldown(60);
+    } catch (err) {
+      setResendStatus(err.message || 'Could not resend verification email.');
+    }
+  };
 
   // Admin Key Login State (kept for real admin)
   const [adminKey, setAdminKey] = useState('');
@@ -161,8 +190,9 @@ export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNaviga
     }
 
     setIsLoading(true);
+    setUnconfirmedEmail('');
 
-    // 1. Search persistent local user registry by username or email
+    // 1. Search persistent local user registry by username or email for username lookup
     const cleanSearch = targetInput.toLowerCase().replace(/^@/, '');
     const registeredUsers = JSON.parse(localStorage.getItem('herearn_registered_users') || '[]');
     const matchedUser = registeredUsers.find(u =>
@@ -178,8 +208,15 @@ export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNaviga
       return;
     }
 
+    const lookupEmail = targetInput.includes('@') ? targetInput.trim().toLowerCase() : (matchedUser?.email || '');
+
     try {
-      const res = await api.login({ email: targetInput, username: cleanSearch, password: targetPassword });
+      const res = await authLogin({
+        email: lookupEmail || targetInput,
+        username: cleanSearch,
+        password: targetPassword,
+      });
+
       const backendUser = res.user || {};
       const userRole = (backendUser.role || matchedUser?.role || 'LEARNER').toUpperCase();
 
@@ -190,9 +227,6 @@ export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNaviga
         return;
       }
 
-      if (res?.token) {
-        localStorage.setItem('herearn_jwt_token', res.token);
-      }
       setIsLoading(false);
 
       const resolvedUsername = backendUser.username || matchedUser?.username || cleanSearch;
@@ -204,18 +238,33 @@ export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNaviga
         ...backendUser,
         name: resolvedName,
         username: resolvedUsername,
+        email: lookupEmail || backendUser.email,
         role: userRole,
         isSignUp: false,
         password: targetPassword, // preserve password for local offline verification
       });
     } catch (err) {
       setIsLoading(false);
+
+      // Handle unconfirmed email explicitly - BLOCK LOGIN COMPLETELY
+      if (err.isEmailUnconfirmed || (err.message && err.message.toLowerCase().includes('confirm your email'))) {
+        const emailToConfirm = err.email || lookupEmail;
+        setUnconfirmedEmail(emailToConfirm);
+        setError('Please confirm your email address before logging in. Check your inbox or Spam folder for the verification link.');
+        return;
+      }
+
       if (err.status === 401) {
         setError(err.message || 'Incorrect password. Please verify your password and try again.');
         return;
       }
 
-      if (err.status === 404) {
+      if (err.status === 401 || err.message?.toLowerCase().includes('invalid login credentials') || err.message?.toLowerCase().includes('incorrect password')) {
+        setError('Incorrect email/username or password. Please verify your credentials and try again.');
+        return;
+      }
+
+      if (err.status === 404 || err.message?.toLowerCase().includes('no account found')) {
         setError(`No account found matching "${targetInput}". Please check your credentials or create a new account.`);
         return;
       }
@@ -498,11 +547,51 @@ export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNaviga
                   VIEW B: USER / RECRUITER EMAIL + PASSWORD FORM
                  ======================================================== */
               <>
-                {error && (
-                  <div className="p-4 rounded-2xl bg-rose-50 dark:bg-rose-500/10 border border-rose-200 dark:border-rose-500/30 text-rose-800 dark:text-rose-300 text-xs font-bold flex items-start gap-3 animate-shake">
-                    <AlertCircle className="w-4 h-4 text-rose-600 dark:text-rose-400 flex-shrink-0 mt-0.5" />
-                    <span className="leading-relaxed">{error}</span>
+                {unconfirmedEmail ? (
+                  <div className="p-4 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-700/60 text-amber-900 dark:text-amber-200 text-xs space-y-3">
+                    <div className="flex items-start gap-2.5">
+                      <AlertCircle className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+                      <div className="space-y-1">
+                        <p className="font-bold text-xs">Email Confirmation Required</p>
+                        <p className="text-amber-800 dark:text-amber-300 text-[11px] leading-relaxed">
+                          Your account for <strong className="font-semibold text-amber-950 dark:text-white">{unconfirmedEmail}</strong> is not yet verified. Please click the confirmation link sent to your inbox or Spam folder to activate your account.
+                        </p>
+                      </div>
+                    </div>
+
+                    {resendStatus && (
+                      <p className="text-[11px] font-semibold text-purple-700 dark:text-purple-300 bg-purple-50 dark:bg-purple-900/30 p-2 rounded-lg">
+                        {resendStatus}
+                      </p>
+                    )}
+
+                    <div className="flex items-center gap-2 pt-1">
+                      <button
+                        type="button"
+                        onClick={() => window.open('https://mail.google.com', '_blank')}
+                        className="px-3 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-700 text-white font-bold text-[11px] transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs"
+                      >
+                        <span>Open Gmail</span>
+                        <ExternalLink className="w-3 h-3" />
+                      </button>
+                      <button
+                        type="button"
+                        disabled={resendCooldown > 0}
+                        onClick={handleResendConfirmation}
+                        className="px-3 py-1.5 rounded-lg border border-amber-400 dark:border-amber-600 hover:bg-amber-100 dark:hover:bg-amber-900/40 font-bold text-[11px] transition-colors flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                      >
+                        <RefreshCw className={`w-3 h-3 ${resendCooldown > 0 ? 'animate-spin' : ''}`} />
+                        <span>{resendCooldown > 0 ? `Resend in ${resendCooldown}s` : 'Resend Verification Link'}</span>
+                      </button>
+                    </div>
                   </div>
+                ) : (
+                  error && (
+                    <div className="p-4 rounded-2xl bg-rose-50 dark:bg-rose-500/10 border border-rose-200 dark:border-rose-500/30 text-rose-800 dark:text-rose-300 text-xs font-bold flex items-start gap-3 animate-shake">
+                      <AlertCircle className="w-4 h-4 text-rose-600 dark:text-rose-400 flex-shrink-0 mt-0.5" />
+                      <span className="leading-relaxed">{error}</span>
+                    </div>
+                  )
                 )}
 
                 {forgotSent && (
