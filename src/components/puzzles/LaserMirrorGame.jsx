@@ -14,7 +14,7 @@ import {
   Radio,
   Skull
 } from 'lucide-react';
-import { triggerCelebrationConfetti, triggerStarBurst } from '../../utils/confettiHelper';
+import { triggerCelebrationConfetti } from '../../utils/confettiHelper';
 import { playPop, playSnap, playErrorTone, playChimeVictory } from '../../utils/puzzleAudio';
 
 // Level configurations with mathematically verified solutions

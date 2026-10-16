@@ -57,6 +57,19 @@
   --lavender-gradient: linear-gradient(135deg, #7C3AED 0%, #9061F9 50%, #F97316 100%);
 }
 
+/* Theme - Light Mode */
+.light {
+  --bg-main: #FFF9F5;
+  --bg-nav: rgba(255, 249, 245, 0.95);
+  --bg-card: #ffffff;
+  --bg-card-glass: rgba(255, 255, 255, 0.95);
+  --bg-input: #FFFFFF;
+  --text-main: #1F2937;
+  --text-muted: #6B7280;
+  --border-subtle: rgba(124, 58, 237, 0.2);
+  --shadow-card: 0 15px 35px -5px rgba(124, 58, 237, 0.1);
+}
+
 /* Dark Mode Tokens (Kept accessible, warm, readable) */
 .dark {
   --bg-cream: #0F0918;
@@ -374,4 +387,16 @@ body > .skiptranslate {
   height: 0 !important;
   width: 0 !important;
   overflow: hidden !important;
+}
+.goog-text-highlight {
+  background-color: transparent !important;
+  box-shadow: none !important;
+}
+
+/* Prevent translation engines from changing language selector options */
+.notranslate,
+[translate="no"],
+[translate="no"] * {
+  -webkit-translate: no !important;
+  translate: no !important;
 }

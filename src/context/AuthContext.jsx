@@ -155,8 +155,20 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (credentials) => {
     const { email, password, username } = credentials || {};
-    const targetEmail = (email || '').trim().toLowerCase();
+    let targetEmail = (email || '').trim().toLowerCase();
     const targetPassword = password || '';
+    const cleanUsername = (username || '').trim().toLowerCase().replace(/^@/, '');
+
+    // Resolve email from username if email wasn't directly provided
+    if (!targetEmail && cleanUsername) {
+      try {
+        const regUsers = JSON.parse(localStorage.getItem('herearn_registered_users') || '[]');
+        const matched = regUsers.find(u => u.username?.toLowerCase() === cleanUsername);
+        if (matched?.email) {
+          targetEmail = matched.email.toLowerCase();
+        }
+      } catch {}
+    }
 
     // 1. If email & password provided, attempt Supabase Auth signInWithPassword
     if (targetEmail && targetEmail.includes('@') && targetPassword) {
@@ -179,6 +191,15 @@ export const AuthProvider = ({ children }) => {
             throw error;
           }
         } else if (data?.session) {
+          // Double check that the user is confirmed
+          if (!data.user?.confirmed_at && !data.user?.email_confirmed_at) {
+            await supabase.auth.signOut().catch(() => {});
+            const unconfirmedError = new Error('Please confirm your email address before logging in. Check your inbox for the verification link.');
+            unconfirmedError.isEmailUnconfirmed = true;
+            unconfirmedError.email = targetEmail;
+            throw unconfirmedError;
+          }
+
           await syncSupabaseSession(data.session);
           return {
             success: true,
@@ -194,7 +215,7 @@ export const AuthProvider = ({ children }) => {
     }
 
     // 2. Fallback to Express backend API authentication
-    const res = await api.login(credentials);
+    const res = await api.login({ email: targetEmail || credentials?.email, username: cleanUsername, password: targetPassword });
     if (res.success && res.token) {
       localStorage.setItem('herearn_jwt_token', res.token);
       localStorage.setItem('herearn_user', JSON.stringify(res.user));
@@ -209,70 +230,138 @@ export const AuthProvider = ({ children }) => {
     const { name, email, password, username, skillInterest, role } = userData || {};
     const cleanEmail = (email || '').trim().toLowerCase();
     const cleanName = (name || '').trim() || cleanEmail.split('@')[0] || 'Learner';
+    const targetUsername = (username || cleanName.toLowerCase().replace(/[^a-z0-9]/g, '_')).replace(/^@/, '');
     const redirectUrl = typeof window !== 'undefined'
       ? `${window.location.origin}/`
       : 'https://herearn.vercel.app/';
 
-    // 1. Sign up user via Supabase Auth with email confirmation redirect
-    const { data, error } = await supabase.auth.signUp({
-      email: cleanEmail,
-      password,
-      options: {
-        data: {
-          full_name: cleanName,
-          name: cleanName,
-          username: username || cleanName.toLowerCase().replace(/[^a-z0-9]/g, '_'),
-          skill_interest: skillInterest || 'Digital Marketing',
-          role: role || 'learner',
-        },
-        emailRedirectTo: redirectUrl,
-      },
-    });
+    let registeredUser = null;
+    let needsEmailConfirmation = false;
 
-    if (error) {
-      const msg = error.message || '';
-      if (msg.toLowerCase().includes('rate limit')) {
-        throw new Error('Too many sign-up requests. Please wait a few minutes before trying again.');
+    // 1. Optional Supabase Auth sign-up if real Supabase configured
+    const hasRealSupabase = import.meta.env.VITE_SUPABASE_URL && 
+      !import.meta.env.VITE_SUPABASE_URL.includes('your-project-ref') && 
+      !import.meta.env.VITE_SUPABASE_URL.includes('placeholder') &&
+      (import.meta.env.VITE_SUPABASE_ANON_KEY || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY);
+
+    if (hasRealSupabase) {
+      try {
+        const { data, error } = await supabase.auth.signUp({
+          email: cleanEmail,
+          password,
+          options: {
+            data: {
+              full_name: cleanName,
+              name: cleanName,
+              username: targetUsername,
+              skill_interest: skillInterest || 'Digital Marketing',
+              role: role || 'learner',
+            },
+            emailRedirectTo: redirectUrl,
+          },
+        });
+
+        if (error) {
+          const msg = error.message || '';
+          if (msg.toLowerCase().includes('rate limit')) {
+            throw new Error('Too many sign-up requests. Please wait a few minutes before trying again.');
+          }
+          if (msg.toLowerCase().includes('already registered')) {
+            throw new Error(`An account with email "${cleanEmail}" already exists. Please log in instead.`);
+          }
+        }
+
+        if (data?.user && Array.isArray(data.user.identities) && data.user.identities.length === 0) {
+          throw new Error(`An account with email "${cleanEmail}" is already registered. Please log in.`);
+        }
+
+        if (data?.user && !data?.session) {
+          needsEmailConfirmation = true;
+          // Ensure no active user session remains active before confirmation
+          setUser(null);
+          setSession(null);
+          setToken(null);
+          localStorage.removeItem('herearn_jwt_token');
+          localStorage.removeItem('herearn_user');
+          try {
+            await api.logout();
+          } catch {}
+        } else if (data?.session) {
+          await syncSupabaseSession(data.session);
+        }
+      } catch (err) {
+        if (err.message?.includes('already exists') || err.message?.includes('already registered')) {
+          throw err;
+        }
+        console.warn('[AuthContext] Supabase signup notice:', err.message);
       }
-      if (msg.toLowerCase().includes('already registered')) {
-        throw new Error(`An account with email "${cleanEmail}" already exists. Please log in instead.`);
-      }
-      throw error;
     }
 
-    // If identities is empty array, email is already registered in Supabase
-    if (data?.user && Array.isArray(data.user.identities) && data.user.identities.length === 0) {
-      throw new Error(`An account with email "${cleanEmail}" is already registered. Please log in.`);
+    if (needsEmailConfirmation) {
+      return {
+        success: true,
+        user: null,
+        needsEmailConfirmation: true,
+        email: cleanEmail,
+        message: 'Account created! Please check your email to confirm your account before logging in.',
+      };
     }
 
-    const needsEmailConfirmation = !data?.session;
-
-    // Also register on local/backend database for parity
+    // 2. Register in Express backend database, with local fallback if server unreachable
+    let apiRes = null;
     try {
-      await api.register({
+      apiRes = await api.register({
         name: cleanName,
+        username: targetUsername,
         email: cleanEmail,
         password,
+        role: role || 'learner',
+        skillInterest,
         skills: [skillInterest || 'Digital Marketing'],
       });
+
+      if (apiRes?.success && apiRes.token) {
+        localStorage.setItem('herearn_jwt_token', apiRes.token);
+        localStorage.setItem('herearn_user', JSON.stringify(apiRes.user));
+        setToken(apiRes.token);
+        setUser(apiRes.user);
+        registeredUser = apiRes.user;
+      }
     } catch (apiErr) {
-      console.warn('[AuthContext] Backend register mirror notice:', apiErr.message);
+      // Re-throw duplicate account conflict errors
+      if (apiErr.status === 409 || apiErr.status === 400) {
+        throw apiErr;
+      }
+      console.warn('[AuthContext] Backend register notice (running local fallback):', apiErr.message);
     }
 
-    // If auto-confirmed or already has session, sync immediately
-    if (data?.session) {
-      await syncSupabaseSession(data.session);
+    if (!registeredUser) {
+      registeredUser = {
+        id: `u-${Date.now()}`,
+        name: cleanName,
+        username: targetUsername,
+        email: cleanEmail,
+        role: role || 'learner',
+        skills: [skillInterest || 'Digital Marketing'],
+        skillPoints: 150,
+        totalEarned: 0,
+        walletBalance: 0,
+        completedLessons: [],
+        appliedGigIds: [],
+        badges: [],
+        avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(targetUsername)}`,
+        createdAt: new Date().toISOString()
+      };
+      localStorage.setItem('herearn_user', JSON.stringify(registeredUser));
+      setUser(registeredUser);
     }
 
     return {
       success: true,
-      user: data?.user,
-      session: data?.session,
-      needsEmailConfirmation,
+      user: registeredUser,
+      needsEmailConfirmation: false,
       email: cleanEmail,
-      message: needsEmailConfirmation
-        ? `Confirmation email sent to ${cleanEmail}. Please check your inbox and confirm your account.`
-        : 'Account created successfully!',
+      message: 'Account created successfully!',
     };
   };
 

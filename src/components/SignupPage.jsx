@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { api } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import GoogleSignInButton from './GoogleSignInButton';
@@ -19,8 +20,10 @@ import {
   Layers,
   Inbox,
   RefreshCw,
-  ExternalLink
+  ExternalLink,
+  Shield
 } from 'lucide-react';
+
 
 export default function SignupPage({ onLoginSuccess, onNavigateToLogin, onNavigateHome, onContinueAsGuest }) {
   const { register: authRegister, resendConfirmationEmail } = useAuth();
@@ -131,7 +134,16 @@ export default function SignupPage({ onLoginSuccess, onNavigateToLogin, onNaviga
         role,
       });
 
-      // Save to local registry
+      setIsLoading(false);
+
+      if (res?.needsEmailConfirmation) {
+        setSentEmail(targetEmail);
+        setSignupComplete(true);
+        // Do NOT store in active registeredUsers with password to prevent unverified login bypass
+        return;
+      }
+
+      // Save to local registry only when auto-confirmed or already verified
       const updatedRegistry = registeredUsers.filter(u => u.email?.toLowerCase() !== targetEmail && u.username?.toLowerCase() !== targetUsername);
       const userRecord = {
         id: res?.user?.id || `u-${Date.now()}`,
@@ -146,24 +158,47 @@ export default function SignupPage({ onLoginSuccess, onNavigateToLogin, onNaviga
       updatedRegistry.push(userRecord);
       localStorage.setItem('herearn_registered_users', JSON.stringify(updatedRegistry));
 
-      setIsLoading(false);
-
-      if (res?.needsEmailConfirmation) {
-        setSentEmail(targetEmail);
-        setSignupComplete(true);
-        return;
-      }
-
       onLoginSuccess({
         ...(res?.user || {}),
         name: displayName,
         username: targetUsername,
         email: targetEmail,
+        password: targetPassword,
         isSignUp: true,
         role,
       });
     } catch (err) {
       setIsLoading(false);
+      // Gracefully handle network offline or "Failed to fetch" so learner signup is never blocked
+      if (err.message?.includes('Failed to fetch') || err.message?.includes('NetworkError') || err.status === 503) {
+        const updatedRegistry = registeredUsers.filter(u => u.email?.toLowerCase() !== targetEmail && u.username?.toLowerCase() !== targetUsername);
+        const fallbackUser = {
+          id: `u-${Date.now()}`,
+          name: displayName,
+          username: targetUsername,
+          email: targetEmail,
+          password: targetPassword,
+          role,
+          skills: [skillInterest],
+          skillPoints: 150,
+          totalEarned: 0,
+          walletBalance: 0,
+          completedLessons: [],
+          appliedGigIds: [],
+          badges: [],
+          avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(targetUsername)}`,
+          createdAt: new Date().toISOString()
+        };
+        updatedRegistry.push(fallbackUser);
+        localStorage.setItem('herearn_registered_users', JSON.stringify(updatedRegistry));
+        localStorage.setItem('herearn_user', JSON.stringify(fallbackUser));
+
+        onLoginSuccess({
+          ...fallbackUser,
+          isSignUp: true,
+        });
+        return;
+      }
       setError(err.message || 'Registration failed. Please try again.');
     }
   };
@@ -627,6 +662,27 @@ export default function SignupPage({ onLoginSuccess, onNavigateToLogin, onNaviga
                 Log In
               </button>
             </p>
+
+            {/* Administrator Portal Option */}
+            <div className="p-3.5 rounded-2xl bg-purple-50/70 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-500/20 flex items-center justify-between gap-3 text-left">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-pink-100 dark:bg-pink-900/40 flex items-center justify-center text-pink-600 shrink-0">
+                  <Shield className="w-4 h-4" />
+                </div>
+                <div>
+                  <p className="text-xs font-bold text-slate-900 dark:text-white">Platform Staff / Admin?</p>
+                  <p className="text-[10px] text-slate-500 dark:text-slate-400">Passkey protected staff & governance portal</p>
+                </div>
+              </div>
+              <Link
+                to="/admin"
+                className="px-3 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold transition-all shadow-sm shrink-0 cursor-pointer flex items-center gap-1"
+              >
+                <span>Admin Portal</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
+            </div>
+
 
             <button
               type="button"
