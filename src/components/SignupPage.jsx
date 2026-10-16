@@ -36,6 +36,7 @@ export default function SignupPage({ onLoginSuccess, onNavigateToLogin, onNaviga
   const [showPassword, setShowPassword] = useState(false);
   const [skillInterest, setSkillInterest] = useState('Digital Marketing');
   const [role, setRole] = useState('learner'); // 'learner' or 'client'
+  const [isWomanConfirmed, setIsWomanConfirmed] = useState(false);
   const [agreeTerms, setAgreeTerms] = useState(true);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -122,6 +123,18 @@ export default function SignupPage({ onLoginSuccess, onNavigateToLogin, onNaviga
       return;
     }
 
+    // 6. Mandatory Declaration confirming she is a woman
+    if (!isWomanConfirmed) {
+      setError('Please check the declaration confirming that you are a woman to join the HerEarn platform.');
+      return;
+    }
+
+    // 7. Terms of Service & Privacy Policy agreement
+    if (!agreeTerms) {
+      setError('You must agree to the Terms of Service and Privacy Policy to create an account.');
+      return;
+    }
+
     setIsLoading(true);
 
     try {
@@ -132,6 +145,8 @@ export default function SignupPage({ onLoginSuccess, onNavigateToLogin, onNaviga
         password: targetPassword,
         skillInterest,
         role,
+        isWomanConfirmed: true,
+        gender: 'Female',
       });
 
       setIsLoading(false);
@@ -153,6 +168,8 @@ export default function SignupPage({ onLoginSuccess, onNavigateToLogin, onNaviga
         password: targetPassword,
         skills: [skillInterest],
         role,
+        isWomanConfirmed: true,
+        gender: 'Female',
         createdAt: new Date().toISOString()
       };
       updatedRegistry.push(userRecord);
@@ -166,6 +183,8 @@ export default function SignupPage({ onLoginSuccess, onNavigateToLogin, onNaviga
         password: targetPassword,
         isSignUp: true,
         role,
+        isWomanConfirmed: true,
+        gender: 'Female',
       });
     } catch (err) {
       setIsLoading(false);
@@ -179,6 +198,8 @@ export default function SignupPage({ onLoginSuccess, onNavigateToLogin, onNaviga
           email: targetEmail,
           password: targetPassword,
           role,
+          isWomanConfirmed: true,
+          gender: 'Female',
           skills: [skillInterest],
           skillPoints: 150,
           totalEarned: 0,
@@ -592,8 +613,39 @@ export default function SignupPage({ onLoginSuccess, onNavigateToLogin, onNaviga
                 </div>
               )}
 
+              {/* Mandatory Woman Identity Declaration */}
+              <div className="p-3.5 rounded-2xl bg-gradient-to-r from-pink-50 via-purple-50 to-pink-50 dark:from-pink-950/40 dark:via-purple-950/30 dark:to-pink-950/40 border border-pink-200 dark:border-pink-800/50 space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-pink-500/15 text-pink-700 dark:text-pink-300 border border-pink-300/60 dark:border-pink-500/30 flex items-center gap-1">
+                    <Sparkles className="w-3 h-3 text-pink-500" />
+                    Women Empowerment Platform
+                  </span>
+                  <span className="text-[10px] font-bold text-rose-500">* Required</span>
+                </div>
+                <label className="flex items-start gap-2.5 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={isWomanConfirmed}
+                    onChange={(e) => {
+                      setIsWomanConfirmed(e.target.checked);
+                      if (error) setError('');
+                    }}
+                    className="w-4 h-4 accent-pink-600 rounded mt-0.5 cursor-pointer shrink-0"
+                    required
+                  />
+                  <div className="space-y-0.5">
+                    <span className="text-xs font-bold text-slate-900 dark:text-white leading-tight block">
+                      I hereby declare and confirm that I am a woman.
+                    </span>
+                    <p className="text-[11px] text-slate-600 dark:text-slate-400 leading-snug font-medium">
+                      HerEarn is an exclusive platform dedicated to empowering women with free market-relevant skills, verified showcases, safe community networking, and real earning opportunities.
+                    </p>
+                  </div>
+                </label>
+              </div>
+
               {/* Terms Checkbox */}
-              <div className="pt-1">
+              <div className="pt-0.5">
                 <label className="flex items-start gap-2 cursor-pointer select-none">
                   <input
                     type="checkbox"
@@ -640,6 +692,8 @@ export default function SignupPage({ onLoginSuccess, onNavigateToLogin, onNaviga
                   ...user,
                   role,
                   skillInterest,
+                  isWomanConfirmed: true,
+                  gender: 'Female',
                   isSignUp: true,
                 });
               }}
@@ -648,6 +702,7 @@ export default function SignupPage({ onLoginSuccess, onNavigateToLogin, onNaviga
               }}
               disabled={isLoading}
             />
+
           </div>
 
           {/* Switch to Login & Guest Account Access */}
