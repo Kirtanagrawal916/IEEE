@@ -131,7 +131,7 @@ export default function AboutPage({ onNavigate }) {
   ];
 
   return (
-    <div className="min-h-screen bg-[#0B0F19] text-white py-12 px-4 sm:px-6 lg:px-8 space-y-20 animate-fade-in">
+    <div className="min-h-screen bg-[#FFF9F5] dark:bg-[#0F0918] text-[#1F2937] dark:text-white py-12 px-4 sm:px-6 lg:px-8 space-y-20 animate-fade-in">
       
       {/* ========================================================
           1. HERO SECTION
@@ -139,21 +139,21 @@ export default function AboutPage({ onNavigate }) {
       <section className="max-w-5xl mx-auto text-center space-y-8 pt-6">
         
         {/* Badge */}
-        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-purple-500/20 border border-purple-500/30 text-purple-300 text-xs font-extrabold uppercase tracking-wider">
-          <Sparkles className="w-3.5 h-3.5 text-pink-400 animate-pulse" />
+        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-purple-100 dark:bg-purple-500/20 border border-purple-200 dark:border-purple-500/30 text-purple-700 dark:text-purple-300 text-xs font-extrabold uppercase tracking-wider">
+          <Sparkles className="w-3.5 h-3.5 text-pink-500 dark:text-pink-400 animate-pulse" />
           <span>About HerEarn Platform</span>
         </div>
 
         {/* Title */}
-        <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-tight">
+        <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-tight text-slate-900 dark:text-white">
           Skill-to-Income Platform <br className="hidden sm:inline" />
-          <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-amber-300 bg-clip-text text-transparent">
+          <span className="bg-gradient-to-r from-purple-600 via-pink-600 to-amber-500 dark:from-purple-400 dark:via-pink-400 dark:to-amber-300 bg-clip-text text-transparent">
             for Women
           </span>
         </h1>
 
         {/* Subtitle */}
-        <p className="max-w-3xl mx-auto text-base sm:text-xl text-slate-300 leading-relaxed font-medium">
+        <p className="max-w-3xl mx-auto text-base sm:text-xl text-slate-600 dark:text-slate-300 leading-relaxed font-medium">
           Empowering women to learn market-relevant skills, build verifiable portfolios, and connect with real earning opportunities.
         </p>
 
@@ -171,9 +171,9 @@ export default function AboutPage({ onNavigate }) {
           <button
             type="button"
             onClick={() => onNavigate('portfolio')}
-            className="px-7 py-3.5 rounded-2xl bg-slate-900/90 hover:bg-slate-800 text-slate-200 font-extrabold text-sm sm:text-base border border-purple-500/30 hover:border-pink-500/50 shadow-lg transition-all flex items-center gap-2.5 cursor-pointer"
+            className="px-7 py-3.5 rounded-2xl bg-white dark:bg-slate-900/90 hover:bg-purple-50 dark:hover:bg-slate-800 text-purple-700 dark:text-slate-200 font-extrabold text-sm sm:text-base border border-purple-200 dark:border-purple-500/30 hover:border-pink-500/50 shadow-md transition-all flex items-center gap-2.5 cursor-pointer"
           >
-            <Award className="w-4 h-4 text-pink-400" />
+            <Award className="w-4 h-4 text-pink-500 dark:text-pink-400" />
             <span>Create Portfolio</span>
           </button>
         </div>
@@ -185,10 +185,10 @@ export default function AboutPage({ onNavigate }) {
          ======================================================== */}
       <section className="max-w-6xl mx-auto space-y-10">
         <div className="text-center space-y-3">
-          <h2 className="text-2xl sm:text-4xl font-extrabold text-white tracking-tight">
+          <h2 className="text-2xl sm:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight">
             The Barriers We Are Solving
           </h2>
-          <p className="text-sm sm:text-base text-slate-400 max-w-2xl mx-auto font-medium">
+          <p className="text-sm sm:text-base text-slate-500 dark:text-slate-400 max-w-2xl mx-auto font-medium">
             Millions of women across India face systemic challenges when transitioning from learning to earning.
           </p>
         </div>
@@ -199,14 +199,14 @@ export default function AboutPage({ onNavigate }) {
             return (
               <div 
                 key={idx}
-                className="bg-slate-900/70 border border-slate-800 hover:border-purple-500/40 p-6 rounded-3xl space-y-4 transition-all duration-300 flex flex-col justify-between"
+                className="bg-white dark:bg-slate-900/70 border border-slate-200 dark:border-slate-800 hover:border-purple-500/40 p-6 rounded-3xl space-y-4 transition-all duration-300 flex flex-col justify-between shadow-sm"
               >
                 <div className="space-y-4">
                   <div className={`w-12 h-12 rounded-2xl border flex items-center justify-center ${item.color}`}>
                     <Icon className="w-6 h-6" />
                   </div>
-                  <h3 className="text-lg font-bold text-white">{item.title}</h3>
-                  <p className="text-xs text-slate-400 leading-relaxed font-medium">{item.desc}</p>
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-white">{item.title}</h3>
+                  <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed font-medium">{item.desc}</p>
                 </div>
               </div>
             );
@@ -217,19 +217,19 @@ export default function AboutPage({ onNavigate }) {
       {/* ========================================================
           3. SOLUTION SECTION (HEREARN LOOP)
          ======================================================== */}
-      <section className="max-w-6xl mx-auto space-y-12 bg-slate-900/40 border border-purple-500/20 p-8 sm:p-12 rounded-3xl relative overflow-hidden backdrop-blur-md">
+      <section className="max-w-6xl mx-auto space-y-12 bg-white/80 dark:bg-slate-900/40 border border-purple-200 dark:border-purple-500/20 p-8 sm:p-12 rounded-3xl relative overflow-hidden backdrop-blur-md shadow-md">
         
         {/* Decorative Glow */}
         <div className="absolute top-0 right-0 w-96 h-96 bg-purple-600/10 rounded-full blur-3xl pointer-events-none"></div>
 
         <div className="text-center space-y-3 relative z-10">
-          <span className="text-xs font-extrabold text-pink-400 uppercase tracking-widest bg-pink-500/10 px-3 py-1 rounded-full border border-pink-500/20">
+          <span className="text-xs font-extrabold text-pink-600 dark:text-pink-400 uppercase tracking-widest bg-pink-100 dark:bg-pink-500/10 px-3 py-1 rounded-full border border-pink-200 dark:border-pink-500/20">
             Our Core Methodology
           </span>
-          <h2 className="text-2xl sm:text-4xl font-extrabold text-white tracking-tight">
+          <h2 className="text-2xl sm:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight">
             The HerEarn Loop
           </h2>
-          <p className="text-xs sm:text-sm text-slate-300 max-w-xl mx-auto font-medium">
+          <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 max-w-xl mx-auto font-medium">
             A continuous four-stage ecosystem built to turn raw curiosity into sustainable income.
           </p>
         </div>
@@ -240,11 +240,11 @@ export default function AboutPage({ onNavigate }) {
             return (
               <div 
                 key={idx}
-                className="bg-slate-950/80 border border-purple-500/30 rounded-3xl p-6 relative flex flex-col justify-between space-y-6 shadow-xl hover:border-pink-500/50 transition-all duration-300 group"
+                className="bg-slate-50 dark:bg-slate-950/80 border border-slate-200 dark:border-purple-500/30 rounded-3xl p-6 relative flex flex-col justify-between space-y-6 shadow-md hover:border-pink-500/50 transition-all duration-300 group"
               >
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <span className="text-2xl font-black text-slate-600 group-hover:text-purple-400 transition-colors">
+                    <span className="text-2xl font-black text-slate-400 dark:text-slate-600 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
                       {step.step}
                     </span>
                     <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${step.color} flex items-center justify-center text-white shadow-md`}>
@@ -253,11 +253,11 @@ export default function AboutPage({ onNavigate }) {
                   </div>
 
                   <div>
-                    <h3 className="text-xl font-extrabold text-white">{step.title}</h3>
-                    <p className="text-xs font-bold text-pink-400">{step.tagline}</p>
+                    <h3 className="text-xl font-extrabold text-slate-900 dark:text-white">{step.title}</h3>
+                    <p className="text-xs font-bold text-pink-600 dark:text-pink-400">{step.tagline}</p>
                   </div>
 
-                  <p className="text-xs text-slate-300 leading-relaxed font-medium">
+                  <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed font-medium">
                     {step.desc}
                   </p>
                 </div>
@@ -278,10 +278,10 @@ export default function AboutPage({ onNavigate }) {
          ======================================================== */}
       <section className="max-w-6xl mx-auto space-y-10">
         <div className="text-center space-y-3">
-          <h2 className="text-2xl sm:text-4xl font-extrabold text-white tracking-tight">
+          <h2 className="text-2xl sm:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight">
             Built for Real-World Impact
           </h2>
-          <p className="text-sm sm:text-base text-slate-400 max-w-xl mx-auto font-medium">
+          <p className="text-sm sm:text-base text-slate-500 dark:text-slate-400 max-w-xl mx-auto font-medium">
             Designed around trust, verification, and practical career outcomes.
           </p>
         </div>
@@ -292,14 +292,14 @@ export default function AboutPage({ onNavigate }) {
             return (
               <div 
                 key={idx}
-                className="bg-slate-900/60 border border-slate-800 p-6 rounded-3xl space-y-3 text-center hover:border-purple-500/30 transition-all"
+                className="bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 p-6 rounded-3xl space-y-3 text-center hover:border-purple-500/30 transition-all shadow-sm"
               >
-                <div className="w-12 h-12 rounded-2xl bg-purple-500/10 border border-purple-500/30 text-purple-400 flex items-center justify-center mx-auto">
+                <div className="w-12 h-12 rounded-2xl bg-purple-50 dark:bg-purple-500/10 border border-purple-200 dark:border-purple-500/30 text-purple-600 dark:text-purple-400 flex items-center justify-center mx-auto">
                   <Icon className="w-6 h-6" />
                 </div>
-                <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">{item.title}</p>
-                <p className="text-2xl font-extrabold text-white tracking-tight">{item.metric}</p>
-                <p className="text-xs text-slate-400 font-medium leading-relaxed">{item.desc}</p>
+                <p className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">{item.title}</p>
+                <p className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">{item.metric}</p>
+                <p className="text-xs text-slate-600 dark:text-slate-400 font-medium leading-relaxed">{item.desc}</p>
               </div>
             );
           })}
@@ -311,10 +311,10 @@ export default function AboutPage({ onNavigate }) {
          ======================================================== */}
       <section className="max-w-6xl mx-auto space-y-10">
         <div className="text-center space-y-3">
-          <h2 className="text-2xl sm:text-4xl font-extrabold text-white tracking-tight">
+          <h2 className="text-2xl sm:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight">
             Why HerEarn Platform
           </h2>
-          <p className="text-sm sm:text-base text-slate-400 max-w-xl mx-auto font-medium">
+          <p className="text-sm sm:text-base text-slate-500 dark:text-slate-400 max-w-xl mx-auto font-medium">
             Four integrated core modules working together to power your professional growth.
           </p>
         </div>
@@ -325,14 +325,14 @@ export default function AboutPage({ onNavigate }) {
             return (
               <div 
                 key={idx}
-                className="bg-slate-900/80 border border-purple-500/20 p-7 rounded-3xl flex items-start gap-5 hover:border-pink-500/40 transition-all shadow-lg"
+                className="bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-purple-500/20 p-7 rounded-3xl flex items-start gap-5 hover:border-pink-500/40 transition-all shadow-md"
               >
                 <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-purple-600 to-pink-600 flex items-center justify-center text-white flex-shrink-0 shadow-md">
                   <Icon className="w-6 h-6" />
                 </div>
                 <div className="space-y-2">
-                  <h3 className="text-lg font-bold text-white">{card.title}</h3>
-                  <p className="text-xs sm:text-sm text-slate-300 font-medium leading-relaxed">{card.desc}</p>
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-white">{card.title}</h3>
+                  <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 font-medium leading-relaxed">{card.desc}</p>
                 </div>
               </div>
             );
@@ -343,7 +343,7 @@ export default function AboutPage({ onNavigate }) {
       {/* ========================================================
           6. CALL TO ACTION SECTION
          ======================================================== */}
-      <section className="max-w-4xl mx-auto text-center bg-gradient-to-r from-purple-900/60 via-slate-900 to-pink-900/60 border border-purple-500/40 p-8 sm:p-12 rounded-3xl space-y-6 shadow-2xl relative overflow-hidden">
+      <section className="max-w-4xl mx-auto text-center bg-gradient-to-r from-purple-900/80 via-slate-900 to-pink-900/80 border border-purple-500/40 p-8 sm:p-12 rounded-3xl space-y-6 shadow-2xl relative overflow-hidden text-white">
         <div className="space-y-3 relative z-10">
           <h2 className="text-2xl sm:text-4xl font-extrabold text-white tracking-tight">
             Ready to Start Your Journey?

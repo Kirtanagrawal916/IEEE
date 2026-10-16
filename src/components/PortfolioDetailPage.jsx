@@ -112,7 +112,7 @@ export default function PortfolioDetailPage({ portfolios = initialPortfolios, us
 
   if (!project) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-8 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white">
+      <div className="min-h-screen flex items-center justify-center p-8 bg-[#FFF9F5] dark:bg-[#0F0918] text-[#1F2937] dark:text-white">
         <div className="text-center space-y-4">
           <p className="text-sm font-semibold text-slate-500">Project not found</p>
           <button 
@@ -128,7 +128,7 @@ export default function PortfolioDetailPage({ portfolios = initialPortfolios, us
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white transition-colors duration-300 py-8 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-[#FFF9F5] dark:bg-[#0F0918] text-[#1F2937] dark:text-white transition-colors duration-300 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-6xl mx-auto space-y-8 animate-fade-in">
         
         {/* Navigation Breadcrumb Bar */}

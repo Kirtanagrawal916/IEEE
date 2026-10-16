@@ -1,598 +1,474 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
 import { 
   Sparkles, 
   ArrowRight, 
   CheckCircle2, 
-  TrendingUp, 
   Users, 
   BookOpen, 
   Award, 
   Briefcase, 
-  Cpu, 
-  HeartHandshake, 
-  Star, 
   ShieldCheck,
-  Zap,
-  Target,
-  Rocket,
+  Search,
+  MapPin,
   ChevronRight,
   IndianRupee,
-  Layers,
-  Code,
   Palette,
   Megaphone,
   Feather,
   Scissors,
   Check,
-  BarChart3,
-  Search,
-  CheckCircle,
+  Building,
   HelpCircle,
   ExternalLink,
-  MessageSquare
+  Laptop
 } from 'lucide-react';
+import JobCard from './ui/JobCard';
+import TrustScamBanner from './ui/TrustScamBanner';
+import { initialOpportunities } from '../data/mockData';
 
 export default function LandingSection({ onNavigate, onOpenAuth, theme }) {
   const { t } = useLanguage();
+  const navigate = useNavigate();
 
-  // Floating Skill Cards for Hero Section
-  const floatingSkills = [
-    { title: "Graphic Design", icon: Palette, color: "from-pink-500 to-rose-500", pos: "top-4 left-0 sm:-left-6" },
-    { title: "Digital Marketing", icon: Megaphone, color: "from-purple-500 to-indigo-500", pos: "top-32 -right-2 sm:-right-8" },
-    { title: "Content Writing", icon: Feather, color: "from-amber-500 to-orange-500", pos: "bottom-16 -left-4 sm:-left-8" },
-    { title: "Tailoring", icon: Scissors, color: "from-emerald-500 to-teal-500", pos: "bottom-4 right-2 sm:right-10" },
-    { title: "Web Development", icon: Code, color: "from-cyan-500 to-blue-500", pos: "-top-6 right-20 sm:right-32" }
-  ];
+  // Search Bar State
+  const [searchTitle, setSearchTitle] = useState('');
+  const [searchLocation, setSearchLocation] = useState('');
+
+  const handleHeroSearch = (e) => {
+    e.preventDefault();
+    const params = new URLSearchParams();
+    if (searchTitle.trim()) params.set('search', searchTitle.trim());
+    if (searchLocation.trim()) params.set('location', searchLocation.trim());
+    navigate(`/opportunities?${params.toString()}`);
+  };
+
+  const handleChipClick = (term) => {
+    navigate(`/opportunities?search=${encodeURIComponent(term)}`);
+  };
 
   // Honest Pilot Stats Strip Values
   const stats = [
-    { value: "100+", label: "Pilot Learners", sublabel: "(Launching 2026)", icon: Users, color: "text-purple-600 dark:text-purple-400" },
-    { value: "4", label: "Skill Tracks", sublabel: "Curated Modules", icon: BookOpen, color: "text-pink-600 dark:text-pink-400" },
-    { value: "8+", label: "Partner Opportunities", sublabel: "Gigs & Internships", icon: Briefcase, color: "text-amber-600 dark:text-amber-400" },
-    { value: "Free", label: "To Start", sublabel: "Zero Hidden Fees", icon: ShieldCheck, color: "text-emerald-600 dark:text-emerald-400" }
+    { value: "100%", label: "Free for Job Seekers", sublabel: "Zero Application Fees", icon: ShieldCheck, color: "text-[#EA580C]" },
+    { value: "4", label: "Practical Skill Tracks", sublabel: "Self-paced with videos", icon: BookOpen, color: "text-[#7C3AED]" },
+    { value: "8+", label: "Verified Partner Gigs", sublabel: "Remote & Local roles", icon: Briefcase, color: "text-[#16A34A]" },
+    { value: "100+", label: "Pilot Women Learners", sublabel: "Launching in 2026", icon: Users, color: "text-[#7C3AED]" }
   ];
 
-  // How It Works (3 Core Cards)
-  const howItWorksThreeCards = [
+  // Job Categories
+  const jobCategories = [
+    { name: "Digital Marketing", count: "3 Openings", icon: Megaphone, color: "bg-[#F3E8FF] text-[#7C3AED]", desc: "Social media, Instagram management, and ads" },
+    { name: "Canva & Graphic Design", count: "2 Openings", icon: Palette, color: "bg-[#FFF7ED] text-[#EA580C]", desc: "Flyers, social banners, and digital graphics" },
+    { name: "E-Commerce Assistant", count: "2 Openings", icon: Laptop, count: "2 Openings", color: "bg-[#DCFCE7] text-[#16A34A]", desc: "Shopify product uploads, catalogs, and tags" },
+    { name: "Content Writing", count: "1 Opening", icon: Feather, color: "bg-[#FEF3C7] text-[#D97706]", desc: "Product descriptions, captions, and blogs" },
+    { name: "Handicrafts & Tailoring", count: "Curated Work", icon: Scissors, color: "bg-[#FCE7F3] text-[#BE185D]", desc: "Boutique orders, embroidery, and tailoring" },
+    { name: "Virtual Support", count: "Remote Gigs", icon: Briefcase, color: "bg-[#E0E7FF] text-[#4338CA]", desc: "Data entry, customer support, and coordination" }
+  ];
+
+  // How It Works (3 Core Steps)
+  const howItWorksSteps = [
     {
       step: "01",
-      title: "1. Learn Market Skills",
-      desc: "Pick a skill track and complete short, practical video lessons at your own pace.",
+      title: "1. Learn Practical Skills Free",
+      desc: "Watch bite-sized video lessons in high-demand digital skills like Canva, social media management, and online sales.",
       icon: BookOpen,
-      badge: "Self-Paced Tracks",
-      color: "from-purple-600 to-indigo-600",
       targetTab: "learn",
-      ctaText: "Go to Learning Hub"
+      cta: "Explore Free Tracks"
     },
     {
       step: "02",
-      title: "2. Build & Showcase Portfolio",
-      desc: "Create real portfolio projects to showcase your verified work to potential clients.",
+      title: "2. Build a Verified Portfolio",
+      desc: "Complete simple capstone projects to prove your work. We generate a shareable digital showcase link for your clients.",
       icon: Award,
-      badge: "Verified Proof",
-      color: "from-pink-600 to-rose-600",
       targetTab: "portfolio",
-      ctaText: "Go to Skill Showcase"
+      cta: "View Sample Portfolios"
     },
     {
       step: "03",
-      title: "3. Earn from Real Work",
-      desc: "Apply to flexible gigs, freelance projects, and remote client opportunities.",
+      title: "3. Apply to Safe, Paid Gigs",
+      desc: "Apply to verified flexible gigs with transparent pay. Client stipends are stored in escrow so you always get paid safely.",
       icon: IndianRupee,
-      badge: "Direct Payouts",
-      color: "from-amber-500 to-emerald-500",
-      targetTab: "gigs",
-      ctaText: "Go to Opportunity Board"
+      targetTab: "opportunities",
+      cta: "Browse Open Gigs"
     }
   ];
 
-  // Problem We Solve Highlights
-  const problemHighlights = [
-    { 
-      title: "Learn Skills", 
-      desc: "Market-relevant, bite-sized training with zero prerequisites.", 
-      icon: BookOpen,
-      color: "bg-purple-100 dark:bg-purple-500/20 text-purple-700 dark:text-purple-300 border-purple-300 dark:border-purple-500/30"
-    },
-    { 
-      title: "Build Portfolio", 
-      desc: "Verified digital showcase profiles proving real work capabilities.", 
-      icon: Award,
-      color: "bg-pink-100 dark:bg-pink-500/20 text-pink-700 dark:text-pink-300 border-pink-300 dark:border-pink-500/30"
-    },
-    { 
-      title: "Find Opportunities", 
-      desc: "Direct access to freelance gigs, remote work & local orders.", 
-      icon: Briefcase,
-      color: "bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-300 border-amber-300 dark:border-amber-500/30"
-    },
-    { 
-      title: "Earn Sustainable Income", 
-      desc: "Independent payouts with escrow security and financial freedom.", 
-      icon: IndianRupee,
-      color: "bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border-emerald-300 dark:border-emerald-500/30"
-    }
-  ];
+  // Featured Jobs to display on Home
+  const featuredJobs = initialOpportunities.slice(0, 3);
 
-  // Features Section (6 Cards)
-  const features = [
-    {
-      id: "feat-1",
-      title: "AI Career Guidance",
-      icon: Cpu,
-      badge: "Smart AI",
-      description: "Automated AI match engine evaluates learner strengths, tracks progress, and suggests personalized career pathways.",
-      highlights: ["Skill Gap Analysis", "Income Recommendation", "Personalized Track"]
-    },
-    {
-      id: "feat-2",
-      title: "Skill Learning Hub",
-      icon: BookOpen,
-      badge: "High Demand",
-      description: "Bite-sized practical modules covering Digital Marketing, Graphic Design, E-Commerce, Content Writing & Handicrafts.",
-      highlights: ["Self-Paced Videos", "Practice Worksheets", "Industry Mentors"]
-    },
-    {
-      id: "feat-3",
-      title: "Portfolio Builder",
-      icon: Award,
-      badge: "Verified Credentials",
-      description: "Convert your completed assignments into shareable, verified digital portfolios with QR capability proof.",
-      highlights: ["Shareable Profile Link", "Verified Work Badges", "Project Artifact Showcase"]
-    },
-    {
-      id: "feat-4",
-      title: "Freelance Marketplace",
-      icon: Briefcase,
-      badge: "Escrow Protected",
-      description: "Browse curated micro-gigs, remote projects, and part-time retainer opportunities tailored for women creators.",
-      highlights: ["Fair Stipends", "Escrow Payout Safety", "Flexible Hours"]
-    },
-    {
-      id: "feat-5",
-      title: "Job Matching System",
-      icon: Target,
-      badge: "1-Click Apply",
-      description: "Direct algorithmic matching connecting verified portfolio projects to small businesses seeking talent.",
-      highlights: ["Client Recommendation", "Automated Ranking", "Fast Review Cycles"]
-    },
-    {
-      id: "feat-6",
-      title: "Entrepreneurship Support",
-      icon: Rocket,
-      badge: "Micro-Business",
-      description: "Tools, templates, and guidance to transform personal skills into home-run micro-enterprises.",
-      highlights: ["Business Registration", "UPI Payment Setup", "Marketing Templates"]
-    }
-  ];
-
-  // Success Stories (3 Cards)
+  // Success stories
   const successStories = [
     {
-      name: "Aarti Sharma",
-      role: "Digital Marketing Specialist",
+      name: "Pooja Sharma",
+      role: "Canva Graphic Designer",
       location: "Jaipur, Rajasthan",
-      incomeStart: "₹5,000",
-      incomeCurrent: "₹20,000",
-      growth: "+300% Growth",
-      avatar: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=300",
-      quote: "The AI recommendation matched me with local boutiques needing Instagram ads. I now retain 3 monthly clients from home!",
-      track: "Digital Marketing",
-      chartBars: [25, 40, 65, 100]
-    },
-    {
-      name: "Sunita Patel",
-      role: "Canva Brand Designer",
-      location: "Ahmedabad, Gujarat",
       incomeStart: "₹0",
-      incomeCurrent: "₹15,000",
-      growth: "First Income Stream",
-      avatar: "https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&q=80&w=300",
-      quote: "I started from scratch on Canva. Today I design product packaging and promotional flyers for 5 organic tea brands!",
-      track: "Graphic Design",
-      chartBars: [10, 30, 70, 95]
+      incomeCurrent: "₹18,500/mo",
+      growth: "+100% Independent",
+      avatar: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=300",
+      quote: "As a homemaker, I never thought I could earn from my phone. Learning Canva on HerEarn gave me the confidence to design promo flyers for 3 local boutiques.",
+      track: "Design"
     },
     {
-      name: "Priya Verma",
-      role: "E-Commerce Store Manager",
-      location: "Indore, Madhya Pradesh",
+      name: "Sunita Roy",
+      role: "Social Media Coordinator",
+      location: "Kolkata, WB",
+      incomeStart: "₹3,500",
+      incomeCurrent: "₹24,000/mo",
+      growth: "+585% Growth",
+      avatar: "https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&q=80&w=300",
+      quote: "The step-by-step Instagram marketing module taught me everything from captions to hashtags. Within 3 weeks of finishing, I landed my first recurring monthly client.",
+      track: "Marketing"
+    },
+    {
+      name: "Ananya Patel",
+      role: "Shopify Catalog Specialist",
+      location: "Surat, Gujarat",
       incomeStart: "₹8,000",
-      incomeCurrent: "₹30,000",
+      incomeCurrent: "₹30,000/mo",
       growth: "+275% Growth",
       avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=300",
-      quote: "The portfolio builder showed clients my Shopify management skills. I manage online catalogs remotely for a handloom collective.",
-      track: "E-Commerce",
-      chartBars: [30, 50, 80, 100]
+      quote: "The portfolio builder showed clients my real store setup skills. I now manage online catalogs remotely for a textile collective from home.",
+      track: "E-Commerce"
     }
   ];
 
   return (
-    <div className="space-y-16 sm:space-y-20 pb-20 animate-fade-in overflow-x-hidden text-slate-900 dark:text-slate-100">
+    <div className="space-y-16 sm:space-y-24 pb-20 overflow-x-hidden text-[#1F2937] dark:text-slate-100">
       
-      {/* 1. HERO SECTION (DYNAMIC LIGHT & DARK MODE HERO) */}
-      <section className="relative min-h-[calc(100vh-5rem)] flex flex-col justify-center items-center py-16 w-full px-4 sm:px-8 lg:px-12 overflow-hidden text-center">
+      {/* ========================================================
+          1. HERO SECTION (Welcoming, Clear, High-Contrast)
+         ======================================================== */}
+      <section className="relative pt-12 pb-16 sm:pt-20 sm:pb-24 px-4 sm:px-6 lg:px-8 text-center bg-gradient-to-b from-[#FFF9F5] via-[#FFF3EB]/60 to-[#FFF9F5] dark:from-[#0F0918] dark:via-[#190F29]/60 dark:to-[#0F0918] border-b border-[#FED7AA]/40 dark:border-purple-950/40">
         
-        {/* Ambient Radial Glow Background (Light & Dark Compatible) */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[500px] bg-gradient-to-tr from-purple-200/50 via-pink-100/40 to-indigo-100/50 dark:from-purple-900/30 dark:via-fuchsia-900/20 dark:to-indigo-950/40 rounded-full blur-[120px] pointer-events-none"></div>
+        {/* Soft background glow decoration */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[350px] bg-gradient-to-tr from-purple-200/40 via-orange-100/40 to-purple-100/30 dark:from-purple-900/20 dark:via-orange-900/10 dark:to-purple-950/20 rounded-full blur-[100px] pointer-events-none"></div>
 
-        {/* Subtle Grid Matrix Background */}
-        <div
-          className="absolute inset-0 pointer-events-none opacity-25 dark:opacity-20"
-          style={{
-            backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(147,51,234,0.4) 1px, transparent 0)',
-            backgroundSize: '28px 28px'
-          }}
-        ></div>
-
-        <div className="relative z-10 max-w-3xl mx-auto space-y-8 flex flex-col items-center">
+        <div className="relative z-10 max-w-4xl mx-auto space-y-6">
           
-          {/* Top Pill Badge */}
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-purple-100/90 dark:bg-[#1a0f30]/90 border border-purple-300 dark:border-purple-500/40 text-purple-900 dark:text-purple-200 text-[10px] sm:text-xs font-black tracking-widest uppercase shadow-sm dark:shadow-[0_0_20px_rgba(168,85,247,0.25)] backdrop-blur-md">
-            <Sparkles className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400 animate-pulse" />
-            <span>AI-POWERED SKILL-TO-INCOME RECOMMENDATION PLATFORM</span>
+          {/* Trust Badge Pill */}
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#FFF7ED] dark:bg-orange-950/40 border border-[#FED7AA] dark:border-orange-800/40 text-[#EA580C] dark:text-orange-300 text-xs sm:text-sm font-bold shadow-xs">
+            <ShieldCheck className="w-4 h-4 text-[#EA580C]" />
+            <span>Always 100% Free for Job Seekers • Never Pay to Apply</span>
           </div>
 
-          {/* Main Headline */}
-          <div className="space-y-1">
-            <h1 className="text-4xl sm:text-6xl lg:text-7xl font-black tracking-tight leading-tight text-slate-900 dark:text-white">
-              Turn Skills Into
-            </h1>
-            <h1 className="text-4xl sm:text-6xl lg:text-7xl font-black tracking-tight leading-tight bg-gradient-to-r from-purple-600 via-pink-600 to-amber-500 dark:from-purple-400 dark:via-pink-500 dark:to-amber-400 bg-clip-text text-transparent drop-shadow-sm dark:drop-shadow-[0_0_35px_rgba(236,72,153,0.3)]">
-              Sustainable Income
-            </h1>
-          </div>
+          {/* One Clear Headline */}
+          <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black font-heading text-[#1F2937] dark:text-white tracking-tight leading-[1.15]">
+            Find Free Jobs & Skills Built for Women.
+          </h1>
 
-          {/* Subtitle */}
-          <p className="text-sm sm:text-base text-slate-700 dark:text-slate-300 font-bold max-w-xl mx-auto leading-relaxed">
-            Bridging the gap between learning, opportunities, and financial independence.
+          {/* One Clear Sentence */}
+          <p className="text-base sm:text-lg text-[#4B5563] dark:text-slate-300 max-w-2xl mx-auto leading-relaxed font-normal">
+            A welcoming, free platform for women across India to learn in-demand digital skills, build verified portfolios, and connect with trusted work-from-home and local jobs.
           </p>
 
-          {/* Action Buttons */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2 w-full max-w-md">
+          {/* PROMINENT SEARCH BAR (Job Title + Location + Primary CTA) */}
+          <form 
+            onSubmit={handleHeroSearch}
+            className="w-full max-w-3xl mx-auto pt-4"
+            role="search"
+            aria-label="Search free jobs and opportunities"
+          >
+            <div className="bg-white dark:bg-[#191026] p-2.5 sm:p-3 rounded-2xl border-2 border-[#E5E7EB] dark:border-purple-800/50 shadow-lg flex flex-col md:flex-row items-stretch gap-2.5">
+              
+              {/* Job Title / Skill Input */}
+              <div className="relative flex-1 flex items-center">
+                <Search className="w-5 h-5 text-[#9CA3AF] absolute left-3.5 pointer-events-none" />
+                <input
+                  type="text"
+                  placeholder="Job title, skill (e.g. Canva, Social Media, Data Entry)..."
+                  value={searchTitle}
+                  onChange={(e) => setSearchTitle(e.target.value)}
+                  className="w-full pl-11 pr-3 py-3 text-sm font-medium text-[#1F2937] dark:text-white placeholder-[#9CA3AF] bg-transparent rounded-xl focus:outline-none focus:ring-2 focus:ring-[#7C3AED]/30 min-h-[48px]"
+                  aria-label="Job title or skill"
+                />
+              </div>
+
+              {/* Location Input */}
+              <div className="relative md:w-56 flex items-center border-t md:border-t-0 md:border-l border-[#E5E7EB] dark:border-purple-800/40 pt-2 md:pt-0">
+                <MapPin className="w-5 h-5 text-[#9CA3AF] absolute left-3.5 pointer-events-none" />
+                <input
+                  type="text"
+                  placeholder="Location (e.g. Remote, Delhi)..."
+                  value={searchLocation}
+                  onChange={(e) => setSearchLocation(e.target.value)}
+                  className="w-full pl-11 pr-3 py-3 text-sm font-medium text-[#1F2937] dark:text-white placeholder-[#9CA3AF] bg-transparent rounded-xl focus:outline-none focus:ring-2 focus:ring-[#7C3AED]/30 min-h-[48px]"
+                  aria-label="Location"
+                />
+              </div>
+
+              {/* Primary Search CTA */}
+              <button
+                type="submit"
+                className="tap-target px-7 py-3 rounded-xl bg-[#7C3AED] hover:bg-[#6D28D9] text-white font-bold font-heading text-sm shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer shrink-0 min-h-[48px]"
+              >
+                <span>Search Free Jobs</span>
+                <ArrowRight className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Quick Popular Search Chips */}
+            <div className="flex items-center justify-center gap-2 flex-wrap pt-3 text-xs text-[#6B7280] dark:text-slate-400">
+              <span className="font-semibold">Popular searches:</span>
+              {['Work from Home', 'Canva Design', 'Social Media', 'Data Entry', 'Shopify Catalog'].map((chip, idx) => (
+                <button
+                  key={idx}
+                  type="button"
+                  onClick={() => handleChipClick(chip)}
+                  className="px-2.5 py-1 rounded-lg bg-white dark:bg-[#1E1233] border border-[#E5E7EB] dark:border-purple-800/30 text-[#4B5563] dark:text-slate-300 hover:text-[#7C3AED] hover:border-[#7C3AED]/40 transition-colors cursor-pointer text-xs"
+                >
+                  {chip}
+                </button>
+              ))}
+            </div>
+          </form>
+
+          {/* Quick Dual Action Links */}
+          <div className="flex flex-wrap items-center justify-center gap-4 pt-4 text-xs font-semibold text-[#4B5563] dark:text-slate-300">
             <button
               type="button"
               onClick={() => onNavigate('learn')}
-              className="w-full sm:w-auto px-7 py-3.5 rounded-xl bg-gradient-to-r from-purple-600 via-pink-600 to-rose-600 hover:from-purple-700 hover:to-rose-700 text-white font-extrabold text-xs sm:text-sm shadow-lg dark:shadow-[0_0_25px_rgba(236,72,153,0.4)] transition-all flex items-center justify-center gap-2 cursor-pointer hover:scale-105"
+              className="inline-flex items-center gap-1.5 text-[#7C3AED] dark:text-purple-300 hover:underline cursor-pointer font-bold"
             >
-              <span>Start Learning</span>
-              <ArrowRight className="w-4 h-4" />
+              <BookOpen className="w-4 h-4" />
+              <span>Looking to learn first? Browse Free Video Courses →</span>
             </button>
-
+            <span className="hidden sm:inline text-slate-300 dark:text-slate-700">•</span>
             <button
               type="button"
-              onClick={() => onNavigate('gigs')}
-              className="w-full sm:w-auto px-7 py-3.5 rounded-xl bg-white dark:bg-[#140c26]/90 border-2 border-purple-500/80 dark:border-purple-500/40 hover:border-purple-600 dark:hover:border-purple-400 text-purple-700 dark:text-purple-200 hover:bg-purple-50 dark:hover:bg-purple-900/40 font-extrabold text-xs sm:text-sm shadow-sm transition-all flex items-center justify-center cursor-pointer hover:scale-105 backdrop-blur-md"
+              onClick={() => onNavigate('opportunities')}
+              className="inline-flex items-center gap-1.5 text-[#EA580C] dark:text-orange-300 hover:underline cursor-pointer font-bold"
             >
-              Explore Opportunities
+              <Briefcase className="w-4 h-4" />
+              <span>Explore All Verified Gigs →</span>
             </button>
-          </div>
-
-          {/* Thin Horizontal Divider */}
-          <div className="w-full max-w-xl border-t border-purple-200 dark:border-purple-500/20 pt-6"></div>
-
-          {/* 3 Trust Features Row */}
-          <div className="flex flex-wrap items-center justify-center gap-6 sm:gap-10 text-xs font-extrabold text-slate-800 dark:text-slate-200">
-            <div className="flex items-center gap-2">
-              <ShieldCheck className="w-4.5 h-4.5 text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
-              <span>Escrow Safe Payouts</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Award className="w-4.5 h-4.5 text-purple-600 dark:text-purple-400 flex-shrink-0" />
-              <span>Verified Badges</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Cpu className="w-4.5 h-4.5 text-pink-600 dark:text-pink-400 flex-shrink-0" />
-              <span>AI Matching</span>
-            </div>
           </div>
 
         </div>
-
       </section>
 
-      {/* STATS STRIP (Honest Pilot Launch Values) */}
-      <section className="bg-slate-100/90 dark:bg-slate-900/95 border-y border-purple-200 dark:border-purple-500/30 py-10 relative">
-        <div className="w-full px-4 sm:px-8 lg:px-12 space-y-4">
-          
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 text-center">
-            {stats.map((s, idx) => {
-              const IconComponent = s.icon;
+      {/* ========================================================
+          2. STATS & TRUST STRIP
+         ======================================================== */}
+      <section className="site-container" aria-label="Key Platform Facts">
+        <div className="bg-white dark:bg-[#191026] border border-[#E5E7EB] dark:border-purple-900/40 rounded-2xl p-6 sm:p-8 shadow-sm">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+            {stats.map((item, idx) => {
+              const IconComp = item.icon;
               return (
-                <div 
-                  key={idx} 
-                  className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-slate-950/80 border border-slate-200 dark:border-purple-500/30 shadow-md space-y-2 hover:border-purple-400/50 transition-all"
-                >
-                  <div className="w-10 h-10 rounded-xl bg-purple-100 dark:bg-purple-500/20 border border-purple-300 dark:border-purple-400/40 flex items-center justify-center mx-auto text-purple-700 dark:text-purple-300">
-                    <IconComponent className="w-5 h-5" />
+                <div key={idx} className="space-y-1.5">
+                  <div className="w-10 h-10 mx-auto rounded-xl bg-[#FFF9F5] dark:bg-[#231738] border border-[#FED7AA]/60 dark:border-purple-800/40 flex items-center justify-center text-[#7C3AED]">
+                    <IconComp className="w-5 h-5" />
                   </div>
-                  <p className={`text-3xl sm:text-4xl font-extrabold ${s.color} tracking-tight`}>{s.value}</p>
-                  
-                  {/* High Contrast Stat Label */}
-                  <div>
-                    <p className="text-xs sm:text-sm font-extrabold text-slate-900 dark:text-slate-100 uppercase tracking-wider">{s.label}</p>
-                    <p className="text-[10px] sm:text-xs font-bold text-slate-600 dark:text-slate-300 mt-0.5">{s.sublabel}</p>
-                  </div>
+                  <p className={`text-2xl sm:text-3xl font-extrabold font-heading ${item.color}`}>
+                    {item.value}
+                  </p>
+                  <p className="text-xs sm:text-sm font-bold text-[#1F2937] dark:text-white">
+                    {item.label}
+                  </p>
+                  <p className="text-[11px] text-[#6B7280] dark:text-slate-400">
+                    {item.sublabel}
+                  </p>
                 </div>
               );
             })}
           </div>
+        </div>
 
-          {/* Small Note Under Stats Strip */}
-          <div className="text-center pt-2">
-            <p className="text-xs font-bold text-purple-900 dark:text-purple-300 bg-purple-100 dark:bg-purple-950/60 inline-block px-4 py-1 rounded-full border border-purple-300 dark:border-purple-500/30">
-              📌 Pilot stage: numbers reflect our launch goals.
-            </p>
-          </div>
-
+        {/* Scam Warning Banner */}
+        <div className="pt-6">
+          <TrustScamBanner />
         </div>
       </section>
 
-      {/* WHAT WE DO SECTION */}
-      <section id="what-we-do" className="w-full px-4 sm:px-8 lg:px-12 py-8 space-y-10">
-        <div className="text-center max-w-3xl mx-auto space-y-3">
-          <span className="text-xs font-extrabold text-purple-700 dark:text-purple-300 uppercase tracking-widest px-4 py-1.5 rounded-full bg-purple-100 dark:bg-purple-900/40 border border-purple-300 dark:border-purple-500/30">
-            Our Core Mission & Platform Pillars
-          </span>
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-slate-900 dark:text-white tracking-tight">
-            {t('whatWeDo')}
-          </h2>
-          <p className="text-sm sm:text-base text-slate-700 dark:text-slate-300 font-semibold leading-relaxed">
-            {t('whatWeDoSubtitle')}
-          </p>
+      {/* ========================================================
+          3. EXPLORE JOB CATEGORIES
+         ======================================================== */}
+      <section className="site-container space-y-6" aria-labelledby="job-categories-heading">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 border-b border-[#E5E7EB] dark:border-purple-900/30 pb-4">
+          <div>
+            <span className="text-xs font-bold text-[#7C3AED] dark:text-purple-300 uppercase tracking-wider block">
+              Browse by Area
+            </span>
+            <h2 id="job-categories-heading" className="text-2xl sm:text-3xl font-black font-heading text-[#1F2937] dark:text-white">
+              Explore Job Categories
+            </h2>
+          </div>
+          <button
+            type="button"
+            onClick={() => onNavigate('opportunities')}
+            className="text-xs font-bold text-[#7C3AED] dark:text-purple-300 hover:text-[#6D28D9] flex items-center gap-1 cursor-pointer"
+          >
+            <span>View all openings</span>
+            <ChevronRight className="w-4 h-4" />
+          </button>
         </div>
 
-        {/* 4 Core Pillars Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          
-          <div 
-            onClick={() => onNavigate('learn')}
-            className="glass-panel glass-card-interactive rounded-3xl p-6 space-y-4 shadow-xl flex flex-col justify-between group cursor-pointer"
-          >
-            <div className="space-y-3">
-              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-500 to-indigo-600 text-white flex items-center justify-center shadow-md group-hover:scale-110 transition-transform">
-                <BookOpen className="w-6 h-6" />
-              </div>
-              <h3 className="text-lg font-bold text-slate-900 dark:text-white group-hover:text-purple-500 transition-colors">
-                Free Practical Upskilling
-              </h3>
-              <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed font-medium">
-                Step-by-step video courses and practical exercises in Digital Marketing, Graphic Design, E-Commerce, and Copywriting tailored for women.
-              </p>
-            </div>
-            <div className="pt-3 border-t border-purple-500/20 text-[11px] font-bold text-purple-600 dark:text-purple-400 flex items-center gap-1">
-              <span>Explore 4 Skill Tracks</span>
-              <ChevronRight className="w-3.5 h-3.5" />
-            </div>
-          </div>
-
-          <div 
-            onClick={() => onNavigate('portfolio')}
-            className="glass-panel glass-card-interactive rounded-3xl p-6 space-y-4 shadow-xl flex flex-col justify-between group cursor-pointer"
-          >
-            <div className="space-y-3">
-              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-pink-500 to-rose-600 text-white flex items-center justify-center shadow-md group-hover:scale-110 transition-transform">
-                <Award className="w-6 h-6" />
-              </div>
-              <h3 className="text-lg font-bold text-slate-900 dark:text-white group-hover:text-pink-500 transition-colors">
-                Verified Digital Portfolio
-              </h3>
-              <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed font-medium">
-                Automatically convert course capstone projects into a shareable proof-of-work portfolio. Showcase real deliverables directly to clients.
-              </p>
-            </div>
-            <div className="pt-3 border-t border-pink-500/20 text-[11px] font-bold text-pink-600 dark:text-pink-400 flex items-center gap-1">
-              <span>Build Proof of Work</span>
-              <ChevronRight className="w-3.5 h-3.5" />
-            </div>
-          </div>
-
-          <div 
-            onClick={() => onNavigate('gigs')}
-            className="glass-panel glass-card-interactive rounded-3xl p-6 space-y-4 shadow-xl flex flex-col justify-between group cursor-pointer"
-          >
-            <div className="space-y-3">
-              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 text-white flex items-center justify-center shadow-md group-hover:scale-110 transition-transform">
-                <Briefcase className="w-6 h-6" />
-              </div>
-              <h3 className="text-lg font-bold text-slate-900 dark:text-white group-hover:text-amber-500 transition-colors">
-                Micro-Gigs & Job Matching
-              </h3>
-              <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed font-medium">
-                Directly apply for verified freelance projects and flexible work-from-home gigs with transparent 🎯 Skill Match % and eligibility quizzes.
-              </p>
-            </div>
-            <div className="pt-3 border-t border-amber-500/20 text-[11px] font-bold text-amber-600 dark:text-amber-400 flex items-center gap-1">
-              <span>Find Client Opportunities</span>
-              <ChevronRight className="w-3.5 h-3.5" />
-            </div>
-          </div>
-
-          <div 
-            onClick={() => onNavigate('gigs')}
-            className="glass-panel glass-card-interactive rounded-3xl p-6 space-y-4 shadow-xl flex flex-col justify-between group cursor-pointer"
-          >
-            <div className="space-y-3">
-              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white flex items-center justify-center shadow-md group-hover:scale-110 transition-transform">
-                <ShieldCheck className="w-6 h-6" />
-              </div>
-              <h3 className="text-lg font-bold text-slate-900 dark:text-white group-hover:text-emerald-500 transition-colors">
-                100% Escrow Payout Safety
-              </h3>
-              <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed font-medium">
-                Protected stipend payments (₹3,500 – ₹12,000/mo) stored in escrow before work starts so women get paid safely with zero online scam risk.
-              </p>
-            </div>
-            <div className="pt-3 border-t border-emerald-500/20 text-[11px] font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
-              <span>Guaranteed Earnings</span>
-              <ChevronRight className="w-3.5 h-3.5" />
-            </div>
-          </div>
-
-        </div>
-      </section>
-
-      {/* HOW IT WORKS SECTION (3 Core Cards Right Below Stats Strip) */}
-      <section id="how-it-works" className="w-full px-4 sm:px-8 lg:px-12 space-y-8">
-        
-        <div className="text-center max-w-2xl mx-auto space-y-2">
-          <span className="text-xs font-extrabold text-pink-700 dark:text-pink-400 uppercase tracking-widest px-3 py-1 rounded-full bg-pink-100 dark:bg-pink-500/10 border border-pink-300 dark:border-pink-500/20">
-            Simple 3-Step Journey
-          </span>
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white">
-            How It Works
-          </h2>
-          <p className="text-sm text-slate-700 dark:text-slate-200 font-semibold">
-            From picking your first skill module to taking on real paying client opportunities.
-          </p>
-        </div>
-
-        {/* 3 Cards in a Row (Responsive: stacks on mobile) */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {howItWorksThreeCards.map((card, idx) => {
-            const IconComp = card.icon;
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
+          {jobCategories.map((cat, idx) => {
+            const IconComp = cat.icon;
             return (
-              <div 
+              <div
                 key={idx}
-                onClick={() => onNavigate(card.targetTab)}
-                className="glass-panel glass-card-interactive rounded-3xl p-7 space-y-4 shadow-xl flex flex-col justify-between relative overflow-hidden text-slate-900 dark:text-white cursor-pointer group"
+                onClick={() => navigate(`/opportunities?category=${encodeURIComponent(cat.name)}`)}
+                className="theme-card bg-white dark:bg-[#191026] p-5 rounded-2xl border border-[#E5E7EB] dark:border-purple-900/30 flex items-start gap-4 cursor-pointer hover:border-[#7C3AED] transition-all group"
               >
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div className={`w-12 h-12 rounded-2xl bg-gradient-to-tr ${card.color} text-white flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform`}>
-                      <IconComp className="w-6 h-6" />
-                    </div>
-                    <span className="text-xs font-extrabold text-purple-800 dark:text-purple-300 bg-purple-100 dark:bg-purple-500/20 border border-purple-300 dark:border-purple-500/30 px-3 py-1 rounded-full">
-                      {card.badge}
-                    </span>
-                  </div>
-
-                  <h3 className="text-xl font-bold text-slate-900 dark:text-white leading-snug group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
-                    {card.title}
-                  </h3>
-
-                  <p className="text-xs text-slate-700 dark:text-slate-200 leading-relaxed font-medium">
-                    {card.desc}
-                  </p>
+                <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${cat.color}`}>
+                  <IconComp className="w-6 h-6" />
                 </div>
-
-                <div className="pt-3 border-t border-purple-100 dark:border-purple-500/20 space-y-3">
-                  <div className="flex items-center justify-between text-xs font-bold text-purple-700 dark:text-purple-300">
-                    <span>Step {card.step}</span>
-                    <ChevronRight className="w-4 h-4 text-pink-600 dark:text-pink-400 group-hover:translate-x-1 transition-transform" />
+                <div className="space-y-1 min-w-0 flex-1">
+                  <div className="flex items-center justify-between gap-2">
+                    <h3 className="text-base font-bold font-heading text-[#1F2937] dark:text-white group-hover:text-[#7C3AED] transition-colors truncate">
+                      {cat.name}
+                    </h3>
                   </div>
-
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onNavigate(card.targetTab);
-                    }}
-                    className="w-full py-2.5 px-4 rounded-xl font-extrabold text-xs bg-purple-100 hover:bg-purple-600 hover:text-white dark:bg-purple-950/80 dark:hover:bg-purple-600 text-purple-900 dark:text-purple-200 transition-all flex items-center justify-between cursor-pointer border border-purple-300 dark:border-purple-500/40 shadow-sm"
-                  >
-                    <span>{card.ctaText}</span>
-                    <ArrowRight className="w-4 h-4 text-pink-600 dark:text-pink-400 group-hover:text-white transition-colors" />
-                  </button>
+                  <p className="text-xs text-[#6B7280] dark:text-slate-400 leading-relaxed line-clamp-2">
+                    {cat.desc}
+                  </p>
+                  <span className="inline-block text-[11px] font-bold text-[#7C3AED] dark:text-purple-300 pt-1">
+                    {cat.count} →
+                  </span>
                 </div>
               </div>
             );
           })}
         </div>
-
       </section>
 
-      {/* PROBLEM WE SOLVE SECTION */}
-      <section className="w-full px-4 sm:px-8 lg:px-12">
-        <div className="bg-white/90 dark:bg-slate-900/90 border border-purple-200 dark:border-purple-500/30 rounded-3xl p-6 sm:p-12 shadow-xl backdrop-blur-md space-y-8 text-slate-900 dark:text-white">
-          
-          <div className="text-center max-w-3xl mx-auto space-y-4">
-            <span className="text-xs font-extrabold text-rose-700 dark:text-rose-400 uppercase tracking-widest px-3 py-1 rounded-full bg-rose-100 dark:bg-rose-500/10 border border-rose-300 dark:border-rose-500/20">
-              Addressing The Gap
+      {/* ========================================================
+          4. FEATURED JOBS SECTION (Verified, 100% Free)
+         ======================================================== */}
+      <section className="site-container space-y-6" aria-labelledby="featured-jobs-heading">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 border-b border-[#E5E7EB] dark:border-purple-900/30 pb-4">
+          <div>
+            <span className="text-xs font-bold text-[#EA580C] uppercase tracking-wider block">
+              100% Free Applications
             </span>
-            
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white">
-              Problem We Solve
+            <h2 id="featured-jobs-heading" className="text-2xl sm:text-3xl font-black font-heading text-[#1F2937] dark:text-white">
+              Featured Free Opportunities
             </h2>
+          </div>
+          <button
+            type="button"
+            onClick={() => onNavigate('opportunities')}
+            className="tap-target px-4 py-2 rounded-xl bg-[#F3E8FF] dark:bg-purple-950/60 text-[#6D28D9] dark:text-purple-300 font-bold font-heading text-xs hover:bg-[#7C3AED] hover:text-white transition-all cursor-pointer flex items-center gap-1.5"
+          >
+            <span>See All {initialOpportunities.length} Jobs</span>
+            <ArrowRight className="w-4 h-4" />
+          </button>
+        </div>
 
-            <p className="text-base sm:text-lg text-slate-700 dark:text-slate-200 leading-relaxed font-semibold">
-              "Millions of women possess valuable skills but lack access to learning resources, portfolio visibility, job opportunities, freelancing projects, and career guidance."
+        {/* 3 Featured Job Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {featuredJobs.map((job) => (
+            <JobCard
+              key={job.id}
+              job={job}
+              onViewDetails={(j) => navigate(`/opportunities/${j.id}`)}
+              onApply={(j) => navigate(`/opportunities/${j.id}/apply`)}
+            />
+          ))}
+        </div>
+      </section>
+
+      {/* ========================================================
+          5. FREE RESOURCES & SKILL TRACKS
+         ======================================================== */}
+      <section className="site-container space-y-6" aria-labelledby="free-skills-heading">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 border-b border-[#E5E7EB] dark:border-purple-900/30 pb-4">
+          <div>
+            <span className="text-xs font-bold text-[#7C3AED] dark:text-purple-300 uppercase tracking-wider block">
+              Learn for Free
+            </span>
+            <h2 id="free-skills-heading" className="text-2xl sm:text-3xl font-black font-heading text-[#1F2937] dark:text-white">
+              Free Practical Skill Tracks
+            </h2>
+            <p className="text-xs sm:text-sm text-[#6B7280] dark:text-slate-400 mt-0.5">
+              Self-paced, bite-sized lessons designed to help you build real client deliverables.
             </p>
           </div>
-
-          {/* 4 Core Pillars */}
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 pt-2">
-            {problemHighlights.map((ph, idx) => {
-              const IconComponent = ph.icon;
-              return (
-                <div key={idx} className="bg-slate-50 dark:bg-slate-950/80 p-6 rounded-2xl border border-slate-200 dark:border-purple-500/20 space-y-3 hover:border-purple-400/50 transition-all">
-                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold ${ph.color} border`}>
-                    <IconComponent className="w-5 h-5" />
-                  </div>
-                  <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                    {ph.title}
-                  </h3>
-                  <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed font-medium">
-                    {ph.desc}
-                  </p>
-                </div>
-              );
-            })}
-          </div>
-
-        </div>
-      </section>
-
-      {/* FEATURES SECTION */}
-      <section id="features" className="w-full px-4 sm:px-8 lg:px-12 space-y-12">
-        <div className="text-center max-w-3xl mx-auto space-y-3">
-          <span className="text-xs font-extrabold text-pink-700 dark:text-pink-400 uppercase tracking-widest">Platform Modules</span>
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white">
-            Features Designed for Growth
-          </h2>
-          <p className="text-sm text-slate-700 dark:text-slate-200 font-semibold">
-            Comprehensive tools enabling women to learn, showcase, apply, and earn.
-          </p>
+          <button
+            type="button"
+            onClick={() => onNavigate('learn')}
+            className="text-xs font-bold text-[#7C3AED] dark:text-purple-300 hover:text-[#6D28D9] flex items-center gap-1 cursor-pointer"
+          >
+            <span>Explore all courses</span>
+            <ChevronRight className="w-4 h-4" />
+          </button>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {features.map((feat) => {
-            const Icon = feat.icon;
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {[
+            {
+              title: "Digital Marketing & Social Media",
+              lessons: "5 Lessons • 4 Hours",
+              desc: "Manage Instagram business pages, craft captions, and run hyper-local ads.",
+              tag: "High Demand",
+              icon: Megaphone,
+              color: "text-[#7C3AED] bg-[#F3E8FF]"
+            },
+            {
+              title: "Canva & Graphic Design",
+              lessons: "5 Lessons • 3 Hours",
+              desc: "Design marketing flyers, restaurant menus, product promos, and event banners.",
+              tag: "Beginner Friendly",
+              icon: Palette,
+              color: "text-[#EA580C] bg-[#FFF7ED]"
+            },
+            {
+              title: "Shopify & E-Commerce Management",
+              lessons: "4 Lessons • 3.5 Hours",
+              desc: "Upload product catalogs, optimize photos, set prices, and manage online stores.",
+              tag: "Remote Roles",
+              icon: Laptop,
+              color: "text-[#16A34A] bg-[#DCFCE7]"
+            },
+            {
+              title: "Content & Copywriting",
+              lessons: "4 Lessons • 2.5 Hours",
+              desc: "Write engaging product descriptions, social media hooks, and sales copy.",
+              tag: "Flexible Work",
+              icon: Feather,
+              color: "text-[#D97706] bg-[#FEF3C7]"
+            }
+          ].map((track, idx) => {
+            const IconC = track.icon;
             return (
               <div 
-                key={feat.id}
-                className="bg-white/90 dark:bg-slate-900/80 border border-purple-200 dark:border-purple-500/30 rounded-3xl p-7 card-hover-award space-y-5 flex flex-col justify-between shadow-lg backdrop-blur-md text-slate-900 dark:text-white"
+                key={idx}
+                className="theme-card bg-white dark:bg-[#191026] p-5 rounded-2xl border border-[#E5E7EB] dark:border-purple-900/30 flex flex-col justify-between space-y-4 hover:border-[#7C3AED] transition-all"
               >
-                <div className="space-y-4">
+                <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-purple-600 to-pink-600 flex items-center justify-center text-white shadow-lg">
-                      <Icon className="w-6 h-6" />
+                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${track.color}`}>
+                      <IconC className="w-5 h-5" />
                     </div>
-                    <span className="bg-purple-100 dark:bg-purple-500/20 text-purple-800 dark:text-purple-200 border border-purple-300 dark:border-purple-500/30 text-[10px] font-extrabold px-3 py-1 rounded-full uppercase tracking-wider">
-                      {feat.badge}
+                    <span className="badge-free text-[10px] py-0.5">
+                      100% Free
                     </span>
                   </div>
 
-                  <h3 className="text-xl font-bold text-slate-900 dark:text-white">{feat.title}</h3>
-                  <p className="text-xs text-slate-700 dark:text-slate-200 leading-relaxed font-medium">{feat.description}</p>
+                  <h3 className="text-base font-bold font-heading text-[#1F2937] dark:text-white leading-snug">
+                    {track.title}
+                  </h3>
 
-                  <div className="space-y-2 pt-2 border-t border-purple-100 dark:border-purple-500/20">
-                    {feat.highlights.map((item, idx) => (
-                      <div key={idx} className="flex items-center gap-2 text-xs text-slate-700 dark:text-slate-200 font-semibold">
-                        <CheckCircle2 className="w-4 h-4 text-pink-600 dark:text-pink-400 flex-shrink-0" />
-                        <span>{item}</span>
-                      </div>
-                    ))}
-                  </div>
+                  <p className="text-xs text-[#6B7280] dark:text-slate-400">
+                    {track.lessons}
+                  </p>
+
+                  <p className="text-xs text-[#4B5563] dark:text-slate-300 leading-relaxed">
+                    {track.desc}
+                  </p>
                 </div>
 
                 <button
                   type="button"
                   onClick={() => onNavigate('learn')}
-                  className="w-full text-xs font-bold text-purple-700 dark:text-purple-300 hover:text-pink-600 dark:hover:text-white flex items-center justify-between pt-2 group cursor-pointer"
+                  className="tap-target w-full py-2.5 rounded-xl bg-[#F3E8FF] dark:bg-purple-950/60 text-[#6D28D9] dark:text-purple-300 hover:bg-[#7C3AED] hover:text-white font-bold font-heading text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
                 >
-                  <span>Explore Module</span>
-                  <ChevronRight className="w-4 h-4 text-pink-600 dark:text-pink-400 group-hover:translate-x-1 transition-transform" />
+                  <span>Start Free Track</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
                 </button>
               </div>
             );
@@ -600,103 +476,168 @@ export default function LandingSection({ onNavigate, onOpenAuth, theme }) {
         </div>
       </section>
 
-      {/* SUCCESS STORIES SECTION */}
-      <section id="success-stories" className="w-full px-4 sm:px-8 lg:px-12 space-y-10">
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-purple-200 dark:border-purple-500/20 pb-4">
+      {/* ========================================================
+          6. HOW IT WORKS (Empowering 3-Step Journey)
+         ======================================================== */}
+      <section className="site-container space-y-8" aria-labelledby="how-it-works-heading">
+        <div className="text-center max-w-2xl mx-auto space-y-2">
+          <span className="badge-plum text-xs">
+            Simple 3-Step Process
+          </span>
+          <h2 id="how-it-works-heading" className="text-2xl sm:text-4xl font-black font-heading text-[#1F2937] dark:text-white">
+            How Skill to Women Works
+          </h2>
+          <p className="text-xs sm:text-base text-[#4B5563] dark:text-slate-300 font-normal">
+            No expensive certificates or complicated requirements. Start right where you are.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {howItWorksSteps.map((step, idx) => {
+            const IconComp = step.icon;
+            return (
+              <div 
+                key={idx}
+                className="theme-card bg-white dark:bg-[#191026] p-6 rounded-2xl border border-[#E5E7EB] dark:border-purple-900/30 flex flex-col justify-between space-y-5"
+              >
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-black font-heading px-3 py-1 rounded-full bg-[#F3E8FF] text-[#6D28D9] dark:bg-purple-950/60 dark:text-purple-300">
+                      Step {step.step}
+                    </span>
+                    <div className="w-10 h-10 rounded-xl bg-[#FFF9F5] dark:bg-[#231738] flex items-center justify-center text-[#7C3AED]">
+                      <IconComp className="w-5 h-5" />
+                    </div>
+                  </div>
+
+                  <h3 className="text-lg font-bold font-heading text-[#1F2937] dark:text-white">
+                    {step.title}
+                  </h3>
+
+                  <p className="text-xs sm:text-sm text-[#4B5563] dark:text-slate-300 leading-relaxed font-normal">
+                    {step.desc}
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => onNavigate(step.targetTab)}
+                  className="text-xs font-bold text-[#7C3AED] dark:text-purple-300 hover:text-[#6D28D9] flex items-center gap-1 cursor-pointer pt-2"
+                >
+                  <span>{step.cta}</span>
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* ========================================================
+          7. SUCCESS STORIES (Warm & Real Proof)
+         ======================================================== */}
+      <section className="site-container space-y-6" aria-labelledby="success-stories-heading">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 border-b border-[#E5E7EB] dark:border-purple-900/30 pb-4">
           <div>
-            <span className="text-xs font-extrabold text-purple-700 dark:text-purple-400 uppercase tracking-widest">Real Results</span>
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white mt-1">Success Stories</h2>
+            <span className="text-xs font-bold text-[#16A34A] uppercase tracking-wider block">
+              Real Impact
+            </span>
+            <h2 id="success-stories-heading" className="text-2xl sm:text-3xl font-black font-heading text-[#1F2937] dark:text-white">
+              Women Building Real Incomes
+            </h2>
           </div>
-          <button 
+          <button
             type="button"
-            onClick={() => onNavigate('portfolio')} 
-            className="text-xs font-bold text-pink-700 dark:text-pink-400 hover:underline flex items-center gap-1 cursor-pointer"
+            onClick={() => onNavigate('portfolio')}
+            className="text-xs font-bold text-[#7C3AED] dark:text-purple-300 hover:text-[#6D28D9] flex items-center gap-1 cursor-pointer"
           >
-            <span>View All Verified Portfolios</span>
-            <ArrowRight className="w-4 h-4" />
+            <span>View all learner portfolios</span>
+            <ChevronRight className="w-4 h-4" />
           </button>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {successStories.map((story, idx) => (
-            <div key={idx} className="bg-white/90 dark:bg-slate-900/80 border border-purple-200 dark:border-purple-500/30 rounded-3xl p-7 space-y-5 flex flex-col justify-between card-hover-award shadow-lg backdrop-blur-md text-slate-900 dark:text-white">
+            <div 
+              key={idx}
+              className="theme-card bg-white dark:bg-[#191026] p-6 rounded-2xl border border-[#E5E7EB] dark:border-purple-900/30 flex flex-col justify-between space-y-4"
+            >
               <div className="space-y-4">
-                <div className="flex items-center gap-4">
-                  <img src={story.avatar} alt={story.name} className="w-14 h-14 rounded-full object-cover border-2 border-purple-500 shadow-md" />
+                <div className="flex items-center gap-3">
+                  <img 
+                    src={story.avatar} 
+                    alt={story.name} 
+                    className="w-12 h-12 rounded-full object-cover border-2 border-[#7C3AED]/40 shadow-xs" 
+                  />
                   <div>
-                    <h4 className="text-base font-bold text-slate-900 dark:text-white">{story.name}</h4>
-                    <p className="text-xs text-purple-700 dark:text-purple-300 font-medium">{story.role}</p>
-                    <p className="text-[11px] text-slate-600 dark:text-slate-300 font-semibold">{story.location}</p>
+                    <h3 className="text-sm font-bold font-heading text-[#1F2937] dark:text-white">
+                      {story.name}
+                    </h3>
+                    <p className="text-xs text-[#7C3AED] dark:text-purple-300 font-semibold">
+                      {story.role}
+                    </p>
+                    <p className="text-[11px] text-[#6B7280] dark:text-slate-400">
+                      {story.location}
+                    </p>
                   </div>
                 </div>
 
-                {/* Income Growth Badge */}
-                <div className="bg-emerald-50 dark:bg-emerald-500/15 border border-emerald-200 dark:border-emerald-500/30 p-3 rounded-xl flex items-center justify-between text-xs">
+                <div className="bg-[#FFF9F5] dark:bg-[#201533] p-3 rounded-xl border border-[#FED7AA]/50 flex items-center justify-between text-xs">
                   <div>
-                    <span className="text-[10px] text-slate-600 dark:text-slate-300 uppercase font-semibold block">Income Growth</span>
-                    <span className="text-sm font-extrabold text-emerald-700 dark:text-emerald-400">
-                      {story.incomeStart} → {story.incomeCurrent}
+                    <span className="text-[10px] text-[#6B7280] uppercase font-bold block">Monthly Earnings</span>
+                    <span className="text-sm font-extrabold text-[#16A34A] font-heading">
+                      {story.incomeCurrent}
                     </span>
                   </div>
-                  <span className="bg-emerald-600 text-white font-extrabold px-2.5 py-1 rounded-full text-[10px]">
+                  <span className="badge-free text-[10px] py-0.5">
                     {story.growth}
                   </span>
                 </div>
 
-                {/* Mini Trajectory Progress Bar Chart */}
-                <div className="space-y-1">
-                  <span className="text-[10px] text-slate-600 dark:text-slate-300 font-bold uppercase">Income Growth Trajectory</span>
-                  <div className="flex items-end gap-1.5 h-10 pt-1">
-                    {story.chartBars.map((val, bIdx) => (
-                      <div key={bIdx} className="flex-1 bg-purple-100 dark:bg-purple-500/20 rounded-t-xs overflow-hidden h-full flex items-end">
-                        <div 
-                          className="w-full bg-gradient-to-t from-purple-600 to-pink-500 rounded-t-xs transition-all duration-500" 
-                          style={{ height: `${val}%` }}
-                        ></div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <p className="text-xs text-slate-700 dark:text-slate-200 italic leading-relaxed font-medium">
+                <p className="text-xs text-[#4B5563] dark:text-slate-300 leading-relaxed italic">
                   "{story.quote}"
                 </p>
               </div>
 
-              <div className="pt-3 border-t border-purple-100 dark:border-purple-500/20 flex items-center justify-between text-xs text-slate-600 dark:text-slate-300 font-medium">
-                <span>Track: {story.track}</span>
-                <span className="text-purple-700 dark:text-purple-300 font-bold">✓ Verified Learner</span>
+              <div className="pt-2 border-t border-slate-100 dark:border-purple-900/20 text-[11px] text-[#6B7280] dark:text-slate-400 font-medium flex items-center justify-between">
+                <span>Skill: {story.track}</span>
+                <span className="text-[#16A34A] font-bold">✓ Verified Learner</span>
               </div>
             </div>
           ))}
         </div>
       </section>
 
-      {/* CALL TO ACTION FOOTER BANNER */}
-      <section className="w-full px-4 sm:px-8 lg:px-12">
-        <div className="bg-gradient-to-r from-purple-900 via-indigo-950 to-pink-950 border border-purple-500/40 rounded-3xl p-10 lg:p-16 text-center text-white space-y-6 shadow-2xl relative overflow-hidden">
-          <div className="max-w-2xl mx-auto space-y-4 relative z-10">
-            <h2 className="text-3xl sm:text-5xl font-extrabold leading-tight text-white">
-              Ready to Start Earning?
+      {/* ========================================================
+          8. CALL TO ACTION BANNER (Empowering & Simple)
+         ======================================================== */}
+      <section className="site-container">
+        <div className="bg-gradient-to-r from-[#7C3AED] to-[#6D28D9] rounded-2xl p-8 sm:p-12 text-center text-white space-y-6 shadow-xl relative overflow-hidden">
+          <div className="max-w-2xl mx-auto space-y-3 relative z-10">
+            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-white/20 text-white backdrop-blur-xs">
+              Join Our Open Pilot
+            </span>
+            <h2 className="text-2xl sm:text-4xl font-black font-heading text-white leading-tight">
+              Ready to learn and earn on your own terms?
             </h2>
-            <p className="text-base text-slate-200 font-medium">
-              "Empowering Women. Creating Opportunities. Building Futures."
+            <p className="text-xs sm:text-base text-purple-100 font-normal">
+              100% free for women. No credit cards, no registration charges, and no hidden fees ever.
             </p>
-            <div className="pt-2 flex flex-wrap justify-center gap-4">
+            <div className="pt-3 flex flex-wrap justify-center gap-3">
               <button
                 type="button"
                 onClick={() => onNavigate('learn')}
-                className="btn-gradient-award text-base py-3.5 px-8 cursor-pointer flex items-center gap-2"
+                className="tap-target px-7 py-3 rounded-xl bg-white text-[#7C3AED] hover:bg-purple-50 font-bold font-heading text-sm shadow-md transition-all cursor-pointer flex items-center gap-2"
               >
                 <span>Start Learning Free</span>
-                <ArrowRight className="w-5 h-5" />
+                <ArrowRight className="w-4 h-4" />
               </button>
               <button
                 type="button"
                 onClick={onOpenAuth}
-                className="btn-outline-award text-base py-3.5 px-8 cursor-pointer text-white border-white/40 hover:bg-white/10"
+                className="tap-target px-7 py-3 rounded-xl bg-[#F97316] hover:bg-[#EA580C] text-white font-bold font-heading text-sm shadow-md transition-all cursor-pointer"
               >
-                Create Account
+                Create Free Account
               </button>
             </div>
           </div>

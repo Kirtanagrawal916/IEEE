@@ -215,15 +215,15 @@ export default function SignupPage({ onLoginSuccess, onNavigateToLogin, onNaviga
     }
   };
   return (
-    <div className="min-h-[calc(100vh-5rem)] flex items-center justify-center p-4 sm:p-6 lg:p-8 animate-fade-in">
+    <div className="min-h-[calc(100vh-5rem)] flex items-center justify-center p-4 sm:p-6 lg:p-8 animate-fade-in bg-[#FFF9F5] dark:bg-[#0F0918] text-[#1F2937] dark:text-white">
       <div className="max-w-5xl w-full grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
         
         {/* Left Branding Showcase Column */}
-        <div className="lg:col-span-5 rounded-3xl bg-gradient-to-br from-purple-900/90 via-slate-900 to-pink-950/80 p-8 text-white border border-purple-500/30 shadow-2xl flex flex-col justify-between relative overflow-hidden">
+        <div className="lg:col-span-5 rounded-3xl bg-gradient-to-br from-[#7C3AED] via-[#6D28D9] to-[#5B21B6] p-8 text-white border border-purple-400/30 shadow-2xl flex flex-col justify-between relative overflow-hidden">
           
           {/* Decorative Background Accents */}
-          <div className="absolute -top-16 -left-16 w-48 h-48 bg-purple-600/30 rounded-full blur-3xl pointer-events-none"></div>
-          <div className="absolute -bottom-16 -right-16 w-48 h-48 bg-pink-600/30 rounded-full blur-3xl pointer-events-none"></div>
+          <div className="absolute -top-16 -left-16 w-48 h-48 bg-purple-400/20 rounded-full blur-3xl pointer-events-none"></div>
+          <div className="absolute -bottom-16 -right-16 w-48 h-48 bg-pink-400/20 rounded-full blur-3xl pointer-events-none"></div>
 
           <div className="relative z-10">
             {/* Logo Header */}
@@ -234,38 +234,38 @@ export default function SignupPage({ onLoginSuccess, onNavigateToLogin, onNaviga
               <Logo size="lg" />
             </div>
 
-            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight mb-3 text-white">
+            <h1 className="text-2xl sm:text-3xl font-heading font-black tracking-tight mb-3 text-white">
               Start your journey to financial freedom 🚀
             </h1>
-            <p className="text-sm text-purple-200/90 leading-relaxed mb-6 font-medium">
+            <p className="text-sm text-purple-100 leading-relaxed mb-6 font-medium">
               Join thousands of women learning market-ready digital skills and earning verified income online.
             </p>
 
             {/* Quick Benefits Checklist */}
             <div className="space-y-3.5 my-6">
               <div className="flex items-center gap-3">
-                <div className="p-1 rounded-full bg-emerald-500/20 text-emerald-400">
+                <div className="p-1 rounded-full bg-emerald-500/20 text-emerald-300">
                   <CheckCircle2 className="w-4 h-4" />
                 </div>
                 <span className="text-xs font-semibold text-purple-100">100% Free Interactive Courses</span>
               </div>
 
               <div className="flex items-center gap-3">
-                <div className="p-1 rounded-full bg-emerald-500/20 text-emerald-400">
+                <div className="p-1 rounded-full bg-emerald-500/20 text-emerald-300">
                   <CheckCircle2 className="w-4 h-4" />
                 </div>
                 <span className="text-xs font-semibold text-purple-100">Micro-Gigs Tailored for Beginners</span>
               </div>
 
               <div className="flex items-center gap-3">
-                <div className="p-1 rounded-full bg-emerald-500/20 text-emerald-400">
+                <div className="p-1 rounded-full bg-emerald-500/20 text-emerald-300">
                   <CheckCircle2 className="w-4 h-4" />
                 </div>
                 <span className="text-xs font-semibold text-purple-100">Direct Portfolio Showcase & Ratings</span>
               </div>
 
               <div className="flex items-center gap-3">
-                <div className="p-1 rounded-full bg-emerald-500/20 text-emerald-400">
+                <div className="p-1 rounded-full bg-emerald-500/20 text-emerald-300">
                   <CheckCircle2 className="w-4 h-4" />
                 </div>
                 <span className="text-xs font-semibold text-purple-100">Supportive Regional Community</span>
@@ -273,29 +273,29 @@ export default function SignupPage({ onLoginSuccess, onNavigateToLogin, onNaviga
             </div>
 
             {/* Stats Card */}
-            <div className="grid grid-cols-2 gap-3 bg-purple-950/60 p-4 rounded-2xl border border-purple-500/30 mt-6">
+            <div className="grid grid-cols-2 gap-3 bg-[#191026]/70 p-4 rounded-2xl border border-purple-400/30 mt-6">
               <div>
-                <p className="text-xl font-extrabold text-amber-400">₹12.5L+</p>
+                <p className="text-xl font-heading font-black text-amber-300">₹12.5L+</p>
                 <p className="text-[10px] text-purple-200 uppercase tracking-wider font-semibold">Earned by Members</p>
               </div>
               <div>
-                <p className="text-xl font-extrabold text-pink-400">4.9 ★</p>
+                <p className="text-xl font-heading font-black text-pink-300">4.9 ★</p>
                 <p className="text-[10px] text-purple-200 uppercase tracking-wider font-semibold">Learner Satisfaction</p>
               </div>
             </div>
           </div>
 
           {/* Guarantee Footer */}
-          <div className="relative z-10 pt-6 border-t border-purple-500/20 mt-6">
-            <p className="text-[11px] text-purple-300 flex items-center gap-1.5 font-medium">
-              <Star className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
+          <div className="relative z-10 pt-6 border-t border-purple-400/30 mt-6">
+            <p className="text-[11px] text-purple-200 flex items-center gap-1.5 font-medium">
+              <Star className="w-3.5 h-3.5 text-amber-300 fill-amber-300" />
               <span>No credit card required. Free forever for learners.</span>
             </p>
           </div>
         </div>
 
         {/* Right Form Column */}
-        <div className="lg:col-span-7 bg-white dark:bg-slate-900 border border-slate-200 dark:border-purple-500/30 rounded-3xl p-6 sm:p-10 text-slate-900 dark:text-white shadow-2xl flex flex-col justify-between">
+        <div className="lg:col-span-7 bg-white dark:bg-[#191026] border border-[#E5E7EB] dark:border-purple-900/30 rounded-3xl p-6 sm:p-10 text-[#1F2937] dark:text-white shadow-2xl flex flex-col justify-between">
           {signupComplete ? (
             <div className="py-6 px-2 text-center space-y-6 animate-fade-in my-auto">
               <div className="w-16 h-16 rounded-3xl bg-gradient-to-tr from-purple-600 to-pink-600 flex items-center justify-center text-white mx-auto shadow-xl shadow-purple-500/20">
@@ -370,8 +370,8 @@ export default function SignupPage({ onLoginSuccess, onNavigateToLogin, onNaviga
             {/* Header */}
             <div className="flex items-center justify-between mb-6">
               <div>
-                <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Create Account</h2>
-                <p className="text-xs text-slate-600 dark:text-slate-400 mt-1 font-medium">
+                <h2 className="text-2xl font-heading font-black text-[#1F2937] dark:text-white">Create Account</h2>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 font-medium">
                   Fill in your details to get instant access to courses & gigs
                 </p>
               </div>
@@ -382,15 +382,15 @@ export default function SignupPage({ onLoginSuccess, onNavigateToLogin, onNaviga
 
             {/* Role Selection Toggle */}
             <div className="mb-5">
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-2">I want to:</label>
+              <label className="block text-xs font-bold text-[#1F2937] dark:text-slate-300 mb-2">I want to:</label>
               <div className="grid grid-cols-2 gap-3">
                 <button
                   type="button"
                   onClick={() => setRole('learner')}
-                  className={`p-3 rounded-xl border text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer ${
+                  className={`p-3 rounded-2xl border text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer ${
                     role === 'learner'
-                      ? 'bg-purple-600 text-white border-purple-500 shadow-md'
-                      : 'bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-700 hover:border-purple-400'
+                      ? 'bg-[#7C3AED] text-white border-[#7C3AED] shadow-sm'
+                      : 'bg-[#FFF9F5] dark:bg-[#201533] text-slate-700 dark:text-slate-300 border-[#E5E7EB] dark:border-purple-900/30 hover:border-[#7C3AED]'
                   }`}
                 >
                   <BookOpen className="w-4 h-4" />
@@ -400,10 +400,10 @@ export default function SignupPage({ onLoginSuccess, onNavigateToLogin, onNaviga
                 <button
                   type="button"
                   onClick={() => setRole('client')}
-                  className={`p-3 rounded-xl border text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer ${
+                  className={`p-3 rounded-2xl border text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer ${
                     role === 'client'
-                      ? 'bg-purple-600 text-white border-purple-500 shadow-md'
-                      : 'bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-700 hover:border-purple-400'
+                      ? 'bg-[#7C3AED] text-white border-[#7C3AED] shadow-sm'
+                      : 'bg-[#FFF9F5] dark:bg-[#201533] text-slate-700 dark:text-slate-300 border-[#E5E7EB] dark:border-purple-900/30 hover:border-[#7C3AED]'
                   }`}
                 >
                   <Briefcase className="w-4 h-4" />
@@ -425,7 +425,7 @@ export default function SignupPage({ onLoginSuccess, onNavigateToLogin, onNaviga
               {/* Full Name & Username */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Full Name</label>
+                  <label className="block text-xs font-bold text-[#1F2937] dark:text-slate-300 mb-1">Full Name</label>
                   <div className="relative">
                     <User className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                     <input
@@ -434,14 +434,14 @@ export default function SignupPage({ onLoginSuccess, onNavigateToLogin, onNaviga
                       placeholder="e.g. Ananya Sharma"
                       value={name}
                       onChange={(e) => handleNameChange(e.target.value)}
-                      className="w-full bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white text-xs pl-10 pr-4 py-3 rounded-xl border border-slate-300 dark:border-slate-700 focus:outline-none focus:border-purple-500 font-semibold"
+                      className="w-full bg-[#FFF9F5] dark:bg-[#201533] text-[#1F2937] dark:text-white text-xs pl-10 pr-4 py-3 rounded-2xl border border-[#E5E7EB] dark:border-purple-900/30 focus:outline-none focus:border-[#7C3AED] font-semibold"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                    Username <span className="text-purple-600 dark:text-purple-400 font-normal">(Login Handle)</span>
+                  <label className="block text-xs font-bold text-[#1F2937] dark:text-slate-300 mb-1">
+                    Username <span className="text-[#7C3AED] dark:text-purple-400 font-normal">(Login Handle)</span>
                   </label>
                   <div className="relative">
                     <span className="text-xs font-bold text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2">@</span>
@@ -451,12 +451,12 @@ export default function SignupPage({ onLoginSuccess, onNavigateToLogin, onNaviga
                       placeholder="ananya_sharma"
                       value={username}
                       onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
-                      className={`w-full bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white text-xs pl-8 pr-4 py-3 rounded-xl border focus:outline-none font-mono font-semibold transition-colors ${
+                      className={`w-full bg-[#FFF9F5] dark:bg-[#201533] text-[#1F2937] dark:text-white text-xs pl-8 pr-4 py-3 rounded-2xl border focus:outline-none font-mono font-semibold transition-colors ${
                         isUsernameTaken 
                           ? 'border-rose-500 focus:border-rose-500' 
                           : isUsernameAvailable 
                             ? 'border-emerald-500 focus:border-emerald-500' 
-                            : 'border-slate-300 dark:border-slate-700 focus:border-purple-500'
+                            : 'border-[#E5E7EB] dark:border-purple-900/30 focus:border-[#7C3AED]'
                       }`}
                     />
                   </div>
@@ -478,7 +478,7 @@ export default function SignupPage({ onLoginSuccess, onNavigateToLogin, onNaviga
 
               {/* Email Address */}
               <div>
-                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Email Address</label>
+                <label className="block text-xs font-bold text-[#1F2937] dark:text-slate-300 mb-1">Email Address</label>
                 <div className="relative">
                   <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                   <input
@@ -487,10 +487,10 @@ export default function SignupPage({ onLoginSuccess, onNavigateToLogin, onNaviga
                     placeholder="you@example.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className={`w-full bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white text-xs pl-10 pr-4 py-3 rounded-xl border focus:outline-none transition-colors ${
+                    className={`w-full bg-[#FFF9F5] dark:bg-[#201533] text-[#1F2937] dark:text-white text-xs pl-10 pr-4 py-3 rounded-2xl border focus:outline-none transition-colors ${
                       isEmailTaken 
                         ? 'border-rose-500 focus:border-rose-500' 
-                        : 'border-slate-300 dark:border-slate-700 focus:border-purple-500'
+                        : 'border-[#E5E7EB] dark:border-purple-900/30 focus:border-[#7C3AED]'
                     }`}
                   />
                 </div>
@@ -500,7 +500,7 @@ export default function SignupPage({ onLoginSuccess, onNavigateToLogin, onNaviga
                     <button 
                       type="button" 
                       onClick={onNavigateToLogin} 
-                      className="underline text-purple-600 dark:text-purple-400 font-extrabold hover:text-purple-700 cursor-pointer ml-1"
+                      className="underline text-[#7C3AED] dark:text-purple-400 font-extrabold hover:text-purple-700 cursor-pointer ml-1"
                     >
                       Sign in instead
                     </button>
@@ -511,7 +511,7 @@ export default function SignupPage({ onLoginSuccess, onNavigateToLogin, onNaviga
               {/* Passwords (2 columns) */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Password</label>
+                  <label className="block text-xs font-bold text-[#1F2937] dark:text-slate-300 mb-1">Password</label>
                   <div className="relative">
                     <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                     <input
@@ -520,7 +520,7 @@ export default function SignupPage({ onLoginSuccess, onNavigateToLogin, onNaviga
                       placeholder="At least 6 chars"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="w-full bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white text-xs pl-10 pr-10 py-3 rounded-xl border border-slate-300 dark:border-slate-700 focus:outline-none focus:border-purple-500"
+                      className="w-full bg-[#FFF9F5] dark:bg-[#201533] text-[#1F2937] dark:text-white text-xs pl-10 pr-10 py-3 rounded-2xl border border-[#E5E7EB] dark:border-purple-900/30 focus:outline-none focus:border-[#7C3AED]"
                     />
                     <button
                       type="button"
@@ -545,7 +545,7 @@ export default function SignupPage({ onLoginSuccess, onNavigateToLogin, onNaviga
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Confirm Password</label>
+                  <label className="block text-xs font-bold text-[#1F2937] dark:text-slate-300 mb-1">Confirm Password</label>
                   <div className="relative">
                     <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                     <input
@@ -554,12 +554,12 @@ export default function SignupPage({ onLoginSuccess, onNavigateToLogin, onNaviga
                       placeholder="Repeat password"
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
-                      className={`w-full bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white text-xs pl-10 pr-4 py-3 rounded-xl border focus:outline-none ${
+                      className={`w-full bg-[#FFF9F5] dark:bg-[#201533] text-[#1F2937] dark:text-white text-xs pl-10 pr-4 py-3 rounded-2xl border focus:outline-none ${
                         confirmPassword.length > 0 && password !== confirmPassword 
                           ? 'border-rose-500 focus:border-rose-500' 
                           : confirmPassword.length > 0 && password === confirmPassword
                             ? 'border-emerald-500 focus:border-emerald-500'
-                            : 'border-slate-300 dark:border-slate-700 focus:border-purple-500'
+                            : 'border-[#E5E7EB] dark:border-purple-900/30 focus:border-[#7C3AED]'
                       }`}
                     />
                   </div>
@@ -574,13 +574,13 @@ export default function SignupPage({ onLoginSuccess, onNavigateToLogin, onNaviga
               {/* Target Skill Track */}
               {role === 'learner' && (
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Target Skill Track</label>
+                  <label className="block text-xs font-bold text-[#1F2937] dark:text-slate-300 mb-1">Target Skill Track</label>
                   <div className="relative">
                     <Layers className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                     <select
                       value={skillInterest}
                       onChange={(e) => setSkillInterest(e.target.value)}
-                      className="w-full bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white text-xs pl-10 pr-4 py-3 rounded-xl border border-slate-300 dark:border-slate-700 focus:outline-none focus:border-purple-500"
+                      className="w-full bg-[#FFF9F5] dark:bg-[#201533] text-[#1F2937] dark:text-white text-xs pl-10 pr-4 py-3 rounded-2xl border border-[#E5E7EB] dark:border-purple-900/30 focus:outline-none focus:border-[#7C3AED]"
                     >
                       <option value="Digital Marketing">Digital Marketing & Social Media</option>
                       <option value="Graphic Design">Graphic Design & Canva</option>
@@ -599,10 +599,10 @@ export default function SignupPage({ onLoginSuccess, onNavigateToLogin, onNaviga
                     type="checkbox"
                     checked={agreeTerms}
                     onChange={(e) => setAgreeTerms(e.target.checked)}
-                    className="w-4 h-4 accent-purple-600 rounded mt-0.5 cursor-pointer"
+                    className="w-4 h-4 accent-[#7C3AED] rounded mt-0.5 cursor-pointer"
                   />
-                  <span className="text-[11px] text-slate-600 dark:text-slate-400 leading-tight">
-                    I agree to the <span className="text-purple-600 dark:text-purple-400 font-bold hover:underline">Terms of Service</span> and <span className="text-purple-600 dark:text-purple-400 font-bold hover:underline">Privacy Policy</span>.
+                  <span className="text-[11px] text-slate-500 dark:text-slate-400 leading-tight">
+                    I agree to the <span className="text-[#7C3AED] dark:text-purple-400 font-bold hover:underline">Terms of Service</span> and <span className="text-[#7C3AED] dark:text-purple-400 font-bold hover:underline">Privacy Policy</span>.
                   </span>
                 </label>
               </div>
@@ -611,7 +611,7 @@ export default function SignupPage({ onLoginSuccess, onNavigateToLogin, onNaviga
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full btn-gradient-award justify-center py-3.5 text-xs font-bold mt-2 cursor-pointer shadow-lg disabled:opacity-50"
+                className="tap-target w-full py-3.5 px-6 rounded-2xl bg-[#7C3AED] hover:bg-[#6D28D9] text-white font-heading font-black text-sm sm:text-base shadow-sm transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 mt-2 min-h-[48px]"
               >
                 {isLoading ? (
                   <span>Creating Account...</span>
@@ -626,8 +626,8 @@ export default function SignupPage({ onLoginSuccess, onNavigateToLogin, onNaviga
 
             {/* DIVIDER: OR */}
             <div className="relative flex items-center justify-center my-3">
-              <div className="border-t border-slate-200 dark:border-slate-800 w-full"></div>
-              <span className="bg-white dark:bg-slate-900 px-3 text-[10px] font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-widest absolute">
+              <div className="border-t border-[#E5E7EB] dark:border-purple-900/30 w-full"></div>
+              <span className="bg-white dark:bg-[#191026] px-3 text-[10px] font-extrabold text-slate-400 uppercase tracking-widest absolute">
                 OR
               </span>
             </div>
@@ -651,13 +651,13 @@ export default function SignupPage({ onLoginSuccess, onNavigateToLogin, onNaviga
           </div>
 
           {/* Switch to Login & Guest Account Access */}
-          <div className="text-center pt-5 border-t border-slate-200 dark:border-slate-800 mt-5 space-y-4">
-            <p className="text-xs text-slate-600 dark:text-slate-400">
+          <div className="text-center pt-5 border-t border-[#E5E7EB] dark:border-purple-900/30 mt-5 space-y-4">
+            <p className="text-xs text-[#1F2937] dark:text-slate-400">
               Already have an account?{' '}
               <button
                 type="button"
                 onClick={onNavigateToLogin}
-                className="text-purple-600 dark:text-purple-400 hover:underline font-bold cursor-pointer"
+                className="text-[#7C3AED] dark:text-purple-400 hover:underline font-bold cursor-pointer"
               >
                 Log In
               </button>
@@ -687,9 +687,9 @@ export default function SignupPage({ onLoginSuccess, onNavigateToLogin, onNaviga
             <button
               type="button"
               onClick={onContinueAsGuest}
-              className="w-full py-3 px-4 rounded-xl border border-purple-300 dark:border-purple-500/30 bg-purple-50/60 dark:bg-purple-950/40 hover:bg-purple-100 dark:hover:bg-purple-900/50 text-purple-900 dark:text-purple-200 text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer shadow-xs"
+              className="w-full py-3 px-4 rounded-2xl border border-[#E5E7EB] dark:border-purple-900/30 bg-[#FFF9F5] dark:bg-[#201533] hover:bg-[#F3E8FF] text-[#7C3AED] dark:text-purple-200 text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer shadow-xs"
             >
-              <User className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+              <User className="w-4 h-4 text-[#7C3AED]" />
               <span>Continue with Guest Account</span>
             </button>
           </div>

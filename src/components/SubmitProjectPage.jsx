@@ -72,7 +72,7 @@ export default function SubmitProjectPage({ user, onSubmitProject, showToast }) 
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white transition-colors duration-300 py-8 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-[#FFF9F5] dark:bg-[#0F0918] text-[#1F2937] dark:text-white transition-colors duration-300 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-6xl mx-auto space-y-6">
         
         {/* Top Breadcrumb */}

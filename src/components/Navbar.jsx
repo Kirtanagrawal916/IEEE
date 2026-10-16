@@ -24,8 +24,6 @@ import {
   ArrowUpRight,
   Sparkles,
   Gamepad2,
-  Check,
-  RotateCcw,
   MessageSquare
 } from 'lucide-react';
 import LogoutModal from './LogoutModal';
@@ -130,7 +128,7 @@ export default function Navbar({
             className="flex items-center cursor-pointer group py-1"
             title="HerEarn - Skill to Income Platform"
           >
-            <Logo size="md" />
+            <Logo size="sm" imgClassName="h-8 sm:h-9 w-auto" />
           </Link>
 
           {/* Central Navigation: Home | Career Opportunity (Dropdown: Courses, Portfolio, Opportunities) | Mentorship | Applications */}
@@ -141,8 +139,8 @@ export default function Navbar({
               to="/"
               className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                 pathname === '/'
-                  ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-md'
-                  : 'text-slate-700 dark:text-slate-200 hover:text-purple-700 dark:hover:text-white hover:bg-purple-100/70 dark:hover:bg-purple-900/40'
+                  ? 'bg-[#7C3AED] text-white shadow-xs'
+                  : 'text-[#4B5563] dark:text-slate-200 hover:text-[#7C3AED] hover:bg-[#F3E8FF] dark:hover:bg-purple-950/40'
               }`}
             >
               <Compass className="w-4 h-4" />
@@ -156,12 +154,12 @@ export default function Navbar({
                 onClick={() => setIsCareerOpen(!isCareerOpen)}
                 className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                   isCareerActive
-                    ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-md'
-                    : 'text-slate-700 dark:text-slate-200 hover:text-purple-700 dark:hover:text-white hover:bg-purple-100/70 dark:hover:bg-purple-900/40'
+                    ? 'bg-[#7C3AED] text-white shadow-xs'
+                    : 'text-[#4B5563] dark:text-slate-200 hover:text-[#7C3AED] hover:bg-[#F3E8FF] dark:hover:bg-purple-950/40'
                 }`}
                 title="Career Opportunities: Courses, Portfolio & Gigs"
               >
-                <Briefcase className="w-4 h-4 text-purple-600 dark:text-purple-300" />
+                <Briefcase className="w-4 h-4" />
                 <span>Career Opportunity</span>
                 <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${isCareerOpen ? 'rotate-180' : ''}`} />
               </button>
@@ -207,7 +205,7 @@ export default function Navbar({
                     </div>
                     <div>
                       <p className="font-bold text-slate-900 dark:text-white leading-tight">Mini Puzzle Games</p>
-                      <p className="text-[10px] text-slate-500 dark:text-slate-400">12 mini puzzle, logic & word games</p>
+                      <p className="text-[10px] text-slate-500 dark:text-slate-400">Queen placing & point connector puzzles</p>
                     </div>
                   </Link>
 
@@ -258,8 +256,8 @@ export default function Navbar({
               to="/mentorship"
               className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                 pathname === '/mentorship'
-                  ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-md'
-                  : 'text-slate-700 dark:text-slate-200 hover:text-purple-700 dark:hover:text-white hover:bg-purple-100/70 dark:hover:bg-purple-900/40'
+                  ? 'bg-[#7C3AED] text-white shadow-xs'
+                  : 'text-[#4B5563] dark:text-slate-200 hover:text-[#7C3AED] hover:bg-[#F3E8FF] dark:hover:bg-purple-950/40'
               }`}
             >
               <Users className="w-4 h-4 text-indigo-500" />
@@ -271,8 +269,8 @@ export default function Navbar({
               to="/community"
               className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                 pathname.startsWith('/community')
-                  ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-md'
-                  : 'text-slate-700 dark:text-slate-200 hover:text-purple-700 dark:hover:text-white hover:bg-purple-100/70 dark:hover:bg-purple-900/40'
+                  ? 'bg-[#7C3AED] text-white shadow-xs'
+                  : 'text-[#4B5563] dark:text-slate-200 hover:text-[#7C3AED] hover:bg-[#F3E8FF] dark:hover:bg-purple-950/40'
               }`}
             >
               <MessageSquare className="w-4 h-4 text-pink-500" />
@@ -285,97 +283,71 @@ export default function Navbar({
                 to="/applications"
                 className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                   pathname === '/applications'
-                    ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-md'
-                    : 'text-slate-700 dark:text-slate-200 hover:text-purple-700 dark:hover:text-white hover:bg-purple-100/70 dark:hover:bg-purple-900/40'
+                    ? 'bg-[#7C3AED] text-white shadow-xs'
+                    : 'text-[#4B5563] dark:text-slate-200 hover:text-[#7C3AED] hover:bg-[#F3E8FF] dark:hover:bg-purple-950/40'
                 }`}
               >
                 <FileText className="w-4 h-4 text-emerald-500" />
                 <span>{t('applications')}</span>
               </Link>
             )}
-          </div>
 
+            {/* Super Admin Portal */}
+            <Link
+              to="/admin"
+              className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                pathname === '/admin'
+                  ? 'bg-[#7C3AED] text-white shadow-xs'
+                  : 'text-[#4B5563] dark:text-slate-200 hover:text-[#7C3AED] hover:bg-[#F3E8FF] dark:hover:bg-purple-950/40'
+              }`}
+              title="Super Admin Portal (Staff Account & 2FA Passkey Protected)"
+            >
+              <Shield className="w-4 h-4 text-pink-500" />
+              <span>Admin</span>
+              {user?.role === 'ADMIN' && (
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+              )}
+            </Link>
+          </div>
 
           {/* Right Section: Language Selector, Theme Switch, Guest Login/Sign Up & 3-Dot Menu */}
           <div className="flex items-center gap-2 sm:gap-3">
 
-            {/* Native Language Selector Dropdown (Protected from external translation mutations) */}
-            <div className="relative notranslate" ref={langRef} translate="no">
+            {/* Native Language Selector Dropdown */}
+            <div className="relative" ref={langRef}>
               <button
                 type="button"
-                translate="no"
                 onClick={() => setIsLangOpen(!isLangOpen)}
-                className="notranslate flex items-center gap-1.5 px-3 py-2 rounded-xl border border-purple-200 dark:border-purple-500/30 bg-white/90 dark:bg-slate-900/90 text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-slate-800 text-xs font-bold transition-all cursor-pointer shadow-sm"
-                title="Select Language / भाषा चुनें"
+                className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-purple-200 dark:border-purple-500/30 bg-white/90 dark:bg-slate-900/90 text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-slate-800 text-xs font-bold transition-all cursor-pointer shadow-sm"
+                title="Select Native Language / भाषा चुनें"
               >
-                <Globe className="w-4 h-4 text-purple-600 dark:text-purple-400 notranslate" />
-                <span className="hidden sm:inline font-bold notranslate" translate="no">{currentLangObj.native}</span>
-                <span className="sm:hidden font-extrabold uppercase notranslate" translate="no">{currentLangObj.code}</span>
+                <Globe className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                <span className="hidden sm:inline font-bold">{currentLangObj.native}</span>
+                <span className="sm:hidden font-extrabold uppercase">{currentLangObj.code}</span>
               </button>
 
               {isLangOpen && (
-                <div 
-                  className="notranslate absolute right-0 mt-2 w-64 rounded-2xl bg-white dark:bg-slate-900 border border-purple-200 dark:border-purple-500/40 shadow-2xl p-2.5 z-50 animate-fade-in space-y-1.5 max-h-80 overflow-y-auto"
-                  translate="no"
-                >
-                  <div className="sticky top-0 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md px-3 py-1.5 border-b border-purple-500/20 text-[10px] font-extrabold text-purple-600 dark:text-purple-400 uppercase tracking-wider z-10 flex items-center justify-between notranslate" translate="no">
-                    <span className="notranslate" translate="no">Select Language</span>
-                    <span className="notranslate font-mono text-[9px] text-slate-400" translate="no">{LANGUAGES.length} Languages</span>
+                <div className="absolute right-0 mt-2 w-52 rounded-2xl bg-white dark:bg-slate-900 border border-purple-200 dark:border-purple-500/40 shadow-2xl p-2 z-50 animate-fade-in space-y-1 max-h-72 overflow-y-auto">
+                  <div className="sticky top-0 bg-white dark:bg-slate-900 px-3 py-1.5 border-b border-purple-500/20 text-[10px] font-extrabold text-purple-500 uppercase tracking-wider z-10">
+                    Select Language / भाषा
                   </div>
-
-                  {/* Reset to English Button (Provides immediate exit if user selected wrong language) */}
-                  {language !== 'en' && (
+                  {LANGUAGES.map((langItem) => (
                     <button
-                      type="button"
-                      translate="no"
+                      key={langItem.code}
                       onClick={() => {
-                        setLanguage('en');
+                        setLanguage(langItem.code);
                         setIsLangOpen(false);
                       }}
-                      className="notranslate w-full text-left px-3 py-2 rounded-xl text-xs font-bold flex items-center justify-between bg-amber-50 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-700/60 text-amber-900 dark:text-amber-200 hover:bg-amber-100 dark:hover:bg-amber-900/50 transition-colors cursor-pointer shadow-xs mb-1"
+                      className={`w-full text-left px-3 py-2 rounded-xl text-xs font-semibold flex items-center justify-between transition-colors cursor-pointer ${
+                        language === langItem.code
+                          ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold'
+                          : 'text-slate-700 dark:text-slate-200 hover:bg-purple-50 dark:hover:bg-slate-800'
+                      }`}
                     >
-                      <span className="flex items-center gap-1.5 notranslate" translate="no">
-                        <RotateCcw className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 notranslate" />
-                        <span>Reset to English</span>
-                      </span>
-                      <span className="notranslate text-[10px] font-semibold opacity-75" translate="no">(Default)</span>
+                      <span>{langItem.native}</span>
+                      <span className="text-[10px] opacity-75 font-normal">({langItem.name})</span>
                     </button>
-                  )}
-
-                  {/* Permanent Static Language List - Always displays in original native script */}
-                  <div className="space-y-1 notranslate" translate="no">
-                    {LANGUAGES.map((langItem) => {
-                      const isSelected = language === langItem.code;
-                      return (
-                        <button
-                          key={langItem.code}
-                          type="button"
-                          translate="no"
-                          onClick={() => {
-                            setLanguage(langItem.code);
-                            setIsLangOpen(false);
-                          }}
-                          className={`notranslate w-full text-left px-3 py-2 rounded-xl text-xs font-medium flex items-center justify-between transition-colors cursor-pointer ${
-                            isSelected
-                              ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold shadow-xs'
-                              : 'text-slate-700 dark:text-slate-200 hover:bg-purple-50 dark:hover:bg-slate-800'
-                          }`}
-                        >
-                          <span className="notranslate font-bold text-[13px]" translate="no">
-                            {langItem.native}
-                          </span>
-                          <div className="flex items-center gap-1.5 notranslate" translate="no">
-                            <span className={`notranslate text-[11px] font-normal ${isSelected ? 'text-white/90' : 'text-slate-500 dark:text-slate-400'}`} translate="no">
-                              {langItem.name}
-                            </span>
-                            {isSelected && (
-                              <Check className="w-3.5 h-3.5 text-white shrink-0 notranslate" />
-                            )}
-                          </div>
-                        </button>
-                      );
-                    })}
-                  </div>
+                  ))}
                 </div>
               )}
             </div>
@@ -399,15 +371,17 @@ export default function Navbar({
               )}
             </button>
 
+
+
             {/* Guest Action Buttons (When not logged in) */}
             {!user && (
               <div className="hidden sm:flex items-center gap-2">
                 <Link
                   to="/login"
-                  className={`px-3.5 py-2 rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer ${
+                  className={`tap-target px-3.5 py-2 rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer ${
                     pathname === '/login'
-                      ? 'bg-purple-600 text-white shadow-md'
-                      : 'bg-white dark:bg-slate-900 border-2 border-purple-500/80 text-purple-600 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-slate-800'
+                      ? 'bg-[#7C3AED] text-white shadow-xs'
+                      : 'bg-white dark:bg-[#191026] border border-[#E5E7EB] dark:border-purple-800/40 text-[#4B5563] dark:text-slate-200 hover:text-[#7C3AED] hover:bg-[#F3E8FF]'
                   }`}
                 >
                   <LogIn className="w-3.5 h-3.5" />
@@ -416,10 +390,10 @@ export default function Navbar({
 
                 <Link
                   to="/signup"
-                  className={`px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-all shadow-md ${
+                  className={`tap-target px-4 py-2 rounded-xl text-xs font-bold font-heading flex items-center gap-1.5 cursor-pointer transition-all shadow-xs ${
                     pathname === '/signup'
-                      ? 'bg-gradient-to-r from-pink-600 to-purple-600 text-white ring-2 ring-pink-400'
-                      : 'bg-gradient-to-r from-purple-600 via-indigo-600 to-pink-600 text-white hover:shadow-lg'
+                      ? 'bg-[#7C3AED] text-white'
+                      : 'bg-[#7C3AED] hover:bg-[#6D28D9] text-white'
                   }`}
                 >
                   <UserPlus className="w-3.5 h-3.5" />
@@ -553,17 +527,6 @@ export default function Navbar({
                     </Link>
 
                     <Link
-                      to="/courses?tab=puzzles"
-                      onClick={() => setIsMenuOpen(false)}
-                      className="w-full text-left px-3 py-2 rounded-xl text-xs font-semibold flex items-center justify-between hover:bg-purple-100 dark:hover:bg-purple-900/40 text-slate-800 dark:text-slate-200 transition-colors"
-                    >
-                      <div className="flex items-center gap-2.5">
-                        <Gamepad2 className="w-4 h-4 text-pink-500" />
-                        <span>Mini Puzzle Games (12)</span>
-                      </div>
-                    </Link>
-
-                    <Link
                       to="/portfolio"
                       onClick={() => setIsMenuOpen(false)}
                       className="w-full text-left px-3 py-2 rounded-xl text-xs font-semibold flex items-center justify-between hover:bg-purple-100 dark:hover:bg-purple-900/40 text-slate-800 dark:text-slate-200 transition-colors"
@@ -607,6 +570,17 @@ export default function Navbar({
                       </div>
                     </Link>
 
+                    <Link
+                      to="/courses?tab=puzzles"
+                      onClick={() => setIsMenuOpen(false)}
+                      className="w-full text-left px-3 py-2 rounded-xl text-xs font-semibold flex items-center justify-between hover:bg-purple-100 dark:hover:bg-purple-900/40 text-slate-800 dark:text-slate-200 transition-colors"
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <Gamepad2 className="w-4 h-4 text-pink-500" />
+                        <span>Mini Puzzle Games (12)</span>
+                      </div>
+                    </Link>
+
                     {user && (
                       <Link
                         to="/applications"
@@ -619,8 +593,21 @@ export default function Navbar({
                         </div>
                       </Link>
                     )}
-                  </div>
 
+                    <Link
+                      to="/admin"
+                      onClick={() => setIsMenuOpen(false)}
+                      className="w-full text-left px-3 py-2 rounded-xl text-xs font-semibold flex items-center justify-between bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-500/30 text-purple-700 dark:text-purple-200 hover:bg-purple-100 dark:hover:bg-purple-900/60 transition-colors cursor-pointer"
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <Shield className="w-4 h-4 text-pink-500" />
+                        <span>Admin Portal</span>
+                      </div>
+                      <span className="text-[9px] font-black uppercase px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-600 dark:text-purple-300">
+                        2FA Staff
+                      </span>
+                    </Link>
+                  </div>
 
                   {/* 4. POLICIES & INFORMATION */}
                   <div className="space-y-1 pt-1 border-t border-purple-500/20">
