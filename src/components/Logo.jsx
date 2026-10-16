@@ -21,12 +21,12 @@ export default function Logo({
   alt = 'HerEarn - Skill to Income Platform'
 }) {
   const sizeClasses = {
-    xs: variant === 'icon' || variant === 'mark' ? 'h-6 w-auto' : 'h-7 w-auto',
-    sm: variant === 'icon' || variant === 'mark' ? 'h-8 w-auto' : 'h-9 w-auto',
-    md: variant === 'icon' || variant === 'mark' ? 'h-10 w-auto' : 'h-12 w-auto',
-    lg: variant === 'icon' || variant === 'mark' ? 'h-13 w-auto' : 'h-16 w-auto',
-    xl: variant === 'icon' || variant === 'mark' ? 'h-16 w-auto' : 'h-20 w-auto',
-  }[size] || 'h-12 w-auto';
+    xs: variant === 'icon' || variant === 'mark' ? 'h-5 w-auto' : 'h-6 w-auto',
+    sm: variant === 'icon' || variant === 'mark' ? 'h-7 w-auto' : 'h-8 w-auto',
+    md: variant === 'icon' || variant === 'mark' ? 'h-8 w-auto' : 'h-9 w-auto',
+    lg: variant === 'icon' || variant === 'mark' ? 'h-9 w-auto' : 'h-11 w-auto',
+    xl: variant === 'icon' || variant === 'mark' ? 'h-11 w-auto' : 'h-14 w-auto',
+  }[size] || 'h-9 w-auto';
 
   const isIconOnly = variant === 'icon' || variant === 'mark';
   const imageSrc = isIconOnly ? emblemPng : logoPng;

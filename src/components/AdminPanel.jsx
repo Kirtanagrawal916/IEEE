@@ -691,7 +691,7 @@ export default function AdminPanel({
             
             <div className="text-center space-y-3">
               <div className="mx-auto flex justify-center mb-2">
-                <Logo size="lg" />
+                <Logo size="md" />
               </div>
               <div className="space-y-1">
                 <div className="inline-flex items-center gap-1.5 text-[10px] font-black tracking-widest uppercase bg-purple-500/20 text-purple-300 border border-purple-500/30 px-3 py-1 rounded-full">
