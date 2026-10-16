@@ -455,9 +455,9 @@ export default function CommunitySection({ user, showToast }) {
   });
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-purple-50/50 via-white to-pink-50/30 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 text-slate-800 dark:text-slate-100 transition-colors pb-24">
+    <div className="min-h-screen bg-[#FFF9F5] dark:bg-[#0F0918] text-[#1F2937] dark:text-white transition-colors pb-24">
       {/* Top Hero Banner */}
-      <div className="border-b border-purple-100 dark:border-purple-900/30 bg-white/70 dark:bg-slate-900/70 backdrop-blur-md sticky top-20 z-20">
+      <div className="border-b border-purple-100 dark:border-purple-900/30 bg-white/70 dark:bg-[#140C22]/80 backdrop-blur-md sticky top-20 z-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
