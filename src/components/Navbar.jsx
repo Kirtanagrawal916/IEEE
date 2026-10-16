@@ -293,24 +293,8 @@ export default function Navbar({
                 <span>{t('applications')}</span>
               </Link>
             )}
-
-            {/* Super Admin Portal */}
-            <Link
-              to="/admin"
-              className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                pathname === '/admin'
-                  ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-md'
-                  : 'text-slate-700 dark:text-slate-200 hover:text-purple-700 dark:hover:text-white hover:bg-purple-100/70 dark:hover:bg-purple-900/40'
-              }`}
-              title="Super Admin Portal (Staff Account & 2FA Passkey Protected)"
-            >
-              <Shield className="w-4 h-4 text-pink-500" />
-              <span>Admin</span>
-              {user?.role === 'ADMIN' && (
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-              )}
-            </Link>
           </div>
+
 
           {/* Right Section: Language Selector, Theme Switch, Guest Login/Sign Up & 3-Dot Menu */}
           <div className="flex items-center gap-2 sm:gap-3">
@@ -635,21 +619,8 @@ export default function Navbar({
                         </div>
                       </Link>
                     )}
-
-                    <Link
-                      to="/admin"
-                      onClick={() => setIsMenuOpen(false)}
-                      className="w-full text-left px-3 py-2 rounded-xl text-xs font-semibold flex items-center justify-between bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-500/30 text-purple-700 dark:text-purple-200 hover:bg-purple-100 dark:hover:bg-purple-900/60 transition-colors cursor-pointer"
-                    >
-                      <div className="flex items-center gap-2.5">
-                        <Shield className="w-4 h-4 text-pink-500" />
-                        <span>Admin Portal</span>
-                      </div>
-                      <span className="text-[9px] font-black uppercase px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-600 dark:text-purple-300">
-                        2FA Staff
-                      </span>
-                    </Link>
                   </div>
+
 
                   {/* 4. POLICIES & INFORMATION */}
                   <div className="space-y-1 pt-1 border-t border-purple-500/20">
