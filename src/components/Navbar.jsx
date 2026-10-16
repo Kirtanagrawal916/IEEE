@@ -128,7 +128,7 @@ export default function Navbar({
             className="flex items-center cursor-pointer group py-1"
             title="HerEarn - Skill to Income Platform"
           >
-            <Logo size="lg" imgClassName="h-14 sm:h-15 md:h-16 w-auto" />
+            <Logo size="sm" imgClassName="h-8 sm:h-9 w-auto" />
           </Link>
 
           {/* Central Navigation: Home | Career Opportunity (Dropdown: Courses, Portfolio, Opportunities) | Mentorship | Applications */}
