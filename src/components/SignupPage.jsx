@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { api } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import GoogleSignInButton from './GoogleSignInButton';
@@ -19,8 +20,10 @@ import {
   Layers,
   Inbox,
   RefreshCw,
-  ExternalLink
+  ExternalLink,
+  Shield
 } from 'lucide-react';
+
 
 export default function SignupPage({ onLoginSuccess, onNavigateToLogin, onNavigateHome, onContinueAsGuest }) {
   const { register: authRegister, resendConfirmationEmail } = useAuth();
@@ -659,6 +662,27 @@ export default function SignupPage({ onLoginSuccess, onNavigateToLogin, onNaviga
                 Log In
               </button>
             </p>
+
+            {/* Administrator Portal Option */}
+            <div className="p-3.5 rounded-2xl bg-purple-50/70 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-500/20 flex items-center justify-between gap-3 text-left">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-pink-100 dark:bg-pink-900/40 flex items-center justify-center text-pink-600 shrink-0">
+                  <Shield className="w-4 h-4" />
+                </div>
+                <div>
+                  <p className="text-xs font-bold text-slate-900 dark:text-white">Platform Staff / Admin?</p>
+                  <p className="text-[10px] text-slate-500 dark:text-slate-400">Passkey protected staff & governance portal</p>
+                </div>
+              </div>
+              <Link
+                to="/admin"
+                className="px-3 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold transition-all shadow-sm shrink-0 cursor-pointer flex items-center gap-1"
+              >
+                <span>Admin Portal</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
+            </div>
+
 
             <button
               type="button"
