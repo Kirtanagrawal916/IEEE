@@ -138,8 +138,8 @@ export default function Navbar({
               to="/"
               className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                 pathname === '/'
-                  ? 'bg-[#7C3AED] text-white shadow-xs'
-                  : 'text-[#4B5563] dark:text-slate-200 hover:text-[#7C3AED] hover:bg-[#F3E8FF] dark:hover:bg-purple-950/40'
+                  ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-md'
+                  : 'text-slate-700 dark:text-slate-200 hover:text-purple-700 dark:hover:text-white hover:bg-purple-100/70 dark:hover:bg-purple-900/40'
               }`}
             >
               <Compass className="w-4 h-4" />
@@ -153,12 +153,12 @@ export default function Navbar({
                 onClick={() => setIsCareerOpen(!isCareerOpen)}
                 className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                   isCareerActive
-                    ? 'bg-[#7C3AED] text-white shadow-xs'
-                    : 'text-[#4B5563] dark:text-slate-200 hover:text-[#7C3AED] hover:bg-[#F3E8FF] dark:hover:bg-purple-950/40'
+                    ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-md'
+                    : 'text-slate-700 dark:text-slate-200 hover:text-purple-700 dark:hover:text-white hover:bg-purple-100/70 dark:hover:bg-purple-900/40'
                 }`}
                 title="Career Opportunities: Courses, Portfolio & Gigs"
               >
-                <Briefcase className="w-4 h-4" />
+                <Briefcase className="w-4 h-4 text-purple-600 dark:text-purple-300" />
                 <span>Career Opportunity</span>
                 <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${isCareerOpen ? 'rotate-180' : ''}`} />
               </button>
@@ -357,24 +357,15 @@ export default function Navbar({
               )}
             </button>
 
-            {/* Primary CTA: Find Free Jobs */}
-            <Link
-              to="/opportunities"
-              className="tap-target hidden lg:inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#F97316] hover:bg-[#EA580C] text-white text-xs font-bold font-heading shadow-xs transition-all cursor-pointer"
-            >
-              <Briefcase className="w-3.5 h-3.5" />
-              <span>Find Free Jobs</span>
-            </Link>
-
             {/* Guest Action Buttons (When not logged in) */}
             {!user && (
               <div className="hidden sm:flex items-center gap-2">
                 <Link
                   to="/login"
-                  className={`tap-target px-3.5 py-2 rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer ${
+                  className={`px-3.5 py-2 rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer ${
                     pathname === '/login'
-                      ? 'bg-[#7C3AED] text-white shadow-xs'
-                      : 'bg-white dark:bg-[#191026] border border-[#E5E7EB] dark:border-purple-800/40 text-[#4B5563] dark:text-slate-200 hover:text-[#7C3AED] hover:bg-[#F3E8FF]'
+                      ? 'bg-purple-600 text-white shadow-md'
+                      : 'bg-white dark:bg-slate-900 border-2 border-purple-500/80 text-purple-600 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-slate-800'
                   }`}
                 >
                   <LogIn className="w-3.5 h-3.5" />
@@ -383,10 +374,10 @@ export default function Navbar({
 
                 <Link
                   to="/signup"
-                  className={`tap-target px-4 py-2 rounded-xl text-xs font-bold font-heading flex items-center gap-1.5 cursor-pointer transition-all shadow-xs ${
+                  className={`px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-all shadow-md ${
                     pathname === '/signup'
-                      ? 'bg-[#7C3AED] text-white'
-                      : 'bg-[#7C3AED] hover:bg-[#6D28D9] text-white'
+                      ? 'bg-gradient-to-r from-pink-600 to-purple-600 text-white ring-2 ring-pink-400'
+                      : 'bg-gradient-to-r from-purple-600 via-indigo-600 to-pink-600 text-white hover:shadow-lg'
                   }`}
                 >
                   <UserPlus className="w-3.5 h-3.5" />

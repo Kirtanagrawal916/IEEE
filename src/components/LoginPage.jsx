@@ -265,9 +265,9 @@ export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNaviga
       <div className="max-w-6xl w-full grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-stretch relative z-10">
         
         {/* LEFT SIDE: BRANDING */}
-        <div className="lg:col-span-6 rounded-3xl bg-gradient-to-br from-purple-900 via-indigo-950 to-slate-900 dark:from-slate-900 dark:via-purple-950 dark:to-slate-950 p-8 sm:p-10 text-white border border-purple-300/40 dark:border-purple-500/30 shadow-2xl flex flex-col justify-between relative overflow-hidden backdrop-blur-xl">
+        <div className="lg:col-span-6 rounded-3xl bg-gradient-to-br from-[#7C3AED] via-[#6D28D9] to-[#5B21B6] p-8 sm:p-10 text-white border border-purple-400/30 shadow-2xl flex flex-col justify-between relative overflow-hidden backdrop-blur-xl">
           
-          <div className="absolute top-0 right-0 w-64 h-64 bg-pink-500/20 dark:bg-pink-500/10 rounded-full blur-2xl pointer-events-none"></div>
+          <div className="absolute top-0 right-0 w-64 h-64 bg-pink-500/20 rounded-full blur-2xl pointer-events-none"></div>
 
           <div className="space-y-8 relative z-10">
             <div className="space-y-3">
@@ -278,22 +278,22 @@ export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNaviga
                 <Logo size="lg" />
               </div>
 
-              <div className="inline-block px-3.5 py-1 rounded-full bg-purple-500/30 border border-purple-400/40 text-purple-200 text-xs font-bold uppercase tracking-wider">
+              <div className="inline-block px-3.5 py-1 rounded-full bg-white/20 border border-white/20 text-purple-100 text-xs font-bold uppercase tracking-wider">
                 "Learn. Build. Showcase. Earn."
               </div>
             </div>
 
             <div className="space-y-3">
-              <h1 className="text-2xl sm:text-4xl font-extrabold text-white tracking-tight leading-snug">
-                Welcome Back to Your <span className="bg-gradient-to-r from-purple-300 via-pink-300 to-amber-200 bg-clip-text text-transparent">Growth Journey ✨</span>
+              <h1 className="text-2xl sm:text-4xl font-heading font-black text-white tracking-tight leading-snug">
+                Welcome Back to Your <span className="bg-gradient-to-r from-amber-200 via-orange-200 to-pink-200 bg-clip-text text-transparent">Growth Journey ✨</span>
               </h1>
-              <p className="text-sm text-purple-100 dark:text-slate-300 leading-relaxed font-medium">
+              <p className="text-sm text-purple-100 leading-relaxed font-medium">
                 Continue learning new market-relevant skills, build your verified portfolio, and connect with real income opportunities across India.
               </p>
             </div>
 
-            <div className="space-y-3 bg-white/10 dark:bg-slate-900/60 p-5 rounded-2xl border border-purple-400/30 dark:border-purple-500/20 backdrop-blur-md">
-              <p className="text-xs font-extrabold text-purple-200 uppercase tracking-wider">Why Women Choose HerEarn</p>
+            <div className="space-y-3 bg-white/10 dark:bg-[#191026]/60 p-5 rounded-2xl border border-white/20 backdrop-blur-md">
+              <p className="text-xs font-extrabold text-amber-300 uppercase tracking-wider">Why Women Choose HerEarn</p>
               <div className="space-y-2.5">
                 {benefitsList.map((item, idx) => (
                   <div key={idx} className="flex items-start gap-3">
@@ -302,17 +302,17 @@ export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNaviga
                     </div>
                     <div>
                       <span className="text-xs font-bold text-white">{item.title}</span>
-                      <span className="text-[11px] text-purple-100 dark:text-slate-400 font-medium block">{item.desc}</span>
+                      <span className="text-[11px] text-purple-100 dark:text-slate-300 font-medium block">{item.desc}</span>
                     </div>
                   </div>
                 ))}
               </div>
             </div>
 
-            <div className="bg-slate-950/60 dark:bg-slate-950/80 rounded-2xl p-4 border border-purple-400/30 relative overflow-hidden shadow-inner flex items-center justify-between gap-4">
+            <div className="bg-[#191026]/70 rounded-2xl p-4 border border-purple-400/30 relative overflow-hidden shadow-inner flex items-center justify-between gap-4">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-tr from-purple-600 to-pink-600 flex items-center justify-center text-white font-bold shadow-md">
-                  <Award className="w-6 h-6" />
+                <div className="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center text-white font-bold shadow-md">
+                  <Award className="w-6 h-6 text-amber-300" />
                 </div>
                 <div>
                   <p className="text-sm font-bold text-white">Join 15,000+ Learners</p>
@@ -320,8 +320,8 @@ export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNaviga
                 </div>
               </div>
               <div className="text-right">
-                <p className="text-lg sm:text-xl font-extrabold text-amber-200 dark:text-amber-300 tracking-tight">2,000+</p>
-                <p className="text-[10px] font-bold text-purple-100 dark:text-slate-400 uppercase tracking-wider">Projects</p>
+                <p className="text-lg sm:text-xl font-heading font-black text-amber-300 tracking-tight">2,000+</p>
+                <p className="text-[10px] font-bold text-purple-200 uppercase tracking-wider">Projects</p>
               </div>
             </div>
           </div>
@@ -330,20 +330,20 @@ export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNaviga
         {/* RIGHT SIDE: LOGIN FORM */}
         <div className="lg:col-span-6 flex flex-col justify-center">
           
-          <div className="bg-white dark:bg-slate-900/95 rounded-3xl p-7 sm:p-10 border border-purple-200 dark:border-purple-500/30 shadow-2xl space-y-6 text-slate-900 dark:text-white backdrop-blur-xl relative">
+          <div className="bg-white dark:bg-[#191026] rounded-3xl p-7 sm:p-10 border border-[#E5E7EB] dark:border-purple-900/30 shadow-2xl space-y-6 text-[#1F2937] dark:text-white backdrop-blur-xl relative">
             
             {/* Dual Login Tab Switcher: User vs Recruiter */}
-            <div className="grid grid-cols-2 p-1.5 rounded-2xl bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-purple-500/20 text-xs font-bold">
+            <div className="grid grid-cols-2 p-1.5 rounded-2xl bg-[#FFF9F5] dark:bg-[#201533] border border-[#E5E7EB] dark:border-purple-900/30 text-xs font-bold">
               <button
                 type="button"
                 onClick={() => { setLoginType('user'); setError(''); setAdminError(''); }}
                 className={`py-2.5 px-3 rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
                   loginType === 'user'
-                    ? 'bg-white dark:bg-slate-800 text-purple-700 dark:text-white shadow-sm font-black'
+                    ? 'bg-white dark:bg-[#191026] text-[#7C3AED] dark:text-white shadow-xs font-black'
                     : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
                 }`}
               >
-                <User className="w-3.5 h-3.5 text-purple-500" />
+                <User className="w-3.5 h-3.5 text-[#7C3AED]" />
                 <span>Learner & Employer</span>
               </button>
               <button
@@ -352,7 +352,7 @@ export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNaviga
                 className={`py-2.5 px-3 rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
                   loginType === 'recruiter'
                     ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-md font-black'
-                    : 'text-slate-500 hover:text-purple-600 dark:hover:text-purple-300'
+                    : 'text-slate-500 hover:text-[#7C3AED] dark:hover:text-purple-300'
                 }`}
               >
                 <Briefcase className="w-3.5 h-3.5 text-pink-400" />
@@ -525,7 +525,7 @@ export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNaviga
                           if (error) setError('');
                         }}
                         placeholder={loginType === 'recruiter' ? "recruiter@company.com" : "name@domain.com or @username"}
-                        className="w-full pl-10 pr-4 py-3.5 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-purple-500/30 rounded-2xl text-xs sm:text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-purple-500 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 transition-all"
+                        className="w-full pl-10 pr-4 py-3.5 bg-[#FFF9F5] dark:bg-[#201533] border border-[#E5E7EB] dark:border-purple-900/30 rounded-2xl text-xs sm:text-sm font-semibold focus:outline-none focus:border-[#7C3AED] text-[#1F2937] dark:text-white placeholder:text-slate-400 transition-all"
                         required
                       />
                     </div>
@@ -533,11 +533,11 @@ export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNaviga
 
                   {/* PASSWORD */}
                   <div className="space-y-2">
-                    <label className="text-xs font-extrabold text-slate-700 dark:text-slate-200 block uppercase tracking-wider">
+                    <label className="text-xs font-extrabold text-[#1F2937] dark:text-slate-200 block uppercase tracking-wider">
                       PASSWORD
                     </label>
                     <div className="relative">
-                      <Lock className="w-4 h-4 text-purple-600 dark:text-purple-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                      <Lock className="w-4 h-4 text-[#7C3AED] dark:text-purple-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                       <input
                         type={showPassword ? 'text' : 'password'}
                         value={password}
@@ -546,13 +546,13 @@ export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNaviga
                           if (error) setError('');
                         }}
                         placeholder="••••••••••••"
-                        className="w-full pl-10 pr-10 py-3.5 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-purple-500/30 rounded-2xl text-xs sm:text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-purple-500 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 transition-all"
+                        className="w-full pl-10 pr-10 py-3.5 bg-[#FFF9F5] dark:bg-[#201533] border border-[#E5E7EB] dark:border-purple-900/30 rounded-2xl text-xs sm:text-sm font-semibold focus:outline-none focus:border-[#7C3AED] text-[#1F2937] dark:text-white placeholder:text-slate-400 transition-all"
                         required
                       />
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors cursor-pointer"
+                        className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-[#7C3AED] dark:hover:text-purple-400 transition-colors cursor-pointer"
                       >
                         {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                       </button>
@@ -566,9 +566,9 @@ export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNaviga
                         type="checkbox"
                         checked={rememberMe}
                         onChange={(e) => setRememberMe(e.target.checked)}
-                        className="w-4 h-4 rounded border-slate-300 dark:border-slate-600 text-purple-600 focus:ring-purple-500 accent-purple-600 cursor-pointer"
+                        className="w-4 h-4 rounded border-[#E5E7EB] text-[#7C3AED] focus:ring-[#7C3AED] accent-[#7C3AED] cursor-pointer"
                       />
-                      <span className="text-xs font-extrabold text-slate-700 dark:text-slate-200">
+                      <span className="text-xs font-bold text-[#1F2937] dark:text-slate-200">
                         Remember Me on this device
                       </span>
                     </label>
@@ -578,7 +578,7 @@ export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNaviga
                   <button
                     type="submit"
                     disabled={isLoading}
-                    className="tap-target w-full py-3.5 px-6 rounded-xl bg-[#7C3AED] hover:bg-[#6D28D9] text-white font-bold font-heading text-sm sm:text-base shadow-sm transition-all duration-200 flex items-center justify-center gap-2.5 cursor-pointer disabled:opacity-50 mt-3 min-h-[48px]"
+                    className="tap-target w-full py-3.5 px-6 rounded-2xl bg-[#7C3AED] hover:bg-[#6D28D9] text-white font-heading font-black text-sm sm:text-base shadow-sm transition-all duration-200 flex items-center justify-center gap-2.5 cursor-pointer disabled:opacity-50 mt-3 min-h-[48px]"
                   >
                     {isLoading ? (
                       <>
@@ -596,8 +596,8 @@ export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNaviga
 
                 {/* DIVIDER: OR */}
                 <div className="relative flex items-center justify-center my-3">
-                  <div className="border-t border-slate-200 dark:border-slate-800 w-full"></div>
-                  <span className="bg-white dark:bg-slate-900 px-3 text-[10px] font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-widest absolute">
+                  <div className="border-t border-[#E5E7EB] dark:border-purple-900/30 w-full"></div>
+                  <span className="bg-white dark:bg-[#191026] px-3 text-[10px] font-extrabold text-slate-400 uppercase tracking-widest absolute">
                     OR
                   </span>
                 </div>
@@ -617,11 +617,11 @@ export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNaviga
                 />
 
                 {/* Admin access (small discreet link) */}
-                <div className="p-3 rounded-2xl bg-purple-50/70 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-500/20 text-center">
+                <div className="p-3 rounded-2xl bg-[#FFF9F5] dark:bg-[#201533] border border-[#E5E7EB] dark:border-purple-900/30 text-center">
                   <button
                     type="button"
                     onClick={() => setLoginType('admin')}
-                    className="text-xs font-bold text-purple-700 dark:text-purple-300 hover:text-pink-600 dark:hover:text-pink-400 transition-colors flex items-center justify-center gap-1.5 mx-auto cursor-pointer"
+                    className="text-xs font-bold text-[#7C3AED] dark:text-purple-300 hover:text-pink-600 dark:hover:text-pink-400 transition-colors flex items-center justify-center gap-1.5 mx-auto cursor-pointer"
                   >
                     <Shield className="w-3.5 h-3.5 text-pink-500" />
                     <span>Platform Administrator? Access Admin Console →</span>
@@ -629,13 +629,13 @@ export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNaviga
                 </div>
 
                 {/* CREATE ACCOUNT LINK */}
-                <div className="pt-3 border-t border-slate-200 dark:border-slate-800/80 text-center space-y-1">
-                  <p className="text-xs text-slate-700 dark:text-slate-300 font-semibold">
+                <div className="pt-3 border-t border-[#E5E7EB] dark:border-purple-900/30 text-center space-y-1">
+                  <p className="text-xs text-[#1F2937] dark:text-slate-300 font-semibold">
                     Don't have an account?{' '}
                     <button
                       type="button"
                       onClick={onNavigateToSignup}
-                      className="font-extrabold text-purple-700 dark:text-pink-400 hover:underline cursor-pointer ml-1"
+                      className="font-extrabold text-[#7C3AED] dark:text-pink-400 hover:underline cursor-pointer ml-1"
                     >
                       Create Free Account →
                     </button>

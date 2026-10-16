@@ -80,7 +80,7 @@ export default function TermsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white py-10 px-4 sm:px-6 lg:px-8 space-y-8 animate-fade-in relative">
+    <div className="min-h-screen bg-[#FFF9F5] dark:bg-[#0F0918] text-[#1F2937] dark:text-white py-10 px-4 sm:px-6 lg:px-8 space-y-8 animate-fade-in relative">
       
       <div className="max-w-6xl mx-auto space-y-8">
         
