@@ -165,7 +165,7 @@ export default function LandingSection({ onNavigate, onOpenAuth, theme }) {
             role="search"
             aria-label="Search free jobs and opportunities"
           >
-            <div className="glass-panel-elevated p-2.5 sm:p-3 rounded-2xl flex flex-col md:flex-row items-stretch gap-2.5">
+            <div className="bg-white dark:bg-[#191026] p-2.5 sm:p-3 rounded-2xl border-2 border-[#E5E7EB] dark:border-purple-800/50 shadow-lg flex flex-col md:flex-row items-stretch gap-2.5">
               
               {/* Job Title / Skill Input */}
               <div className="relative flex-1 flex items-center">
@@ -211,7 +211,7 @@ export default function LandingSection({ onNavigate, onOpenAuth, theme }) {
                   key={idx}
                   type="button"
                   onClick={() => handleChipClick(chip)}
-                  className="px-2.5 py-1 rounded-xl glass-subtle text-[#4B5563] dark:text-slate-300 hover:text-[#7C3AED] hover:border-[#7C3AED]/50 transition-all cursor-pointer text-xs shadow-xs"
+                  className="px-2.5 py-1 rounded-lg bg-white dark:bg-[#1E1233] border border-[#E5E7EB] dark:border-purple-800/30 text-[#4B5563] dark:text-slate-300 hover:text-[#7C3AED] hover:border-[#7C3AED]/40 transition-colors cursor-pointer text-xs"
                 >
                   {chip}
                 </button>
@@ -247,13 +247,13 @@ export default function LandingSection({ onNavigate, onOpenAuth, theme }) {
           2. STATS & TRUST STRIP
          ======================================================== */}
       <section className="site-container" aria-label="Key Platform Facts">
-        <div className="glass-panel rounded-2xl p-6 sm:p-8">
+        <div className="bg-white dark:bg-[#191026] border border-[#E5E7EB] dark:border-purple-900/40 rounded-2xl p-6 sm:p-8 shadow-sm">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
             {stats.map((item, idx) => {
               const IconComp = item.icon;
               return (
                 <div key={idx} className="space-y-1.5">
-                  <div className="w-10 h-10 mx-auto rounded-xl glass-subtle flex items-center justify-center text-[#7C3AED]">
+                  <div className="w-10 h-10 mx-auto rounded-xl bg-[#FFF9F5] dark:bg-[#231738] border border-[#FED7AA]/60 dark:border-purple-800/40 flex items-center justify-center text-[#7C3AED]">
                     <IconComp className="w-5 h-5" />
                   </div>
                   <p className={`text-2xl sm:text-3xl font-extrabold font-heading ${item.color}`}>
@@ -577,9 +577,9 @@ export default function LandingSection({ onNavigate, onOpenAuth, theme }) {
                   </div>
                 </div>
 
-                <div className="glass-subtle p-3 rounded-xl flex items-center justify-between text-xs">
+                <div className="bg-[#FFF9F5] dark:bg-[#201533] p-3 rounded-xl border border-[#FED7AA]/50 flex items-center justify-between text-xs">
                   <div>
-                    <span className="text-[10px] text-[#6B7280] dark:text-slate-400 uppercase font-bold block">Monthly Earnings</span>
+                    <span className="text-[10px] text-[#6B7280] uppercase font-bold block">Monthly Earnings</span>
                     <span className="text-sm font-extrabold text-[#16A34A] font-heading">
                       {story.incomeCurrent}
                     </span>

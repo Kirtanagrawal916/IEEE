@@ -25,7 +25,7 @@ export default function JobCard({
 
   return (
     <article 
-      className="theme-card rounded-2xl p-5 sm:p-6 flex flex-col justify-between relative group"
+      className="theme-card bg-white dark:bg-[#191026] border border-[#E5E7EB] dark:border-purple-900/30 rounded-2xl p-5 sm:p-6 flex flex-col justify-between transition-all duration-200 hover:shadow-lg hover:border-[#7C3AED]/40 relative group"
       aria-label={`Job listing: ${job.title} at ${job.company}`}
     >
       <div>
@@ -62,7 +62,7 @@ export default function JobCard({
         </h3>
 
         {/* Company & Core Metadata Box */}
-        <div className="glass-subtle p-3.5 rounded-xl space-y-2 mb-4 text-xs font-medium text-[#4B5563] dark:text-slate-300">
+        <div className="bg-[#FFF9F5] dark:bg-[#201533] p-3.5 rounded-xl border border-[#FED7AA]/50 dark:border-purple-800/30 space-y-2 mb-4 text-xs font-medium text-[#4B5563] dark:text-slate-300">
           <div className="flex items-center gap-2 font-bold text-[#1F2937] dark:text-white">
             <Building className="w-4 h-4 text-[#7C3AED] shrink-0" />
             <span className="truncate">{job.company}</span>

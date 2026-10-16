@@ -446,15 +446,9 @@ function AppContent() {
   const userAppliedGigs = opportunities.filter(g => (user?.appliedGigIds || []).includes(g.id));
 
   return (
-    <div className={`min-h-screen flex flex-col font-sans transition-colors duration-300 relative selection:bg-purple-500 selection:text-white ${
+    <div className={`min-h-screen flex flex-col font-sans transition-colors duration-300 ${
       theme === 'dark' ? 'bg-[#0F0918] text-[#F9FAFB]' : 'bg-[#FFF9F5] text-[#1F2937]'
     }`}>
-      {/* Ambient Glassmorphic Background Glow Orbs */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden z-0" aria-hidden="true">
-        <div className="absolute -top-[12%] -left-[10%] w-[55vw] max-w-[650px] h-[55vw] max-h-[650px] rounded-full bg-gradient-to-br from-purple-400/20 via-violet-300/10 to-transparent dark:from-purple-600/20 dark:via-violet-900/15 blur-[120px]" />
-        <div className="absolute top-[20%] -right-[12%] w-[50vw] max-w-[600px] h-[50vw] max-h-[600px] rounded-full bg-gradient-to-bl from-orange-300/18 via-amber-200/10 to-transparent dark:from-orange-600/15 dark:via-pink-900/15 blur-[130px]" />
-        <div className="absolute top-[65%] left-[20%] w-[45vw] max-w-[550px] h-[45vw] max-h-[550px] rounded-full bg-gradient-to-tr from-pink-300/15 via-purple-200/10 to-transparent dark:from-pink-600/15 dark:via-indigo-950/20 blur-[140px]" />
-      </div>
       
       {/* Sticky Navigation Header (Hidden on Admin portal for dedicated admin console) */}
       {!isAdminRoute && (
@@ -469,7 +463,7 @@ function AppContent() {
       )}
 
       {/* Main View Area with React Router Routes */}
-      <main className={`flex-1 relative z-10 ${isAdminRoute ? 'pb-0' : 'pb-16'}`}>
+      <main className={`flex-1 ${isAdminRoute ? 'pb-0' : 'pb-16'}`}>
         <Routes>
           <Route 
             path="/" 
