@@ -380,7 +380,7 @@ body {
 
 .goog-te-gadget,
 #google_translate_element,
-.skiptranslate,
+iframe.skiptranslate,
 body > .skiptranslate {
   display: none !important;
   visibility: hidden !important;
@@ -395,6 +395,7 @@ body > .skiptranslate {
 
 /* Prevent translation engines from changing language selector options */
 .notranslate,
+.notranslate *,
 [translate="no"],
 [translate="no"] * {
   -webkit-translate: no !important;
