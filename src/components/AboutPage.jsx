@@ -199,7 +199,7 @@ export default function AboutPage({ onNavigate }) {
             return (
               <div 
                 key={idx}
-                className="bg-white dark:bg-slate-900/70 border border-slate-200 dark:border-slate-800 hover:border-purple-500/40 p-6 rounded-3xl space-y-4 transition-all duration-300 flex flex-col justify-between shadow-sm"
+                className="theme-card p-6 rounded-3xl space-y-4 flex flex-col justify-between"
               >
                 <div className="space-y-4">
                   <div className={`w-12 h-12 rounded-2xl border flex items-center justify-center ${item.color}`}>
@@ -217,7 +217,7 @@ export default function AboutPage({ onNavigate }) {
       {/* ========================================================
           3. SOLUTION SECTION (HEREARN LOOP)
          ======================================================== */}
-      <section className="max-w-6xl mx-auto space-y-12 bg-white/80 dark:bg-slate-900/40 border border-purple-200 dark:border-purple-500/20 p-8 sm:p-12 rounded-3xl relative overflow-hidden backdrop-blur-md shadow-md">
+      <section className="max-w-6xl mx-auto space-y-12 glass-panel p-8 sm:p-12 rounded-3xl relative overflow-hidden">
         
         {/* Decorative Glow */}
         <div className="absolute top-0 right-0 w-96 h-96 bg-purple-600/10 rounded-full blur-3xl pointer-events-none"></div>
@@ -292,9 +292,9 @@ export default function AboutPage({ onNavigate }) {
             return (
               <div 
                 key={idx}
-                className="bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 p-6 rounded-3xl space-y-3 text-center hover:border-purple-500/30 transition-all shadow-sm"
+                className="theme-card p-6 rounded-3xl space-y-3 text-center"
               >
-                <div className="w-12 h-12 rounded-2xl bg-purple-50 dark:bg-purple-500/10 border border-purple-200 dark:border-purple-500/30 text-purple-600 dark:text-purple-400 flex items-center justify-center mx-auto">
+                <div className="w-12 h-12 rounded-2xl glass-subtle text-purple-600 dark:text-purple-400 flex items-center justify-center mx-auto">
                   <Icon className="w-6 h-6" />
                 </div>
                 <p className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">{item.title}</p>
@@ -325,7 +325,7 @@ export default function AboutPage({ onNavigate }) {
             return (
               <div 
                 key={idx}
-                className="bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-purple-500/20 p-7 rounded-3xl flex items-start gap-5 hover:border-pink-500/40 transition-all shadow-md"
+                className="theme-card p-7 rounded-3xl flex items-start gap-5"
               >
                 <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-purple-600 to-pink-600 flex items-center justify-center text-white flex-shrink-0 shadow-md">
                   <Icon className="w-6 h-6" />

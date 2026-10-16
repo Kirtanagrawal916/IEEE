@@ -251,7 +251,7 @@ export default function ChatBot() {
 
       {/* 2. Floating Chat Window */}
       {isOpen && (
-        <div className="w-full sm:w-[400px] h-[550px] bg-slate-900/95 border border-purple-500/30 rounded-3xl shadow-2xl backdrop-blur-xl flex flex-col overflow-hidden animate-fade-in text-white">
+        <div className="w-full sm:w-[400px] h-[550px] glass-modal rounded-3xl flex flex-col overflow-hidden animate-fade-in text-white shadow-2xl">
           
           {/* Header */}
           <div className="bg-gradient-to-r from-purple-900 via-indigo-900 to-slate-900 p-4 border-b border-purple-500/20 flex items-center justify-between shrink-0">
@@ -366,7 +366,7 @@ export default function ChatBot() {
           </div>
 
           {/* Input Bar */}
-          <div className="p-3 bg-slate-900 border-t border-purple-500/20 shrink-0">
+          <div className="p-3 bg-slate-900/80 backdrop-blur-md border-t border-purple-500/20 shrink-0">
             <form
               onSubmit={(e) => {
                 e.preventDefault();
@@ -382,7 +382,7 @@ export default function ChatBot() {
                 onKeyDown={handleKeyDown}
                 disabled={isTyping}
                 maxLength={500}
-                className="flex-1 bg-slate-800 text-white text-xs px-4 py-3 rounded-2xl border border-slate-700 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 placeholder-slate-400 disabled:opacity-50"
+                className="flex-1 glass-subtle text-white text-xs px-4 py-3 rounded-2xl border border-purple-500/30 focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-500/20 placeholder-slate-400 disabled:opacity-50"
               />
 
               <button

@@ -133,7 +133,7 @@ export default function Navbar({
           </Link>
 
           {/* Central Navigation: Home | Career Opportunity (Dropdown: Courses, Portfolio, Opportunities) | Mentorship | Applications */}
-          <div className="hidden md:flex items-center gap-1.5 bg-white/90 dark:bg-slate-900/80 p-1.5 rounded-2xl border border-purple-200 dark:border-purple-500/30 backdrop-blur-md shadow-lg">
+          <div className="hidden md:flex items-center gap-1.5 glass-pill p-1.5 rounded-2xl">
             
             {/* Home */}
             <Link
@@ -167,8 +167,8 @@ export default function Navbar({
 
               {/* Career Opportunity Menu Popover */}
               {isCareerOpen && (
-                <div className="absolute left-0 mt-2 w-72 rounded-2xl bg-white dark:bg-slate-900 border border-purple-200 dark:border-purple-500/30 shadow-2xl p-2 z-50 animate-fade-in space-y-1">
-                  <div className="px-3 py-1.5 border-b border-purple-500/20 text-[10px] font-extrabold text-purple-500 uppercase tracking-wider">
+                <div className="absolute left-0 mt-2 w-72 rounded-2xl glass-dropdown p-2 z-50 animate-fade-in space-y-1">
+                  <div className="px-3 py-1.5 border-b border-purple-500/20 text-[10px] font-extrabold text-purple-600 dark:text-purple-400 uppercase tracking-wider">
                     Career Progression Hub
                   </div>
 
@@ -320,7 +320,7 @@ export default function Navbar({
                 type="button"
                 translate="no"
                 onClick={() => setIsLangOpen(!isLangOpen)}
-                className="notranslate flex items-center gap-1.5 px-3 py-2 rounded-xl border border-purple-200 dark:border-purple-500/30 bg-white/90 dark:bg-slate-900/90 text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-slate-800 text-xs font-bold transition-all cursor-pointer shadow-sm"
+                className="notranslate flex items-center gap-1.5 px-3 py-2 rounded-xl glass-subtle text-purple-700 dark:text-purple-300 hover:border-purple-400 text-xs font-bold transition-all cursor-pointer shadow-xs"
                 title="Select Language / भाषा चुनें"
               >
                 <Globe className="w-4 h-4 text-purple-600 dark:text-purple-400 notranslate" />
@@ -330,7 +330,7 @@ export default function Navbar({
 
               {isLangOpen && (
                 <div 
-                  className="notranslate absolute right-0 mt-2 w-64 rounded-2xl bg-white dark:bg-slate-900 border border-purple-200 dark:border-purple-500/40 shadow-2xl p-2.5 z-50 animate-fade-in space-y-1.5 max-h-80 overflow-y-auto"
+                  className="notranslate absolute right-0 mt-2 w-64 rounded-2xl glass-dropdown p-2.5 z-50 animate-fade-in space-y-1.5 max-h-80 overflow-y-auto"
                   translate="no"
                 >
                   <div className="sticky top-0 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md px-3 py-1.5 border-b border-purple-500/20 text-[10px] font-extrabold text-purple-600 dark:text-purple-400 uppercase tracking-wider z-10 flex items-center justify-between notranslate" translate="no">
@@ -382,10 +382,10 @@ export default function Navbar({
               onClick={onToggleTheme}
               title={`Switch to ${theme === 'dark' ? 'Light' : 'Dark'} Mode`}
               aria-label={`Switch to ${theme === 'dark' ? 'Light' : 'Dark'} Mode`}
-              className={`p-2.5 rounded-xl border transition-all hover:scale-105 cursor-pointer focus:outline-none focus:ring-2 focus:ring-purple-400 ${
+              className={`p-2.5 rounded-xl glass-subtle transition-all hover:scale-105 cursor-pointer focus:outline-none focus:ring-2 focus:ring-purple-400 ${
                 theme === 'dark'
-                  ? 'bg-slate-900/80 border-purple-500/30 text-amber-400'
-                  : 'bg-purple-50 border-purple-300 text-purple-700'
+                  ? 'text-amber-400 hover:border-amber-400/50'
+                  : 'text-purple-700 hover:border-purple-400/50'
               }`}
             >
               {theme === 'dark' ? (
@@ -405,7 +405,7 @@ export default function Navbar({
                   className={`tap-target px-3.5 py-2 rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer ${
                     pathname === '/login'
                       ? 'bg-[#7C3AED] text-white shadow-xs'
-                      : 'bg-white dark:bg-[#191026] border border-[#E5E7EB] dark:border-purple-800/40 text-[#4B5563] dark:text-slate-200 hover:text-[#7C3AED] hover:bg-[#F3E8FF]'
+                      : 'glass-subtle text-[#4B5563] dark:text-slate-200 hover:text-[#7C3AED] hover:border-purple-400'
                   }`}
                 >
                   <LogIn className="w-3.5 h-3.5" />
@@ -431,10 +431,10 @@ export default function Navbar({
               <button
                 type="button"
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
-                className={`p-2.5 rounded-xl border transition-all flex items-center justify-center cursor-pointer ${
+                className={`p-2.5 rounded-xl transition-all flex items-center justify-center cursor-pointer ${
                   isMenuOpen
-                    ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white border-pink-500 shadow-md'
-                    : 'bg-white dark:bg-slate-900/80 border-purple-200 dark:border-purple-500/20 text-purple-700 dark:text-slate-300 hover:text-purple-900 dark:hover:text-white'
+                    ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white border border-pink-500 shadow-md'
+                    : 'glass-subtle text-purple-700 dark:text-slate-300 hover:border-purple-400'
                 }`}
                 title="Account, Withdraw & Navigation Menu"
                 aria-label="Open 3-dot menu"
@@ -444,7 +444,7 @@ export default function Navbar({
 
               {/* Dropdown Menu Popup */}
               {isMenuOpen && (
-                <div className="absolute right-0 mt-3 w-72 rounded-2xl bg-white dark:bg-slate-950 border border-purple-200 dark:border-purple-500/40 shadow-2xl p-2.5 z-50 animate-fade-in text-slate-900 dark:text-white space-y-2">
+                <div className="absolute right-0 mt-3 w-72 rounded-2xl glass-dropdown p-2.5 z-50 animate-fade-in text-slate-900 dark:text-white space-y-2">
                   
                   {/* 1. PROFILE SECTION (Visible at the top when logged in, as in picture) */}
                   {user && (

@@ -20,7 +20,7 @@ export default function LogoutModal({ isOpen, onConfirm, onCancel }) {
       onClick={onCancel}
     >
       <div 
-        className="bg-white dark:bg-slate-900 border border-purple-500/30 rounded-3xl max-w-sm w-full p-6 text-slate-900 dark:text-white shadow-2xl relative space-y-5 text-center"
+        className="glass-modal rounded-3xl max-w-sm w-full p-6 text-slate-900 dark:text-white relative space-y-5 text-center"
         onClick={(e) => e.stopPropagation()}
       >
         <button
