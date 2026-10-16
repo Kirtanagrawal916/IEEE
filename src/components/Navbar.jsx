@@ -128,7 +128,7 @@ export default function Navbar({
             className="flex items-center cursor-pointer group py-1"
             title="HerEarn - Skill to Income Platform"
           >
-            <Logo size="md" />
+            <Logo size="lg" imgClassName="h-14 sm:h-15 md:h-16 w-auto" />
           </Link>
 
           {/* Central Navigation: Home | Career Opportunity (Dropdown: Courses, Portfolio, Opportunities) | Mentorship | Applications */}
@@ -371,14 +371,7 @@ export default function Navbar({
               )}
             </button>
 
-            {/* Primary CTA: Find Free Jobs */}
-            <Link
-              to="/opportunities"
-              className="tap-target hidden lg:inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#F97316] hover:bg-[#EA580C] text-white text-xs font-bold font-heading shadow-xs transition-all cursor-pointer"
-            >
-              <Briefcase className="w-3.5 h-3.5" />
-              <span>Find Free Jobs</span>
-            </Link>
+
 
             {/* Guest Action Buttons (When not logged in) */}
             {!user && (
