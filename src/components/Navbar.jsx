@@ -24,7 +24,9 @@ import {
   ArrowUpRight,
   Sparkles,
   Gamepad2,
-  MessageSquare
+  MessageSquare,
+  Check,
+  RotateCcw
 } from 'lucide-react';
 import LogoutModal from './LogoutModal';
 import WalletWithdrawModal from './WalletWithdrawModal';
@@ -313,41 +315,83 @@ export default function Navbar({
           {/* Right Section: Language Selector, Theme Switch, Guest Login/Sign Up & 3-Dot Menu */}
           <div className="flex items-center gap-2 sm:gap-3">
 
-            {/* Native Language Selector Dropdown */}
-            <div className="relative" ref={langRef}>
+            {/* Native Language Selector Dropdown (Protected from external translation mutations) */}
+            <div className="relative notranslate" ref={langRef} translate="no">
               <button
                 type="button"
+                translate="no"
                 onClick={() => setIsLangOpen(!isLangOpen)}
-                className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-purple-200 dark:border-purple-500/30 bg-white/90 dark:bg-slate-900/90 text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-slate-800 text-xs font-bold transition-all cursor-pointer shadow-sm"
-                title="Select Native Language / भाषा चुनें"
+                className="notranslate flex items-center gap-1.5 px-3 py-2 rounded-xl border border-purple-200 dark:border-purple-500/30 bg-white/90 dark:bg-slate-900/90 text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-slate-800 text-xs font-bold transition-all cursor-pointer shadow-sm"
+                title="Select Language / भाषा चुनें"
               >
-                <Globe className="w-4 h-4 text-purple-600 dark:text-purple-400" />
-                <span className="hidden sm:inline font-bold">{currentLangObj.native}</span>
-                <span className="sm:hidden font-extrabold uppercase">{currentLangObj.code}</span>
+                <Globe className="w-4 h-4 text-purple-600 dark:text-purple-400 notranslate" />
+                <span className="hidden sm:inline font-bold notranslate" translate="no">{currentLangObj.native}</span>
+                <span className="sm:hidden font-extrabold uppercase notranslate" translate="no">{currentLangObj.code}</span>
               </button>
 
               {isLangOpen && (
-                <div className="absolute right-0 mt-2 w-52 rounded-2xl bg-white dark:bg-slate-900 border border-purple-200 dark:border-purple-500/40 shadow-2xl p-2 z-50 animate-fade-in space-y-1 max-h-72 overflow-y-auto">
-                  <div className="sticky top-0 bg-white dark:bg-slate-900 px-3 py-1.5 border-b border-purple-500/20 text-[10px] font-extrabold text-purple-500 uppercase tracking-wider z-10">
-                    Select Language / भाषा
+                <div 
+                  className="notranslate absolute right-0 mt-2 w-64 rounded-2xl bg-white dark:bg-slate-900 border border-purple-200 dark:border-purple-500/40 shadow-2xl p-2.5 z-50 animate-fade-in space-y-1.5 max-h-80 overflow-y-auto"
+                  translate="no"
+                >
+                  <div className="sticky top-0 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md px-3 py-1.5 border-b border-purple-500/20 text-[10px] font-extrabold text-purple-600 dark:text-purple-400 uppercase tracking-wider z-10 flex items-center justify-between notranslate" translate="no">
+                    <span className="notranslate" translate="no">Select Language</span>
+                    <span className="notranslate font-mono text-[9px] text-slate-400" translate="no">{LANGUAGES.length} Languages</span>
                   </div>
-                  {LANGUAGES.map((langItem) => (
+
+                  {/* Reset to English Button (Provides immediate exit if user selected wrong language) */}
+                  {language !== 'en' && (
                     <button
-                      key={langItem.code}
+                      type="button"
+                      translate="no"
                       onClick={() => {
-                        setLanguage(langItem.code);
+                        setLanguage('en');
                         setIsLangOpen(false);
                       }}
-                      className={`w-full text-left px-3 py-2 rounded-xl text-xs font-semibold flex items-center justify-between transition-colors cursor-pointer ${
-                        language === langItem.code
-                          ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold'
-                          : 'text-slate-700 dark:text-slate-200 hover:bg-purple-50 dark:hover:bg-slate-800'
-                      }`}
+                      className="notranslate w-full text-left px-3 py-2 rounded-xl text-xs font-bold flex items-center justify-between bg-amber-50 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-700/60 text-amber-900 dark:text-amber-200 hover:bg-amber-100 dark:hover:bg-amber-900/50 transition-colors cursor-pointer shadow-xs mb-1"
                     >
-                      <span>{langItem.native}</span>
-                      <span className="text-[10px] opacity-75 font-normal">({langItem.name})</span>
+                      <span className="flex items-center gap-1.5 notranslate" translate="no">
+                        <RotateCcw className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 notranslate" />
+                        <span className="notranslate" translate="no">Reset to English</span>
+                      </span>
+                      <span className="notranslate text-[10px] font-semibold opacity-75" translate="no">(Default)</span>
                     </button>
-                  ))}
+                  )}
+
+                  {/* Permanent Static Language List - Always displays in original native script */}
+                  <div className="space-y-1 notranslate" translate="no">
+                    {LANGUAGES.map((langItem) => {
+                      const isSelected = language === langItem.code;
+                      return (
+                        <button
+                          key={langItem.code}
+                          type="button"
+                          translate="no"
+                          onClick={() => {
+                            setLanguage(langItem.code);
+                            setIsLangOpen(false);
+                          }}
+                          className={`notranslate w-full text-left px-3 py-2 rounded-xl text-xs font-medium flex items-center justify-between transition-colors cursor-pointer ${
+                            isSelected
+                              ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold shadow-xs'
+                              : 'text-slate-700 dark:text-slate-200 hover:bg-purple-50 dark:hover:bg-slate-800'
+                          }`}
+                        >
+                          <span className="notranslate font-bold text-[13px]" translate="no">
+                            {langItem.native}
+                          </span>
+                          <div className="flex items-center gap-1.5 notranslate" translate="no">
+                            <span className={`notranslate text-[11px] font-normal ${isSelected ? 'text-white/90' : 'text-slate-500 dark:text-slate-400'}`} translate="no">
+                              {langItem.name}
+                            </span>
+                            {isSelected && (
+                              <Check className="w-3.5 h-3.5 text-white shrink-0 notranslate" />
+                            )}
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
               )}
             </div>
