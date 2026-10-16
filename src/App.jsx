@@ -468,8 +468,10 @@ function AppContent() {
           <Route 
             path="/" 
             element={
-              <AboutPage 
+              <LandingSection 
                 onNavigate={(page) => navigate(`/${page}`)}
+                onOpenAuth={() => handleOpenAuth('signup')}
+                theme={theme}
               />
             } 
           />
@@ -479,17 +481,6 @@ function AppContent() {
             element={
               <AboutPage 
                 onNavigate={(page) => navigate(`/${page}`)}
-              />
-            } 
-          />
-
-          <Route 
-            path="/explore" 
-            element={
-              <LandingSection 
-                onNavigate={(page) => navigate(`/${page}`)}
-                onOpenAuth={() => handleOpenAuth('signup')}
-                theme={theme}
               />
             } 
           />
