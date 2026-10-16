@@ -23,6 +23,11 @@ import {
   Briefcase,
   ExternalLink,
   RefreshCw,
+  BookOpen,
+  IndianRupee,
+  Star,
+  Quote,
+  Heart
 } from 'lucide-react';
 
 // Master Admin Key (keep this secret / move to env later)
@@ -300,89 +305,130 @@ export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNaviga
   };
 
   const benefitsList = [
-    { title: "Free Skill Development", desc: "100% free courses & practical tracks" },
-    { title: "Build Industry Portfolio", desc: "Verified project showcases for clients" },
-    { title: "Verified Opportunities", desc: "Curated micro-gigs & remote internships" },
-    { title: "Application Tracking", desc: "Real-time dashboard status updates" },
-    { title: "Learn From Anywhere", desc: "Mobile & laptop flexible self-paced learning" }
+    { 
+      title: "100% Free Certified Tracks", 
+      desc: "Canva design, digital marketing, VA & coding",
+      icon: BookOpen,
+      color: "from-purple-500 to-indigo-600"
+    },
+    { 
+      title: "Verified Capstone Portfolios", 
+      desc: "Showcase real proof-of-work to clients",
+      icon: Award,
+      color: "from-pink-500 to-rose-600"
+    },
+    { 
+      title: "Scam-Free Micro-Gigs", 
+      desc: "Curated work-from-home & local opportunities",
+      icon: Briefcase,
+      color: "from-amber-500 to-orange-600"
+    },
+    { 
+      title: "Direct UPI Payouts", 
+      desc: "Instant wallet withdrawal to your bank account",
+      icon: IndianRupee,
+      color: "from-emerald-500 to-teal-600"
+    }
   ];
 
   return (
     <div className="min-h-[calc(100vh-5rem)] flex items-center justify-center p-4 sm:p-6 lg:p-10 animate-fade-in relative overflow-hidden bg-[#FFF9F5] dark:bg-[#0F0918] text-[#1F2937] dark:text-white transition-colors duration-300">
       
-      {/* Background Animated Floating Ambient Shapes */}
-      <div className="absolute top-10 left-10 w-96 h-96 bg-purple-400/20 dark:bg-purple-600/15 rounded-full blur-3xl pointer-events-none animate-pulse"></div>
+      {/* Background Animated Floating Ambient Glow Orbs */}
+      <div className="absolute top-12 left-10 w-96 h-96 bg-purple-400/20 dark:bg-purple-600/15 rounded-full blur-3xl pointer-events-none animate-pulse"></div>
       <div className="absolute bottom-10 right-10 w-96 h-96 bg-pink-400/20 dark:bg-pink-600/15 rounded-full blur-3xl pointer-events-none animate-pulse" style={{ animationDelay: '2s' }}></div>
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] bg-gradient-to-tr from-purple-200/20 via-pink-100/10 to-transparent dark:from-purple-950/20 dark:via-pink-950/10 dark:to-transparent rounded-full blur-3xl pointer-events-none"></div>
 
-      <div className="max-w-6xl w-full grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-stretch relative z-10">
+      <div className="max-w-6xl w-full grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-stretch relative z-10">
         
-        {/* LEFT SIDE: BRANDING */}
-        <div className="lg:col-span-6 rounded-3xl bg-gradient-to-br from-purple-900 via-indigo-950 to-slate-900 dark:from-slate-900 dark:via-purple-950 dark:to-slate-950 p-8 sm:p-10 text-white border border-purple-300/40 dark:border-purple-500/30 shadow-2xl flex flex-col justify-between relative overflow-hidden backdrop-blur-xl">
+        {/* LEFT SIDE: BRANDING & EMPOWERMENT */}
+        <div className="lg:col-span-5 rounded-3xl bg-gradient-to-br from-white/90 via-[#FAF5FF]/80 to-white/90 dark:from-[#191026]/95 dark:via-purple-950/40 dark:to-slate-950/90 p-7 sm:p-9 border border-purple-200/80 dark:border-purple-500/30 shadow-xl flex flex-col justify-between relative overflow-hidden backdrop-blur-xl">
           
-          <div className="absolute top-0 right-0 w-64 h-64 bg-pink-500/20 dark:bg-pink-500/10 rounded-full blur-2xl pointer-events-none"></div>
+          <div className="absolute -top-16 -right-16 w-52 h-52 bg-pink-500/15 dark:bg-pink-500/10 rounded-full blur-2xl pointer-events-none"></div>
 
-          <div className="space-y-8 relative z-10">
+          <div className="space-y-6 relative z-10">
+            {/* Logo + Tag */}
             <div className="space-y-3">
               <div 
                 className="cursor-pointer group inline-flex items-center"
                 onClick={onNavigateHome}
+                title="Go to Home"
               >
-                <Logo size="lg" />
+                <Logo size="md" imgClassName="h-8 sm:h-9 w-auto" />
               </div>
 
-              <div className="inline-block px-3.5 py-1 rounded-full bg-purple-500/30 border border-purple-400/40 text-purple-200 text-xs font-bold uppercase tracking-wider">
-                "Learn. Build. Showcase. Earn."
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-100 dark:bg-purple-900/40 border border-purple-300 dark:border-purple-500/40 text-purple-700 dark:text-purple-300 text-xs font-bold shadow-xs">
+                <Sparkles className="w-3.5 h-3.5 text-pink-500 animate-pulse" />
+                <span>India's Skill-to-Income Platform</span>
               </div>
             </div>
 
-            <div className="space-y-3">
-              <h1 className="text-2xl sm:text-4xl font-extrabold text-white tracking-tight leading-snug">
-                Welcome Back to Your <span className="bg-gradient-to-r from-purple-300 via-pink-300 to-amber-200 bg-clip-text text-transparent">Growth Journey ✨</span>
+            {/* Headline */}
+            <div className="space-y-2.5">
+              <h1 className="text-2xl sm:text-3xl font-extrabold text-[#1F2937] dark:text-white tracking-tight leading-snug">
+                Turn Skills Into <br />
+                <span className="bg-gradient-to-r from-[#7C3AED] via-pink-600 to-amber-500 dark:from-purple-300 dark:via-pink-400 dark:to-amber-300 bg-clip-text text-transparent">
+                  Sustainable Income
+                </span>
               </h1>
-              <p className="text-sm text-purple-100 dark:text-slate-300 leading-relaxed font-medium">
-                Continue learning new market-relevant skills, build your verified portfolio, and connect with real income opportunities across India.
+              <p className="text-xs sm:text-sm text-[#4B5563] dark:text-slate-300 leading-relaxed font-normal">
+                Sign in to master practical digital skills, build your verified portfolio, and earn with legitimate remote micro-gigs.
               </p>
             </div>
 
-            <div className="space-y-3 bg-white/10 dark:bg-slate-900/60 p-5 rounded-2xl border border-purple-400/30 dark:border-purple-500/20 backdrop-blur-md">
-              <p className="text-xs font-extrabold text-purple-200 uppercase tracking-wider">Why Women Choose HerEarn</p>
-              <div className="space-y-2.5">
-                {benefitsList.map((item, idx) => (
-                  <div key={idx} className="flex items-start gap-3">
-                    <div className="w-5 h-5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/40 flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <Check className="w-3.5 h-3.5" />
+            {/* Value Propositions */}
+            <div className="space-y-3 pt-1">
+              {benefitsList.map((item, idx) => {
+                const Icon = item.icon;
+                return (
+                  <div 
+                    key={idx}
+                    className="flex items-center gap-3 p-2.5 rounded-2xl bg-white/70 dark:bg-slate-900/60 border border-purple-100 dark:border-purple-900/30 shadow-xs hover:border-purple-300 dark:hover:border-purple-500/40 transition-colors"
+                  >
+                    <div className={`w-9 h-9 rounded-xl bg-gradient-to-br ${item.color} text-white flex items-center justify-center shrink-0 shadow-xs`}>
+                      <Icon className="w-4 h-4" />
                     </div>
-                    <div>
-                      <span className="text-xs font-bold text-white">{item.title}</span>
-                      <span className="text-[11px] text-purple-100 dark:text-slate-400 font-medium block">{item.desc}</span>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs font-bold text-[#1F2937] dark:text-white truncate">{item.title}</p>
+                      <p className="text-[11px] text-[#6B7280] dark:text-slate-400 truncate">{item.desc}</p>
                     </div>
                   </div>
-                ))}
-              </div>
+                );
+              })}
             </div>
 
-            <div className="bg-slate-950/60 dark:bg-slate-950/80 rounded-2xl p-4 border border-purple-400/30 relative overflow-hidden shadow-inner flex items-center justify-between gap-4">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-tr from-purple-600 to-pink-600 flex items-center justify-center text-white font-bold shadow-md">
-                  <Award className="w-6 h-6" />
-                </div>
-                <div>
-                  <p className="text-sm font-bold text-white">Join 15,000+ Learners</p>
-                  <p className="text-xs text-purple-200">Building careers every day</p>
-                </div>
+            {/* Testimonial Quote */}
+            <div className="p-4 rounded-2xl bg-gradient-to-r from-purple-100/70 via-pink-50/60 to-purple-50/70 dark:from-purple-950/40 dark:to-pink-950/30 border border-purple-200/80 dark:border-purple-500/20 text-xs space-y-2">
+              <div className="flex items-center gap-1 text-amber-500">
+                {[...Array(5)].map((_, i) => (
+                  <Star key={i} className="w-3.5 h-3.5 fill-current" />
+                ))}
+                <span className="text-[10px] font-bold text-[#6B7280] dark:text-slate-400 ml-1.5">5.0 / 5.0</span>
               </div>
-              <div className="text-right">
-                <p className="text-lg sm:text-xl font-extrabold text-amber-200 dark:text-amber-300 tracking-tight">2,000+</p>
-                <p className="text-[10px] font-bold text-purple-100 dark:text-slate-400 uppercase tracking-wider">Projects</p>
+              <p className="text-[#374151] dark:text-slate-200 text-xs italic leading-relaxed">
+                "HerEarn helped me build my Canva portfolio and land paid remote micro-gigs within 3 weeks!"
+              </p>
+              <div className="flex items-center justify-between text-[11px] pt-1">
+                <span className="font-bold text-[#7C3AED] dark:text-purple-300">Pooja Sharma</span>
+                <span className="text-[#6B7280] dark:text-slate-400">Digital Creator • Verified</span>
               </div>
             </div>
+          </div>
+
+          {/* Bottom Live Metrics */}
+          <div className="pt-5 mt-5 border-t border-purple-200/60 dark:border-purple-900/40 flex items-center justify-between text-xs text-[#6B7280] dark:text-slate-400 font-semibold">
+            <span className="flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+              <span>15,000+ Women Learners</span>
+            </span>
+            <span className="text-[#EA580C] font-extrabold uppercase text-[11px]">100% Free</span>
           </div>
         </div>
 
         {/* RIGHT SIDE: LOGIN FORM */}
-        <div className="lg:col-span-6 flex flex-col justify-center">
+        <div className="lg:col-span-7 flex flex-col justify-center">
           
-          <div className="bg-white dark:bg-slate-900/95 rounded-3xl p-7 sm:p-10 border border-purple-200 dark:border-purple-500/30 shadow-2xl space-y-6 text-slate-900 dark:text-white backdrop-blur-xl relative">
+          <div className="bg-white/95 dark:bg-[#191026]/95 rounded-3xl p-7 sm:p-9 border border-purple-200/90 dark:border-purple-500/40 shadow-2xl space-y-6 text-slate-900 dark:text-white backdrop-blur-xl relative">
             
             {/* 3-Way Login Tab Switcher: Learner vs Recruiter vs Admin */}
             <div className="grid grid-cols-3 p-1.5 rounded-2xl bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-purple-500/20 text-xs font-bold">
@@ -391,11 +437,11 @@ export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNaviga
                 onClick={() => { setLoginType('user'); setError(''); setAdminError(''); }}
                 className={`py-2 px-2 sm:px-3 rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1 sm:gap-1.5 text-[11px] sm:text-xs ${
                   loginType === 'user'
-                    ? 'bg-white dark:bg-slate-800 text-purple-700 dark:text-white shadow-sm font-black'
-                    : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
+                    ? 'bg-gradient-to-r from-[#7C3AED] to-purple-600 text-white shadow-md font-bold'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-purple-700 dark:hover:text-white'
                 }`}
               >
-                <User className="w-3.5 h-3.5 text-purple-500 shrink-0" />
+                <User className="w-3.5 h-3.5 shrink-0" />
                 <span className="truncate">Learner</span>
               </button>
               <button
@@ -403,11 +449,11 @@ export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNaviga
                 onClick={() => { setLoginType('recruiter'); setError(''); setAdminError(''); }}
                 className={`py-2 px-2 sm:px-3 rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1 sm:gap-1.5 text-[11px] sm:text-xs ${
                   loginType === 'recruiter'
-                    ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-md font-black'
-                    : 'text-slate-500 hover:text-purple-600 dark:hover:text-purple-300'
+                    ? 'bg-gradient-to-r from-pink-600 to-rose-600 text-white shadow-md font-bold'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-pink-600 dark:hover:text-pink-300'
                 }`}
               >
-                <Briefcase className="w-3.5 h-3.5 text-pink-400 shrink-0" />
+                <Briefcase className="w-3.5 h-3.5 shrink-0" />
                 <span className="truncate">Recruiter</span>
               </button>
               <button
@@ -415,80 +461,119 @@ export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNaviga
                 onClick={() => { setLoginType('admin'); setError(''); setAdminError(''); }}
                 className={`py-2 px-2 sm:px-3 rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1 sm:gap-1.5 text-[11px] sm:text-xs ${
                   loginType === 'admin'
-                    ? 'bg-gradient-to-r from-purple-600 via-indigo-600 to-pink-600 text-white shadow-md font-black'
-                    : 'text-slate-500 hover:text-purple-600 dark:hover:text-purple-300'
+                    ? 'bg-gradient-to-r from-purple-700 via-indigo-700 to-pink-600 text-white shadow-md font-bold'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-purple-600 dark:hover:text-purple-300'
                 }`}
               >
-                <Shield className="w-3.5 h-3.5 text-pink-500 shrink-0" />
+                <Shield className="w-3.5 h-3.5 shrink-0" />
                 <span className="truncate">Admin Portal</span>
               </button>
             </div>
 
             {/* Form Headline */}
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               <div className="flex items-center justify-between gap-3">
-                <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
+                <h2 className="text-xl sm:text-2xl font-black text-[#1F2937] dark:text-white tracking-tight flex items-center gap-2">
                   {loginType === 'admin' ? (
                     <>
-                      <Shield className="w-6 h-6 text-pink-500" />
+                      <Shield className="w-5 h-5 text-pink-500" />
                       <span>Admin Portal Login</span>
                     </>
                   ) : loginType === 'recruiter' ? (
                     <>
-                      <Briefcase className="w-6 h-6 text-pink-500" />
-                      <span>Recruiter Portal</span>
+                      <Briefcase className="w-5 h-5 text-pink-500" />
+                      <span>Recruiter Sign In</span>
                     </>
                   ) : (
-                    <span>Account Login</span>
+                    <span>Learner Sign In</span>
                   )}
                 </h2>
-                <span className="text-xs font-bold text-purple-800 dark:text-purple-200 bg-purple-100 dark:bg-purple-900/40 border border-purple-300 dark:border-purple-500/40 px-3 py-1 rounded-full flex items-center gap-1.5 flex-shrink-0">
+                <span className="text-[11px] font-bold text-[#7C3AED] dark:text-purple-300 bg-purple-50 dark:bg-purple-900/40 border border-purple-200 dark:border-purple-500/40 px-3 py-0.5 rounded-full flex items-center gap-1 flex-shrink-0">
                   {loginType === 'admin' ? (
                     <>
-                      <KeyRound className="w-3.5 h-3.5 text-amber-500" />
-                      Passkey Protected
+                      <KeyRound className="w-3 h-3 text-amber-500" />
+                      2FA Staff
                     </>
                   ) : loginType === 'recruiter' ? (
                     <>
-                      <Briefcase className="w-3.5 h-3.5 text-pink-500" />
-                      Hiring Access
+                      <Briefcase className="w-3 h-3 text-pink-500" />
+                      Hiring Portal
                     </>
                   ) : (
                     <>
-                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-                      Free Upskilling Platform
+                      <CheckCircle2 className="w-3 h-3 text-emerald-500" />
+                      Free Access
                     </>
                   )}
                 </span>
               </div>
-              <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 font-medium">
+              <p className="text-xs text-[#6B7280] dark:text-slate-300 font-medium">
                 {loginType === 'admin'
                   ? 'Enter your master authorization key to unlock platform governance and escrow controls.'
                   : loginType === 'recruiter'
-                  ? 'Sign in with your recruiter email and password to access the hiring dashboard.'
-                  : 'Sign in to continue your learning and earning journey.'}
+                  ? 'Sign in with your recruiter email and password to access the hiring and applicant dashboard.'
+                  : 'Welcome back! Enter your email or username to continue learning and earning.'}
               </p>
             </div>
 
+            {/* Quick Demo Credentials Bar */}
+            <div className="flex flex-wrap items-center gap-2 p-2.5 rounded-xl bg-purple-50/60 dark:bg-slate-900/60 border border-purple-200/60 dark:border-purple-900/40 text-[11px]">
+              <span className="font-bold text-[#7C3AED] dark:text-purple-300 flex items-center gap-1">
+                <Sparkles className="w-3 h-3" /> Quick fill:
+              </span>
+              {loginType === 'admin' ? (
+                <button
+                  type="button"
+                  onClick={() => setAdminKey(MASTER_ADMIN_KEY)}
+                  className="px-2 py-0.5 rounded-md bg-white dark:bg-purple-950/80 border border-purple-300 dark:border-purple-500/40 text-purple-700 dark:text-purple-200 font-mono text-[10px] hover:bg-purple-100 transition-colors cursor-pointer"
+                >
+                  ⚡ Auto-fill Master Key ({MASTER_ADMIN_KEY})
+                </button>
+              ) : (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEmail('ananya@herearn.org');
+                      setPassword('password123');
+                    }}
+                    className="px-2 py-0.5 rounded-md bg-white dark:bg-purple-950/80 border border-purple-300 dark:border-purple-500/40 text-purple-700 dark:text-purple-200 font-medium hover:bg-purple-100 transition-colors cursor-pointer"
+                  >
+                    Ananya (Learner)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setLoginType('admin');
+                      setAdminKey(MASTER_ADMIN_KEY);
+                    }}
+                    className="px-2 py-0.5 rounded-md bg-white dark:bg-purple-950/80 border border-purple-300 dark:border-purple-500/40 text-pink-700 dark:text-pink-300 font-medium hover:bg-pink-100 transition-colors cursor-pointer"
+                  >
+                    Admin Staff
+                  </button>
+                </>
+              )}
+            </div>
+
             {/* ========================================================
-                VIEW A: ADMIN PASSKEY LOGIN FORM (hidden behind link)
+                VIEW A: ADMIN PASSKEY LOGIN FORM
                ======================================================== */}
             {loginType === 'admin' ? (
-              <form onSubmit={handleAdminLogin} className="space-y-5 animate-fade-in">
+              <form onSubmit={handleAdminLogin} className="space-y-4 animate-fade-in">
                 {adminError && (
-                  <div className="p-4 rounded-2xl bg-rose-50 dark:bg-rose-500/10 border border-rose-200 dark:border-rose-500/30 text-rose-800 dark:text-rose-300 text-xs font-bold flex items-start gap-3">
+                  <div className="p-3.5 rounded-2xl bg-rose-50 dark:bg-rose-500/10 border border-rose-200 dark:border-rose-500/30 text-rose-800 dark:text-rose-300 text-xs font-bold flex items-start gap-2.5">
                     <AlertCircle className="w-4 h-4 text-rose-600 dark:text-rose-400 flex-shrink-0 mt-0.5" />
                     <span>{adminError}</span>
                   </div>
                 )}
 
-                <div className="space-y-2">
-                  <label className="text-xs font-extrabold text-slate-700 dark:text-slate-200 block uppercase tracking-wider flex items-center justify-between">
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-extrabold text-[#4B5563] dark:text-slate-200 block uppercase tracking-wider flex items-center justify-between">
                     <span>MASTER ADMIN SECURITY KEY</span>
-                    <span className="text-[10px] text-purple-400 font-mono lowercase">256-bit encrypted</span>
+                    <span className="text-[10px] text-[#7C3AED] dark:text-purple-400 font-mono lowercase">256-bit encrypted</span>
                   </label>
                   <div className="relative">
-                    <KeyRound className="w-4 h-4 text-purple-600 dark:text-purple-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                    <KeyRound className="w-4 h-4 text-[#7C3AED] dark:text-purple-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                     <input
                       type={showAdminKey ? 'text' : 'password'}
                       value={adminKey}
@@ -497,39 +582,24 @@ export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNaviga
                         if (adminError) setAdminError('');
                       }}
                       placeholder="e.g. HEREARN-ADMIN-2026-X9K"
-                      className="w-full pl-10 pr-10 py-3.5 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-purple-500/30 rounded-2xl text-xs sm:text-sm font-mono tracking-wider focus:outline-none focus:ring-2 focus:ring-purple-500 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 transition-all"
+                      className="w-full pl-10 pr-10 py-3 bg-[#FFF9F5]/70 dark:bg-slate-950 border border-purple-200 dark:border-purple-500/30 rounded-2xl text-xs sm:text-sm font-mono tracking-wider focus:outline-none focus:ring-2 focus:ring-[#7C3AED]/40 focus:border-[#7C3AED] text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 transition-all"
                       required
                       autoFocus
                     />
                     <button
                       type="button"
                       onClick={() => setShowAdminKey(!showAdminKey)}
-                      className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors cursor-pointer"
+                      className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-[#7C3AED] transition-colors cursor-pointer"
                     >
                       {showAdminKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
                   </div>
                 </div>
 
-                <div className="p-3.5 rounded-2xl bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-500/30 flex items-center justify-between text-xs">
-                  <div className="flex items-center gap-1.5 text-purple-800 dark:text-purple-200 font-bold">
-                    <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-                    <span>Master Key:</span>
-                    <span className="font-mono text-emerald-600 dark:text-emerald-400 font-black">{MASTER_ADMIN_KEY}</span>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setAdminKey(MASTER_ADMIN_KEY)}
-                    className="text-pink-600 dark:text-pink-400 hover:underline font-extrabold cursor-pointer"
-                  >
-                    Auto-fill ⚡
-                  </button>
-                </div>
-
                 <button
                   type="submit"
                   disabled={isAdminLoading || !adminKey.trim()}
-                  className="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-purple-600 via-indigo-600 to-pink-600 hover:from-purple-500 hover:via-indigo-500 hover:to-pink-500 text-white font-extrabold text-sm sm:text-base shadow-xl hover:shadow-2xl transition-all duration-300 flex items-center justify-center gap-2.5 cursor-pointer disabled:opacity-50 mt-2"
+                  className="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-[#7C3AED] via-purple-600 to-pink-600 hover:from-purple-600 hover:to-pink-500 text-white font-extrabold text-sm sm:text-base shadow-lg hover:shadow-purple-500/25 hover:-translate-y-0.5 active:translate-y-0 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
                 >
                   {isAdminLoading ? (
                     <>
@@ -544,13 +614,13 @@ export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNaviga
                   )}
                 </button>
 
-                <div className="text-center pt-2">
+                <div className="text-center pt-1">
                   <button
                     type="button"
                     onClick={() => setLoginType('user')}
-                    className="text-xs text-slate-500 hover:text-purple-600 dark:hover:text-purple-300 font-bold cursor-pointer"
+                    className="text-xs text-[#6B7280] hover:text-[#7C3AED] dark:hover:text-purple-300 font-bold cursor-pointer"
                   >
-                    ← Back to Regular Login
+                    ← Back to Learner Login
                   </button>
                 </div>
               </form>
@@ -599,7 +669,7 @@ export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNaviga
                   </div>
                 ) : (
                   error && (
-                    <div className="p-4 rounded-2xl bg-rose-50 dark:bg-rose-500/10 border border-rose-200 dark:border-rose-500/30 text-rose-800 dark:text-rose-300 text-xs font-bold flex items-start gap-3 animate-shake">
+                    <div className="p-3.5 rounded-2xl bg-rose-50 dark:bg-rose-500/10 border border-rose-200 dark:border-rose-500/30 text-rose-800 dark:text-rose-300 text-xs font-bold flex items-start gap-2.5 animate-shake">
                       <AlertCircle className="w-4 h-4 text-rose-600 dark:text-rose-400 flex-shrink-0 mt-0.5" />
                       <span className="leading-relaxed">{error}</span>
                     </div>
@@ -607,20 +677,20 @@ export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNaviga
                 )}
 
                 {forgotSent && (
-                  <div className="p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/30 text-emerald-800 dark:text-emerald-300 text-xs font-bold flex items-center gap-3">
+                  <div className="p-3.5 rounded-2xl bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/30 text-emerald-800 dark:text-emerald-300 text-xs font-bold flex items-center gap-2.5">
                     <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
-                    <span>Reset instructions sent! Check your email inbox.</span>
+                    <span>Password reset instructions sent! Check your email inbox.</span>
                   </div>
                 )}
 
-                <form onSubmit={handleSubmit} className="space-y-5">
+                <form onSubmit={handleSubmit} className="space-y-4">
                   {/* EMAIL ADDRESS OR USERNAME */}
-                  <div className="space-y-2">
-                    <label className="text-xs font-extrabold text-slate-700 dark:text-slate-200 block uppercase tracking-wider">
+                  <div className="space-y-1.5">
+                    <label className="text-[11px] font-extrabold text-[#4B5563] dark:text-slate-200 block uppercase tracking-wider">
                       EMAIL ADDRESS OR USERNAME
                     </label>
                     <div className="relative">
-                      <User className="w-4 h-4 text-purple-600 dark:text-purple-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                      <User className="w-4 h-4 text-[#7C3AED] dark:text-purple-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                       <input
                         type="text"
                         value={email}
@@ -629,19 +699,28 @@ export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNaviga
                           if (error) setError('');
                         }}
                         placeholder={loginType === 'recruiter' ? "recruiter@company.com" : "name@domain.com or @username"}
-                        className="w-full pl-10 pr-4 py-3.5 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-purple-500/30 rounded-2xl text-xs sm:text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-purple-500 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 transition-all"
+                        className="w-full pl-10 pr-4 py-3 bg-[#FFF9F5]/70 dark:bg-slate-950 border border-purple-200 dark:border-purple-500/30 rounded-2xl text-xs sm:text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-[#7C3AED]/40 focus:border-[#7C3AED] text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 transition-all"
                         required
                       />
                     </div>
                   </div>
 
                   {/* PASSWORD */}
-                  <div className="space-y-2">
-                    <label className="text-xs font-extrabold text-slate-700 dark:text-slate-200 block uppercase tracking-wider">
-                      PASSWORD
-                    </label>
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <label className="text-[11px] font-extrabold text-[#4B5563] dark:text-slate-200 block uppercase tracking-wider">
+                        PASSWORD
+                      </label>
+                      <button
+                        type="button"
+                        onClick={() => setForgotSent(true)}
+                        className="text-[11px] font-bold text-[#7C3AED] dark:text-purple-300 hover:underline cursor-pointer"
+                      >
+                        Forgot password?
+                      </button>
+                    </div>
                     <div className="relative">
-                      <Lock className="w-4 h-4 text-purple-600 dark:text-purple-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                      <Lock className="w-4 h-4 text-[#7C3AED] dark:text-purple-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                       <input
                         type={showPassword ? 'text' : 'password'}
                         value={password}
@@ -650,13 +729,13 @@ export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNaviga
                           if (error) setError('');
                         }}
                         placeholder="••••••••••••"
-                        className="w-full pl-10 pr-10 py-3.5 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-purple-500/30 rounded-2xl text-xs sm:text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-purple-500 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 transition-all"
+                        className="w-full pl-10 pr-10 py-3 bg-[#FFF9F5]/70 dark:bg-slate-950 border border-purple-200 dark:border-purple-500/30 rounded-2xl text-xs sm:text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-[#7C3AED]/40 focus:border-[#7C3AED] text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 transition-all"
                         required
                       />
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors cursor-pointer"
+                        className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-[#7C3AED] transition-colors cursor-pointer"
                       >
                         {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                       </button>
@@ -664,16 +743,16 @@ export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNaviga
                   </div>
 
                   {/* REMEMBER ME */}
-                  <div className="flex items-center justify-between pt-1">
-                    <label className="flex items-center gap-2.5 cursor-pointer">
+                  <div className="flex items-center justify-between pt-0.5">
+                    <label className="flex items-center gap-2 cursor-pointer">
                       <input
                         type="checkbox"
                         checked={rememberMe}
                         onChange={(e) => setRememberMe(e.target.checked)}
-                        className="w-4 h-4 rounded border-slate-300 dark:border-slate-600 text-purple-600 focus:ring-purple-500 accent-purple-600 cursor-pointer"
+                        className="w-4 h-4 rounded border-slate-300 dark:border-slate-600 text-[#7C3AED] focus:ring-[#7C3AED] accent-[#7C3AED] cursor-pointer"
                       />
-                      <span className="text-xs font-extrabold text-slate-700 dark:text-slate-200">
-                        Remember Me on this device
+                      <span className="text-xs font-semibold text-[#4B5563] dark:text-slate-300">
+                        Remember me on this device
                       </span>
                     </label>
                   </div>
@@ -682,7 +761,7 @@ export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNaviga
                   <button
                     type="submit"
                     disabled={isLoading}
-                    className="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-purple-600 via-indigo-600 to-pink-600 hover:from-purple-500 hover:via-indigo-500 hover:to-pink-500 text-white font-extrabold text-sm sm:text-base shadow-xl hover:shadow-2xl transition-all duration-300 flex items-center justify-center gap-2.5 cursor-pointer disabled:opacity-50 mt-3"
+                    className="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-[#7C3AED] via-purple-600 to-pink-600 hover:from-purple-600 hover:to-pink-500 text-white font-extrabold text-sm sm:text-base shadow-lg hover:shadow-purple-500/25 hover:-translate-y-0.5 active:translate-y-0 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 mt-2"
                   >
                     {isLoading ? (
                       <>
@@ -692,21 +771,21 @@ export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNaviga
                     ) : (
                       <>
                         <span>{loginType === 'recruiter' ? 'Log In as Recruiter' : 'Log In to Dashboard'}</span>
-                        <ArrowRight className="w-5 h-5" />
+                        <ArrowRight className="w-4 h-4" />
                       </>
                     )}
                   </button>
                 </form>
 
                 {/* DIVIDER: OR */}
-                <div className="relative flex items-center justify-center my-3">
+                <div className="relative flex items-center justify-center my-2">
                   <div className="border-t border-slate-200 dark:border-slate-800 w-full"></div>
-                  <span className="bg-white dark:bg-slate-900 px-3 text-[10px] font-extrabold text-slate-500 dark:text-slate-400 uppercase tracking-widest absolute">
+                  <span className="bg-white dark:bg-[#191026] px-3 text-[10px] font-extrabold text-[#9CA3AF] uppercase tracking-widest absolute">
                     OR
                   </span>
                 </div>
 
-                {/* GOOGLE SIGN-IN (kept) */}
+                {/* GOOGLE SIGN-IN */}
                 <GoogleSignInButton
                   onSuccess={(user) => {
                     onLoginSuccess({
@@ -720,43 +799,27 @@ export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNaviga
                   disabled={isLoading}
                 />
 
-                {/* Admin access (discreet portal card) */}
-                <div className="p-3.5 rounded-2xl bg-purple-50/70 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-500/20 flex items-center justify-between gap-3 text-left">
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 rounded-xl bg-pink-100 dark:bg-pink-900/40 flex items-center justify-center text-pink-600 shrink-0">
-                      <Shield className="w-4 h-4" />
-                    </div>
-                    <div>
-                      <p className="text-xs font-bold text-slate-900 dark:text-white">Platform Administrator?</p>
-                      <p className="text-[10px] text-slate-500 dark:text-slate-400">Passkey protected governance & escrow console</p>
-                    </div>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setLoginType('admin')}
-                    className="px-3 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold transition-all shadow-sm shrink-0 cursor-pointer flex items-center gap-1"
-                  >
-                    <span>Admin Login</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-
-
-                {/* CREATE ACCOUNT LINK */}
-                <div className="pt-3 border-t border-slate-200 dark:border-slate-800/80 text-center space-y-1">
-                  <p className="text-xs text-slate-700 dark:text-slate-300 font-semibold">
+                {/* CREATE ACCOUNT & GUEST LINK */}
+                <div className="pt-3 border-t border-slate-200 dark:border-slate-800/80 text-center space-y-1.5">
+                  <p className="text-xs text-[#4B5563] dark:text-slate-300 font-semibold">
                     Don't have an account?{' '}
                     <button
                       type="button"
                       onClick={onNavigateToSignup}
-                      className="font-extrabold text-purple-700 dark:text-pink-400 hover:underline cursor-pointer ml-1"
+                      className="font-extrabold text-[#7C3AED] dark:text-pink-400 hover:underline cursor-pointer ml-1"
                     >
                       Create Free Account →
                     </button>
                   </p>
-                  <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
-                    "Join HerEarn and start learning for free."
-                  </p>
+                  {onContinueAsGuest && (
+                    <button
+                      type="button"
+                      onClick={onContinueAsGuest}
+                      className="text-[11px] text-[#6B7280] dark:text-slate-400 hover:text-[#7C3AED] dark:hover:text-purple-300 font-medium cursor-pointer"
+                    >
+                      Or continue exploring as Guest Learner
+                    </button>
+                  )}
                 </div>
               </>
             )}

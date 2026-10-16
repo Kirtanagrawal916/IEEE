@@ -147,11 +147,6 @@ export default function LandingSection({ onNavigate, onOpenAuth, theme }) {
 
         <div className="relative z-10 max-w-4xl mx-auto space-y-6">
           
-          {/* Trust Badge Pill */}
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#FFF7ED] dark:bg-orange-950/40 border border-[#FED7AA] dark:border-orange-800/40 text-[#EA580C] dark:text-orange-300 text-xs sm:text-sm font-bold shadow-xs">
-            <ShieldCheck className="w-4 h-4 text-[#EA580C]" />
-            <span>Always 100% Free for Job Seekers • Never Pay to Apply</span>
-          </div>
 
           {/* One Clear Headline */}
           <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black font-heading text-[#1F2937] dark:text-white tracking-tight leading-[1.15]">

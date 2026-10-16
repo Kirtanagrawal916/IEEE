@@ -25,8 +25,7 @@ import {
   Sparkles,
   Gamepad2,
   MessageSquare,
-  Check,
-  RotateCcw
+  Check
 } from 'lucide-react';
 import LogoutModal from './LogoutModal';
 import WalletWithdrawModal from './WalletWithdrawModal';
@@ -338,25 +337,6 @@ export default function Navbar({
                     <span className="notranslate" translate="no">Select Language</span>
                     <span className="notranslate font-mono text-[9px] text-slate-400" translate="no">{LANGUAGES.length} Languages</span>
                   </div>
-
-                  {/* Reset to English Button (Provides immediate exit if user selected wrong language) */}
-                  {language !== 'en' && (
-                    <button
-                      type="button"
-                      translate="no"
-                      onClick={() => {
-                        setLanguage('en');
-                        setIsLangOpen(false);
-                      }}
-                      className="notranslate w-full text-left px-3 py-2 rounded-xl text-xs font-bold flex items-center justify-between bg-amber-50 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-700/60 text-amber-900 dark:text-amber-200 hover:bg-amber-100 dark:hover:bg-amber-900/50 transition-colors cursor-pointer shadow-xs mb-1"
-                    >
-                      <span className="flex items-center gap-1.5 notranslate" translate="no">
-                        <RotateCcw className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 notranslate" />
-                        <span className="notranslate" translate="no">Reset to English</span>
-                      </span>
-                      <span className="notranslate text-[10px] font-semibold opacity-75" translate="no">(Default)</span>
-                    </button>
-                  )}
 
                   {/* Permanent Static Language List - Always displays in original native script */}
                   <div className="space-y-1 notranslate" translate="no">
