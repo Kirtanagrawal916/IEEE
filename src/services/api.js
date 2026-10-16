@@ -29,11 +29,15 @@ const getAuthHeaders = (endpoint = '') => {
   return headers;
 };
 
-// Helper for HTTP requests
+// Helper for HTTP requests with 3.5s timeout to prevent UI freezes
 const request = async (endpoint, options = {}) => {
+  const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+  const timeoutId = controller ? setTimeout(() => controller.abort(), 3500) : null;
+
   const config = {
     ...options,
     credentials: 'include', // Ensure HttpOnly cookies are sent and received
+    signal: options.signal || (controller ? controller.signal : undefined),
     headers: {
       ...getAuthHeaders(endpoint),
       ...options.headers,
@@ -45,22 +49,24 @@ const request = async (endpoint, options = {}) => {
     try {
       res = await fetch(`${API_BASE}${endpoint}`, config);
     } catch (fetchErr) {
-      // If relative URL failed, attempt direct backend port 5000 fallback
+      // If relative URL failed, attempt direct backend port 5001 fallback
       if (!API_BASE && typeof window !== 'undefined') {
         try {
-          res = await fetch(`http://localhost:5000${endpoint}`, config);
+          res = await fetch(`http://localhost:5001${endpoint}`, config);
         } catch {
           throw fetchErr;
         }
       } else {
         throw fetchErr;
       }
+    } finally {
+      if (timeoutId) clearTimeout(timeoutId);
     }
 
-    // If Vite proxy returned 503 (e.g. proxy mismatch), retry directly to backend port 5000
+    // If Vite proxy returned 503 (e.g. proxy mismatch), retry directly to backend port 5001
     if (!API_BASE && res && res.status === 503 && typeof window !== 'undefined') {
       try {
-        const directRes = await fetch(`http://localhost:5000${endpoint}`, config);
+        const directRes = await fetch(`http://localhost:5001${endpoint}`, config);
         if (directRes && directRes.status !== 503) {
           res = directRes;
         }

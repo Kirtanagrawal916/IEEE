@@ -8,7 +8,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'http://localhost:5000',
+        target: 'http://localhost:5001',
         changeOrigin: true,
         secure: false,
         configure: (proxy, _options) => {
@@ -17,7 +17,7 @@ export default defineConfig({
               res.writeHead(503, { 'Content-Type': 'application/json' });
               res.end(JSON.stringify({
                 success: false,
-                message: 'Backend server is not reachable on http://localhost:5000',
+                message: 'Backend server is not reachable on http://localhost:5001',
                 error: err.code || 'ECONNREFUSED'
               }));
             }

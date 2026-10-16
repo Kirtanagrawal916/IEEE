@@ -80,42 +80,36 @@ function AppContent() {
     localStorage.setItem('herearn_theme', theme);
   }, [theme]);
 
-  // Initial Data Fetching from Express Backend API
+  // Initial Data Fetching from Express Backend API (Parallel, Non-blocking)
   useEffect(() => {
     const fetchBackendData = async () => {
-      // 1. Auto Login via JWT
       const token = localStorage.getItem('herearn_jwt_token');
-      if (token) {
-        try {
-          const meRes = await api.getMe();
+      
+      const promises = [
+        // 1. Auto Login via JWT (if token exists)
+        token ? api.getMe().then(meRes => {
           if (meRes.success && meRes.user) {
             setUser(meRes.user);
             localStorage.setItem('herearn_user', JSON.stringify(meRes.user));
           }
-        } catch (err) {
-          console.log('[App] Auto-login check:', err.message);
-        }
-      }
+        }).catch(err => console.log('[App] Auto-login notice:', err.message)) : Promise.resolve(),
 
-      // 2. Opportunities Feed
-      try {
-        const oppRes = await api.getOpportunities();
-        if (oppRes.success && oppRes.opportunities && oppRes.opportunities.length > 0) {
-          setOpportunities(oppRes.opportunities);
-        }
-      } catch (err) {
-        console.log('[App] Using fallback opportunities:', err.message);
-      }
+        // 2. Opportunities Feed
+        api.getOpportunities().then(oppRes => {
+          if (oppRes.success && oppRes.opportunities && oppRes.opportunities.length > 0) {
+            setOpportunities(oppRes.opportunities);
+          }
+        }).catch(err => console.log('[App] Using fallback opportunities:', err.message)),
 
-      // 3. Public Portfolio Feed
-      try {
-        const portRes = await api.getPublicPortfolio();
-        if (portRes.success && portRes.projects && portRes.projects.length > 0) {
-          setPortfolios(portRes.projects);
-        }
-      } catch (err) {
-        console.log('[App] Using fallback portfolios:', err.message);
-      }
+        // 3. Public Portfolio Feed
+        api.getPublicPortfolio().then(portRes => {
+          if (portRes.success && portRes.projects && portRes.projects.length > 0) {
+            setPortfolios(portRes.projects);
+          }
+        }).catch(err => console.log('[App] Using fallback portfolios:', err.message))
+      ];
+
+      await Promise.allSettled(promises);
     };
 
     fetchBackendData();
