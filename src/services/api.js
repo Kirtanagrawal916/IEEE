@@ -86,6 +86,11 @@ const request = async (endpoint, options = {}) => {
     }
 
     if (!res.ok) {
+      if (res.status === 401 && endpoint === '/api/auth/me') {
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('herearn_jwt_token');
+        }
+      }
       const error = new Error(data.message || `HTTP ${res.status} Error`);
       error.status = res.status;
       error.data = data;
@@ -93,7 +98,9 @@ const request = async (endpoint, options = {}) => {
     }
     return data;
   } catch (err) {
-    console.warn(`[API Error] ${endpoint}:`, err.message);
+    if (endpoint !== '/api/auth/me' || err.status !== 401) {
+      console.warn(`[API Error] ${endpoint}:`, err.message);
+    }
     throw err;
   }
 };

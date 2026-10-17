@@ -217,7 +217,6 @@ function AppContent() {
   };
 
   const handleOpenAuth = (mode = 'login') => {
-    setAuthMode(mode);
     navigate(mode === 'signup' ? '/signup' : '/login');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -490,9 +489,23 @@ function AppContent() {
 
   // Continue as Guest Handler
   const handleContinueAsGuest = () => {
-    saveUserData(null);
+    const guestUser = {
+      id: 'guest',
+      name: 'Guest Learner',
+      username: 'guest',
+      email: 'guest@herearn.org',
+      role: 'LEARNER',
+      isGuest: true,
+      skills: ['Digital Marketing', 'Canva Design'],
+      skillPoints: 100,
+      totalEarned: 0,
+      walletBalance: 0,
+      appliedGigIds: [],
+      completedLessons: [],
+      badges: []
+    };
+    saveUserData(guestUser);
     navigate('/dashboard');
-    setIsAuthOpen(false);
     showToast("Guest Mode Active 👤", "Exploring HerEarn in Guest Mode.");
   };
 
@@ -589,8 +602,7 @@ function AppContent() {
                 user={user}
                 onCompleteLesson={handleCompleteLesson}
                 onNavigateToPortfolio={() => {
-                  navigate('/portfolio');
-                  setIsSubmitOpen(true);
+                  navigate('/portfolio/submit');
                 }}
                 onUpdateUserSkillPoints={(points, badge) => {
                   if (user) {
@@ -613,8 +625,7 @@ function AppContent() {
                 user={user}
                 onCompleteLesson={handleCompleteLesson}
                 onNavigateToPortfolio={() => {
-                  navigate('/portfolio');
-                  setIsSubmitOpen(true);
+                  navigate('/portfolio/submit');
                 }}
                 onUpdateUserSkillPoints={(points, badge) => {
                   if (user) {
