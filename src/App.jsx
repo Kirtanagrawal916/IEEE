@@ -82,6 +82,7 @@ function AppContent() {
   const navigate = useNavigate();
   const location = useLocation();
   const isAdminRoute = location.pathname.startsWith('/admin');
+  const isHomePage = location.pathname === '/' || location.pathname === '/home' || location.pathname === '/landing' || location.pathname === '/about';
 
   // Unified Auth state via AuthContext
   const { user, setUser, logout: authLogout } = useAuth();
@@ -515,7 +516,9 @@ function AppContent() {
       {/* Sticky Navigation Header & Opportunity Alert Bar */}
       {!isAdminRoute && (
         <>
-          <OpportunityNotificationBar opportunities={opportunities} />
+          {!isHomePage && (
+            <OpportunityNotificationBar opportunities={opportunities} />
+          )}
           <Navbar 
             user={user}
             onLogout={() => setIsLogoutModalOpen(true)}
