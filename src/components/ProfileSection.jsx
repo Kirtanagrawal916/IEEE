@@ -59,6 +59,12 @@ export default function ProfileSection({
     }
   });
 
+  const formatCertificateRecipientName = (name) => {
+    const raw = name || 'Verified Learner';
+    const clean = raw.replace(/^(mrs\.?|ms\.?|mr\.?|dr\.?)\s+/i, '').trim();
+    return `Mrs. ${clean}`;
+  };
+
   // Active user data or default guest user
   const effectiveUsername = user?.username || (user?.name ? user.name.toLowerCase().replace(/[^a-z0-9]/g, '_') : 'guest_learner');
   const effectiveBalance = user?.walletBalance !== undefined 
@@ -1272,7 +1278,7 @@ export default function ProfileSection({
                 <Trophy className="w-8 h-8" />
               </div>
               <p className="text-[10px] uppercase font-extrabold tracking-widest text-emerald-400">Certificate of Completion</p>
-              <h4 className="text-xl font-black text-white">{currentUser.name}</h4>
+              <h4 className="text-xl font-black text-white">{formatCertificateRecipientName(currentUser.name)}</h4>
               <p className="text-xs text-purple-200">has successfully mastered all capstone modules for</p>
               <p className="text-sm font-extrabold text-pink-300 border-y border-purple-500/30 py-2">
                 {selectedCertCourse}
