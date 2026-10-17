@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Link, useNavigate, useLocation } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Link, useNavigate, useLocation, useParams } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import LandingSection from './components/LandingSection';
 import LearnSection from './components/LearnSection';
@@ -47,6 +47,36 @@ import {
   isTrackUnlocked, 
   getUnlockedTrackIds 
 } from './utils/trackLockHelper';
+
+// Route wrappers that resolve the target opportunity by :id param dynamically
+function OpportunityDetailRouteWrapper({ opportunities, selectedOpportunity, user, onBack, onApply, onToggleSkill }) {
+  const { id } = useParams();
+  const gig = opportunities.find(o => String(o.id) === String(id)) || selectedOpportunity || opportunities[0];
+  return (
+    <OpportunityDetailPage 
+      gig={gig}
+      user={user}
+      onBack={onBack}
+      onApply={onApply}
+      onToggleSkill={onToggleSkill}
+    />
+  );
+}
+
+function OpportunityApplyRouteWrapper({ opportunities, selectedOpportunity, user, userPortfolios, onConfirmApplySuccess }) {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const gig = opportunities.find(o => String(o.id) === String(id)) || selectedOpportunity || opportunities[0];
+  return (
+    <OpportunityApplyPage 
+      gig={gig}
+      user={user}
+      userPortfolios={userPortfolios}
+      onBack={() => navigate(`/opportunities/${gig?.id || ''}`)}
+      onConfirmApplySuccess={onConfirmApplySuccess}
+    />
+  );
+}
 
 function AppContent() {
   const navigate = useNavigate();
@@ -749,8 +779,9 @@ function AppContent() {
           <Route 
             path="/opportunities/:id" 
             element={
-              <OpportunityDetailPage 
-                gig={selectedOpportunity || opportunities[0]}
+              <OpportunityDetailRouteWrapper 
+                opportunities={opportunities}
+                selectedOpportunity={selectedOpportunity}
                 user={user}
                 onBack={() => navigate('/opportunities')}
                 onApply={handleOpenApplyGig}
@@ -763,11 +794,11 @@ function AppContent() {
             path="/opportunities/:id/apply" 
             element={
               <ProtectedRoute user={user}>
-                <OpportunityApplyPage 
-                  gig={selectedOpportunity || opportunities[0]}
+                <OpportunityApplyRouteWrapper 
+                  opportunities={opportunities}
+                  selectedOpportunity={selectedOpportunity}
                   user={user}
                   userPortfolios={userPortfolios}
-                  onBack={() => navigate(`/opportunities/${selectedOpportunity?.id || opportunities[0]?.id}`)}
                   onConfirmApplySuccess={(gigId, coverNote, portId, quizSummary) => handleConfirmApply(gigId, coverNote, portId, quizSummary)}
                 />
               </ProtectedRoute>

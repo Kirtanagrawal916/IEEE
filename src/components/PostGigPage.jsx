@@ -63,6 +63,26 @@ export default function PostGigPage({ onAddOpportunity, showToast }) {
       if (onAddOpportunity) {
         onAddOpportunity(newGig);
       }
+
+      // Broadcast notification to Notification Bar and Notification Center
+      try {
+        const notifList = JSON.parse(localStorage.getItem('herearn_notifications') || '[]');
+        const newNotif = {
+          id: `notif-${Date.now()}`,
+          type: "skill_match",
+          title: `🎯 New Opportunity: ${title}`,
+          message: `${company} just posted a new paid gig with ${stipend}. Apply now to unlock your matching course lectures!`,
+          timestamp: "Just now",
+          isRead: false,
+          path: `/opportunities/${newGig.id}`
+        };
+        localStorage.setItem('herearn_notifications', JSON.stringify([newNotif, ...notifList]));
+        window.dispatchEvent(new CustomEvent('herearn_notifications_updated'));
+        window.dispatchEvent(new CustomEvent('herearn_new_opportunity', { detail: newGig }));
+      } catch (err) {
+        console.warn('[PostGigPage] Notification dispatch error:', err);
+      }
+
       if (showToast) {
         showToast("🚀 Opportunity Published!", `"${title}" is now open for applications on HerEarn.`);
       }

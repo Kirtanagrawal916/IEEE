@@ -15,10 +15,9 @@ import {
 
 export default function OpportunityNotificationBar({ opportunities = [] }) {
   const navigate = useNavigate();
-  const [isVisible, setIsVisible] = useState(() => {
-    return localStorage.getItem('herearn_dismiss_notif_bar') !== 'true';
-  });
+  const [isVisible, setIsVisible] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
 
   // Filter active opportunities that are accepting applications
   const activeOpps = opportunities && opportunities.length > 0 
@@ -47,14 +46,32 @@ export default function OpportunityNotificationBar({ opportunities = [] }) {
         }
       ];
 
-  // Auto-rotate every 7 seconds
+  // Whenever opportunities list updates or a new opportunity is added, show notification bar
   useEffect(() => {
-    if (!isVisible || activeOpps.length <= 1) return;
+    if (opportunities && opportunities.length > 0) {
+      setIsVisible(true);
+      setCurrentIndex(0);
+    }
+  }, [opportunities]);
+
+  // Listen to custom platform event for newly posted opportunities
+  useEffect(() => {
+    const handleNewOpp = () => {
+      setIsVisible(true);
+      setCurrentIndex(0);
+    };
+    window.addEventListener('herearn_new_opportunity', handleNewOpp);
+    return () => window.removeEventListener('herearn_new_opportunity', handleNewOpp);
+  }, []);
+
+  // Auto-rotate every 6 seconds if not paused by hover
+  useEffect(() => {
+    if (!isVisible || activeOpps.length <= 1 || isPaused) return;
     const interval = setInterval(() => {
       setCurrentIndex((prev) => (prev + 1) % activeOpps.length);
-    }, 7000);
+    }, 6000);
     return () => clearInterval(interval);
-  }, [isVisible, activeOpps.length]);
+  }, [isVisible, activeOpps.length, isPaused]);
 
   if (!isVisible || activeOpps.length === 0) return null;
 
@@ -68,7 +85,8 @@ export default function OpportunityNotificationBar({ opportunities = [] }) {
     }
   };
 
-  const handleDismiss = () => {
+  const handleDismiss = (e) => {
+    e.stopPropagation();
     setIsVisible(false);
   };
 
@@ -85,22 +103,28 @@ export default function OpportunityNotificationBar({ opportunities = [] }) {
   return (
     <aside 
       aria-label="Opportunity alert"
-      className="bg-gradient-to-r from-purple-900 via-indigo-950 to-purple-950 border-b border-purple-500/30 text-white text-xs relative z-50 shadow-md transition-all animate-fade-in"
+      onMouseEnter={() => setIsPaused(true)}
+      onMouseLeave={() => setIsPaused(false)}
+      className="bg-gradient-to-r from-purple-950 via-slate-900 to-indigo-950 border-b border-purple-500/30 text-white text-xs relative z-50 shadow-md transition-all animate-fade-in"
     >
-      <div className="max-w-[1440px] mx-auto px-3 sm:px-6 py-2.5 flex items-center justify-between gap-3">
+      <div className="max-w-[1440px] mx-auto px-3 sm:px-6 py-2 flex items-center justify-between gap-3">
         
-        {/* Left: Live Opportunity Badge & Carousel */}
+        {/* Left: Live Opportunity Badge & Carousel Info */}
         <div className="flex items-center gap-2.5 flex-1 min-w-0">
           <span className="inline-flex items-center gap-1.5 bg-gradient-to-r from-amber-500 to-pink-500 text-white font-black text-[10px] uppercase tracking-wider px-2.5 py-1 rounded-full shadow-xs shrink-0 animate-pulse">
             <Flame className="w-3.5 h-3.5" />
             <span>New Opportunity</span>
           </span>
 
-          <div className="flex items-center gap-2 min-w-0 truncate">
-            <span className="font-extrabold text-white truncate text-xs">
+          <div 
+            onClick={handleApplyClick}
+            className="flex items-center gap-2 min-w-0 truncate cursor-pointer group"
+            title={`Click to view ${currentOpp.title}`}
+          >
+            <span className="font-extrabold text-white truncate text-xs group-hover:text-amber-300 transition-colors">
               {currentOpp.title}
             </span>
-            <span className="hidden md:inline text-purple-300">•</span>
+            <span className="hidden md:inline text-purple-400">•</span>
             <span className="hidden md:inline text-purple-200 font-semibold text-[11px] truncate">
               {currentOpp.company}
             </span>
@@ -126,7 +150,7 @@ export default function OpportunityNotificationBar({ opportunities = [] }) {
               >
                 <ChevronLeft className="w-3.5 h-3.5" />
               </button>
-              <span className="text-[10px] font-mono text-purple-300">
+              <span className="text-[10px] font-mono text-purple-300 select-none">
                 {currentIndex + 1}/{activeOpps.length}
               </span>
               <button 
@@ -143,7 +167,7 @@ export default function OpportunityNotificationBar({ opportunities = [] }) {
           <button
             type="button"
             onClick={handleApplyClick}
-            className="bg-white hover:bg-purple-50 text-purple-900 font-black text-[11px] px-3 py-1 rounded-xl shadow-xs transition-all flex items-center gap-1 cursor-pointer hover:scale-105"
+            className="bg-white hover:bg-purple-100 text-purple-950 font-black text-[11px] px-3.5 py-1 rounded-xl shadow-xs transition-all flex items-center gap-1 cursor-pointer hover:scale-105 active:scale-95"
           >
             <span>Apply Now</span>
             <ArrowRight className="w-3 h-3 text-purple-700" />
@@ -153,7 +177,7 @@ export default function OpportunityNotificationBar({ opportunities = [] }) {
             type="button"
             onClick={handleDismiss}
             className="p-1 text-purple-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors cursor-pointer ml-1"
-            title="Dismiss alert"
+            title="Dismiss notification bar"
           >
             <X className="w-3.5 h-3.5" />
           </button>
