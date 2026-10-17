@@ -361,7 +361,7 @@ export default function ProfileSection({
   ];
 
   return (
-    <div className="w-full px-4 sm:px-8 lg:px-12 py-8 space-y-10 animate-fade-in text-slate-900 dark:text-white">
+    <div className="max-w-[1440px] mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 space-y-8 animate-fade-in text-slate-900 dark:text-white">
       
       {/* Top Banner Notice for Guests */}
       {!user && (
@@ -399,10 +399,10 @@ export default function ProfileSection({
         <div className="absolute top-0 right-0 -mr-20 -mt-20 w-80 h-80 bg-purple-500/10 dark:bg-purple-600/20 rounded-full blur-3xl pointer-events-none"></div>
         <div className="absolute bottom-0 left-1/3 -mb-20 w-72 h-72 bg-pink-500/10 dark:bg-pink-600/20 rounded-full blur-3xl pointer-events-none"></div>
 
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative z-10">
+        <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-6 relative z-10">
           
-          <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5 text-center sm:text-left">
-            <div className="relative group">
+          <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5 text-center sm:text-left flex-1 min-w-0">
+            <div className="relative group shrink-0">
               <img 
                 src={currentUser.avatar} 
                 alt={currentUser.name} 
@@ -418,9 +418,9 @@ export default function ProfileSection({
               </button>
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-2 min-w-0">
               <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
-                <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+                <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight truncate">
                   {currentUser.name}
                 </h1>
                 <span className="text-xs font-mono font-bold px-2.5 py-0.5 rounded-lg bg-purple-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-500/30">
@@ -437,7 +437,7 @@ export default function ProfileSection({
 
               <p className="text-xs sm:text-sm text-purple-700 dark:text-purple-200 font-semibold">{currentUser.title}</p>
               
-              <p className="text-xs text-slate-700 dark:text-slate-300 max-w-xl leading-relaxed font-medium">
+              <p className="text-xs text-slate-700 dark:text-slate-300 max-w-2xl leading-relaxed font-medium">
                 {currentUser.bio}
               </p>
 
@@ -452,18 +452,18 @@ export default function ProfileSection({
           </div>
 
           {/* Quick Action Profile Edit & Earnings Badge with Withdraw Button */}
-          <div className="flex flex-col sm:flex-row lg:flex-col items-center lg:items-end justify-between lg:justify-center gap-3 pt-4 lg:pt-0 border-t lg:border-t-0 border-purple-200 dark:border-purple-500/20">
+          <div className="flex flex-col sm:flex-row xl:flex-col items-center xl:items-end justify-between xl:justify-center gap-3 pt-4 xl:pt-0 border-t xl:border-t-0 border-purple-200 dark:border-purple-500/20 shrink-0">
             <button
               type="button"
               onClick={() => setIsEditOpen(true)}
-              className="w-full sm:w-auto px-4 py-2.5 rounded-xl text-xs font-bold border border-purple-300 dark:border-purple-400/40 bg-purple-50 dark:bg-purple-900/40 hover:bg-purple-100 dark:hover:bg-purple-800/60 flex items-center justify-center gap-2 cursor-pointer transition-all text-purple-900 dark:text-white shadow-md"
+              className="w-full sm:w-auto px-5 py-2.5 rounded-xl text-xs font-extrabold border border-purple-300 dark:border-purple-400/40 bg-purple-50 dark:bg-purple-900/40 hover:bg-purple-100 dark:hover:bg-purple-800/60 flex items-center justify-center gap-2 cursor-pointer transition-all text-purple-900 dark:text-white shadow-sm hover:-translate-y-0.5"
             >
               <Edit3 className="w-4 h-4 text-purple-600 dark:text-purple-300" />
               <span>Edit Profile Workspace</span>
             </button>
 
-            <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto justify-end">
-              <div className="bg-slate-50 dark:bg-slate-900/90 border border-emerald-300 dark:border-emerald-500/40 px-4 py-2 rounded-2xl flex items-center gap-3 shadow-lg">
+            <div className="flex flex-wrap items-center gap-2.5 w-full sm:w-auto justify-end">
+              <div className="bg-slate-50 dark:bg-slate-900/90 border border-emerald-300 dark:border-emerald-500/40 px-4 py-2 rounded-2xl flex items-center gap-3 shadow-md">
                 <div className="p-2 rounded-xl bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400">
                   <IndianRupee className="w-4 h-4" />
                 </div>
@@ -580,13 +580,14 @@ export default function ProfileSection({
           </span>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-          {statsCards.map((card) => {
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+          {statsCards.map((card, idx) => {
             const IconComponent = card.icon;
+            const isLastOdd = idx === 4;
             return (
               <div 
                 key={card.id}
-                className={`bg-white dark:bg-slate-900/80 backdrop-blur-md border ${card.borderColor} rounded-2xl p-4 space-y-3 shadow-lg hover:-translate-y-1.5 transition-all duration-300 group cursor-default`}
+                className={`bg-white dark:bg-slate-900/80 backdrop-blur-md border ${card.borderColor} rounded-2xl p-4 space-y-3 shadow-lg hover:-translate-y-1.5 transition-all duration-300 group cursor-default flex flex-col justify-between min-h-[145px] ${isLastOdd ? 'col-span-2 sm:col-span-1' : ''}`}
               >
                 <div className="flex items-center justify-between">
                   <div className={`p-2.5 rounded-xl ${card.badgeColor} border ${card.borderColor} group-hover:scale-110 transition-transform`}>
