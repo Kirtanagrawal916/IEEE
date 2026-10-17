@@ -45,6 +45,7 @@ model User {
   progress     LessonProgress[]
   portfolios   PortfolioProject[]
   applications Application[]
+  withdrawals  Withdrawal[]
 
   postedOpportunities Opportunity[] @relation("PostedOpportunities")
   sentConnections     Connection[]  @relation("SentConnections")
@@ -174,6 +175,16 @@ model Application {
   user                User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
   coverNote           String
   status              String               @default("SUBMITTED") // SUBMITTED, UNDER_REVIEW, SHORTLISTED, ACCEPTED, REJECTED
+  deliveryStatus      String               @default("NOT_STARTED") // NOT_STARTED, IN_PROGRESS, SUBMITTED, APPROVED
+  deliverableUrl      String?
+  deliverableNotes    String?
+  submittedAt         DateTime?
+  interviewTime       String?
+  interviewLink       String?
+  interviewStatus     String?              @default("NONE") // NONE, SCHEDULED, COMPLETED
+  rating              Int?
+  reviewText          String?
+  reviewAuthor        String?
   appliedAt           DateTime             @default(now())
 
   applicationProjects ApplicationProject[]
@@ -257,5 +268,19 @@ model Message {
   @@index([senderId])
   @@index([receiverId])
   @@index([createdAt])
+}
+
+model Withdrawal {
+  id            String   @id @default(uuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  amount        Float
+  method        String   @default("UPI") // UPI, BANK
+  payoutDetails String   @default("{}") // JSON string with upiId or bank info
+  txnId         String   @unique
+  status        String   @default("COMPLETED")
+  createdAt     DateTime @default(now())
+
+  @@index([userId])
 }
 

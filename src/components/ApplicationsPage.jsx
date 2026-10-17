@@ -13,7 +13,10 @@ import {
   ArrowRight,
   Send,
   Lock,
-  IndianRupee
+  IndianRupee,
+  Calendar,
+  Video,
+  Star
 } from 'lucide-react';
 import { api } from '../services/api';
 import { initialOpportunities } from '../data/mockData';
@@ -180,6 +183,53 @@ export default function ApplicationsPage({ user, onUpdateWallet, showToast }) {
                   <p className="text-xs text-slate-600 dark:text-slate-400 line-clamp-2 bg-slate-50 dark:bg-slate-800/60 p-3 rounded-xl border border-slate-200 dark:border-slate-700">
                     <span className="font-bold">Proposal Pitch:</span> "{app.coverNote}"
                   </p>
+                )}
+
+                {/* Point 3: Interview Callout Banner for Applicant */}
+                {app.interviewTime && (
+                  <div className="p-3.5 rounded-2xl bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-950/40 dark:to-purple-950/40 border border-indigo-200 dark:border-indigo-800/60 flex flex-wrap items-center justify-between gap-3">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-8 h-8 rounded-xl bg-indigo-600 text-white flex items-center justify-center shrink-0 shadow-xs">
+                        <Calendar className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <span className="text-[11px] font-black uppercase text-indigo-700 dark:text-indigo-300 block">
+                          Client Interview Scheduled
+                        </span>
+                        <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                          {app.interviewTime}
+                        </span>
+                      </div>
+                    </div>
+
+                    {app.interviewLink && (
+                      <a
+                        href={app.interviewLink.startsWith('http') ? app.interviewLink : `https://${app.interviewLink}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="px-3.5 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold text-xs flex items-center gap-1.5 shadow-sm transition-all"
+                      >
+                        <Video className="w-3.5 h-3.5" />
+                        <span>Join Video Call</span>
+                      </a>
+                    )}
+                  </div>
+                )}
+
+                {/* Point 7: Post-Gig Rating & Review for Applicant */}
+                {app.rating && (
+                  <div className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700 flex items-center justify-between gap-3 text-xs">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-1">
+                        {[1, 2, 3, 4, 5].map((s) => (
+                          <Star key={s} className={`w-3.5 h-3.5 ${s <= app.rating ? 'text-amber-500 fill-amber-500' : 'text-slate-300'}`} />
+                        ))}
+                        <span className="font-bold ml-1.5">{app.rating} / 5 Stars</span>
+                      </div>
+                      {app.reviewText && <p className="text-slate-600 dark:text-slate-300 italic">"{app.reviewText}"</p>}
+                    </div>
+                    <span className="text-[10px] text-slate-400">Review by {app.reviewAuthor || 'Client'}</span>
+                  </div>
                 )}
 
                 <div className="flex items-center gap-4 text-xs text-slate-500 dark:text-slate-400 pt-1">
