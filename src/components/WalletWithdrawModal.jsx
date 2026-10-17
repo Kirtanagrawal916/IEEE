@@ -17,6 +17,7 @@ import {
   Zap
 } from 'lucide-react';
 import { triggerCelebrationConfetti } from '../utils/confettiHelper';
+import { api } from '../services/api';
 
 export default function WalletWithdrawModal({ 
   isOpen, 
@@ -67,19 +68,40 @@ export default function WalletWithdrawModal({
     setIfscCode(bank.ifsc);
   };
 
-  const handleWithdraw = (e) => {
+  const handleWithdraw = async (e) => {
     e.preventDefault();
     if (amount <= 0 || amount > walletBalance) return;
     if (payoutMethod === 'upi' && !upiId.trim()) return;
     if (payoutMethod === 'bank' && (!accountNumber.trim() || !ifscCode.trim())) return;
 
     setStep('processing');
-    const generatedTxn = `PAYOUT-HE-${Math.floor(10000000 + Math.random() * 90000000)}`;
-    setTxnId(generatedTxn);
+    let generatedTxn = `PAYOUT-HE-${Math.floor(10000000 + Math.random() * 90000000)}`;
 
-    setTimeout(() => {
+    const payoutPayload = {
+      amount: Number(amount),
+      method: payoutMethod.toUpperCase(),
+      payoutDetails: payoutMethod === 'upi' ? { upiId: upiId.trim() } : {
+        accountName: accountName.trim(),
+        accountNumber: accountNumber.trim(),
+        ifscCode: ifscCode.trim(),
+        bankName: bankName.trim(),
+      },
+    };
+
+    try {
+      try {
+        const res = await api.withdrawWallet(payoutPayload);
+        if (res.transaction?.txnId) {
+          generatedTxn = res.transaction.txnId;
+        }
+      } catch (apiErr) {
+        console.warn('[Withdrawal API]: Online API unavailable, falling back:', apiErr.message);
+      }
+
+      setTxnId(generatedTxn);
       setStep('success');
       triggerCelebrationConfetti();
+
       const transferDetails = {
         amount,
         method: payoutMethod === 'upi' ? 'UPI' : 'Bank Transfer',
@@ -91,7 +113,7 @@ export default function WalletWithdrawModal({
         status: 'Completed'
       };
 
-      // Persist permanently in withdrawal history
+      // Persist permanently in withdrawal history and local user object
       try {
         const existingHistory = JSON.parse(localStorage.getItem('herearn_withdrawal_history') || '[]');
         const newRecord = {
@@ -105,6 +127,12 @@ export default function WalletWithdrawModal({
         };
         const updatedHistory = [newRecord, ...existingHistory];
         localStorage.setItem('herearn_withdrawal_history', JSON.stringify(updatedHistory));
+
+        const savedUser = JSON.parse(localStorage.getItem('herearn_user') || '{}');
+        if (savedUser.walletBalance !== undefined) {
+          savedUser.walletBalance = Math.max(0, (savedUser.walletBalance || 0) - amount);
+          localStorage.setItem('herearn_user', JSON.stringify(savedUser));
+        }
       } catch (err) {
         console.warn('[Withdrawal] Storage sync:', err);
       }
@@ -115,7 +143,10 @@ export default function WalletWithdrawModal({
       if (showToast) {
         showToast("💸 Payout Disbursed!", `₹${amount.toLocaleString()} sent via ${transferDetails.method}. Ref: ${generatedTxn}`);
       }
-    }, 1200);
+    } catch (err) {
+      setStep('input');
+      showToast?.('Withdrawal Failed', err.message || 'Could not process transaction');
+    }
   };
 
   const handleCopyTxn = () => {

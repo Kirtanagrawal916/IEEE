@@ -114,6 +114,9 @@ export const api = {
   deleteRecruiterJob: (id) => request(`/api/recruiter/jobs/${id}`, { method: 'DELETE' }),
   getRecruiterApplicants: () => request('/api/recruiter/applicants'),
   updateApplicantStatus: (id, status) => request(`/api/recruiter/applicants/${id}/status`, { method: 'PATCH', body: JSON.stringify({ status }) }),
+  scheduleInterview: (id, data) => request(`/api/recruiter/applicants/${id}/interview`, { method: 'POST', body: JSON.stringify(data) }),
+  approveApplicantPayout: (id) => request(`/api/recruiter/applicants/${id}/approve-payout`, { method: 'POST' }),
+  submitRecruiterReview: (id, data) => request(`/api/recruiter/applicants/${id}/review`, { method: 'POST', body: JSON.stringify(data) }),
   // Auth APIs
   register: (userData) => request('/api/auth/register', { method: 'POST', body: JSON.stringify(userData) }),
   login: (credentials) => request('/api/auth/login', { method: 'POST', body: JSON.stringify(credentials) }),
@@ -167,6 +170,14 @@ export const api = {
   applyOpportunity: (opportunityId, appData) => request(`/api/opportunities/${opportunityId}/apply`, { method: 'POST', body: JSON.stringify(appData) }),
   getMyApplications: () => request('/api/applications/me'),
   getApplicationDetails: (id) => request(`/api/applications/${id}`),
+  submitDeliverable: (id, data) => request(`/api/applications/${id}/deliverable`, { method: 'POST', body: JSON.stringify(data) }),
+  submitApplicationReview: (id, data) => request(`/api/applications/${id}/review`, { method: 'POST', body: JSON.stringify(data) }),
+  approvePayout: (id) => request(`/api/applications/${id}/approve-payout`, { method: 'POST' }),
+
+  // Wallet APIs
+  getWalletBalance: () => request('/api/wallet/balance'),
+  getWalletHistory: () => request('/api/wallet/history'),
+  withdrawWallet: (data) => request('/api/wallet/withdraw', { method: 'POST', body: JSON.stringify(data) }),
 
   // Dashboard & Specific Mine APIs
   getProgressMine: () => request('/api/progress'),

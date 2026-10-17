@@ -18,6 +18,7 @@ import recruiterRoutes from './routes/recruiterRoutes.js';
 import chatRoutes from './routes/chat.js';
 import adminRoutes from './routes/adminRoutes.js';
 import communityRoutes from './routes/communityRoutes.js';
+import walletRoutes from './routes/walletRoutes.js';
 
 dotenv.config();
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -100,6 +101,7 @@ app.use('/api/chat', chatRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/recruiter', recruiterRoutes);
 app.use('/api/community', communityRoutes);
+app.use('/api/wallet', walletRoutes);
 
 // Centralized Error Handling Middleware
 app.use((err, req, res, next) => {
