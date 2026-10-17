@@ -29,9 +29,13 @@ import {
   Flame,
   ExternalLink,
   CreditCard,
-  ArrowRight
+  ArrowRight,
+  Lock,
+  Unlock,
+  Play
 } from 'lucide-react';
 import WalletWithdrawModal from './WalletWithdrawModal';
+import { isTrackUnlocked, getTotalOpportunitiesApplied } from '../utils/trackLockHelper';
 
 export default function ProfileSection({ 
   user, 
@@ -47,7 +51,13 @@ export default function ProfileSection({
   const [isCertModalOpen, setIsCertModalOpen] = useState(false);
   const [isWithdrawModalOpen, setIsWithdrawModalOpen] = useState(false);
   const [selectedCertCourse, setSelectedCertCourse] = useState('Graphic Design with Canva');
-  const [withdrawalHistory, setWithdrawalHistory] = useState([]);
+  const [withdrawalHistory, setWithdrawalHistory] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem('herearn_withdrawal_history') || '[]');
+    } catch {
+      return [];
+    }
+  });
 
   // Active user data or default guest user
   const effectiveUsername = user?.username || (user?.name ? user.name.toLowerCase().replace(/[^a-z0-9]/g, '_') : 'guest_learner');
@@ -135,9 +145,16 @@ export default function ProfileSection({
       client: transferDetails?.destination || 'Direct Payout',
       amount: `-₹${amount.toLocaleString()}`,
       date: 'Just now',
-      status: 'Completed'
+      status: 'Completed',
+      txnId: transferDetails?.txnId || `PAYOUT-HE-${Date.now()}`
     };
-    setWithdrawalHistory(prev => [newTx, ...prev]);
+    const updatedHistory = [newTx, ...withdrawalHistory];
+    setWithdrawalHistory(updatedHistory);
+    try {
+      localStorage.setItem('herearn_withdrawal_history', JSON.stringify(updatedHistory));
+    } catch (e) {
+      console.warn('Storage sync:', e);
+    }
 
     if (onUpdateProfile) {
       onUpdateProfile({
@@ -150,7 +167,7 @@ export default function ProfileSection({
   };
 
   const completedCount = currentUser.completedLessons ? currentUser.completedLessons.length : 0;
-  const appliedCount = userAppliedGigs ? userAppliedGigs.length : 0;
+  const appliedCount = getTotalOpportunitiesApplied(currentUser, userAppliedGigs);
 
   // --- TOP METRIC STATS DATA ---
   const statsCards = [
@@ -178,9 +195,9 @@ export default function ProfileSection({
     },
     {
       id: "stat-3",
-      title: "Applied Micro Gigs",
+      title: "Opportunities Applied",
       value: `${appliedCount}`,
-      subtext: appliedCount > 0 ? `${appliedCount} Active Applications` : "0 Gigs Applied",
+      subtext: appliedCount > 0 ? `${appliedCount} Opportunities Filled In` : "0 Opportunities Filled In",
       icon: Briefcase,
       gradient: "from-amber-500/15 via-orange-500/10 to-amber-600/20 dark:from-amber-600/30 dark:via-orange-600/20 dark:to-amber-900/40",
       borderColor: "border-amber-300 dark:border-amber-500/40",
@@ -219,10 +236,13 @@ export default function ProfileSection({
     const lessonsDone = trackLessons.filter(l => userCompletedLessons.includes(l.id)).length;
     const totalLessons = trackLessons.length;
     const progress = totalLessons > 0 ? Math.round((lessonsDone / totalLessons) * 100) : 0;
+    const isUnlocked = isTrackUnlocked(track.id, currentUser);
     
     const nextUncompleted = trackLessons.find(l => !userCompletedLessons.includes(l.id));
     let nextLesson = "Track Mastered - Download Certificate";
-    if (nextUncompleted) {
+    if (!isUnlocked) {
+      nextLesson = "Locked • Apply to Opportunity to Unlock";
+    } else if (nextUncompleted) {
       nextLesson = nextUncompleted.title;
     } else if (lessonsDone === 0) {
       nextLesson = "Start Lesson 1";
@@ -236,9 +256,10 @@ export default function ProfileSection({
       lessonsDone,
       totalLessons,
       instructor: track.instructor ? track.instructor.split('(')[0].trim() : "Lead Instructor",
-      nextLesson
+      nextLesson,
+      isUnlocked
     };
-  });
+  }).sort((a, b) => (b.isUnlocked ? 1 : 0) - (a.isUnlocked ? 1 : 0));
 
   // --- DYNAMIC ACTIVE GIGS LIST ---
   const activeGigsList = userAppliedGigs.map(gig => ({
@@ -617,13 +638,31 @@ export default function ProfileSection({
 
             <div className="space-y-4">
               {enrolledCourses.map((course) => (
-                <div key={course.id} className="bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-purple-500/20 rounded-2xl p-4 space-y-3 hover:border-purple-400 transition-all">
+                <div 
+                  key={course.id} 
+                  className={`border rounded-2xl p-4 space-y-3 transition-all ${
+                    course.isUnlocked 
+                      ? 'bg-slate-50 dark:bg-slate-800/60 border-purple-300 dark:border-purple-500/40 hover:border-purple-500 shadow-sm' 
+                      : 'bg-slate-100/60 dark:bg-slate-800/30 border-dashed border-slate-300 dark:border-slate-700 opacity-90'
+                  }`}
+                >
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                     <div>
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 flex-wrap">
                         <span className="text-[10px] uppercase tracking-wider font-extrabold bg-purple-100 dark:bg-purple-500/20 text-purple-800 dark:text-purple-300 px-2 py-0.5 rounded-md border border-purple-300 dark:border-purple-500/30">
                           {course.category}
                         </span>
+                        {course.isUnlocked ? (
+                          <span className="inline-flex items-center gap-1 text-[10px] uppercase tracking-wider font-extrabold bg-emerald-100 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-300 px-2 py-0.5 rounded-md border border-emerald-300 dark:border-emerald-500/30">
+                            <Unlock className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
+                            Lectures Open in Profile
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 text-[10px] uppercase tracking-wider font-extrabold bg-amber-100 text-amber-800 dark:bg-amber-500/20 dark:text-amber-300 px-2 py-0.5 rounded-md border border-amber-300 dark:border-amber-500/30">
+                            <Lock className="w-3 h-3 text-amber-600 dark:text-amber-400" />
+                            Locked
+                          </span>
+                        )}
                         <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">• Instructor: {course.instructor}</span>
                       </div>
                       <h4 className="text-sm font-bold text-slate-900 dark:text-white mt-1">{course.title}</h4>
@@ -644,19 +683,41 @@ export default function ProfileSection({
                     </div>
                     <div className="flex justify-between items-center text-[11px] text-slate-500 dark:text-slate-400 font-medium">
                       <span>{course.lessonsDone} of {course.totalLessons} lessons completed</span>
-                      <span className="text-purple-700 dark:text-purple-300 font-semibold">{course.nextLesson}</span>
+                      <span className={course.isUnlocked ? "text-purple-700 dark:text-purple-300 font-semibold" : "text-amber-700 dark:text-amber-400 font-semibold"}>
+                        {course.nextLesson}
+                      </span>
                     </div>
                   </div>
 
-                  <div className="pt-2 flex justify-end">
-                    <button
-                      type="button"
-                      onClick={() => onNavigate && onNavigate('learn')}
-                      className="btn-gradient-award text-xs py-2 px-4 font-bold cursor-pointer shadow-sm"
-                    >
-                      <span>{course.progress === 100 ? 'View Certificate' : 'Continue Learning'}</span>
-                      <ArrowRight className="w-3.5 h-3.5" />
-                    </button>
+                  <div className="pt-2 flex justify-end gap-2">
+                    {course.isUnlocked ? (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (course.progress === 100) {
+                            setSelectedCertCourse(course.title);
+                            setIsCertModalOpen(true);
+                          } else {
+                            onNavigate && onNavigate('track-detail', { trackId: course.id });
+                          }
+                        }}
+                        className="btn-gradient-award text-xs py-2 px-4 font-bold cursor-pointer shadow-sm flex items-center gap-1.5"
+                      >
+                        <Play className="w-3.5 h-3.5" />
+                        <span>{course.progress === 100 ? 'View Certificate' : 'Open Lectures & Learn'}</span>
+                        <ArrowRight className="w-3.5 h-3.5" />
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => onNavigate && onNavigate('opportunities')}
+                        className="bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/40 dark:hover:bg-amber-900/50 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-500/30 rounded-xl text-xs py-2 px-4 font-bold cursor-pointer shadow-sm flex items-center gap-1.5 transition-all"
+                      >
+                        <Lock className="w-3.5 h-3.5" />
+                        <span>Apply Opportunity to Unlock</span>
+                        <ArrowRight className="w-3.5 h-3.5" />
+                      </button>
+                    )}
                   </div>
                 </div>
               ))}

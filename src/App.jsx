@@ -32,6 +32,7 @@ import MentorshipSection from './components/MentorshipSection';
 import CommunitySection from './components/CommunitySection';
 import AdminPanel from './components/AdminPanel';
 import Logo from './components/Logo';
+import OpportunityNotificationBar from './components/OpportunityNotificationBar';
 
 import { 
   initialUser, 
@@ -41,6 +42,11 @@ import {
 
 import { api } from './services/api';
 import { useAuth } from './context/AuthContext';
+import { 
+  getMatchingTrackForOpportunity, 
+  isTrackUnlocked, 
+  getUnlockedTrackIds 
+} from './utils/trackLockHelper';
 
 function AppContent() {
   const navigate = useNavigate();
@@ -59,6 +65,30 @@ function AppContent() {
   // Modals & Navigation state
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
   const [selectedOpportunity, setSelectedOpportunity] = useState(null);
+
+  // Derive user applied gigs and portfolios to ensure all records appear in the profile
+  const appliedGigIds = Array.from(new Set([
+    ...(user?.appliedGigIds || []),
+    ...(JSON.parse(localStorage.getItem('herearn_applied_gigs') || '[]'))
+  ]));
+
+  const userAppliedGigs = appliedGigIds.map(id => {
+    const found = opportunities.find(o => o.id === id);
+    if (found) return found;
+    return {
+      id,
+      title: "Micro-Gig Application",
+      company: "HerEarn Partner",
+      category: "Freelance Opportunity",
+      stipend: "₹5,000",
+      status: "Applied",
+      deadline: "Active"
+    };
+  });
+
+  const userPortfolios = portfolios.filter(p => 
+    !user || p.authorName === user.name || p.userId === user.id || p.authorUsername === user.username
+  );
 
   // Toast
   const [toast, setToast] = useState(null);
@@ -197,37 +227,28 @@ function AppContent() {
 
   // Lesson Completion Action with API integration
   const handleCompleteLesson = async (lessonId) => {
-    if (!user) {
-      handleOpenAuth('login');
-      return;
-    }
+    const currentUser = user || JSON.parse(localStorage.getItem('herearn_user') || 'null') || initialUser;
+    const currentCompleted = currentUser.completedLessons || [];
+    const updatedLessons = currentCompleted.includes(lessonId)
+      ? currentCompleted.filter(id => id !== lessonId)
+      : [...currentCompleted, lessonId];
+
+    const updatedUser = {
+      ...currentUser,
+      completedLessons: updatedLessons,
+    };
+
+    saveUserData(updatedUser);
 
     try {
-      await api.markLessonComplete(lessonId);
-      const currentCompleted = user.completedLessons || [];
-      const updatedLessons = currentCompleted.includes(lessonId)
-        ? currentCompleted.filter(id => id !== lessonId)
-        : [...currentCompleted, lessonId];
-
-      saveUserData({
-        ...user,
-        completedLessons: updatedLessons,
-      });
-
-      showToast("🎉 Lesson Mastered!", "Your skill track progress has increased in database!");
+      if (user && !user.isGuest) {
+        await api.markLessonComplete(lessonId);
+      }
     } catch (error) {
       console.warn('[App] Operation fallback:', error?.message);
-      const currentCompleted = user.completedLessons || [];
-      const updatedLessons = currentCompleted.includes(lessonId)
-        ? currentCompleted.filter(id => id !== lessonId)
-        : [...currentCompleted, lessonId];
-
-      saveUserData({
-        ...user,
-        completedLessons: updatedLessons,
-      });
-      showToast("🎉 Lesson Mastered!", "Your skill track progress has increased!");
     }
+
+    showToast("🎉 Lesson Mastered!", "Your skill track progress has been recorded in your profile!");
   };
 
   // Submit Portfolio Project Action with API integration
@@ -283,10 +304,31 @@ function AppContent() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // Confirm Gig Application Action with Quiz Assessment & API integration
+  // Confirm Gig Application Action with Quiz Assessment & Course Track Unlock
   const handleConfirmApply = async (gigId, coverNote, portfolioId, quizSummary) => {
+    // 1. Find matching gig and course track
+    const targetGig = opportunities.find(g => g.id === gigId) || initialOpportunities.find(g => g.id === gigId);
+    const matchingTrack = getMatchingTrackForOpportunity(targetGig);
+
+    // 2. Compute updated unlocked tracks and applied gigs
+    const currentUnlocked = getUnlockedTrackIds(user);
+    const updatedUnlocked = Array.from(new Set([...currentUnlocked, matchingTrack.id]));
+    const currentApplied = user?.appliedGigIds || [];
+    const updatedApplied = Array.from(new Set([...currentApplied, gigId]));
+
+    // Store in localStorage for permanent persistence
+    try {
+      localStorage.setItem('herearn_unlocked_tracks', JSON.stringify(updatedUnlocked));
+      localStorage.setItem('herearn_applied_gigs', JSON.stringify(updatedApplied));
+    } catch (e) {
+      console.warn('[App] LocalStorage sync warning:', e);
+    }
+
     try {
       await api.applyOpportunity(gigId, { coverNote, portfolioId, quizSummary });
+      // Also try to enroll track on backend
+      api.enrollTrack(matchingTrack.id).catch(() => {});
+
       setOpportunities(opportunities.map(g => {
         if (g.id === gigId) {
           return {
@@ -300,21 +342,18 @@ function AppContent() {
         return g;
       }));
 
-      if (user) {
-        saveUserData({
-          ...user,
-          appliedGigIds: [...(user.appliedGigIds || []), gigId],
-        });
-      }
+      const updatedUser = {
+        ...(user || initialUser || { id: 'guest', name: 'Learner' }),
+        appliedGigIds: updatedApplied,
+        unlockedTrackIds: updatedUnlocked,
+      };
+      saveUserData(updatedUser);
 
-      if (quizSummary) {
-        showToast(
-          quizSummary.isEligible ? "🎉 Application & Quiz Passed!" : "Application Recorded", 
-          quizSummary.isEligible ? `Eligible with ${quizSummary.percentage}% Quiz Score!` : `Quiz Score: ${quizSummary.percentage}%`
-        );
-      } else {
-        showToast("🚀 Application Sent!", "Application recorded in database with portfolio proof.");
-      }
+      // Show celebration toast for unlocking the course lectures
+      showToast(
+        "🎉 Course Lectures Unlocked!", 
+        `"${matchingTrack.title}" is now permanently unlocked in your profile and courses! You can start learning the lectures now.`
+      );
     } catch (error) {
       console.warn('[App] Operation fallback:', error?.message);
       setOpportunities(opportunities.map(g => {
@@ -330,21 +369,17 @@ function AppContent() {
         return g;
       }));
 
-      if (user) {
-        saveUserData({
-          ...user,
-          appliedGigIds: [...(user.appliedGigIds || []), gigId],
-        });
-      }
+      const updatedUser = {
+        ...(user || initialUser || { id: 'guest', name: 'Learner' }),
+        appliedGigIds: updatedApplied,
+        unlockedTrackIds: updatedUnlocked,
+      };
+      saveUserData(updatedUser);
 
-      if (quizSummary) {
-        showToast(
-          quizSummary.isEligible ? "🎉 Application & Quiz Passed!" : "Application Recorded", 
-          quizSummary.isEligible ? `Eligible Candidate status verified (${quizSummary.percentage}% Quiz Score)!` : `Quiz score recorded (${quizSummary.percentage}%).`
-        );
-      } else {
-        showToast("🚀 Application Sent!", "Client received your application with attached portfolio proof.");
-      }
+      showToast(
+        "🎉 Course Lectures Unlocked!", 
+        `"${matchingTrack.title}" is now permanently unlocked in your profile and courses! You can start learning the lectures now.`
+      );
     }
   };
 
@@ -442,31 +477,50 @@ function AppContent() {
     showToast("🎯 Skills Updated!", `Skill profile updated (${newSkills.length} skills active). Opportunity match percentages updated.`);
   };
 
-  const userPortfolios = portfolios.filter(p => p.authorName === (user?.name || "Guest Learner"));
-  const userAppliedGigs = opportunities.filter(g => (user?.appliedGigIds || []).includes(g.id));
-
   return (
     <div className={`min-h-screen flex flex-col font-sans transition-colors duration-300 ${
       theme === 'dark' ? 'bg-[#0F0918] text-[#F9FAFB]' : 'bg-[#FFF9F5] text-[#1F2937]'
     }`}>
       
-      {/* Sticky Navigation Header (Hidden on Admin portal for dedicated admin console) */}
+      {/* Sticky Navigation Header & Opportunity Alert Bar */}
       {!isAdminRoute && (
-        <Navbar 
-          user={user}
-          onLogout={() => setIsLogoutModalOpen(true)}
-          theme={theme}
-          onToggleTheme={handleToggleTheme}
-          onUpdateUser={saveUserData}
-          showToast={showToast}
-        />
+        <>
+          <OpportunityNotificationBar opportunities={opportunities} />
+          <Navbar 
+            user={user}
+            onLogout={() => setIsLogoutModalOpen(true)}
+            theme={theme}
+            onToggleTheme={handleToggleTheme}
+            onUpdateUser={saveUserData}
+            showToast={showToast}
+          />
+        </>
       )}
 
       {/* Main View Area with React Router Routes */}
       <main className={`flex-1 ${isAdminRoute ? 'pb-0' : 'pb-16'}`}>
         <Routes>
+          {/* Default Opening Page is AboutPage */}
           <Route 
             path="/" 
+            element={
+              <AboutPage 
+                onNavigate={(page) => navigate(`/${page}`)}
+              />
+            } 
+          />
+
+          <Route 
+            path="/about" 
+            element={
+              <AboutPage 
+                onNavigate={(page) => navigate(`/${page}`)}
+              />
+            } 
+          />
+
+          <Route 
+            path="/home" 
             element={
               <LandingSection 
                 onNavigate={(page) => navigate(`/${page}`)}
@@ -477,10 +531,12 @@ function AppContent() {
           />
 
           <Route 
-            path="/about" 
+            path="/landing" 
             element={
-              <AboutPage 
+              <LandingSection 
                 onNavigate={(page) => navigate(`/${page}`)}
+                onOpenAuth={() => handleOpenAuth('signup')}
+                theme={theme}
               />
             } 
           />
