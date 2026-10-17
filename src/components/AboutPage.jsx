@@ -356,16 +356,17 @@ export default function AboutPage({ onNavigate }) {
         <div className="flex flex-wrap items-center justify-center gap-4 relative z-10">
           <button
             type="button"
-            onClick={() => onNavigate('signup')}
-            className="px-7 py-3.5 rounded-2xl bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-extrabold text-xs sm:text-sm shadow-xl transition-all cursor-pointer"
+            onClick={() => onNavigate('home')}
+            className="px-7 py-3.5 rounded-2xl bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-extrabold text-xs sm:text-sm shadow-xl transition-all cursor-pointer flex items-center gap-2 hover:scale-105 active:scale-95"
           >
-            Create Account
+            <span>Explore Home Platform</span>
+            <ArrowRight className="w-4 h-4" />
           </button>
           
           <button
             type="button"
             onClick={() => onNavigate('learn')}
-            className="px-7 py-3.5 rounded-2xl bg-slate-950 hover:bg-slate-900 text-slate-200 font-extrabold text-xs sm:text-sm border border-purple-500/30 transition-all cursor-pointer"
+            className="px-7 py-3.5 rounded-2xl bg-slate-950 hover:bg-slate-900 text-slate-200 font-extrabold text-xs sm:text-sm border border-purple-500/30 transition-all cursor-pointer hover:border-purple-400"
           >
             Explore Learning Tracks
           </button>
