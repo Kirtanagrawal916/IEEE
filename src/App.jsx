@@ -32,6 +32,13 @@ import MentorshipSection from './components/MentorshipSection';
 import CommunitySection from './components/CommunitySection';
 import AdminPanel from './components/AdminPanel';
 import Logo from './components/Logo';
+import { 
+  Compass, 
+  BookOpen, 
+  Briefcase, 
+  Award, 
+  User 
+} from 'lucide-react';
 
 import { 
   initialUser, 
@@ -521,9 +528,13 @@ function AppContent() {
   };
 
   return (
-    <div className={`min-h-screen flex flex-col font-sans transition-colors duration-300 ${
+    <div className={`min-h-screen flex flex-col font-sans transition-colors duration-300 relative overflow-x-hidden ${
       theme === 'dark' ? 'bg-[#0F0918] text-[#F9FAFB]' : 'bg-[#FFF9F5] text-[#1F2937]'
     }`}>
+      {/* Ambient Aurora Orbs */}
+      <div className="absolute top-0 left-1/4 -translate-x-1/2 w-[550px] h-[350px] bg-gradient-to-tr from-purple-600/15 via-pink-500/10 to-transparent rounded-full blur-[130px] pointer-events-none -z-0" />
+      <div className="absolute top-1/3 right-0 w-[450px] h-[350px] bg-gradient-to-bl from-amber-500/10 via-rose-500/10 to-transparent rounded-full blur-[140px] pointer-events-none -z-0" />
+      <div className="absolute bottom-1/4 left-10 w-[500px] h-[300px] bg-gradient-to-tr from-indigo-600/10 via-purple-600/10 to-transparent rounded-full blur-[140px] pointer-events-none -z-0" />
       
       {/* Sticky Navigation Header */}
       {!isAdminRoute && (
@@ -538,7 +549,7 @@ function AppContent() {
       )}
 
       {/* Main View Area with React Router Routes */}
-      <main className={`flex-1 ${isAdminRoute ? 'pb-0' : 'pb-16'}`}>
+      <main className={`flex-1 ${isAdminRoute ? 'pb-0' : 'pb-24 md:pb-16'} relative z-10`}>
         <Routes>
           {/* Default Opening Page is AboutPage */}
           <Route 
@@ -1013,6 +1024,71 @@ function AppContent() {
 
           </div>
         </footer>
+      )}
+
+      {/* Mobile Bottom Tab Navigation Bar (Phones Only) */}
+      {!isAdminRoute && (
+        <nav aria-label="Mobile Navigation" className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border-t border-slate-200 dark:border-white/10 px-2 py-1.5 flex items-center justify-around shadow-[0_-4px_25px_rgba(0,0,0,0.08)]">
+          <Link
+            to="/home"
+            className={`flex flex-col items-center gap-0.5 py-1 px-2.5 rounded-xl text-[10px] font-extrabold transition-colors ${
+              location.pathname === '/home' || location.pathname === '/'
+                ? 'text-purple-600 dark:text-purple-400'
+                : 'text-slate-500 dark:text-slate-400 hover:text-purple-600'
+            }`}
+          >
+            <Compass className="w-5 h-5" />
+            <span>Home</span>
+          </Link>
+
+          <Link
+            to="/learn"
+            className={`flex flex-col items-center gap-0.5 py-1 px-2.5 rounded-xl text-[10px] font-extrabold transition-colors ${
+              location.pathname.startsWith('/learn') || location.pathname.startsWith('/courses')
+                ? 'text-purple-600 dark:text-purple-400'
+                : 'text-slate-500 dark:text-slate-400 hover:text-purple-600'
+            }`}
+          >
+            <BookOpen className="w-5 h-5" />
+            <span>Learn</span>
+          </Link>
+
+          <Link
+            to="/opportunities"
+            className={`flex flex-col items-center gap-0.5 py-1 px-2.5 rounded-xl text-[10px] font-extrabold transition-colors ${
+              location.pathname.startsWith('/opportunities')
+                ? 'text-purple-600 dark:text-purple-400'
+                : 'text-slate-500 dark:text-slate-400 hover:text-purple-600'
+            }`}
+          >
+            <Briefcase className="w-5 h-5" />
+            <span>Gigs</span>
+          </Link>
+
+          <Link
+            to="/portfolio"
+            className={`flex flex-col items-center gap-0.5 py-1 px-2.5 rounded-xl text-[10px] font-extrabold transition-colors ${
+              location.pathname.startsWith('/portfolio')
+                ? 'text-purple-600 dark:text-purple-400'
+                : 'text-slate-500 dark:text-slate-400 hover:text-purple-600'
+            }`}
+          >
+            <Award className="w-5 h-5" />
+            <span>Showcase</span>
+          </Link>
+
+          <Link
+            to={user ? "/dashboard" : "/login"}
+            className={`flex flex-col items-center gap-0.5 py-1 px-2.5 rounded-xl text-[10px] font-extrabold transition-colors ${
+              location.pathname === '/dashboard' || location.pathname === '/profile'
+                ? 'text-purple-600 dark:text-purple-400'
+                : 'text-slate-500 dark:text-slate-400 hover:text-purple-600'
+            }`}
+          >
+            <User className="w-5 h-5" />
+            <span>{user ? 'Profile' : 'Sign In'}</span>
+          </Link>
+        </nav>
       )}
 
       {/* Confirmation Dialogs & Notifications */}

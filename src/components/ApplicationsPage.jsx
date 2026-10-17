@@ -191,7 +191,11 @@ export default function ApplicationsPage({ user, onUpdateWallet, showToast }) {
                       <IndianRupee className="w-3.5 h-3.5" /> Stipend: {app.stipend}
                     </span>
                   )}
-                  <span className="text-purple-600 dark:text-purple-400 font-bold flex items-center gap-1">
+                  <span className="text-purple-600 dark:text-purple-400 font-bold inline-flex items-center gap-1.5">
+                    <span className="relative flex h-2 w-2">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-purple-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-purple-600"></span>
+                    </span>
                     <Lock className="w-3 h-3" /> Escrow Protected
                   </span>
                 </div>
