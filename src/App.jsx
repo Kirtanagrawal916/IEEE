@@ -32,7 +32,6 @@ import MentorshipSection from './components/MentorshipSection';
 import CommunitySection from './components/CommunitySection';
 import AdminPanel from './components/AdminPanel';
 import Logo from './components/Logo';
-import OpportunityNotificationBar from './components/OpportunityNotificationBar';
 
 import { 
   initialUser, 
@@ -513,21 +512,16 @@ function AppContent() {
       theme === 'dark' ? 'bg-[#0F0918] text-[#F9FAFB]' : 'bg-[#FFF9F5] text-[#1F2937]'
     }`}>
       
-      {/* Sticky Navigation Header & Opportunity Alert Bar */}
+      {/* Sticky Navigation Header */}
       {!isAdminRoute && (
-        <>
-          {!isHomePage && (
-            <OpportunityNotificationBar opportunities={opportunities} />
-          )}
-          <Navbar 
-            user={user}
-            onLogout={() => setIsLogoutModalOpen(true)}
-            theme={theme}
-            onToggleTheme={handleToggleTheme}
-            onUpdateUser={saveUserData}
-            showToast={showToast}
-          />
-        </>
+        <Navbar 
+          user={user}
+          onLogout={() => setIsLogoutModalOpen(true)}
+          theme={theme}
+          onToggleTheme={handleToggleTheme}
+          onUpdateUser={saveUserData}
+          showToast={showToast}
+        />
       )}
 
       {/* Main View Area with React Router Routes */}
