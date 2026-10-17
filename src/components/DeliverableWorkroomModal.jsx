@@ -23,11 +23,22 @@ export default function DeliverableWorkroomModal({
   onApproveAndReleasePayment,
   showToast 
 }) {
-  const [deliverableUrl, setDeliverableUrl] = useState('');
-  const [deliverableNotes, setDeliverableNotes] = useState('');
+  const storageKey = `herearn_workroom_${application?.id || 'default'}`;
+  
+  const getSaved = () => {
+    try {
+      return JSON.parse(localStorage.getItem(storageKey) || '{}');
+    } catch {
+      return {};
+    }
+  };
+
+  const initialSaved = getSaved();
+  const [deliverableUrl, setDeliverableUrl] = useState(() => initialSaved.deliverableUrl || '');
+  const [deliverableNotes, setDeliverableNotes] = useState(() => initialSaved.deliverableNotes || '');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [deliveryStatus, setDeliveryStatus] = useState(() => {
-    return application?.deliveryStatus || 'IN_PROGRESS'; // 'IN_PROGRESS' | 'SUBMITTED' | 'APPROVED'
+    return initialSaved.deliveryStatus || application?.deliveryStatus || 'IN_PROGRESS';
   });
 
   if (!isOpen || !application) return null;
@@ -45,10 +56,20 @@ export default function DeliverableWorkroomModal({
     setTimeout(() => {
       setIsSubmitting(false);
       setDeliveryStatus('SUBMITTED');
+      try {
+        localStorage.setItem(storageKey, JSON.stringify({
+          deliverableUrl,
+          deliverableNotes,
+          deliveryStatus: 'SUBMITTED',
+          submittedAt: new Date().toISOString()
+        }));
+      } catch (err) {
+        console.warn('[Workroom] Storage error:', err);
+      }
       if (showToast) {
         showToast("🚀 Deliverables Submitted!", "Your project link has been securely transmitted for client verification.");
       }
-    }, 800);
+    }, 600);
   };
 
   const handleSimulateClientApproval = () => {
@@ -56,6 +77,16 @@ export default function DeliverableWorkroomModal({
     setTimeout(() => {
       setIsSubmitting(false);
       setDeliveryStatus('APPROVED');
+      try {
+        localStorage.setItem(storageKey, JSON.stringify({
+          deliverableUrl,
+          deliverableNotes,
+          deliveryStatus: 'APPROVED',
+          approvedAt: new Date().toISOString()
+        }));
+      } catch (err) {
+        console.warn('[Workroom] Storage error:', err);
+      }
       triggerCelebrationConfetti();
       if (onApproveAndReleasePayment) {
         onApproveAndReleasePayment(application.id, numericAmount);
@@ -63,7 +94,7 @@ export default function DeliverableWorkroomModal({
       if (showToast) {
         showToast("🎉 Payout Credited!", `Client verified deliverables! ₹${numericAmount.toLocaleString()} released to your HerEarn Wallet.`);
       }
-    }, 1000);
+    }, 600);
   };
 
   return (

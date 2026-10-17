@@ -154,6 +154,7 @@ export const api = {
     return request(`/api/opportunities${query ? `?${query}` : ''}`);
   },
   getOpportunityDetails: (id) => request(`/api/opportunities/${id}`),
+  createOpportunity: (data) => request('/api/opportunities', { method: 'POST', body: JSON.stringify(data) }),
 
   // Application APIs
   applyOpportunity: (opportunityId, appData) => request(`/api/opportunities/${opportunityId}/apply`, { method: 'POST', body: JSON.stringify(appData) }),

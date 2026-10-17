@@ -6,9 +6,8 @@ const isPlaceholder = (val) => !val || typeof val !== 'string' || val.includes('
 const rawUrl = metaEnv.VITE_SUPABASE_URL;
 const rawKey = metaEnv.VITE_SUPABASE_ANON_KEY || metaEnv.VITE_SUPABASE_PUBLISHABLE_KEY;
 
-const supabaseUrl = !isPlaceholder(rawUrl) ? rawUrl : 'https://egoxjudqcifjksuqaqay.supabase.co';
-const supabaseAnonKey = !isPlaceholder(rawKey) ? rawKey : 'sb_publishable_hr2RbAb_0VyDR6HZoWgZeg_SogBRg56';
-
+const supabaseUrl = !isPlaceholder(rawUrl) ? rawUrl : null;
+const supabaseAnonKey = !isPlaceholder(rawKey) ? rawKey : null;
 
 let client = null;
 
@@ -26,8 +25,6 @@ if (supabaseUrl && supabaseAnonKey) {
   } catch (err) {
     console.warn('[Supabase Client] Failed to initialize:', err?.message);
   }
-} else {
-  // Graceful local fallback when Supabase cloud is not configured
 }
 
 if (!client) {
@@ -35,10 +32,14 @@ if (!client) {
     auth: {
       getSession: async () => ({ data: { session: null }, error: null }),
       onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } }),
-      signInWithOAuth: async () => ({ error: new Error('Supabase authentication is not configured in environment variables.') }),
-      signInWithPassword: async () => ({ error: new Error('Supabase authentication is not configured in environment variables.') }),
+      signInWithOAuth: async () => ({
+        error: new Error('Google OAuth is not configured in environment variables. Please sign in with your email/username and password, or Continue as Guest.')
+      }),
+      signInWithPassword: async () => ({
+        error: new Error('Supabase authentication is not configured in environment variables.')
+      }),
       signUp: async () => ({ data: { user: null, session: null }, error: null }),
-      resend: async () => ({ error: new Error('Supabase authentication is not configured in environment variables.') }),
+      resend: async () => ({ error: new Error('Email verification service is not configured.') }),
       signOut: async () => ({ error: null }),
       getUser: async () => ({ data: { user: null }, error: null }),
     },

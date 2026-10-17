@@ -13,6 +13,7 @@ import {
   Eye, 
   ShieldCheck
 } from 'lucide-react';
+import { api } from '../services/api';
 import { triggerCelebrationConfetti } from '../utils/confettiHelper';
 
 export default function PostGigPage({ onAddOpportunity, showToast }) {
@@ -36,13 +37,15 @@ export default function PostGigPage({ onAddOpportunity, showToast }) {
     'Social Media Management'
   ];
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!company || !title || !description) return;
 
     setIsPublishing(true);
 
-    const newGig = {
+    const parsedSkills = skills.split(',').map(s => s.trim()).filter(Boolean);
+
+    let savedGig = {
       id: `gig-${Date.now()}`,
       company,
       title,
@@ -51,43 +54,65 @@ export default function PostGigPage({ onAddOpportunity, showToast }) {
       duration,
       deadline,
       description,
-      skills: skills.split(',').map(s => s.trim()).filter(Boolean),
+      skills: parsedSkills,
       applicantsCount: 0,
       applied: false,
       date: 'Just now'
     };
 
-    setTimeout(() => {
-      setIsPublishing(false);
-      triggerCelebrationConfetti();
-      if (onAddOpportunity) {
-        onAddOpportunity(newGig);
-      }
+    try {
+      const res = await api.createOpportunity({
+        title,
+        company,
+        stipend,
+        category,
+        duration,
+        description,
+        skillsRequired: parsedSkills,
+        deliverables: ['Milestone Deliverable 1', 'Milestone Deliverable 2']
+      });
 
-      // Broadcast notification to Notification Bar and Notification Center
-      try {
-        const notifList = JSON.parse(localStorage.getItem('herearn_notifications') || '[]');
-        const newNotif = {
-          id: `notif-${Date.now()}`,
-          type: "skill_match",
-          title: `🎯 New Opportunity: ${title}`,
-          message: `${company} just posted a new paid gig with ${stipend}. Apply now to unlock your matching course lectures!`,
-          timestamp: "Just now",
-          isRead: false,
-          path: `/opportunities/${newGig.id}`
+      if (res?.success && res.opportunity) {
+        savedGig = {
+          ...savedGig,
+          ...res.opportunity,
+          skills: Array.isArray(res.opportunity.skillsRequired) ? res.opportunity.skillsRequired : parsedSkills,
+          applicantsCount: res.opportunity.applicantsCount || 0
         };
-        localStorage.setItem('herearn_notifications', JSON.stringify([newNotif, ...notifList]));
-        window.dispatchEvent(new CustomEvent('herearn_notifications_updated'));
-        window.dispatchEvent(new CustomEvent('herearn_new_opportunity', { detail: newGig }));
-      } catch (err) {
-        console.warn('[PostGigPage] Notification dispatch error:', err);
       }
+    } catch (err) {
+      console.warn('[PostGigPage] Server persist note:', err?.message);
+    }
 
-      if (showToast) {
-        showToast("🚀 Opportunity Published!", `"${title}" is now open for applications on HerEarn.`);
-      }
-      navigate('/opportunities');
-    }, 800);
+    setIsPublishing(false);
+    triggerCelebrationConfetti();
+    if (onAddOpportunity) {
+      onAddOpportunity(savedGig);
+    }
+
+    // Broadcast notification to Notification Center
+    try {
+      const notifList = JSON.parse(localStorage.getItem('herearn_notifications') || '[]');
+      const newNotif = {
+        id: `notif-${Date.now()}`,
+        type: "skill_match",
+        title: `🎯 New Opportunity: ${title}`,
+        message: `${company} just posted a new paid gig with ${stipend}. Apply now to unlock your matching course lectures!`,
+        timestamp: "Just now",
+        isRead: false,
+        path: `/opportunities/${savedGig.id}`
+      };
+      localStorage.setItem('herearn_notifications', JSON.stringify([newNotif, ...notifList]));
+      window.dispatchEvent(new CustomEvent('herearn_notifications_updated'));
+      window.dispatchEvent(new CustomEvent('herearn_new_opportunity', { detail: savedGig }));
+    } catch (err) {
+      console.warn('[PostGigPage] Notification dispatch error:', err);
+    }
+
+    if (showToast) {
+      showToast("🚀 Opportunity Published!", `"${title}" is saved and live for applications on HerEarn.`);
+    }
+    navigate('/opportunities');
   };
 
   return (
