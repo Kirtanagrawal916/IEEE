@@ -23,6 +23,7 @@ import {
 import { getQuizForCategory } from '../data/opportunityQuizzes';
 import { triggerCelebrationConfetti } from '../utils/confettiHelper';
 import { getMatchingTrackForOpportunity } from '../utils/trackLockHelper';
+import { api } from '../services/api';
 
 export default function OpportunityApplyPage({ 
   gig, 
@@ -80,7 +81,7 @@ export default function OpportunityApplyPage({
   };
 
   // AI Proposal Generator Action
-  const handleGenerateAIProposal = (tone = 'professional') => {
+  const handleGenerateAIProposal = async (tone = 'professional') => {
     setIsGeneratingAI(true);
     setProposalTone(tone);
 
@@ -89,22 +90,34 @@ export default function OpportunityApplyPage({
     const skillsList = (gig?.skillsRequired || ['Hands-on Design', 'Deliverables']).slice(0, 3).join(', ');
     const candidateName = user?.name || 'Applicant';
 
-    setTimeout(() => {
-      let generated = '';
-      if (tone === 'professional') {
-        generated = `Dear Hiring Manager at ${gig?.company || 'Partner'},\n\nI am writing to express my strong interest in the ${gig?.title || 'Micro-Gig'} opportunity. Having completed hands-on learning in ${gig?.category || 'Practical Skills'} on HerEarn, I possess verified capabilities in ${skillsList}.\n\nAs tangible proof of my execution standards, I have attached my verified capstone project: '${projectTitle}'. I am prepared to begin immediately, meet all deadline deliverables, and communicate proactively.\n\nThank you for reviewing my profile.\n\nSincerely,\n${candidateName}`;
-      } else if (tone === 'creative') {
-        generated = `Hello ${gig?.company || 'Team'}! ✨\n\nI’m thrilled to apply for your ${gig?.title || 'Micro-Gig'} project! As an active creator specialized in ${gig?.category || 'Visual Design'}, I love transforming briefs into polished, high-converting deliverables.\n\nI've attached my verified project '${projectTitle}' so you can see my style and quality firsthand. I’d love to collaborate and guarantee prompt, top-tier turnaround on your milestones.\n\nWarm regards,\n${candidateName}`;
-      } else {
-        // concise
-        generated = `Hi ${gig?.company || 'Team'},\n\nI am ready to deliver on your ${gig?.title || 'Micro-Gig'} requirements. I have verified coursework in ${gig?.category || 'Skills'} and practical experience in ${skillsList}.\n\nAttached is my verified project '${projectTitle}' as proof of quality. Ready to start right away!\n\nBest,\n${candidateName}`;
-      }
+    const fallbackTemplates = {
+      professional: `Dear Hiring Manager at ${gig?.company || 'Partner'},\n\nI am writing to express my strong interest in the ${gig?.title || 'Micro-Gig'} opportunity. Having completed hands-on learning in ${gig?.category || 'Practical Skills'} on HerEarn, I possess verified capabilities in ${skillsList}.\n\nAs tangible proof of my execution standards, I have attached my verified capstone project: '${projectTitle}'. I am prepared to begin immediately, meet all deadline deliverables, and communicate proactively.\n\nThank you for reviewing my profile.\n\nSincerely,\n${candidateName}`,
+      creative: `Hello ${gig?.company || 'Team'}! ✨\n\nI’m thrilled to apply for your ${gig?.title || 'Micro-Gig'} project! As an active creator specialized in ${gig?.category || 'Visual Design'}, I love transforming briefs into polished, high-converting deliverables.\n\nI've attached my verified project '${projectTitle}' so you can see my style and quality firsthand. I’d love to collaborate and guarantee prompt, top-tier turnaround on your milestones.\n\nWarm regards,\n${candidateName}`,
+      concise: `Hi ${gig?.company || 'Team'},\n\nI am ready to deliver on your ${gig?.title || 'Micro-Gig'} requirements. I have verified coursework in ${gig?.category || 'Skills'} and practical experience in ${skillsList}.\n\nAttached is my verified project '${projectTitle}' as proof of quality. Ready to start right away!\n\nBest,\n${candidateName}`
+    };
 
-      setCoverNote(generated);
+    try {
+      const prompt = `Write a compelling ${tone} job proposal / cover letter (under 120 words) for a candidate applying on HerEarn:
+Role: ${gig?.title}
+Client/Company: ${gig?.company}
+Candidate Name: ${candidateName}
+Key Skills: ${skillsList}
+Attached Portfolio Project: ${projectTitle}
+Make it persuasive, authentic, respectful, and ready to send directly to the client.`;
+
+      const res = await api.sendChatMessage(prompt, `proposal-${Date.now()}`);
+      if (res?.reply) {
+        setCoverNote(res.reply.trim());
+      } else {
+        setCoverNote(fallbackTemplates[tone] || fallbackTemplates.professional);
+      }
+    } catch {
+      setCoverNote(fallbackTemplates[tone] || fallbackTemplates.professional);
+    } finally {
       setIsGeneratingAI(false);
       setAiSuccessMsg(true);
       setTimeout(() => setAiSuccessMsg(false), 3500);
-    }, 600);
+    }
   };
 
   // Handle Next Question or Finish Quiz

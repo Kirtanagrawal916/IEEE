@@ -53,9 +53,37 @@ export default function RecruiterDashboard({ user, showToast }) {
 
   useEffect(() => { load(); }, [load]);
 
-  // Learners should never see this page
+  // Helpful access notice for non-recruiter accounts
   if (user?.role && user.role !== 'EMPLOYER' && user.role !== 'ADMIN') {
-    return <Navigate to="/dashboard" replace />;
+    return (
+      <div className="min-h-[70vh] flex items-center justify-center px-4 py-12">
+        <div className="max-w-md w-full bg-white dark:bg-slate-900 border border-purple-200 dark:border-purple-500/30 rounded-3xl p-8 text-center space-y-6 shadow-xl">
+          <div className="w-16 h-16 rounded-2xl bg-purple-100 dark:bg-purple-900/40 text-purple-600 dark:text-purple-300 mx-auto flex items-center justify-center">
+            <Briefcase className="w-8 h-8" />
+          </div>
+          <div className="space-y-2">
+            <h2 className="text-xl font-bold text-slate-900 dark:text-white">Recruiter Portal Access</h2>
+            <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+              You are currently signed in as <strong className="text-purple-600 dark:text-purple-400">{user.email || user.username}</strong> ({user.role || 'Learner'}). This dashboard is dedicated to verified employers and recruiters managing job postings.
+            </p>
+          </div>
+          <div className="flex flex-col sm:flex-row items-center gap-3 pt-2">
+            <a
+              href="/dashboard"
+              className="w-full py-2.5 px-4 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs text-center transition-colors shadow-sm"
+            >
+              Go to Learner Dashboard
+            </a>
+            <a
+              href="/login"
+              className="w-full py-2.5 px-4 rounded-xl border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold text-xs text-center transition-colors"
+            >
+              Log in as Employer
+            </a>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   const setField = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));

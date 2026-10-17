@@ -2,7 +2,13 @@ import React, { useState } from 'react';
 import { Users, Calendar, MessageSquare, Star, Award, CheckCircle, ShieldCheck, Heart, Sparkles } from 'lucide-react';
 
 export default function MentorshipSection({ showToast }) {
-  const [bookedMentor, setBookedMentor] = useState(null);
+  const [bookedMentorIds, setBookedMentorIds] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem('herearn_booked_mentorships') || '[]');
+    } catch {
+      return [];
+    }
+  });
 
   const mentors = [
     {
@@ -44,8 +50,25 @@ export default function MentorshipSection({ showToast }) {
   ];
 
   const handleBookSession = (mentor) => {
-    setBookedMentor(mentor);
-    if (showToast) showToast("📅 Mentorship Session Booked!", `1-on-1 session confirmed with ${mentor.name} for ${mentor.availability}.`);
+    const isAlreadyBooked = bookedMentorIds.includes(mentor.id);
+    const updated = isAlreadyBooked
+      ? bookedMentorIds.filter(id => id !== mentor.id)
+      : [...bookedMentorIds, mentor.id];
+    
+    setBookedMentorIds(updated);
+    try {
+      localStorage.setItem('herearn_booked_mentorships', JSON.stringify(updated));
+    } catch (e) {
+      console.warn('[Mentorship] Storage error:', e);
+    }
+
+    if (showToast) {
+      if (isAlreadyBooked) {
+        showToast("ℹ️ Booking Cancelled", `Session with ${mentor.name} has been cancelled.`);
+      } else {
+        showToast("📅 Mentorship Session Confirmed!", `1-on-1 strategy call reserved with ${mentor.name} for ${mentor.availability}.`);
+      }
+    }
   };
 
   return (
@@ -112,10 +135,14 @@ export default function MentorshipSection({ showToast }) {
 
             <button
               onClick={() => handleBookSession(m)}
-              className="w-full py-3 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-extrabold text-xs shadow-md transition-all cursor-pointer flex items-center justify-center gap-2"
+              className={`w-full py-3 rounded-xl font-extrabold text-xs shadow-md transition-all cursor-pointer flex items-center justify-center gap-2 ${
+                bookedMentorIds.includes(m.id)
+                  ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
+                  : 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white'
+              }`}
             >
               <Calendar className="w-4 h-4" />
-              <span>{bookedMentor?.id === m.id ? 'Session Confirmed! ✅' : 'Book Free 1-on-1 Call'}</span>
+              <span>{bookedMentorIds.includes(m.id) ? 'Confirmed! (Click to cancel) ✅' : 'Book Free 1-on-1 Call'}</span>
             </button>
 
           </div>
