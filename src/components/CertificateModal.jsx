@@ -16,14 +16,26 @@ export default function CertificateModal({
   isOpen, 
   onClose, 
   user,
-  initialCourseTitle = "Digital Marketing & Social Media Growth"
+  initialCourseTitle = "Digital Marketing & Social Media Growth",
+  trackTitle
 }) {
-  const [selectedCourse, setSelectedCourse] = useState(initialCourseTitle);
+  const [selectedCourse, setSelectedCourse] = useState(trackTitle || initialCourseTitle);
   const [isCopied, setIsCopied] = useState(false);
+
+  React.useEffect(() => {
+    if (trackTitle) {
+      setSelectedCourse(trackTitle);
+    } else if (initialCourseTitle) {
+      setSelectedCourse(initialCourseTitle);
+    }
+  }, [trackTitle, initialCourseTitle]);
 
   if (!isOpen) return null;
 
-  const userName = user?.name || 'Verified Learner';
+  // Ensure recipient name is prefixed with "Mrs." cleanly without duplicates
+  const rawName = user?.name || 'Verified Learner';
+  const cleanName = rawName.replace(/^(mrs\.?|ms\.?|mr\.?|dr\.?)\s+/i, '').trim();
+  const userName = `Mrs. ${cleanName}`;
   const issueDate = new Date().toLocaleDateString('en-US', {
     month: 'long',
     day: 'numeric',
