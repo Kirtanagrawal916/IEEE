@@ -133,7 +133,7 @@ export default function Navbar({
             <Logo size="sm" imgClassName="h-8 sm:h-9 w-auto" />
           </Link>
 
-          {/* Central Navigation: Home | About | Career Opportunity (Dropdown: Courses, Portfolio, Opportunities) | Mentorship | Applications */}
+          {/* Central Navigation: Home | Career Opportunity (Dropdown: Courses, Portfolio, Opportunities) | Mentorship | Applications */}
           <div className="hidden md:flex items-center gap-1.5 bg-white/90 dark:bg-slate-900/80 p-1.5 rounded-2xl border border-purple-200 dark:border-purple-500/30 backdrop-blur-md shadow-lg">
             
             {/* Home (Original Home / Landing Page) */}
@@ -147,19 +147,6 @@ export default function Navbar({
             >
               <Compass className="w-4 h-4" />
               <span>{t('home')}</span>
-            </Link>
-
-            {/* About */}
-            <Link
-              to="/about"
-              className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                pathname === '/about' || pathname === '/'
-                  ? 'bg-[#7C3AED] text-white shadow-xs'
-                  : 'text-[#4B5563] dark:text-slate-200 hover:text-[#7C3AED] hover:bg-[#F3E8FF] dark:hover:bg-purple-950/40'
-              }`}
-            >
-              <Info className="w-4 h-4 text-purple-400" />
-              <span>About</span>
             </Link>
 
             {/* Career Opportunity Dropdown (Contains Courses, Portfolio, Opportunities) */}
