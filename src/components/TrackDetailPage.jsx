@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { api } from '../services/api';
 import { skillTracks } from '../data/mockData';
+import { isTrackUnlocked } from '../utils/trackLockHelper';
 
 export default function TrackDetailPage({ user, onCompleteLesson }) {
   const { trackId } = useParams();
@@ -74,6 +75,12 @@ export default function TrackDetailPage({ user, onCompleteLesson }) {
   }, [trackId, user]);
 
   const handleEnrollOrContinue = async () => {
+    const isUnlocked = isTrackUnlocked(track?.id || trackId, user);
+    if (!isUnlocked) {
+      navigate('/opportunities');
+      return;
+    }
+
     if (!user) {
       navigate('/login');
       return;
@@ -182,19 +189,30 @@ export default function TrackDetailPage({ user, onCompleteLesson }) {
           </div>
 
           <div className="flex flex-wrap items-center gap-4 pt-2">
-            <button
-              type="button"
-              onClick={handleEnrollOrContinue}
-              disabled={isEnrolling}
-              className="px-6 py-3.5 rounded-2xl bg-gradient-to-r from-amber-400 via-rose-500 to-purple-600 hover:opacity-95 text-white font-extrabold text-sm shadow-xl flex items-center gap-2 cursor-pointer transition-all hover:scale-105 disabled:opacity-50"
-            >
-              {isEnrolling ? (
-                <Loader2 className="w-5 h-5 animate-spin" />
-              ) : (
-                <Play className="w-5 h-5 fill-current" />
-              )}
-              <span>{completedCount > 0 ? 'Resume Lessons' : 'Start Track Free'}</span>
-            </button>
+            {isTrackUnlocked(track?.id || trackId, user) ? (
+              <button
+                type="button"
+                onClick={handleEnrollOrContinue}
+                disabled={isEnrolling}
+                className="px-6 py-3.5 rounded-2xl bg-gradient-to-r from-amber-400 via-rose-500 to-purple-600 hover:opacity-95 text-white font-extrabold text-sm shadow-xl flex items-center gap-2 cursor-pointer transition-all hover:scale-105 disabled:opacity-50"
+              >
+                {isEnrolling ? (
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                ) : (
+                  <Play className="w-5 h-5 fill-current" />
+                )}
+                <span>{completedCount > 0 ? 'Resume Lessons' : 'Start Track Free'}</span>
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => navigate('/opportunities')}
+                className="px-6 py-3.5 rounded-2xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-400/50 font-extrabold text-sm shadow-xl flex items-center gap-2 cursor-pointer transition-all"
+              >
+                <Lock className="w-5 h-5 text-amber-300" />
+                <span>Track Locked (Apply Opportunity to Unlock)</span>
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -239,13 +257,22 @@ export default function TrackDetailPage({ user, onCompleteLesson }) {
         <div className="space-y-3">
           {lessons.map((lesson, idx) => {
             const isCompleted = (user?.completedLessons || userCompletedLessons).includes(lesson.id);
+            const isTrackOpen = isTrackUnlocked(track.id, user);
 
             return (
               <div 
                 key={lesson.id || idx}
-                onClick={() => navigate(`/courses/${track.id}/lessons/${lesson.id}`)}
+                onClick={() => {
+                  if (!isTrackOpen) {
+                    navigate('/opportunities');
+                    return;
+                  }
+                  navigate(`/courses/${track.id}/lessons/${lesson.id}`);
+                }}
                 className={`p-4 rounded-2xl border flex items-center justify-between gap-4 cursor-pointer transition-all hover:border-purple-500 hover:shadow-md ${
-                  isCompleted 
+                  !isTrackOpen
+                    ? 'bg-slate-100/70 dark:bg-slate-800/30 border-dashed border-slate-300 dark:border-slate-700'
+                    : isCompleted 
                     ? 'bg-purple-50/40 dark:bg-purple-950/20 border-purple-200 dark:border-purple-900/40' 
                     : 'bg-slate-50 dark:bg-slate-800/40 border-slate-200 dark:border-slate-700/60'
                 }`}

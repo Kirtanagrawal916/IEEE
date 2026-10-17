@@ -29,6 +29,7 @@ import {
 } from 'lucide-react';
 import LogoutModal from './LogoutModal';
 import WalletWithdrawModal from './WalletWithdrawModal';
+import NotificationCenter from './NotificationCenter';
 import { useLanguage } from '../context/LanguageContext';
 
 export default function Navbar({ 
@@ -395,7 +396,11 @@ export default function Navbar({
               )}
             </button>
 
-
+            {/* Notification Center */}
+            <NotificationCenter 
+              theme={theme} 
+              onNavigate={(path) => navigate(path)} 
+            />
 
             {/* Guest Action Buttons (When not logged in) */}
             {!user && (
@@ -464,11 +469,16 @@ export default function Navbar({
                               {userHandle}
                             </span>
                           </div>
-                          <div className="mt-1 flex items-center gap-1">
-                            <span className="text-emerald-400 font-extrabold text-sm tracking-tight">
-                              ₹{userBalance.toLocaleString()}
+                          <div className="mt-1 flex items-center justify-between text-[10px]">
+                            <div className="flex items-center gap-1">
+                              <span className="text-emerald-400 font-extrabold text-sm tracking-tight">
+                                ₹{userBalance.toLocaleString()}
+                              </span>
+                              <span className="text-[10px] text-slate-400">earned</span>
+                            </div>
+                            <span className="px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 font-bold border border-purple-500/30 text-[10px]">
+                              {(user?.appliedGigIds || []).length} Applied
                             </span>
-                            <span className="text-[10px] text-slate-400">earned</span>
                           </div>
                         </div>
                       </div>
@@ -533,91 +543,8 @@ export default function Navbar({
                     </button>
                   </div>
 
-                  {/* 3. NAVIGATION MODULES (For mobile & quick access) */}
-                  <div className="space-y-1 pt-1">
-                    <div className="px-3 py-1 border-b border-purple-500/20">
-                      <p className="text-[10px] font-extrabold text-purple-400 uppercase tracking-wider">Explore Modules</p>
-                    </div>
-
-                    <Link
-                      to="/courses"
-                      onClick={() => setIsMenuOpen(false)}
-                      className="w-full text-left px-3 py-2 rounded-xl text-xs font-semibold flex items-center justify-between hover:bg-purple-100 dark:hover:bg-purple-900/40 text-slate-800 dark:text-slate-200 transition-colors"
-                    >
-                      <div className="flex items-center gap-2.5">
-                        <BookOpen className="w-4 h-4 text-purple-500" />
-                        <span>Courses</span>
-                      </div>
-                    </Link>
-
-                    <Link
-                      to="/portfolio"
-                      onClick={() => setIsMenuOpen(false)}
-                      className="w-full text-left px-3 py-2 rounded-xl text-xs font-semibold flex items-center justify-between hover:bg-purple-100 dark:hover:bg-purple-900/40 text-slate-800 dark:text-slate-200 transition-colors"
-                    >
-                      <div className="flex items-center gap-2.5">
-                        <Award className="w-4 h-4 text-pink-500" />
-                        <span>Portfolios</span>
-                      </div>
-                    </Link>
-
-                    <Link
-                      to="/opportunities"
-                      onClick={() => setIsMenuOpen(false)}
-                      className="w-full text-left px-3 py-2 rounded-xl text-xs font-semibold flex items-center justify-between hover:bg-purple-100 dark:hover:bg-purple-900/40 text-slate-800 dark:text-slate-200 transition-colors"
-                    >
-                      <div className="flex items-center gap-2.5">
-                        <Briefcase className="w-4 h-4 text-amber-500" />
-                        <span>Opportunities</span>
-                      </div>
-                    </Link>
-
-                    <Link
-                      to="/mentorship"
-                      onClick={() => setIsMenuOpen(false)}
-                      className="w-full text-left px-3 py-2 rounded-xl text-xs font-semibold flex items-center justify-between hover:bg-purple-100 dark:hover:bg-purple-900/40 text-slate-800 dark:text-slate-200 transition-colors"
-                    >
-                      <div className="flex items-center gap-2.5">
-                        <Users className="w-4 h-4 text-indigo-500" />
-                        <span>Mentorship</span>
-                      </div>
-                    </Link>
-
-                    <Link
-                      to="/community"
-                      onClick={() => setIsMenuOpen(false)}
-                      className="w-full text-left px-3 py-2 rounded-xl text-xs font-semibold flex items-center justify-between hover:bg-purple-100 dark:hover:bg-purple-900/40 text-slate-800 dark:text-slate-200 transition-colors"
-                    >
-                      <div className="flex items-center gap-2.5">
-                        <MessageSquare className="w-4 h-4 text-pink-500" />
-                        <span>Community & Chat</span>
-                      </div>
-                    </Link>
-
-                    <Link
-                      to="/courses?tab=puzzles"
-                      onClick={() => setIsMenuOpen(false)}
-                      className="w-full text-left px-3 py-2 rounded-xl text-xs font-semibold flex items-center justify-between hover:bg-purple-100 dark:hover:bg-purple-900/40 text-slate-800 dark:text-slate-200 transition-colors"
-                    >
-                      <div className="flex items-center gap-2.5">
-                        <Gamepad2 className="w-4 h-4 text-pink-500" />
-                        <span>Mini Puzzle Games (12)</span>
-                      </div>
-                    </Link>
-
-                    {user && (
-                      <Link
-                        to="/applications"
-                        onClick={() => setIsMenuOpen(false)}
-                        className="w-full text-left px-3 py-2 rounded-xl text-xs font-semibold flex items-center justify-between hover:bg-purple-100 dark:hover:bg-purple-900/40 text-slate-800 dark:text-slate-200 transition-colors"
-                      >
-                        <div className="flex items-center gap-2.5">
-                          <FileText className="w-4 h-4 text-emerald-500" />
-                          <span>My Applications</span>
-                        </div>
-                      </Link>
-                    )}
-
+                  {/* 3. STAFF / ADMIN LINK */}
+                  <div className="pt-1">
                     <Link
                       to="/admin"
                       onClick={() => setIsMenuOpen(false)}

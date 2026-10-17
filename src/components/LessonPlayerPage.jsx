@@ -8,13 +8,16 @@ import {
   Clock, 
   Sparkles, 
   Play, 
-  Loader2,
-  Award,
-  ChevronLeft,
-  Gamepad2
+  Loader2, 
+  Award, 
+  ChevronLeft, 
+  Gamepad2,
+  Lock,
+  Briefcase
 } from 'lucide-react';
 import { api } from '../services/api';
 import { skillTracks } from '../data/mockData';
+import { isTrackUnlocked } from '../utils/trackLockHelper';
 
 export default function LessonPlayerPage({ user, onCompleteLesson, showToast }) {
   const { trackId, lessonId } = useParams();
@@ -106,6 +109,45 @@ export default function LessonPlayerPage({ user, onCompleteLesson, showToast }) 
         <Link to={`/courses/${trackId}`} className="inline-flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-xl font-bold text-sm">
           <ArrowLeft className="w-4 h-4" /> Back to Track Details
         </Link>
+      </div>
+    );
+  }
+
+  // Check if course track is locked
+  if (!isTrackUnlocked(track?.id || trackId, user)) {
+    return (
+      <div className="max-w-2xl mx-auto px-4 py-16 text-center space-y-6 animate-fade-in text-slate-900 dark:text-white">
+        <div className="w-20 h-20 rounded-3xl bg-amber-100 dark:bg-amber-950/80 text-amber-600 dark:text-amber-400 border border-amber-300 dark:border-amber-700 flex items-center justify-center mx-auto shadow-lg">
+          <Lock className="w-10 h-10" />
+        </div>
+        <div className="space-y-2">
+          <span className="text-[10px] font-black uppercase tracking-widest text-amber-700 dark:text-amber-300 bg-amber-100 dark:bg-amber-950 px-3 py-1 rounded-full border border-amber-300 dark:border-amber-700">
+            Course Lectures Locked
+          </span>
+          <h2 className="text-2xl sm:text-3xl font-black">
+            "{track?.title || 'This Course'}" is Locked
+          </h2>
+          <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed max-w-lg mx-auto">
+            To unlock this lecture, please apply for an Opportunity in <strong>{track?.category || 'this field'}</strong> on the opportunities board. Once you apply, the lectures will automatically open in your profile permanently!
+          </p>
+        </div>
+        <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+          <button
+            type="button"
+            onClick={() => navigate('/opportunities')}
+            className="px-6 py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-extrabold text-xs shadow-lg flex items-center gap-2 cursor-pointer transition-all hover:scale-105"
+          >
+            <Briefcase className="w-4 h-4" />
+            <span>Browse Opportunities to Unlock</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => navigate('/courses')}
+            className="px-6 py-3.5 rounded-2xl border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-xs font-bold hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
+          >
+            Back to Courses Catalog
+          </button>
+        </div>
       </div>
     );
   }

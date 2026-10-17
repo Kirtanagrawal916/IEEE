@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
 import { 
   ArrowLeft, 
   Briefcase, 
@@ -14,10 +15,14 @@ import {
   Sparkles,
   Wand2,
   Copy,
-  Check
+  Check,
+  BookOpen,
+  Play,
+  Lock
 } from 'lucide-react';
 import { getQuizForCategory } from '../data/opportunityQuizzes';
 import { triggerCelebrationConfetti } from '../utils/confettiHelper';
+import { getMatchingTrackForOpportunity } from '../utils/trackLockHelper';
 
 export default function OpportunityApplyPage({ 
   gig, 
@@ -26,6 +31,9 @@ export default function OpportunityApplyPage({
   onBack, 
   onConfirmApplySuccess 
 }) {
+  const navigate = useNavigate();
+  const matchingTrack = getMatchingTrackForOpportunity(gig);
+
   const [step, setStep] = useState(1); // 1: Application Form, 2: Quiz Assessment, 3: Eligibility Results
   const [coverNote, setCoverNote] = useState('');
   const [selectedPortfolioId, setSelectedPortfolioId] = useState(userPortfolios[0]?.id || 'capstone-default');
@@ -151,12 +159,10 @@ export default function OpportunityApplyPage({
     setIsQuizSubmitted(true);
     setStep(3);
 
-    // If eligible, celebrate and confirm application
-    if (isEligible) {
-      triggerCelebrationConfetti();
-      if (onConfirmApplySuccess) {
-        onConfirmApplySuccess(gig.id, coverNote, selectedPortfolioId, summary);
-      }
+    // Always unlock the corresponding course track upon application
+    triggerCelebrationConfetti();
+    if (onConfirmApplySuccess) {
+      onConfirmApplySuccess(gig.id, coverNote, selectedPortfolioId, summary);
     }
 
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -498,39 +504,56 @@ export default function OpportunityApplyPage({
       {step === 3 && resultData && (
         <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-8 border border-slate-200 dark:border-purple-500/30 shadow-xl space-y-6">
           
-          {/* Result Banner: Passed vs Not Passed */}
-          {resultData.isEligible ? (
-            <div className="bg-gradient-to-r from-emerald-600 via-teal-700 to-slate-900 p-6 sm:p-8 rounded-3xl text-white space-y-4 shadow-xl border border-emerald-400/30 text-center">
-              <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto backdrop-blur-md">
-                <Award className="w-10 h-10 text-amber-300 animate-bounce" />
-              </div>
-              <div className="space-y-1">
-                <span className="text-xs font-extrabold uppercase tracking-widest text-emerald-200">
-                  Quiz Score: {resultData.percentage}% (Required: ≥{resultData.passingThreshold}%)
-                </span>
-                <h2 className="text-2xl sm:text-3xl font-extrabold text-white">
-                  🎉 Congratulations! You Are Eligible!
-                </h2>
-                <p className="text-xs sm:text-sm text-emerald-100 font-medium max-w-lg mx-auto">
-                  Your application has been verified and registered as an <strong>Eligible Candidate</strong>. The client partner will review your attached portfolio and proposal note.
-                </p>
-              </div>
+          {/* Result Banner */}
+          <div className="bg-gradient-to-r from-emerald-600 via-teal-700 to-slate-900 p-6 sm:p-8 rounded-3xl text-white space-y-4 shadow-xl border border-emerald-400/30 text-center">
+            <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto backdrop-blur-md">
+              <Award className="w-10 h-10 text-amber-300 animate-bounce" />
             </div>
-          ) : (
-            <div className="bg-gradient-to-r from-amber-700 via-rose-800 to-slate-900 p-6 sm:p-8 rounded-3xl text-white space-y-4 shadow-xl border border-amber-400/30 text-center">
-              <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto backdrop-blur-md">
-                <AlertCircle className="w-10 h-10 text-amber-300" />
-              </div>
-              <div className="space-y-1">
-                <span className="text-xs font-extrabold uppercase tracking-widest text-amber-200">
-                  Quiz Score: {resultData.percentage}% (Required: ≥{resultData.passingThreshold}%)
-                </span>
-                <h2 className="text-2xl sm:text-3xl font-extrabold text-white">
-                  Not Yet Eligible For This Opportunity
-                </h2>
-                <p className="text-xs sm:text-sm text-amber-100 font-medium max-w-lg mx-auto">
-                  You scored below the 60% qualification cutoff. Review the difficulty level breakdown below to see which areas need improvement.
-                </p>
+            <div className="space-y-1">
+              <span className="text-xs font-extrabold uppercase tracking-widest text-emerald-200">
+                Quiz Assessment Score: {resultData.percentage}% • Application Registered
+              </span>
+              <h2 className="text-2xl sm:text-3xl font-extrabold text-white">
+                🎉 Application Submitted & Course Lectures Unlocked!
+              </h2>
+              <p className="text-xs sm:text-sm text-emerald-100 font-medium max-w-lg mx-auto">
+                Your application for <strong>{gig.title}</strong> has been saved. As part of this opportunity, your profile now has permanent unlocked access to all video lectures for <strong>{matchingTrack?.title || 'this track'}</strong>!
+              </p>
+            </div>
+          </div>
+
+          {/* Dedicated Course Track Unlocked Announcement Box */}
+          {matchingTrack && (
+            <div className="p-5 sm:p-6 rounded-3xl bg-gradient-to-r from-purple-950 via-slate-900 to-indigo-950 border border-purple-500/40 text-white shadow-xl space-y-4 text-left">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="flex items-center gap-3.5">
+                  <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-purple-600 to-pink-600 flex items-center justify-center text-white shrink-0 shadow-lg">
+                    <BookOpen className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] font-black uppercase tracking-widest text-emerald-300 bg-emerald-950/80 border border-emerald-500/40 px-2.5 py-0.5 rounded-full inline-flex items-center gap-1">
+                        <CheckCircle2 className="w-3 h-3 text-emerald-400" /> Lectures Open In Profile
+                      </span>
+                      <span className="text-[11px] text-purple-300 font-semibold">{matchingTrack.duration}</span>
+                    </div>
+                    <h3 className="text-base sm:text-lg font-black text-white mt-1">
+                      {matchingTrack.title}
+                    </h3>
+                    <p className="text-xs text-purple-200/90 leading-relaxed">
+                      All video lectures, modules, and capstone materials are now unlocked for you. All other courses remain locked until you apply for their corresponding opportunities.
+                    </p>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => navigate(`/courses/${matchingTrack.id}`)}
+                  className="px-6 py-3 rounded-2xl bg-gradient-to-r from-purple-500 via-pink-500 to-indigo-600 hover:opacity-95 text-white font-extrabold text-xs shadow-lg flex items-center justify-center gap-2 cursor-pointer transition-all shrink-0 hover:scale-105"
+                >
+                  <Play className="w-4 h-4 fill-current" />
+                  <span>Start Course Lectures</span>
+                </button>
               </div>
             </div>
           )}
@@ -572,33 +595,23 @@ export default function OpportunityApplyPage({
 
           {/* Action CTAs */}
           <div className="pt-4 border-t border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-center gap-4">
-            {resultData.isEligible ? (
+            {matchingTrack && (
               <button
                 type="button"
-                onClick={onBack}
-                className="w-full sm:w-auto px-8 py-3.5 rounded-2xl btn-gradient-award text-xs font-extrabold shadow-lg cursor-pointer"
+                onClick={() => navigate(`/courses/${matchingTrack.id}`)}
+                className="w-full sm:w-auto px-8 py-3.5 rounded-2xl bg-gradient-to-r from-purple-600 via-indigo-600 to-pink-600 hover:opacity-95 text-white text-xs font-extrabold shadow-xl flex items-center justify-center gap-2 cursor-pointer transition-all hover:scale-105"
               >
-                Back to Opportunities Board
+                <Play className="w-4 h-4 fill-current" />
+                <span>Open Course Lectures in Profile</span>
               </button>
-            ) : (
-              <>
-                <button
-                  type="button"
-                  onClick={handleRetryQuiz}
-                  className="w-full sm:w-auto px-6 py-3.5 rounded-2xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-extrabold shadow-md flex items-center justify-center gap-2 cursor-pointer"
-                >
-                  <RotateCcw className="w-4 h-4" />
-                  Retry Assessment Quiz
-                </button>
-                <button
-                  type="button"
-                  onClick={onBack}
-                  className="w-full sm:w-auto px-6 py-3.5 rounded-2xl border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-xs font-bold hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
-                >
-                  Back to Opportunities List
-                </button>
-              </>
             )}
+            <button
+              type="button"
+              onClick={onBack}
+              className="w-full sm:w-auto px-8 py-3.5 rounded-2xl border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-xs font-bold hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
+            >
+              Back to Opportunities Board
+            </button>
           </div>
 
         </div>
