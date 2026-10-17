@@ -13,7 +13,12 @@ import {
   ChevronLeft, 
   Gamepad2,
   Lock,
-  Briefcase
+  Briefcase,
+  ExternalLink,
+  FileText,
+  RefreshCw,
+  AlertTriangle,
+  Tv
 } from 'lucide-react';
 import { api } from '../services/api';
 import { skillTracks } from '../data/mockData';
@@ -29,6 +34,8 @@ export default function LessonPlayerPage({ user, onCompleteLesson, showToast }) 
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmittingComplete, setIsSubmittingComplete] = useState(false);
   const [userCompletedLessons, setUserCompletedLessons] = useState(user?.completedLessons || []);
+  const [activeMediaTab, setActiveMediaTab] = useState('video'); // 'video' | 'transcript'
+  const [iframeError, setIframeError] = useState(false);
 
   useEffect(() => {
     const loadLessonDetails = async () => {
@@ -181,16 +188,158 @@ export default function LessonPlayerPage({ user, onCompleteLesson, showToast }) 
         {/* Left / Top: Video Player & Controls */}
         <div className="lg:col-span-8 space-y-6">
           
-          {/* Responsive Video Container */}
-          <div className="relative w-full aspect-video rounded-3xl overflow-hidden bg-black shadow-2xl border border-slate-800">
-            <iframe 
-              src={embedUrl}
-              title={currentLesson.title}
-              className="w-full h-full border-0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-            ></iframe>
+          {/* Media View Mode Switcher */}
+          <div className="flex items-center justify-between flex-wrap gap-2">
+            <div className="inline-flex p-1 rounded-2xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700">
+              <button
+                type="button"
+                onClick={() => setActiveMediaTab('video')}
+                className={`px-3.5 py-1.5 rounded-xl text-xs font-extrabold flex items-center gap-1.5 transition-all cursor-pointer ${
+                  activeMediaTab === 'video'
+                    ? 'bg-purple-600 text-white shadow-sm'
+                    : 'text-slate-600 dark:text-slate-300 hover:text-purple-600'
+                }`}
+              >
+                <Tv className="w-3.5 h-3.5" />
+                <span>Video Studio</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveMediaTab('transcript')}
+                className={`px-3.5 py-1.5 rounded-xl text-xs font-extrabold flex items-center gap-1.5 transition-all cursor-pointer ${
+                  activeMediaTab === 'transcript'
+                    ? 'bg-purple-600 text-white shadow-sm'
+                    : 'text-slate-600 dark:text-slate-300 hover:text-purple-600'
+                }`}
+              >
+                <FileText className="w-3.5 h-3.5" />
+                <span>Lecture Notes & Transcript</span>
+              </button>
+            </div>
+
+            <a
+              href={embedUrl.includes('embed/') ? embedUrl.replace('/embed/', '/watch?v=') : embedUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-500 hover:text-purple-600 dark:text-slate-400 dark:hover:text-purple-300 px-3 py-1.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 transition-colors"
+              title="Open video on YouTube in a new tab"
+            >
+              <span>Watch on YouTube</span>
+              <ExternalLink className="w-3.5 h-3.5" />
+            </a>
           </div>
+
+          {/* Conditional Media Display */}
+          {activeMediaTab === 'video' ? (
+            <div className="space-y-2">
+              <div className="relative w-full aspect-video rounded-3xl overflow-hidden bg-black shadow-2xl border border-slate-800">
+                {iframeError ? (
+                  <div className="w-full h-full flex flex-col items-center justify-center p-6 text-center space-y-4 bg-slate-950 text-white">
+                    <div className="w-12 h-12 rounded-2xl bg-amber-500/20 text-amber-400 flex items-center justify-center border border-amber-500/30">
+                      <AlertTriangle className="w-6 h-6" />
+                    </div>
+                    <div className="space-y-1">
+                      <h4 className="font-extrabold text-sm sm:text-base">Video Embed Restricted or Blocked</h4>
+                      <p className="text-xs text-slate-400 max-w-md">
+                        Your browser or network has restricted inline YouTube playback. You can watch the lesson directly on YouTube or switch to the interactive lecture notes below.
+                      </p>
+                    </div>
+                    <div className="flex flex-wrap items-center justify-center gap-2 pt-2">
+                      <a
+                        href={embedUrl.includes('embed/') ? embedUrl.replace('/embed/', '/watch?v=') : embedUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-extrabold flex items-center gap-1.5"
+                      >
+                        <ExternalLink className="w-3.5 h-3.5" />
+                        <span>Open on YouTube</span>
+                      </a>
+                      <button
+                        type="button"
+                        onClick={() => setActiveMediaTab('transcript')}
+                        className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-xs font-extrabold flex items-center gap-1.5"
+                      >
+                        <FileText className="w-3.5 h-3.5" />
+                        <span>Read Lesson Notes</span>
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <iframe 
+                    src={embedUrl}
+                    title={currentLesson.title}
+                    className="w-full h-full border-0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                    onError={() => setIframeError(true)}
+                  ></iframe>
+                )}
+              </div>
+              
+              <div className="flex items-center justify-between text-[11px] text-slate-400 px-1">
+                <span>Tip: Click "Watch on YouTube" if video loading is slow on your connection.</span>
+                <button
+                  type="button"
+                  onClick={() => setIframeError(prev => !prev)}
+                  className="hover:text-purple-500 underline text-[10px]"
+                >
+                  {iframeError ? 'Retry video player' : 'Player not loading?'}
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-8 border border-slate-200 dark:border-purple-500/20 shadow-xl space-y-6">
+              <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
+                <div className="flex items-center gap-2 text-purple-600 dark:text-purple-400 font-bold text-sm">
+                  <FileText className="w-4 h-4" />
+                  <span>Comprehensive Lecture Dossier & Key Frameworks</span>
+                </div>
+                <span className="text-xs px-2.5 py-1 rounded-full bg-purple-50 dark:bg-purple-950 text-purple-700 dark:text-purple-300 font-mono font-bold">
+                  {currentLesson.duration || '15 min read'}
+                </span>
+              </div>
+
+              <div className="space-y-4 text-xs sm:text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
+                <div className="p-4 rounded-2xl bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-900/40">
+                  <h4 className="font-extrabold text-purple-900 dark:text-purple-200 mb-1">Executive Summary</h4>
+                  <p>{currentLesson.summary || 'Master real-world deliverables, design standards, and practical industry workflows tailored for freelance client projects.'}</p>
+                </div>
+
+                <div className="space-y-2">
+                  <h4 className="font-extrabold text-slate-900 dark:text-white">Core Action Items & Takeaways:</h4>
+                  <ul className="list-disc pl-5 space-y-1.5 text-slate-600 dark:text-slate-300">
+                    {(currentLesson.keyTakeaways && Array.isArray(currentLesson.keyTakeaways) ? currentLesson.keyTakeaways : [
+                      "Understand fundamental client briefs and target audience personas",
+                      "Leverage professional templates and brand guideline kits",
+                      "Export high-resolution deliverables ready for client deployment",
+                      "Document your workflow step-by-step to include in your proof-of-work portfolio"
+                    ]).map((t, idx) => (
+                      <li key={idx}><span className="font-semibold text-slate-800 dark:text-slate-200">{t}</span></li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+
+              <div className="pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                <button
+                  type="button"
+                  onClick={() => setActiveMediaTab('video')}
+                  className="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-xs font-bold hover:bg-slate-200 dark:hover:bg-slate-700"
+                >
+                  ← Return to Video Player
+                </button>
+                <button
+                  type="button"
+                  onClick={handleMarkComplete}
+                  disabled={isSubmittingComplete || isCompleted}
+                  className="px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-extrabold flex items-center gap-1.5"
+                >
+                  <CheckCircle2 className="w-3.5 h-3.5" />
+                  <span>{isCompleted ? 'Marked Complete ✓' : 'Mark Lesson Complete'}</span>
+                </button>
+              </div>
+            </div>
+          )}
 
           {/* Lesson Header & Mark Complete CTA */}
           <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-slate-200 dark:border-purple-500/20 shadow-md space-y-4">

@@ -78,6 +78,7 @@ export default function PortfolioSection({ portfolios, onOpenSubmitModal, user, 
 
   // Quick View Modal
   const [quickViewProject, setQuickViewProject] = useState(null);
+  const [showVerificationGuide, setShowVerificationGuide] = useState(false);
   
   // CRUD Modals
   const [editingProject, setEditingProject] = useState(null);
@@ -448,6 +449,72 @@ export default function PortfolioSection({ portfolios, onOpenSubmitModal, user, 
           )}
 
         </div>
+      </section>
+
+      {/* ========================================================
+          VERIFICATION TRANSPARENCY GUIDE BANNER
+         ======================================================== */}
+      <section className="bg-gradient-to-r from-purple-950/70 via-slate-900 to-indigo-950/70 rounded-3xl p-5 sm:p-6 border border-emerald-500/30 shadow-md">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3.5">
+            <div className="w-11 h-11 rounded-2xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 flex items-center justify-center shrink-0">
+              <ShieldCheck className="w-6 h-6" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <h3 className="text-sm sm:text-base font-extrabold text-white">How Does Portfolio Verification Work?</h3>
+                <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[10px] font-bold">100% Escrow Backed</span>
+              </div>
+              <p className="text-xs text-slate-300 mt-0.5">
+                Verified proof-of-work projects receive priority recruiter matching, direct interviews, and guaranteed payments.
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2.5 shrink-0 w-full sm:w-auto">
+            <button
+              type="button"
+              onClick={() => setShowVerificationGuide(prev => !prev)}
+              className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-white font-bold text-xs transition-all flex items-center gap-1.5 cursor-pointer"
+            >
+              <span>{showVerificationGuide ? 'Hide Standards' : 'View 3-Step Standards'}</span>
+              <ChevronRight className={`w-3.5 h-3.5 transition-transform ${showVerificationGuide ? 'rotate-90' : ''}`} />
+            </button>
+            <button
+              type="button"
+              onClick={() => onOpenSubmitModal ? onOpenSubmitModal() : navigate('/portfolio/submit')}
+              className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition-all flex items-center gap-1.5 shadow-md cursor-pointer"
+            >
+              <span>Submit Capstone</span>
+              <Award className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        </div>
+
+        {showVerificationGuide && (
+          <div className="mt-5 pt-5 border-t border-white/10 grid grid-cols-1 md:grid-cols-3 gap-4 animate-fade-in text-xs">
+            <div className="p-4 rounded-2xl bg-slate-900/80 border border-white/10 space-y-1.5">
+              <span className="text-emerald-400 font-extrabold font-mono text-[11px] block">STEP 1 • COURSE MASTER</span>
+              <h4 className="font-bold text-white text-sm">Complete Track Lessons</h4>
+              <p className="text-slate-300 leading-relaxed text-[11px]">
+                Watch all curriculum lessons in /learn and complete module takeaways to master foundational industry skills.
+              </p>
+            </div>
+            <div className="p-4 rounded-2xl bg-slate-900/80 border border-white/10 space-y-1.5">
+              <span className="text-pink-400 font-extrabold font-mono text-[11px] block">STEP 2 • REAL DELIVERABLE</span>
+              <h4 className="font-bold text-white text-sm">Build Capstone Brief</h4>
+              <p className="text-slate-300 leading-relaxed text-[11px]">
+                Execute real client scenarios (Canva campaigns, Shopify catalogs, or SEO articles) with live demo links.
+              </p>
+            </div>
+            <div className="p-4 rounded-2xl bg-slate-900/80 border border-white/10 space-y-1.5">
+              <span className="text-cyan-300 font-extrabold font-mono text-[11px] block">STEP 3 • PEER & MENTOR REVIEW</span>
+              <h4 className="font-bold text-white text-sm">Earn Verified Talent Badge</h4>
+              <p className="text-slate-300 leading-relaxed text-[11px]">
+                Our mentor community validates deliverable quality, unlocking the Emerald Verified shield and direct hire micro-gigs.
+              </p>
+            </div>
+          </div>
+        )}
       </section>
 
       {/* ========================================================
