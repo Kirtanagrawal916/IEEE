@@ -81,7 +81,16 @@ export function calculateSkillMatch(userSkills = [], requiredSkills = []) {
     ? userSkills 
     : DEFAULT_USER_SKILLS;
 
-  if (!requiredSkills || requiredSkills.length === 0) {
+  let safeRequiredSkills = requiredSkills || [];
+  if (typeof safeRequiredSkills === 'string') {
+    try {
+      safeRequiredSkills = JSON.parse(safeRequiredSkills);
+    } catch {
+      safeRequiredSkills = safeRequiredSkills.split(',').map(s => s.trim()).filter(Boolean);
+    }
+  }
+
+  if (!Array.isArray(safeRequiredSkills) || safeRequiredSkills.length === 0) {
     return {
       matchPercentage: 100,
       matchedSkills: [],
@@ -93,7 +102,7 @@ export function calculateSkillMatch(userSkills = [], requiredSkills = []) {
   const matchedSkills = [];
   const missingSkills = [];
 
-  requiredSkills.forEach((reqSkill) => {
+  safeRequiredSkills.forEach((reqSkill) => {
     const matched = activeUserSkills.some((uSkill) => isSkillMatched(uSkill, reqSkill));
     if (matched) {
       matchedSkills.push(reqSkill);
@@ -102,7 +111,7 @@ export function calculateSkillMatch(userSkills = [], requiredSkills = []) {
     }
   });
 
-  const matchPercentage = Math.round((matchedSkills.length / requiredSkills.length) * 100);
+  const matchPercentage = Math.round((matchedSkills.length / safeRequiredSkills.length) * 100);
 
   return {
     matchPercentage,

@@ -11,7 +11,15 @@ export const getMatchingTrackForOpportunity = (opportunity, tracks = skillTracks
 
   const cat = (opportunity.category || '').toLowerCase();
   const title = (opportunity.title || '').toLowerCase();
-  const skills = (opportunity.skillsRequired || []).map(s => String(s).toLowerCase());
+  let rawSkills = opportunity.skillsRequired || [];
+  if (typeof rawSkills === 'string') {
+    try {
+      rawSkills = JSON.parse(rawSkills);
+    } catch {
+      rawSkills = rawSkills.split(',').map(s => s.trim()).filter(Boolean);
+    }
+  }
+  const skills = Array.isArray(rawSkills) ? rawSkills.map(s => String(s).toLowerCase()) : [];
   const combined = `${cat} ${title} ${skills.join(' ')}`;
 
   // 1. Digital Marketing & Social Media Growth -> track-1

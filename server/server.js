@@ -94,6 +94,10 @@ app.use('/api/users', userRoutes);
 app.use('/api', trackRoutes);
 app.use('/api', enrollmentRoutes);
 app.use('/api/portfolio', portfolioRoutes);
+app.use('/api/projects/mine', (req, res, next) => {
+  req.url = '/mine';
+  portfolioRoutes(req, res, next);
+});
 app.use('/api/opportunities', opportunityRoutes);
 app.use('/api', applicationRoutes);
 app.use('/api/dashboard', dashboardRoutes);
