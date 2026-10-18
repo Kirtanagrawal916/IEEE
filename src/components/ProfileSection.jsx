@@ -35,6 +35,7 @@ import {
   Play
 } from 'lucide-react';
 import WalletWithdrawModal from './WalletWithdrawModal';
+import CertificateModal from './CertificateModal';
 import { isTrackUnlocked, getTotalOpportunitiesApplied } from '../utils/trackLockHelper';
 
 export default function ProfileSection({ 
@@ -60,9 +61,7 @@ export default function ProfileSection({
   });
 
   const formatCertificateRecipientName = (name) => {
-    const raw = name || 'Verified Learner';
-    const clean = raw.replace(/^(mrs\.?|ms\.?|mr\.?|dr\.?)\s+/i, '').trim();
-    return `Mrs. ${clean}`;
+    return (name || '').trim() || 'Verified Learner';
   };
 
   // Active user data or default guest user
@@ -1252,68 +1251,13 @@ export default function ProfileSection({
         </div>
       )}
 
-      {/* --- DOWNLOAD CERTIFICATE MODAL --- */}
-      {isCertModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-fade-in">
-          <div className="bg-white dark:bg-slate-900 border border-purple-200 dark:border-purple-500/40 rounded-3xl max-w-lg w-full p-6 text-slate-900 dark:text-white shadow-2xl relative space-y-5 text-xs">
-            <button 
-              type="button"
-              onClick={() => setIsCertModalOpen(false)}
-              className="absolute top-4 right-4 p-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white rounded-full bg-slate-100 dark:bg-slate-800 cursor-pointer"
-            >
-              <X className="w-4 h-4" />
-            </button>
-
-            <div className="flex items-center gap-2 border-b border-purple-200 dark:border-purple-500/20 pb-3">
-              <Award className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
-              <div>
-                <h3 className="text-base font-extrabold text-slate-900 dark:text-white">Verified Certificate Download</h3>
-                <p className="text-[11px] text-slate-500 dark:text-slate-400">Download high-resolution official PDF credential</p>
-              </div>
-            </div>
-
-            {/* Certificate Preview Card */}
-            <div className="bg-gradient-to-br from-purple-950 via-slate-900 to-indigo-950 border-2 border-emerald-500/40 rounded-2xl p-6 text-center space-y-3 relative overflow-hidden shadow-inner text-white">
-              <div className="inline-flex p-3 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 mb-1">
-                <Trophy className="w-8 h-8" />
-              </div>
-              <p className="text-[10px] uppercase font-extrabold tracking-widest text-emerald-400">Certificate of Completion</p>
-              <h4 className="text-xl font-black text-white">{formatCertificateRecipientName(currentUser.name)}</h4>
-              <p className="text-xs text-purple-200">has successfully mastered all capstone modules for</p>
-              <p className="text-sm font-extrabold text-pink-300 border-y border-purple-500/30 py-2">
-                {selectedCertCourse}
-              </p>
-              <p className="text-[10px] text-slate-400">Credential ID: HE-2026-CERT-8842 • Verified by HerEarn Foundation</p>
-            </div>
-
-            <div className="space-y-2">
-              <label className="block font-bold text-slate-700 dark:text-slate-300">Select Completed Course Track:</label>
-              <select 
-                value={selectedCertCourse}
-                onChange={(e) => setSelectedCertCourse(e.target.value)}
-                className="w-full bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white p-3 rounded-xl border border-slate-300 dark:border-slate-700 focus:outline-none focus:border-purple-500 text-xs font-semibold"
-              >
-                <option value="Graphic Design with Canva">Graphic Design with Canva (100% Completed)</option>
-                <option value="Digital Marketing & Social Media">Digital Marketing & Social Media (75% Completed - Certificate Draft)</option>
-              </select>
-            </div>
-
-            <div className="flex items-center gap-3 pt-2">
-              <button
-                type="button"
-                onClick={() => {
-                  alert(`Certificate for "${selectedCertCourse}" downloaded successfully!`);
-                  setIsCertModalOpen(false);
-                }}
-                className="flex-1 btn-gradient-award justify-center py-3 font-bold cursor-pointer text-xs"
-              >
-                <Download className="w-4 h-4" />
-                <span>Download Official PDF</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* --- OFFICIAL VERIFIED CERTIFICATE MODAL --- */}
+      <CertificateModal
+        isOpen={isCertModalOpen}
+        onClose={() => setIsCertModalOpen(false)}
+        user={currentUser}
+        initialCourseTitle={selectedCertCourse}
+      />
 
       {/* --- WALLET WITHDRAWAL MODAL --- */}
       <WalletWithdrawModal
