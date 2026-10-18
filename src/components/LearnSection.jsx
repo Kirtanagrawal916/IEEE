@@ -228,12 +228,13 @@ export default function LearnSection({ user, onCompleteLesson, onNavigateToPortf
   };
 
   // Categories for filter
-  const courseCategories = ['All', 'Marketing', 'Design', 'E-Commerce', 'Writing', 'Video', 'Operations'];
+  const courseCategories = ['All', 'Demo Course', 'Marketing', 'Design', 'E-Commerce', 'Writing', 'Video', 'Operations'];
 
   // Filtered tracks
   const filteredTracks = useMemo(() => {
     return tracks.filter(t => {
       const matchesCat = selectedCategory === 'All' || 
+        (selectedCategory === 'Demo Course' && (t.id === 'track-demo' || t.isDemoCourse)) ||
         (t.category || '').toLowerCase().includes(selectedCategory.toLowerCase());
       const query = courseSearch.trim().toLowerCase();
       const matchesSearch = !query ||
@@ -490,6 +491,12 @@ export default function LearnSection({ user, onCompleteLesson, onNavigateToPortf
                       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-slate-100 dark:border-slate-800 pb-5">
                         <div className="space-y-2">
                           <div className="flex items-center gap-2.5 flex-wrap">
+                            {(t.isDemoCourse || t.id === 'track-demo') && (
+                              <span className="text-[11px] font-black px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700 flex items-center gap-1 shadow-xs">
+                                <Sparkles className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                                Free Demo Course • Unlocked for Everyone
+                              </span>
+                            )}
                             <span className="font-mono text-[11px] font-black px-2.5 py-0.5 rounded-md bg-purple-100 dark:bg-purple-950 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800">
                               TRACK 0{trackIndex + 1}
                             </span>
