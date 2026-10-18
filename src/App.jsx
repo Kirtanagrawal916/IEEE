@@ -10,27 +10,29 @@ import ProfileSection from './components/ProfileSection';
 import LoginPage from './components/LoginPage';
 import SignupPage from './components/SignupPage';
 import AboutPage from './components/AboutPage';
-import TermsPage from './components/TermsPage';
-import PrivacyPage from './components/PrivacyPage';
 import OpportunityDetailPage from './components/OpportunityDetailPage';
 import OpportunityApplyPage from './components/OpportunityApplyPage';
 import TrackDetailPage from './components/TrackDetailPage';
 import LessonPlayerPage from './components/LessonPlayerPage';
 import ApplicationsPage from './components/ApplicationsPage';
-import PublicProfilePage from './components/PublicProfilePage';
 import ProtectedRoute from './components/ProtectedRoute';
 import ChallengeDetailPage from './components/ChallengeDetailPage';
 import SubmitProjectPage from './components/SubmitProjectPage';
 import PortfolioDetailPage from './components/PortfolioDetailPage';
 import PostGigPage from './components/PostGigPage';
-import RecruiterDashboard from './components/RecruiterDashboard';
+
+// Lazy loaded modules for code splitting and instant bundle loading
+const TermsPage = React.lazy(() => import('./components/TermsPage'));
+const PrivacyPage = React.lazy(() => import('./components/PrivacyPage'));
+const PublicProfilePage = React.lazy(() => import('./components/PublicProfilePage'));
+const RecruiterDashboard = React.lazy(() => import('./components/RecruiterDashboard'));
+const AdminPanel = React.lazy(() => import('./components/AdminPanel'));
 
 import LogoutModal from './components/LogoutModal';
 import ToastNotification from './components/ToastNotification';
 import ChatBot from './components/ChatBot';
 import MentorshipSection from './components/MentorshipSection';
 import CommunitySection from './components/CommunitySection';
-import AdminPanel from './components/AdminPanel';
 import Logo from './components/Logo';
 import { 
   Compass, 
@@ -81,6 +83,17 @@ function OpportunityApplyRouteWrapper({ opportunities, selectedOpportunity, user
       onBack={() => navigate(`/opportunities/${gig?.id || ''}`)}
       onConfirmApplySuccess={onConfirmApplySuccess}
     />
+  );
+}
+
+function PageLoader() {
+  return (
+    <div className="flex items-center justify-center min-h-[60vh]">
+      <div className="flex flex-col items-center gap-3">
+        <div className="w-10 h-10 border-4 border-purple-600 border-t-transparent rounded-full animate-spin" />
+        <span className="text-sm font-medium text-purple-600 dark:text-purple-400">Loading...</span>
+      </div>
+    </div>
   );
 }
 
@@ -550,6 +563,7 @@ function AppContent() {
 
       {/* Main View Area with React Router Routes */}
       <main className={`flex-1 ${isAdminRoute ? 'pb-0' : 'pb-24 md:pb-16'} relative z-10`}>
+        <React.Suspense fallback={<PageLoader />}>
         <Routes>
           {/* Default Opening Page is AboutPage */}
           <Route 
@@ -912,13 +926,17 @@ function AppContent() {
           />
 
           <Route
-  path="/recruiter/*"
-  element={
-    <ProtectedRoute user={user}>
-      <RecruiterDashboard user={user} showToast={showToast} />
-    </ProtectedRoute>
-  }
-/>
+            path="/recruiter/*"
+            element={
+              <ProtectedRoute 
+                user={user} 
+                allowedRoles={['EMPLOYER', 'RECRUITER', 'ADMIN']} 
+                redirectTo="/dashboard"
+              >
+                <RecruiterDashboard user={user} showToast={showToast} />
+              </ProtectedRoute>
+            }
+          />
 
           <Route 
             path="/admin" 
@@ -935,6 +953,7 @@ function AppContent() {
             } 
           />
         </Routes>
+        </React.Suspense>
       </main>
 
       {/* Footer (Hidden on Admin portal) */}

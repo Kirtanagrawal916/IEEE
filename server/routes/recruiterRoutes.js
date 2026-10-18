@@ -9,10 +9,10 @@ import { authMiddleware } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
-// Only recruiters (EMPLOYER) and admins can use these endpoints
+// Only recruiters (EMPLOYER / RECRUITER / CLIENT) and admins can use these endpoints
 const requireRecruiter = (req, res, next) => {
   const role = String(req.user?.role || '').toUpperCase();
-  if (role === 'EMPLOYER' || role === 'ADMIN') return next();
+  if (['EMPLOYER', 'RECRUITER', 'CLIENT', 'ADMIN'].includes(role)) return next();
   return res.status(403).json({ success: false, message: 'Recruiter access required.' });
 };
 router.use(authMiddleware, requireRecruiter);
