@@ -76,6 +76,26 @@ export default function NotificationCenter({ theme, onNavigate }) {
     localStorage.setItem('herearn_notifications', JSON.stringify(notifications));
   }, [notifications]);
 
+  // Real-time synchronization when a new opportunity or alert is dispatched
+  useEffect(() => {
+    const handleUpdate = () => {
+      try {
+        const saved = localStorage.getItem('herearn_notifications');
+        if (saved) {
+          setNotifications(JSON.parse(saved));
+        }
+      } catch (e) {
+        console.warn('[NotificationCenter] Sync error:', e);
+      }
+    };
+    window.addEventListener('herearn_notifications_updated', handleUpdate);
+    window.addEventListener('storage', handleUpdate);
+    return () => {
+      window.removeEventListener('herearn_notifications_updated', handleUpdate);
+      window.removeEventListener('storage', handleUpdate);
+    };
+  }, []);
+
   useEffect(() => {
     function handleClickOutside(event) {
       if (popupRef.current && !popupRef.current.contains(event.target)) {

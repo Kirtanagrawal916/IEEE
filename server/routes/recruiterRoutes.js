@@ -159,7 +159,7 @@ router.get('/applicants', async (req, res, next) => {
       orderBy: { appliedAt: 'desc' },
       include: {
         user: { select: { id: true, name: true, email: true, avatar: true, location: true, skills: true } },
-        opportunity: { select: { id: true, title: true } },
+        opportunity: { select: { id: true, title: true, stipend: true, company: true } },
       },
     });
     res.json({
@@ -184,6 +184,127 @@ router.patch('/applicants/:id/status', async (req, res, next) => {
 
     const updated = await prisma.application.update({ where: { id: app.id }, data: { status } });
     res.json({ success: true, application: updated });
+  } catch (err) { next(err); }
+});
+
+// POST /api/recruiter/applicants/:id/interview - Schedule interview with candidate
+router.post('/applicants/:id/interview', async (req, res, next) => {
+  try {
+    const { interviewTime, interviewLink, interviewStatus = 'SCHEDULED' } = req.body;
+    if (!interviewTime || !interviewLink) {
+      return res.status(400).json({ success: false, message: 'Interview date/time and meeting link are required.' });
+    }
+
+    const app = await prisma.application.findFirst({
+      where: { id: req.params.id, opportunity: owned(req) },
+      include: { opportunity: true, user: true },
+    });
+    if (!app) return res.status(404).json({ success: false, message: 'Application not found.' });
+
+    const newStatus = app.status === 'SUBMITTED' || app.status === 'UNDER_REVIEW' ? 'SHORTLISTED' : app.status;
+
+    const updated = await prisma.application.update({
+      where: { id: app.id },
+      data: {
+        interviewTime: String(interviewTime).trim(),
+        interviewLink: String(interviewLink).trim(),
+        interviewStatus: String(interviewStatus).toUpperCase(),
+        status: newStatus,
+      },
+    });
+
+    await prisma.auditLog.create({
+      data: {
+        action: 'INTERVIEW_SCHEDULED',
+        detail: `Interview scheduled with ${app.user.email} for ${app.opportunity.title} at ${interviewTime}`,
+        type: 'approval',
+      },
+    }).catch(() => {});
+
+    res.json({
+      success: true,
+      message: 'Interview scheduled successfully. Applicant notified.',
+      application: updated,
+    });
+  } catch (err) { next(err); }
+});
+
+// POST /api/recruiter/applicants/:id/approve-payout - Recruiter approves deliverables and releases escrow
+router.post('/applicants/:id/approve-payout', async (req, res, next) => {
+  try {
+    const app = await prisma.application.findFirst({
+      where: { id: req.params.id, opportunity: owned(req) },
+      include: { opportunity: true, user: true },
+    });
+    if (!app) return res.status(404).json({ success: false, message: 'Application not found.' });
+
+    const stipendStr = app.opportunity?.stipend || '₹5000';
+    const numAmount = parseInt(String(stipendStr).replace(/[^0-9]/g, ''), 10) || 5000;
+
+    const [updatedApp, updatedFreelancer] = await prisma.$transaction([
+      prisma.application.update({
+        where: { id: app.id },
+        data: {
+          deliveryStatus: 'APPROVED',
+          status: 'ACCEPTED',
+        },
+      }),
+      prisma.user.update({
+        where: { id: app.userId },
+        data: {
+          walletBalance: { increment: numAmount },
+          totalEarned: { increment: numAmount },
+          earnings: { increment: numAmount },
+        },
+        select: { id: true, name: true, email: true, walletBalance: true, totalEarned: true },
+      }),
+      prisma.auditLog.create({
+        data: {
+          action: 'ESCROW_PAYOUT_RELEASED',
+          detail: `Recruiter approved deliverables for "${app.opportunity.title}". Disbursed ₹${numAmount.toLocaleString()} to ${app.user.email}`,
+          type: 'escrow',
+        },
+      }),
+    ]);
+
+    res.json({
+      success: true,
+      message: `Deliverables approved! Escrow payment of ₹${numAmount.toLocaleString()} disbursed to candidate wallet.`,
+      amount: numAmount,
+      application: updatedApp,
+      freelancer: updatedFreelancer,
+    });
+  } catch (err) { next(err); }
+});
+
+// POST /api/recruiter/applicants/:id/review - Recruiter rates and reviews completed gig
+router.post('/applicants/:id/review', async (req, res, next) => {
+  try {
+    const { rating, reviewText } = req.body;
+    const numRating = parseInt(rating, 10);
+    if (isNaN(numRating) || numRating < 1 || numRating > 5) {
+      return res.status(400).json({ success: false, message: 'Please provide a star rating between 1 and 5.' });
+    }
+
+    const app = await prisma.application.findFirst({
+      where: { id: req.params.id, opportunity: owned(req) },
+    });
+    if (!app) return res.status(404).json({ success: false, message: 'Application not found.' });
+
+    const updated = await prisma.application.update({
+      where: { id: app.id },
+      data: {
+        rating: numRating,
+        reviewText: String(reviewText || '').trim(),
+        reviewAuthor: req.user.name || req.user.email || 'Recruiter Client',
+      },
+    });
+
+    res.json({
+      success: true,
+      message: 'Review saved successfully.',
+      application: updated,
+    });
   } catch (err) { next(err); }
 });
 

@@ -1,6 +1,25 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { Navigate } from 'react-router-dom';
-import { Briefcase, Users, Star, CheckCircle2, Plus, Trash2, Loader2, X, Lock, Unlock, AlertCircle } from 'lucide-react';
+import { 
+  Briefcase, 
+  Users, 
+  Star, 
+  CheckCircle2, 
+  Plus, 
+  Trash2, 
+  Loader2, 
+  X, 
+  Lock, 
+  Unlock, 
+  AlertCircle,
+  Calendar,
+  Video,
+  ExternalLink,
+  IndianRupee,
+  ShieldCheck,
+  FileCheck,
+  MessageSquare
+} from 'lucide-react';
 import { api } from '../services/api';
 
 const TYPES = ['Micro-Gig', 'Remote Internship', 'Remote Part-time', 'Freelance', 'Full-time'];
@@ -33,6 +52,21 @@ export default function RecruiterDashboard({ user, showToast }) {
   const [saving, setSaving] = useState(false);
   const [filter, setFilter] = useState('ALL');
 
+  // Point 3: Interview Scheduling Modal State
+  const [interviewModalApp, setInterviewModalApp] = useState(null);
+  const [interviewTime, setInterviewTime] = useState('');
+  const [interviewLink, setInterviewLink] = useState('');
+  const [schedulingInterview, setSchedulingInterview] = useState(false);
+
+  // Point 5: Escrow Approval State
+  const [approvingAppId, setApprovingAppId] = useState(null);
+
+  // Point 7: Recruiter Review Modal State
+  const [reviewModalApp, setReviewModalApp] = useState(null);
+  const [reviewRating, setReviewRating] = useState(5);
+  const [reviewComment, setReviewComment] = useState('');
+  const [savingReview, setSavingReview] = useState(false);
+
   const load = useCallback(async () => {
     setError('');
     try {
@@ -53,9 +87,37 @@ export default function RecruiterDashboard({ user, showToast }) {
 
   useEffect(() => { load(); }, [load]);
 
-  // Learners should never see this page
+  // Helpful access notice for non-recruiter accounts
   if (user?.role && user.role !== 'EMPLOYER' && user.role !== 'ADMIN') {
-    return <Navigate to="/dashboard" replace />;
+    return (
+      <div className="min-h-[70vh] flex items-center justify-center px-4 py-12">
+        <div className="max-w-md w-full bg-white dark:bg-slate-900 border border-purple-200 dark:border-purple-500/30 rounded-3xl p-8 text-center space-y-6 shadow-xl">
+          <div className="w-16 h-16 rounded-2xl bg-purple-100 dark:bg-purple-900/40 text-purple-600 dark:text-purple-300 mx-auto flex items-center justify-center">
+            <Briefcase className="w-8 h-8" />
+          </div>
+          <div className="space-y-2">
+            <h2 className="text-xl font-bold text-slate-900 dark:text-white">Recruiter Portal Access</h2>
+            <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+              You are currently signed in as <strong className="text-purple-600 dark:text-purple-400">{user.email || user.username}</strong> ({user.role || 'Learner'}). This dashboard is dedicated to verified employers and recruiters managing job postings.
+            </p>
+          </div>
+          <div className="flex flex-col sm:flex-row items-center gap-3 pt-2">
+            <a
+              href="/dashboard"
+              className="w-full py-2.5 px-4 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs text-center transition-colors shadow-sm"
+            >
+              Go to Learner Dashboard
+            </a>
+            <a
+              href="/login"
+              className="w-full py-2.5 px-4 rounded-xl border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold text-xs text-center transition-colors"
+            >
+              Log in as Employer
+            </a>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   const setField = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
@@ -99,6 +161,66 @@ export default function RecruiterDashboard({ user, showToast }) {
     } catch (err) { showToast?.('Update failed', err.message); }
   };
 
+  // Point 3: Handle Schedule Interview
+  const handleScheduleInterview = async (e) => {
+    e.preventDefault();
+    if (!interviewTime.trim() || !interviewLink.trim()) return;
+    setSchedulingInterview(true);
+    try {
+      await api.scheduleInterview(interviewModalApp.id, {
+        interviewTime: interviewTime.trim(),
+        interviewLink: interviewLink.trim(),
+      });
+      showToast?.('📅 Interview Scheduled', `Invited ${interviewModalApp.user.name} for ${interviewTime}`);
+      setInterviewModalApp(null);
+      setInterviewTime('');
+      setInterviewLink('');
+      await load();
+    } catch (err) {
+      showToast?.('Scheduling failed', err.message);
+    } finally {
+      setSchedulingInterview(false);
+    }
+  };
+
+  // Point 5: Handle Approve Deliverables & Disburse Escrow
+  const handleApproveDeliverable = async (applicant) => {
+    const stipend = applicant.opportunity?.stipend || '₹5,000';
+    if (!window.confirm(`Approve deliverables and disburse escrow stipend (${stipend}) to ${applicant.user.name}'s wallet?`)) return;
+    
+    setApprovingAppId(applicant.id);
+    try {
+      const res = await api.approveApplicantPayout(applicant.id);
+      showToast?.('🎉 Escrow Released!', res.message || 'Payment credited to candidate wallet.');
+      await load();
+    } catch (err) {
+      showToast?.('Approval failed', err.message);
+    } finally {
+      setApprovingAppId(null);
+    }
+  };
+
+  // Point 7: Handle Submit Recruiter Review
+  const handleSubmitRecruiterReview = async (e) => {
+    e.preventDefault();
+    setSavingReview(true);
+    try {
+      await api.submitRecruiterReview(reviewModalApp.id, {
+        rating: reviewRating,
+        reviewText: reviewComment.trim(),
+      });
+      showToast?.('⭐ Review Saved', 'Your rating and feedback have been recorded.');
+      setReviewModalApp(null);
+      setReviewRating(5);
+      setReviewComment('');
+      await load();
+    } catch (err) {
+      showToast?.('Review submission failed', err.message);
+    } finally {
+      setSavingReview(false);
+    }
+  };
+
   const statCards = [
     { label: 'Total jobs', value: stats?.totalJobs, Icon: Briefcase },
     { label: 'Open now', value: stats?.openJobs, Icon: Unlock },
@@ -114,7 +236,7 @@ export default function RecruiterDashboard({ user, showToast }) {
         <div>
           <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">Recruiter dashboard</h1>
           <p className="text-sm text-slate-600 dark:text-slate-300">
-            Signed in as {user?.name || 'Recruiter'}. Post jobs and review the women who apply.
+            Signed in as {user?.name || 'Recruiter'}. Post jobs, schedule interviews, review deliverables, and approve escrow disbursements.
           </p>
         </div>
         <button
@@ -225,7 +347,7 @@ export default function RecruiterDashboard({ user, showToast }) {
               No applicants here yet. They show up as learners apply to your jobs.
             </div>
           ) : shown.map((a) => (
-            <div key={a.id} className={`${card} p-4 sm:p-5 space-y-3`}>
+            <div key={a.id} className={`${card} p-4 sm:p-5 space-y-4`}>
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="flex items-center gap-3">
                   <img src={a.user.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(a.user.name)}`} alt="" className="w-10 h-10 rounded-full object-cover" />
@@ -234,27 +356,327 @@ export default function RecruiterDashboard({ user, showToast }) {
                     <p className="text-xs text-slate-500 dark:text-slate-400">{a.user.email}{a.user.location ? ` · ${a.user.location}` : ''}</p>
                   </div>
                 </div>
-                <span className={`text-[11px] font-bold px-2.5 py-1 rounded-full ${STATUS_STYLE[a.status] || STATUS_STYLE.SUBMITTED}`}>
-                  {a.status.replace('_', ' ')}
-                </span>
+                <div className="flex items-center gap-2">
+                  {a.deliveryStatus === 'APPROVED' ? (
+                    <span className="text-[11px] font-black px-2.5 py-1 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 border border-emerald-300">
+                      Deliverable Paid ✅
+                    </span>
+                  ) : a.deliveryStatus === 'SUBMITTED' ? (
+                    <span className="text-[11px] font-black px-2.5 py-1 rounded-full bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 border border-amber-300 animate-pulse">
+                      Deliverable Under Review ⏳
+                    </span>
+                  ) : null}
+                  <span className={`text-[11px] font-bold px-2.5 py-1 rounded-full ${STATUS_STYLE[a.status] || STATUS_STYLE.SUBMITTED}`}>
+                    {a.status.replace('_', ' ')}
+                  </span>
+                </div>
               </div>
-              <p className="text-xs text-slate-500 dark:text-slate-400">Applied for <b>{a.opportunity.title}</b> on {new Date(a.appliedAt).toLocaleDateString()}</p>
-              {a.coverNote && <p className="text-sm text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-slate-950 rounded-xl p-3">{a.coverNote}</p>}
+
+              <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500 dark:text-slate-400">
+                <span>Applied for <b>{a.opportunity.title}</b></span>
+                {a.opportunity.stipend && (
+                  <span className="text-emerald-600 dark:text-emerald-400 font-extrabold flex items-center gap-0.5">
+                    <IndianRupee className="w-3.5 h-3.5" /> {a.opportunity.stipend}
+                  </span>
+                )}
+                <span>on {new Date(a.appliedAt).toLocaleDateString()}</span>
+              </div>
+
+              {a.coverNote && <p className="text-sm text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-slate-950 rounded-xl p-3 border border-slate-200 dark:border-slate-800">"{a.coverNote}"</p>}
+              
               {a.user.skills?.length > 0 && (
                 <div className="flex flex-wrap gap-1.5">
                   {a.user.skills.map((s) => <span key={s} className="text-[11px] px-2 py-0.5 rounded-md bg-purple-50 dark:bg-purple-500/10 text-purple-700 dark:text-purple-300 font-semibold">{s}</span>)}
                 </div>
               )}
-              <div className="flex flex-wrap gap-2">
+
+              {/* Point 3: Interview Scheduled Callout */}
+              {a.interviewTime && (
+                <div className="p-3.5 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800/60 flex flex-wrap items-center justify-between gap-2.5 text-xs">
+                  <div className="flex items-center gap-2">
+                    <Calendar className="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0" />
+                    <div>
+                      <span className="font-extrabold text-indigo-950 dark:text-indigo-200 block">Interview Scheduled</span>
+                      <span className="text-indigo-700 dark:text-indigo-300">{a.interviewTime}</span>
+                    </div>
+                  </div>
+                  {a.interviewLink && (
+                    <a
+                      href={a.interviewLink.startsWith('http') ? a.interviewLink : `https://${a.interviewLink}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-bold flex items-center gap-1.5 transition-colors"
+                    >
+                      <Video className="w-3.5 h-3.5" />
+                      <span>Open Meeting</span>
+                    </a>
+                  )}
+                </div>
+              )}
+
+              {/* Point 4 & Point 5: Deliverables Workroom Section & Escrow Release */}
+              {(a.deliverableUrl || a.deliveryStatus === 'SUBMITTED' || a.deliveryStatus === 'APPROVED') && (
+                <div className="p-4 rounded-2xl bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30 border border-purple-200 dark:border-purple-800/60 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-black uppercase text-purple-700 dark:text-purple-300 flex items-center gap-1.5">
+                      <FileCheck className="w-4 h-4" /> Milestone Deliverables Submitted
+                    </span>
+                    <span className="text-[11px] font-bold text-slate-500">
+                      {a.submittedAt ? `Submitted: ${new Date(a.submittedAt).toLocaleDateString()}` : ''}
+                    </span>
+                  </div>
+
+                  {a.deliverableUrl && (
+                    <div className="flex items-center gap-2">
+                      <a
+                        href={a.deliverableUrl.startsWith('http') ? a.deliverableUrl : `https://${a.deliverableUrl}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs font-bold text-purple-600 dark:text-purple-400 hover:underline flex items-center gap-1 truncate"
+                      >
+                        <ExternalLink className="w-3.5 h-3.5 shrink-0" />
+                        <span className="truncate">{a.deliverableUrl}</span>
+                      </a>
+                    </div>
+                  )}
+
+                  {a.deliverableNotes && (
+                    <p className="text-xs text-slate-600 dark:text-slate-300 italic bg-white dark:bg-slate-900 p-2.5 rounded-xl border border-purple-100 dark:border-purple-900/50">
+                      "{a.deliverableNotes}"
+                    </p>
+                  )}
+
+                  {/* Escrow Release Action */}
+                  <div className="pt-1 flex flex-wrap items-center justify-between gap-2">
+                    <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-700 dark:text-emerald-400">
+                      <ShieldCheck className="w-4 h-4" />
+                      <span>Escrow: {a.opportunity?.stipend || '₹5,000'}</span>
+                    </div>
+
+                    {a.deliveryStatus !== 'APPROVED' ? (
+                      <button
+                        type="button"
+                        onClick={() => handleApproveDeliverable(a)}
+                        disabled={approvingAppId === a.id}
+                        className="px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-black text-xs shadow-md transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                      >
+                        {approvingAppId === a.id ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <CheckCircle2 className="w-4 h-4" />
+                        )}
+                        <span>Approve Deliverables & Release Escrow Payout</span>
+                      </button>
+                    ) : (
+                      <span className="px-3 py-1.5 rounded-xl bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 text-xs font-extrabold flex items-center gap-1 border border-emerald-300">
+                        <CheckCircle2 className="w-4 h-4" /> Escrow Disbursed to Candidate
+                      </span>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Point 7: Post-Gig Star Rating & Review Display */}
+              {a.rating && (
+                <div className="p-3 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-800 flex items-center justify-between gap-3">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-1">
+                      {[1, 2, 3, 4, 5].map((s) => (
+                        <Star key={s} className={`w-3.5 h-3.5 ${s <= a.rating ? 'text-amber-500 fill-amber-500' : 'text-slate-300'}`} />
+                      ))}
+                      <span className="text-xs font-bold ml-1.5">{a.rating} / 5 Stars</span>
+                    </div>
+                    {a.reviewText && <p className="text-xs text-slate-600 dark:text-slate-400 italic">"{a.reviewText}"</p>}
+                  </div>
+                  <span className="text-[10px] text-slate-400">By {a.reviewAuthor || 'Reviewer'}</span>
+                </div>
+              )}
+
+              {/* Action Buttons */}
+              <div className="flex flex-wrap items-center gap-2 pt-1 border-t border-slate-100 dark:border-slate-800">
                 <button onClick={() => setStatus(a, 'UNDER_REVIEW')} disabled={a.status === 'UNDER_REVIEW'} className={`${btn} bg-amber-50 dark:bg-amber-500/10 text-amber-800 dark:text-amber-300`}>Mark under review</button>
                 <button onClick={() => setStatus(a, 'SHORTLISTED')} disabled={a.status === 'SHORTLISTED'} className={`${btn} bg-indigo-50 dark:bg-indigo-500/10 text-indigo-800 dark:text-indigo-300`}>Shortlist</button>
                 <button onClick={() => setStatus(a, 'ACCEPTED')} disabled={a.status === 'ACCEPTED'} className={`${btn} bg-emerald-50 dark:bg-emerald-500/10 text-emerald-800 dark:text-emerald-300`}>Accept</button>
                 <button onClick={() => setStatus(a, 'REJECTED')} disabled={a.status === 'REJECTED'} className={`${btn} bg-rose-50 dark:bg-rose-500/10 text-rose-700 dark:text-rose-300`}>Reject</button>
+
+                {/* Point 3: Schedule Interview Button */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setInterviewModalApp(a);
+                    setInterviewTime(a.interviewTime || '');
+                    setInterviewLink(a.interviewLink || '');
+                  }}
+                  className={`${btn} bg-purple-50 dark:bg-purple-500/10 text-purple-700 dark:text-purple-300 flex items-center gap-1.5`}
+                >
+                  <Calendar className="w-3 h-3" />
+                  <span>{a.interviewTime ? 'Reschedule Interview' : 'Schedule Interview'}</span>
+                </button>
+
+                {/* Point 7: Rate Candidate Button */}
+                {!a.rating && (a.status === 'ACCEPTED' || a.deliveryStatus === 'APPROVED') && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setReviewModalApp(a);
+                      setReviewRating(5);
+                      setReviewComment('');
+                    }}
+                    className={`${btn} bg-amber-50 dark:bg-amber-500/10 text-amber-800 dark:text-amber-300 flex items-center gap-1`}
+                  >
+                    <Star className="w-3 h-3" />
+                    <span>Rate Candidate</span>
+                  </button>
+                )}
               </div>
             </div>
           ))}
         </div>
       )}
+
+      {/* Point 3: Schedule Interview Modal */}
+      {interviewModalApp && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-fade-in">
+          <div className="relative w-full max-w-md bg-white dark:bg-slate-900 border border-purple-200 dark:border-purple-500/40 rounded-3xl shadow-2xl p-6 text-slate-900 dark:text-white space-y-5">
+            <div className="flex items-center justify-between border-b border-purple-100 dark:border-purple-500/20 pb-4">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-purple-100 dark:bg-purple-950 text-purple-600 dark:text-purple-400 flex items-center justify-center">
+                  <Calendar className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-extrabold">Schedule Candidate Interview</h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">With {interviewModalApp.user.name}</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setInterviewModalApp(null)}
+                className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-white rounded-lg transition-colors cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleScheduleInterview} className="space-y-4 text-xs">
+              <div className="space-y-1.5">
+                <label className="block font-bold">Interview Date & Time *</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Oct 24, 2026 at 4:30 PM IST"
+                  value={interviewTime}
+                  onChange={(e) => setInterviewTime(e.target.value)}
+                  className={input}
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="block font-bold">Video Meeting Link (Google Meet / Zoom) *</label>
+                <input
+                  type="url"
+                  required
+                  placeholder="https://meet.google.com/abc-defg-hij"
+                  value={interviewLink}
+                  onChange={(e) => setInterviewLink(e.target.value)}
+                  className={input}
+                />
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setInterviewModalApp(null)}
+                  className="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={schedulingInterview}
+                  className="px-5 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white font-extrabold flex items-center gap-1.5 shadow-md disabled:opacity-50 cursor-pointer"
+                >
+                  {schedulingInterview && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                  <span>Save & Notify Applicant</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Point 7: Recruiter Review Modal */}
+      {reviewModalApp && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-fade-in">
+          <div className="relative w-full max-w-md bg-white dark:bg-slate-900 border border-purple-200 dark:border-purple-500/40 rounded-3xl shadow-2xl p-6 text-slate-900 dark:text-white space-y-5">
+            <div className="flex items-center justify-between border-b border-purple-100 dark:border-purple-500/20 pb-4">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-amber-100 dark:bg-amber-950 text-amber-600 dark:text-amber-400 flex items-center justify-center">
+                  <Star className="w-5 h-5 fill-amber-500 text-amber-500" />
+                </div>
+                <div>
+                  <h3 className="text-base font-extrabold">Rate Freelancer Performance</h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">{reviewModalApp.user.name} • {reviewModalApp.opportunity.title}</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setReviewModalApp(null)}
+                className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-white rounded-lg transition-colors cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSubmitRecruiterReview} className="space-y-4 text-xs">
+              <div className="space-y-2 text-center py-2">
+                <span className="block font-bold">Select Star Rating</span>
+                <div className="flex items-center justify-center gap-2">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <button
+                      type="button"
+                      key={star}
+                      onClick={() => setReviewRating(star)}
+                      className="p-1 cursor-pointer transition-transform hover:scale-125 focus:outline-none"
+                    >
+                      <Star className={`w-8 h-8 ${star <= reviewRating ? 'text-amber-400 fill-amber-400' : 'text-slate-300 dark:text-slate-700'}`} />
+                    </button>
+                  ))}
+                </div>
+                <span className="font-extrabold text-sm text-purple-600 dark:text-purple-400">{reviewRating} out of 5 Stars</span>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="block font-bold">Feedback / Recommendation Note</label>
+                <textarea
+                  rows={3}
+                  required
+                  placeholder="Exceptional delivery quality, punctual communication, and thorough documentation."
+                  value={reviewComment}
+                  onChange={(e) => setReviewComment(e.target.value)}
+                  className={input}
+                ></textarea>
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setReviewModalApp(null)}
+                  className="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={savingReview}
+                  className="px-5 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white font-extrabold flex items-center gap-1.5 shadow-md disabled:opacity-50 cursor-pointer"
+                >
+                  {savingReview && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                  <span>Save Review</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

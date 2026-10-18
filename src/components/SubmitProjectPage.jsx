@@ -42,7 +42,7 @@ export default function SubmitProjectPage({ user, onSubmitProject, showToast }) 
     { label: 'Content Writing', url: 'https://images.unsplash.com/photo-1455390582262-044cdead277a?auto=format&fit=crop&q=80&w=600' }
   ];
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!title || !description) return;
 
@@ -58,21 +58,19 @@ export default function SubmitProjectPage({ user, onSubmitProject, showToast }) 
       verified: true
     };
 
-    setTimeout(() => {
-      setIsPublishing(false);
-      triggerCelebrationConfetti();
+    try {
       if (onSubmitProject) {
-        onSubmitProject(newProject);
+        await onSubmitProject(newProject);
       }
-      if (showToast) {
-        showToast("✨ Portfolio Published!", `"${title}" is live on the public showcase.`);
-      }
+      triggerCelebrationConfetti();
       navigate('/portfolio');
-    }, 800);
+    } finally {
+      setIsPublishing(false);
+    }
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white transition-colors duration-300 py-8 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-[#FFF9F5] dark:bg-[#0F0918] text-[#1F2937] dark:text-white transition-colors duration-300 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-6xl mx-auto space-y-6">
         
         {/* Top Breadcrumb */}
