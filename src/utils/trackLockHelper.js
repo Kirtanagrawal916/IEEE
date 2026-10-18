@@ -204,3 +204,48 @@ export const getTotalOpportunitiesApplied = (user, apiApplications = []) => {
   }
   return ids.size;
 };
+
+/**
+ * Checks whether a user has completed 100% of the lessons in a given track
+ * @param {Object} track - Skill track object with lessons array
+ * @param {Object} user - User object with completedLessons array
+ * @returns {boolean}
+ */
+export const isCourseCompleted = (track, user) => {
+  if (!track || !track.lessons || track.lessons.length === 0) return false;
+
+  let completedIds = [];
+  if (user?.completedLessons) {
+    if (Array.isArray(user.completedLessons)) {
+      completedIds = user.completedLessons;
+    } else if (typeof user.completedLessons === 'string') {
+      try {
+        completedIds = JSON.parse(user.completedLessons);
+      } catch {
+        completedIds = [];
+      }
+    }
+  }
+
+  try {
+    const localUser = JSON.parse(localStorage.getItem('herearn_user_data') || '{}');
+    if (Array.isArray(localUser?.completedLessons)) {
+      completedIds = Array.from(new Set([...completedIds, ...localUser.completedLessons]));
+    }
+  } catch {}
+
+  const totalLessons = track.lessons.length;
+  const doneCount = track.lessons.filter(l => completedIds.includes(l.id)).length;
+  return doneCount >= totalLessons && totalLessons > 0;
+};
+
+/**
+ * Returns all tracks that the user has completed 100%
+ * @param {Object} user - User object
+ * @param {Array} tracks - Array of skill tracks
+ * @returns {Array<Object>} List of completed track objects
+ */
+export const getCompletedTracksForUser = (user, tracks = skillTracks) => {
+  return tracks.filter(t => isCourseCompleted(t, user));
+};
+
