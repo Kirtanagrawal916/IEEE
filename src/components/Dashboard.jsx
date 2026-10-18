@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   BookOpen, 
@@ -32,6 +32,19 @@ import CertificateModal from './CertificateModal';
 
 export default function Dashboard({ user, onOpenSubmitModal, onOpenLogoutModal }) {
   const navigate = useNavigate();
+
+  // Derive effective user from props or localStorage
+  const effectiveUser = useMemo(() => {
+    if (user && (user.name || user.email || user.username)) return user;
+    try {
+      const savedUserStr = localStorage.getItem('herearn_user');
+      if (savedUserStr) {
+        const parsed = JSON.parse(savedUserStr);
+        if (parsed && (parsed.name || parsed.email || parsed.username)) return parsed;
+      }
+    } catch {}
+    return user || null;
+  }, [user]);
 
   // State variables for real API data
   const [progressData, setProgressData] = useState([]);
@@ -1116,7 +1129,7 @@ export default function Dashboard({ user, onOpenSubmitModal, onOpenLogoutModal }
       <CertificateModal 
         isOpen={isCertModalOpen} 
         onClose={() => setIsCertModalOpen(false)} 
-        user={user} 
+        user={effectiveUser} 
       />
 
     </div>
