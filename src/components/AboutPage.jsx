@@ -9,8 +9,6 @@ import {
   ShieldCheck, 
   Globe, 
   TrendingUp, 
-  Users, 
-  Lock, 
   Zap, 
   Layers, 
   DollarSign,
@@ -234,7 +232,7 @@ export default function AboutPage({ onNavigate }) {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 relative z-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8 relative z-10">
           {loopSteps.map((step, idx) => {
             const Icon = step.icon;
             return (
@@ -263,8 +261,11 @@ export default function AboutPage({ onNavigate }) {
                 </div>
 
                 {idx < loopSteps.length - 1 && (
-                  <div className="hidden lg:block absolute -right-3 top-1/2 -translate-y-1/2 z-20 text-purple-400">
-                    <ArrowRight className="w-6 h-6" />
+                  <div 
+                    className="hidden lg:flex absolute top-1/2 -translate-y-1/2 -translate-x-1/2 z-20 items-center justify-center pointer-events-none text-purple-400 dark:text-purple-300 group-hover:text-pink-500 dark:group-hover:text-pink-400 transition-colors"
+                    style={{ left: 'calc(100% + 1rem)' }}
+                  >
+                    <ArrowRight className="w-5 h-5 transition-transform duration-300 group-hover:translate-x-0.5" />
                   </div>
                 )}
               </div>
