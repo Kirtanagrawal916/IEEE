@@ -72,10 +72,18 @@ export default function ProfileSection({
       ? user.earnings 
       : (user?.totalEarned !== undefined ? user.totalEarned : (user ? 12000 : 0)));
 
-  const currentUser = user ? {
-    ...user,
-    username: effectiveUsername,
-    earnings: effectiveBalance,
+  const resolvedUser = user || (() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem('herearn_user') || 'null');
+      if (saved && (saved.name || saved.email || saved.username)) return saved;
+    } catch {}
+    return null;
+  })();
+
+  const currentUser = resolvedUser ? {
+    ...resolvedUser,
+    username: resolvedUser.username || effectiveUsername,
+    earnings: resolvedUser.walletBalance !== undefined ? resolvedUser.walletBalance : effectiveBalance,
   } : {
     id: "guest",
     name: "Guest Learner",

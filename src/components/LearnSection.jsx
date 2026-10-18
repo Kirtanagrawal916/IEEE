@@ -57,6 +57,16 @@ export default function LearnSection({ user, onCompleteLesson, onNavigateToPortf
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const urlTab = searchParams.get('tab');
+
+  // Derive effective user from props or localStorage
+  const effectiveUser = useMemo(() => {
+    if (user && (user.name || user.email || user.username)) return user;
+    try {
+      const local = JSON.parse(localStorage.getItem('herearn_user') || 'null');
+      if (local && (local.name || local.email || local.username)) return local;
+    } catch {}
+    return user || null;
+  }, [user]);
   
   // Main Tab: 'courses' | 'challenges' | 'puzzles'
   const [activeTab, setActiveTab] = useState(
@@ -1655,7 +1665,7 @@ export default function LearnSection({ user, onCompleteLesson, onNavigateToPortf
       <CertificateModal
         isOpen={isCertificateOpen}
         onClose={() => setIsCertificateOpen(false)}
-        user={user}
+        user={effectiveUser}
         trackTitle={certificateTrackTitle || currentTrack.title}
       />
 
