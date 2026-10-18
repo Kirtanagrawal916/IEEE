@@ -184,7 +184,7 @@ export const api = {
   // Dashboard & Specific Mine APIs
   getProgressMine: () => request('/api/progress'),
   getApplicationsMine: () => request('/api/applications/mine'),
-  getProjectsMine: () => request('/api/projects/mine'),
+  getProjectsMine: () => request('/api/portfolio/mine'),
 
   // Dashboard API
   getDashboardMetrics: () => request('/api/dashboard'),

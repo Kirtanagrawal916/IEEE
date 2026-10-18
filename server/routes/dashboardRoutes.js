@@ -15,6 +15,10 @@ router.get('/', authMiddleware, async (req, res) => {
       select: { id: true, name: true, email: true, avatar: true, location: true, bio: true, skills: true, totalEarned: true, walletBalance: true },
     });
 
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
     // 2. Enrollments & Progress
     const enrollments = await prisma.enrollment.findMany({
       where: { userId },

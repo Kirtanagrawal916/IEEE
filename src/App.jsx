@@ -27,12 +27,12 @@ const PrivacyPage = React.lazy(() => import('./components/PrivacyPage'));
 const PublicProfilePage = React.lazy(() => import('./components/PublicProfilePage'));
 const RecruiterDashboard = React.lazy(() => import('./components/RecruiterDashboard'));
 const AdminPanel = React.lazy(() => import('./components/AdminPanel'));
+const MentorshipSection = React.lazy(() => import('./components/MentorshipSection'));
+const CommunitySection = React.lazy(() => import('./components/CommunitySection'));
 
 import LogoutModal from './components/LogoutModal';
 import ToastNotification from './components/ToastNotification';
 import ChatBot from './components/ChatBot';
-import MentorshipSection from './components/MentorshipSection';
-import CommunitySection from './components/CommunitySection';
 import Logo from './components/Logo';
 import { 
   Compass, 
@@ -911,7 +911,7 @@ function AppContent() {
           <Route 
             path="/mentorship" 
             element={
-              <MentorshipSection showToast={showToast} />
+              <MentorshipSection user={user} showToast={showToast} />
             } 
           />
 

@@ -51,12 +51,27 @@ router.get('/', async (req, res) => {
   }
 });
 
+const resolveOpportunity = async (targetId) => {
+  if (!targetId) return null;
+  let opp = await prisma.opportunity.findUnique({ where: { id: targetId } });
+  if (opp) return opp;
+
+  if (targetId === 'gig-1' || targetId === 'opp-1') {
+    return prisma.opportunity.findFirst({ where: { title: { contains: 'Organic Spices' } } });
+  }
+  if (targetId === 'gig-2' || targetId === 'opp-2') {
+    return prisma.opportunity.findFirst({ where: { title: { contains: 'Banner & Flyer' } } });
+  }
+  if (targetId === 'gig-3' || targetId === 'opp-3') {
+    return prisma.opportunity.findFirst({ where: { title: { contains: 'Shopify Product' } } });
+  }
+  return null;
+};
+
 // GET /api/opportunities/:id
 router.get('/:id', async (req, res) => {
   try {
-    const opportunity = await prisma.opportunity.findUnique({
-      where: { id: req.params.id },
-    });
+    const opportunity = await resolveOpportunity(req.params.id);
 
     if (!opportunity) {
       return res.status(404).json({ success: false, message: 'Opportunity not found' });

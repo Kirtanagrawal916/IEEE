@@ -4,20 +4,38 @@ import { authMiddleware } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
+const resolveOpportunity = async (targetId) => {
+  if (!targetId) return null;
+  let opp = await prisma.opportunity.findUnique({ where: { id: targetId } });
+  if (opp) return opp;
+
+  if (targetId === 'gig-1' || targetId === 'opp-1') {
+    return prisma.opportunity.findFirst({ where: { title: { contains: 'Organic Spices' } } });
+  }
+  if (targetId === 'gig-2' || targetId === 'opp-2') {
+    return prisma.opportunity.findFirst({ where: { title: { contains: 'Banner & Flyer' } } });
+  }
+  if (targetId === 'gig-3' || targetId === 'opp-3') {
+    return prisma.opportunity.findFirst({ where: { title: { contains: 'Shopify Product' } } });
+  }
+  return null;
+};
+
 // POST /api/opportunities/:id/apply
 router.post('/opportunities/:id/apply', authMiddleware, async (req, res) => {
   try {
-    const opportunityId = req.params.id;
+    const targetId = req.params.id;
     const { coverNote, portfolioProjectIds } = req.body;
 
     if (!coverNote) {
       return res.status(400).json({ success: false, message: 'Cover note is required' });
     }
 
-    const opportunity = await prisma.opportunity.findUnique({ where: { id: opportunityId } });
+    const opportunity = await resolveOpportunity(targetId);
     if (!opportunity) {
       return res.status(404).json({ success: false, message: 'Opportunity not found' });
     }
+    const opportunityId = opportunity.id;
 
     if (!opportunity.isOpen) {
       return res.status(400).json({ success: false, message: 'This opportunity is closed' });
