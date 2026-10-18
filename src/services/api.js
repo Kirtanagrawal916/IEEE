@@ -29,10 +29,12 @@ const getAuthHeaders = (endpoint = '') => {
   return headers;
 };
 
-// Helper for HTTP requests with 3.5s timeout to prevent UI freezes
+// Helper for HTTP requests with appropriate timeout (30s for AI chat, 8s for standard endpoints)
 const request = async (endpoint, options = {}) => {
+  const isChat = endpoint === '/api/chat' || endpoint.startsWith('/api/chat');
+  const timeoutMs = options.timeoutMs || (isChat ? 30000 : 8000);
   const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
-  const timeoutId = controller ? setTimeout(() => controller.abort(), 3500) : null;
+  const timeoutId = controller ? setTimeout(() => controller.abort(), timeoutMs) : null;
 
   const config = {
     ...options,

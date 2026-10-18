@@ -78,10 +78,10 @@ async function callGeminiAPI(apiKey, systemPrompt, history) {
 
   const candidateModels = [
     process.env.GEMINI_MODEL,
-    'gemini-2.5-flash',
-    'gemini-2.0-flash',
-    'gemini-1.5-flash',
-    'gemini-2.5-flash-lite'
+    'gemini-3.5-flash-lite',
+    'gemini-3.5-flash',
+    'gemini-3.6-flash',
+    'gemini-flash-latest'
   ].filter(Boolean);
   const modelsToTry = [...new Set(candidateModels)];
 
