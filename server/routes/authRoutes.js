@@ -225,7 +225,10 @@ router.post('/register', authLimiter, async (req, res) => {
     }
 
     const passwordHash = await bcrypt.hash(password, 10);
-    const userRole = (role || 'LEARNER').toUpperCase();
+    const rawRole = String(role || 'LEARNER').trim().toUpperCase();
+    const userRole = (rawRole === 'RECRUITER' || rawRole === 'CLIENT') 
+      ? 'EMPLOYER' 
+      : (rawRole === 'USER' ? 'LEARNER' : rawRole);
     const initialSkills = Array.isArray(skills) && skills.length > 0 
       ? skills 
       : [skillInterest || 'Digital Marketing'];

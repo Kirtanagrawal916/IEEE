@@ -125,6 +125,7 @@ const getMyApplicationsHandler = async (req, res) => {
 
 router.get('/applications/me', authMiddleware, getMyApplicationsHandler);
 router.get('/applications/mine', authMiddleware, getMyApplicationsHandler);
+router.get('/applications/my-applications', authMiddleware, getMyApplicationsHandler);
 
 // GET /api/applications/:id
 router.get('/applications/:id', authMiddleware, async (req, res) => {
