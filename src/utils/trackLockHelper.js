@@ -109,6 +109,9 @@ export const getMatchingTrackForOpportunity = (opportunity, tracks = skillTracks
 export const getUnlockedTrackIds = (user) => {
   const ids = new Set();
 
+  // Always include the free demo starter course for everyone
+  ids.add('track-demo');
+
   // 1. Explicit array on user object
   if (user && Array.isArray(user.unlockedTrackIds)) {
     user.unlockedTrackIds.forEach(id => ids.add(id));
@@ -152,6 +155,10 @@ export const getUnlockedTrackIds = (user) => {
  */
 export const isTrackUnlocked = (trackId, user) => {
   if (!trackId) return false;
+  // Demo course is permanently unlocked for every visitor and user
+  if (trackId === 'track-demo' || String(trackId).toLowerCase().includes('demo')) {
+    return true;
+  }
   const unlocked = getUnlockedTrackIds(user);
   return unlocked.includes(trackId);
 };

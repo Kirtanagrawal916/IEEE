@@ -156,15 +156,15 @@ Make it persuasive, authentic, respectful, and ready to send directly to the cli
     });
 
     const percentage = Math.round((earnedPoints / maxPoints) * 100);
-    const PASSING_THRESHOLD = 60; // 60% score required for eligibility
-    const isEligible = percentage >= PASSING_THRESHOLD;
+    // User can apply regardless of quiz score — 100% eligible even with 0 points
+    const isEligible = true;
 
     const summary = {
       earnedPoints,
       maxPoints,
       percentage,
-      isEligible,
-      passingThreshold: PASSING_THRESHOLD,
+      isEligible: true,
+      passingThreshold: 0,
       difficultyBreakdown
     };
 
@@ -242,8 +242,8 @@ Make it persuasive, authentic, respectful, and ready to send directly to the cli
         </div>
 
         <div className="bg-slate-950/60 p-3 rounded-2xl border border-purple-400/20 text-center text-xs backdrop-blur-md">
-          <span className="text-[10px] text-purple-300 font-bold uppercase block">Eligibility Requirement</span>
-          <span className="text-emerald-400 font-extrabold text-xs">≥ 60% Quiz Pass Score</span>
+          <span className="text-[10px] text-purple-300 font-bold uppercase block">Application Policy</span>
+          <span className="text-emerald-400 font-extrabold text-xs">✨ 100% Eligible (No Score Cutoff)</span>
         </div>
       </div>
 
@@ -371,14 +371,14 @@ Make it persuasive, authentic, respectful, and ready to send directly to the cli
               ></textarea>
             </div>
 
-            {/* Escrow Guarantee Box */}
+            {/* Practice Assessment Info Box */}
             <div className="p-4 bg-emerald-50 dark:bg-emerald-950/40 rounded-2xl border border-emerald-200 dark:border-emerald-800/60 text-xs text-emerald-800 dark:text-emerald-300 space-y-1">
               <p className="flex items-center gap-1.5 font-extrabold">
                 <ShieldCheck className="w-4 h-4 text-emerald-500" />
-                Next Step: Topic Skill Quiz Assessment
+                Next Step: Practice Self-Check Quiz (Bilingual • English & हिंदी)
               </p>
-              <p className="text-emerald-700 dark:text-emerald-400 text-[11px]">
-                Upon clicking proceed, you will take a short 6-question quiz across Easy, Medium, and Hard difficulty levels for <strong>{gig.category}</strong>. Scoring 60%+ unlocks immediate candidate eligibility status!
+              <p className="text-emerald-700 dark:text-emerald-400 text-[11px] leading-relaxed">
+                You will take a friendly 6-question self-check for <strong>{gig.category}</strong> available in English and Hindi. <strong>No score cutoff required:</strong> Even with 0 correct points, your application will be 100% submitted and registered immediately!
               </p>
             </div>
 
@@ -386,7 +386,7 @@ Make it persuasive, authentic, respectful, and ready to send directly to the cli
               type="submit"
               className="w-full py-4 rounded-2xl btn-gradient-award text-xs font-extrabold shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer"
             >
-              <span>Proceed to Skill Assessment Quiz</span>
+              <span>Proceed to Practice Self-Check Quiz</span>
               <ChevronRight className="w-4 h-4" />
             </button>
           </form>
@@ -435,18 +435,39 @@ Make it persuasive, authentic, respectful, and ready to send directly to the cli
 
           {/* Question Box */}
           <div className="bg-purple-50/60 dark:bg-purple-950/40 p-5 rounded-2xl border border-purple-200 dark:border-purple-800/60 space-y-2">
-            <span className="text-[11px] font-extrabold text-purple-600 dark:text-purple-400 uppercase tracking-wider">
-              {currentQuestion.difficulty} Level Challenge:
-            </span>
-            <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white leading-snug">
-              {currentQuestion.question}
-            </h3>
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-extrabold text-purple-600 dark:text-purple-400 uppercase tracking-wider">
+                {currentQuestion.difficulty} Level Question:
+              </span>
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-100 dark:bg-purple-900/60 text-purple-700 dark:text-purple-300">
+                🌐 Bilingual (English + हिंदी)
+              </span>
+            </div>
+
+            {currentQuestion.question.includes(' / ') ? (
+              <div className="space-y-1.5">
+                <h3 className="text-base sm:text-lg font-extrabold text-slate-900 dark:text-white leading-snug">
+                  {currentQuestion.question.split(' / ')[0]}
+                </h3>
+                <p className="text-xs sm:text-sm text-purple-700 dark:text-purple-300 font-semibold leading-relaxed">
+                  🇮🇳 {currentQuestion.question.split(' / ')[1]}
+                </p>
+              </div>
+            ) : (
+              <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white leading-snug">
+                {currentQuestion.question}
+              </h3>
+            )}
           </div>
 
           {/* Answer Options */}
           <div className="space-y-3">
             {currentQuestion.options.map((optText, optionIdx) => {
               const isSelected = selectedOption === optionIdx;
+              const hasTranslation = optText.includes(' / ');
+              const enPart = hasTranslation ? optText.split(' / ')[0] : optText;
+              const hiPart = hasTranslation ? optText.split(' / ')[1] : '';
+
               return (
                 <button
                   key={optionIdx}
@@ -459,17 +480,24 @@ Make it persuasive, authentic, respectful, and ready to send directly to the cli
                   }`}
                 >
                   <div className="flex items-center gap-3">
-                    <span className={`w-7 h-7 rounded-xl flex items-center justify-center font-extrabold text-xs ${
+                    <span className={`w-7 h-7 rounded-xl flex items-center justify-center font-extrabold text-xs shrink-0 ${
                       isSelected
                         ? 'bg-white text-purple-900'
                         : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300'
                     }`}>
                       {String.fromCharCode(65 + optionIdx)}
                     </span>
-                    <span>{optText}</span>
+                    <div className="flex flex-col text-left">
+                      <span className="font-bold text-xs sm:text-sm">{enPart}</span>
+                      {hiPart && (
+                        <span className={`text-[11px] font-medium mt-0.5 ${isSelected ? 'text-purple-100' : 'text-purple-600 dark:text-purple-300'}`}>
+                          🇮🇳 {hiPart}
+                        </span>
+                      )}
+                    </div>
                   </div>
 
-                  {isSelected && <CheckCircle2 className="w-5 h-5 text-white shrink-0" />}
+                  {isSelected && <CheckCircle2 className="w-5 h-5 text-white shrink-0 ml-2" />}
                 </button>
               );
             })}
@@ -524,13 +552,13 @@ Make it persuasive, authentic, respectful, and ready to send directly to the cli
             </div>
             <div className="space-y-1">
               <span className="text-xs font-extrabold uppercase tracking-widest text-emerald-200">
-                Quiz Assessment Score: {resultData.percentage}% • Application Registered
+                Self-Check Score: {resultData.percentage}% ({resultData.earnedPoints} pts) • 100% Eligible & Accepted
               </span>
               <h2 className="text-2xl sm:text-3xl font-extrabold text-white">
-                🎉 Application Submitted & Course Lectures Unlocked!
+                🎉 Application Successfully Submitted!
               </h2>
               <p className="text-xs sm:text-sm text-emerald-100 font-medium max-w-lg mx-auto">
-                Your application for <strong>{gig.title}</strong> has been saved. As part of this opportunity, your profile now has permanent unlocked access to all video lectures for <strong>{matchingTrack?.title || 'this track'}</strong>!
+                Your application for <strong>{gig.title}</strong> has been registered. On HerEarn, every woman has an equal opportunity—no minimum score cutoff is required!
               </p>
             </div>
           </div>

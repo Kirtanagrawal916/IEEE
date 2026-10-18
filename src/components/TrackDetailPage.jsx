@@ -138,6 +138,12 @@ export default function TrackDetailPage({ user, onCompleteLesson }) {
 
         <div className="relative z-10 space-y-6 max-w-3xl">
           <div className="flex flex-wrap items-center gap-2.5 text-xs font-bold">
+            {(track.isDemoCourse || track.id === 'track-demo') && (
+              <span className="px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/40 backdrop-blur-md font-extrabold flex items-center gap-1">
+                <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
+                Demo Course • Always Unlocked
+              </span>
+            )}
             <span className="px-3 py-1 rounded-full bg-white/10 text-purple-300 border border-white/20 backdrop-blur-md">
               {track.category || 'Skill Track'}
             </span>

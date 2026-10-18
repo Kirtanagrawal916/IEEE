@@ -2,6 +2,62 @@ export const initialUser = null;
 
 export const skillTracks = [
   {
+    id: "track-demo",
+    isDemoCourse: true,
+    title: "🌟 Foundations of Digital Skills & Remote Work (Free Demo Course)",
+    category: "Foundation & Remote Work",
+    icon: "Sparkles",
+    duration: "2 Hours • 3 Lessons",
+    level: "All Levels (Open to Everyone)",
+    rating: 4.99,
+    reviewsCount: 615,
+    enrolledCount: 4200,
+    earningPotential: "₹500 - ₹3,000 / week",
+    instructor: "Dr. Sunita Sharma & HerEarn Mentors",
+    badgeName: "Verified Remote Work Pioneer",
+    skillsCovered: ["Remote Work Mindset", "Google Workspace", "Canva Basics", "Client Chat Etiquette", "Escrow Safety"],
+    description: "A 100% free, permanently unlocked demo starter course designed for every woman. Learn how remote work works, explore home gig setups, and practice without any locks or prerequisites.",
+    image: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=800",
+    lessons: [
+      {
+        id: "demo-l1",
+        title: "Lesson 1: Welcome to Remote Work & Overcoming Tech Hesitation",
+        duration: "15 min",
+        videoUrl: "https://www.youtube.com/embed/nU-IIXBWlS4",
+        summary: "Introduction to work-from-home opportunities, managing your daily schedule, and building confidence with basic digital tools.",
+        keyTakeaways: [
+          "Understanding how online freelancing and micro-gigs operate from home",
+          "Overcoming fear of technology and learning step-by-step",
+          "Setting realistic weekly earning goals (₹2,000 to ₹10,000/month to start)"
+        ]
+      },
+      {
+        id: "demo-l2",
+        title: "Lesson 2: Essential Free Tools: Google Drive, Canva & WhatsApp Business",
+        duration: "20 min",
+        videoUrl: "https://www.youtube.com/embed/un50Bs4BvZ8",
+        summary: "Hands-on walkthrough of creating documents, organizing work on cloud folders, and communicating professionally.",
+        keyTakeaways: [
+          "Creating shareable Google Drive links for client submissions",
+          "Designing quick professional promo graphics with zero design background in Canva",
+          "Professional message etiquette and clarity with clients"
+        ]
+      },
+      {
+        id: "demo-l3",
+        title: "Lesson 3: Finding Your First Gig & Guaranteeing Payouts via Escrow",
+        duration: "25 min",
+        videoUrl: "https://www.youtube.com/embed/VpXJ27p2Wlg",
+        summary: "How to browse gigs on HerEarn, submit your deliverables, and ensure your money is safely deposited to your wallet.",
+        keyTakeaways: [
+          "How HerEarn Escrow guarantees you get paid upon delivery",
+          "Submitting your completed tasks with live deliverable links",
+          "Withdrawing your earnings straight to UPI (Google Pay / PhonePe) or Bank"
+        ]
+      }
+    ]
+  },
+  {
     id: "track-1",
     title: "Digital Marketing & Social Media Growth",
     category: "Marketing",
