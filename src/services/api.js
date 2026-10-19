@@ -83,7 +83,7 @@ const request = async (endpoint, options = {}) => {
     if (contentType.includes('application/json')) {
       data = await res.json();
     } else {
-      const text = await res.text();
+      await res.text().catch(() => '');
       data = { message: `Server error (${res.status}): Non-JSON response received` };
     }
 
@@ -100,7 +100,8 @@ const request = async (endpoint, options = {}) => {
     }
     return data;
   } catch (err) {
-    if (endpoint !== '/api/auth/me' || err.status !== 401) {
+    const isAbort = err?.name === 'AbortError' || err?.message?.includes('aborted');
+    if (!isAbort && endpoint !== '/api/health' && (endpoint !== '/api/auth/me' || err?.status !== 401)) {
       console.warn(`[API Error] ${endpoint}:`, err.message);
     }
     throw err;
@@ -212,6 +213,29 @@ export const api = {
   updateAdminSettings: (settings) => request('/api/admin/settings', { method: 'PATCH', body: JSON.stringify(settings) }),
   getAdminAuditLogs: () => request('/api/admin/audit-logs'),
   createAuditLog: (logData) => request('/api/admin/audit-logs', { method: 'POST', body: JSON.stringify(logData) }),
+  pingAdmin: () => request('/api/admin/ping'),
+
+  // Live Telemetry & Network Latency Tracker
+  checkLatency: async () => {
+    const t0 = performance.now();
+    try {
+      const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+      const timeoutId = controller ? setTimeout(() => controller.abort(), 3500) : null;
+      const res = await fetch(`${API_BASE}/api/health`, {
+        signal: controller ? controller.signal : undefined,
+        cache: 'no-store'
+      }).finally(() => {
+        if (timeoutId) clearTimeout(timeoutId);
+      });
+      if (res.ok) {
+        const latencyMs = Math.round(performance.now() - t0);
+        return { ok: true, latency: latencyMs };
+      }
+      return { ok: false, latency: null };
+    } catch {
+      return { ok: false, latency: null };
+    }
+  },
 
   // Community APIs
   getCommunityUsers: (filters = {}) => {
