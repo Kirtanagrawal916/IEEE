@@ -39,6 +39,7 @@ import {
 } from 'lucide-react';
 import { api } from '../services/api';
 import Logo from './Logo';
+import ThemeToggle from './ThemeToggle';
 
 // Designated Official Master Admin Key
 export const MASTER_ADMIN_KEY = 'HEREARN-ADMIN-2026-X9K';
@@ -849,6 +850,8 @@ export default function AdminPanel({
 
         {/* Action Controls */}
         <div className="flex items-center gap-2.5">
+          <ThemeToggle variant="compact" />
+
           <button
             onClick={() => loadAdminData()}
             disabled={isRefreshing}

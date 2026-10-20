@@ -41,6 +41,10 @@ import {
 
 import { api } from './services/api';
 import { useAuth } from './context/AuthContext';
+import { useTheme } from './context/ThemeContext';
+import ThemeToggle from './components/ThemeToggle';
+import NotFoundPage from './components/NotFoundPage';
+import { ScrollProgressBar, BackToTopButton } from './components/ScrollEnhancements';
 
 function AppContent() {
   const navigate = useNavigate();
@@ -52,9 +56,7 @@ function AppContent() {
 
   const [portfolios, setPortfolios] = useState(initialPortfolios);
   const [opportunities, setOpportunities] = useState(initialOpportunities);
-  const [theme, setTheme] = useState(() => {
-    return localStorage.getItem('herearn_theme') || 'light';
-  });
+  const { theme, toggleTheme: handleToggleTheme } = useTheme();
 
   // Modals & Navigation state
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
@@ -62,23 +64,6 @@ function AppContent() {
 
   // Toast
   const [toast, setToast] = useState(null);
-
-  useEffect(() => {
-    const root = document.documentElement;
-    const body = document.body;
-    if (theme === 'dark') {
-      root.classList.add('dark');
-      root.classList.remove('light');
-      body.classList.add('dark');
-      body.classList.remove('light');
-    } else {
-      root.classList.add('light');
-      root.classList.remove('dark');
-      body.classList.add('light');
-      body.classList.remove('dark');
-    }
-    localStorage.setItem('herearn_theme', theme);
-  }, [theme]);
 
   // Initial Data Fetching from Express Backend API
   useEffect(() => {
@@ -151,10 +136,6 @@ function AppContent() {
       localStorage.removeItem('herearn_user');
       localStorage.removeItem('herearn_jwt_token');
     }
-  };
-
-  const handleToggleTheme = () => {
-    setTheme(prev => prev === 'dark' ? 'light' : 'dark');
   };
 
   const showToast = (title, message) => {
@@ -456,6 +437,9 @@ function AppContent() {
       theme === 'dark' ? 'bg-slate-950 text-slate-100' : 'bg-[#FFF9F5] text-slate-900'
     }`}>
       
+      {/* Top Scroll Progress Bar */}
+      <ScrollProgressBar />
+
       {/* Sticky Navigation Header (Hidden on Admin portal for dedicated admin console) */}
       {!isAdminRoute && (
         <Navbar 
@@ -834,6 +818,11 @@ function AppContent() {
               />
             } 
           />
+
+          <Route 
+            path="*" 
+            element={<NotFoundPage />} 
+          />
         </Routes>
       </main>
 
@@ -862,6 +851,19 @@ function AppContent() {
               <Link to="/opportunities" className="hover:text-indigo-400 cursor-pointer">Opportunity</Link>
               <Link to="/post-gig" className="hover:text-pink-400 cursor-pointer font-bold text-pink-400">Post Gig</Link>
               <Link to="/admin" className="hover:text-purple-400 cursor-pointer font-bold text-purple-400">Admin</Link>
+              <div className="flex items-center pl-2 border-l border-slate-300 dark:border-slate-700">
+                <ThemeToggle variant="compact" />
+              </div>
+            </div>
+          </div>
+
+          {/* Sub-Footer with Dynamic Copyright and Clickable Contact */}
+          <div className="max-w-[1440px] mx-auto w-full px-4 sm:px-8 lg:px-12 pt-6 mt-6 border-t border-slate-200/60 dark:border-slate-800/80 flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] opacity-80">
+            <p>© {new Date().getFullYear()} HerEarn Platform. All rights reserved.</p>
+            <div className="flex items-center gap-4">
+              <span>Contact: <a href="mailto:support@herearn.platform" className="hover:text-purple-500 underline underline-offset-2">support@herearn.platform</a></span>
+              <span>•</span>
+              <a href="tel:+918001234567" className="hover:text-purple-500 underline underline-offset-2">+91 800 123 4567</a>
             </div>
           </div>
         </footer>
@@ -881,6 +883,9 @@ function AppContent() {
 
       {/* Floating AI Chatbot on every page */}
       <ChatBot />
+
+      {/* Floating Back-To-Top Action Button */}
+      <BackToTopButton />
 
     </div>
   );

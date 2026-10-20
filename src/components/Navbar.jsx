@@ -31,6 +31,7 @@ import {
 import LogoutModal from './LogoutModal';
 import WalletWithdrawModal from './WalletWithdrawModal';
 import { useLanguage } from '../context/LanguageContext';
+import ThemeToggle from './ThemeToggle';
 
 export default function Navbar({ 
   user, 
@@ -396,24 +397,16 @@ export default function Navbar({
               )}
             </div>
 
-            {/* Light / Dark Mode Switch */}
-            <button
-              type="button"
-              onClick={onToggleTheme}
-              title={`Switch to ${theme === 'dark' ? 'Light' : 'Dark'} Mode`}
-              aria-label={`Switch to ${theme === 'dark' ? 'Light' : 'Dark'} Mode`}
-              className={`p-2.5 rounded-xl border transition-all hover:scale-105 cursor-pointer focus:outline-none focus:ring-2 focus:ring-purple-400 ${
-                theme === 'dark'
-                  ? 'bg-slate-900/80 border-purple-500/30 text-amber-400'
-                  : 'bg-purple-50 border-purple-300 text-purple-700'
-              }`}
-            >
-              {theme === 'dark' ? (
-                <Sun className="w-4 h-4 text-amber-400" />
-              ) : (
-                <Moon className="w-4 h-4 text-purple-600" />
-              )}
-            </button>
+            {/* Dark Mode Compact Toggle Switch */}
+            <div className="flex items-center gap-1.5 px-2 py-1 h-9 rounded-xl border border-purple-200 dark:border-purple-500/30 bg-white/90 dark:bg-slate-900/90 shadow-xs">
+              <ThemeToggle
+                theme={theme}
+                onToggleTheme={onToggleTheme}
+                variant="switch"
+                showIcon={true}
+                size="sm"
+              />
+            </div>
 
             {/* Guest Action Buttons (When not logged in) */}
             {!user && (
@@ -651,7 +644,19 @@ export default function Navbar({
                     </Link>
                   </div>
 
-                  {/* 4. POLICIES & INFORMATION */}
+                  {/* 4. APPEARANCE & THEME TOGGLE */}
+                  <div className="space-y-1 pt-1 border-t border-purple-500/20">
+                    <div className="px-3 py-1">
+                      <p className="text-[10px] font-extrabold text-purple-400 uppercase tracking-wider">Appearance</p>
+                    </div>
+                    <ThemeToggle
+                      theme={theme}
+                      onToggleTheme={onToggleTheme}
+                      variant="labeled"
+                    />
+                  </div>
+
+                  {/* 5. POLICIES & INFORMATION */}
                   <div className="space-y-1 pt-1 border-t border-purple-500/20">
                     <div className="px-3 py-1">
                       <p className="text-[10px] font-extrabold text-purple-400 uppercase tracking-wider">Information</p>
@@ -685,7 +690,7 @@ export default function Navbar({
                     </Link>
                   </div>
 
-                  {/* 5. LOG OUT OPTION (MUST BE AT THE VERY LAST) */}
+                  {/* 6. LOG OUT OPTION (MUST BE AT THE VERY LAST) */}
                   {user && (
                     <div className="pt-2 border-t border-purple-200 dark:border-purple-500/20">
                       <button
