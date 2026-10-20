@@ -29,9 +29,14 @@ import {
   Flame,
   ExternalLink,
   CreditCard,
-  ArrowRight
+  ArrowRight,
+  Lock,
+  Unlock,
+  Play
 } from 'lucide-react';
 import WalletWithdrawModal from './WalletWithdrawModal';
+import CertificateModal from './CertificateModal';
+import { isTrackUnlocked, getTotalOpportunitiesApplied } from '../utils/trackLockHelper';
 
 export default function ProfileSection({ 
   user, 
@@ -47,7 +52,17 @@ export default function ProfileSection({
   const [isCertModalOpen, setIsCertModalOpen] = useState(false);
   const [isWithdrawModalOpen, setIsWithdrawModalOpen] = useState(false);
   const [selectedCertCourse, setSelectedCertCourse] = useState('Graphic Design with Canva');
-  const [withdrawalHistory, setWithdrawalHistory] = useState([]);
+  const [withdrawalHistory, setWithdrawalHistory] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem('herearn_withdrawal_history') || '[]');
+    } catch {
+      return [];
+    }
+  });
+
+  const formatCertificateRecipientName = (name) => {
+    return (name || '').trim() || 'Verified Learner';
+  };
 
   // Active user data or default guest user
   const effectiveUsername = user?.username || (user?.name ? user.name.toLowerCase().replace(/[^a-z0-9]/g, '_') : 'guest_learner');
@@ -57,10 +72,18 @@ export default function ProfileSection({
       ? user.earnings 
       : (user?.totalEarned !== undefined ? user.totalEarned : (user ? 12000 : 0)));
 
-  const currentUser = user ? {
-    ...user,
-    username: effectiveUsername,
-    earnings: effectiveBalance,
+  const resolvedUser = user || (() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem('herearn_user') || 'null');
+      if (saved && (saved.name || saved.email || saved.username)) return saved;
+    } catch {}
+    return null;
+  })();
+
+  const currentUser = resolvedUser ? {
+    ...resolvedUser,
+    username: resolvedUser.username || effectiveUsername,
+    earnings: resolvedUser.walletBalance !== undefined ? resolvedUser.walletBalance : effectiveBalance,
   } : {
     id: "guest",
     name: "Guest Learner",
@@ -135,9 +158,16 @@ export default function ProfileSection({
       client: transferDetails?.destination || 'Direct Payout',
       amount: `-₹${amount.toLocaleString()}`,
       date: 'Just now',
-      status: 'Completed'
+      status: 'Completed',
+      txnId: transferDetails?.txnId || `PAYOUT-HE-${Date.now()}`
     };
-    setWithdrawalHistory(prev => [newTx, ...prev]);
+    const updatedHistory = [newTx, ...withdrawalHistory];
+    setWithdrawalHistory(updatedHistory);
+    try {
+      localStorage.setItem('herearn_withdrawal_history', JSON.stringify(updatedHistory));
+    } catch (e) {
+      console.warn('Storage sync:', e);
+    }
 
     if (onUpdateProfile) {
       onUpdateProfile({
@@ -150,7 +180,7 @@ export default function ProfileSection({
   };
 
   const completedCount = currentUser.completedLessons ? currentUser.completedLessons.length : 0;
-  const appliedCount = userAppliedGigs ? userAppliedGigs.length : 0;
+  const appliedCount = getTotalOpportunitiesApplied(currentUser, userAppliedGigs);
 
   // --- TOP METRIC STATS DATA ---
   const statsCards = [
@@ -178,9 +208,9 @@ export default function ProfileSection({
     },
     {
       id: "stat-3",
-      title: "Applied Micro Gigs",
+      title: "Opportunities Applied",
       value: `${appliedCount}`,
-      subtext: appliedCount > 0 ? `${appliedCount} Active Applications` : "0 Gigs Applied",
+      subtext: appliedCount > 0 ? `${appliedCount} Opportunities Filled In` : "0 Opportunities Filled In",
       icon: Briefcase,
       gradient: "from-amber-500/15 via-orange-500/10 to-amber-600/20 dark:from-amber-600/30 dark:via-orange-600/20 dark:to-amber-900/40",
       borderColor: "border-amber-300 dark:border-amber-500/40",
@@ -219,10 +249,13 @@ export default function ProfileSection({
     const lessonsDone = trackLessons.filter(l => userCompletedLessons.includes(l.id)).length;
     const totalLessons = trackLessons.length;
     const progress = totalLessons > 0 ? Math.round((lessonsDone / totalLessons) * 100) : 0;
+    const isUnlocked = isTrackUnlocked(track.id, currentUser);
     
     const nextUncompleted = trackLessons.find(l => !userCompletedLessons.includes(l.id));
     let nextLesson = "Track Mastered - Download Certificate";
-    if (nextUncompleted) {
+    if (!isUnlocked) {
+      nextLesson = "Locked • Apply to Opportunity to Unlock";
+    } else if (nextUncompleted) {
       nextLesson = nextUncompleted.title;
     } else if (lessonsDone === 0) {
       nextLesson = "Start Lesson 1";
@@ -236,9 +269,10 @@ export default function ProfileSection({
       lessonsDone,
       totalLessons,
       instructor: track.instructor ? track.instructor.split('(')[0].trim() : "Lead Instructor",
-      nextLesson
+      nextLesson,
+      isUnlocked
     };
-  });
+  }).sort((a, b) => (b.isUnlocked ? 1 : 0) - (a.isUnlocked ? 1 : 0));
 
   // --- DYNAMIC ACTIVE GIGS LIST ---
   const activeGigsList = userAppliedGigs.map(gig => ({
@@ -340,7 +374,7 @@ export default function ProfileSection({
   ];
 
   return (
-    <div className="w-full px-4 sm:px-8 lg:px-12 py-8 space-y-10 animate-fade-in text-slate-900 dark:text-white">
+    <div className="max-w-[1440px] mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 space-y-8 animate-fade-in text-slate-900 dark:text-white">
       
       {/* Top Banner Notice for Guests */}
       {!user && (
@@ -378,10 +412,10 @@ export default function ProfileSection({
         <div className="absolute top-0 right-0 -mr-20 -mt-20 w-80 h-80 bg-purple-500/10 dark:bg-purple-600/20 rounded-full blur-3xl pointer-events-none"></div>
         <div className="absolute bottom-0 left-1/3 -mb-20 w-72 h-72 bg-pink-500/10 dark:bg-pink-600/20 rounded-full blur-3xl pointer-events-none"></div>
 
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative z-10">
+        <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-6 relative z-10">
           
-          <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5 text-center sm:text-left">
-            <div className="relative group">
+          <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5 text-center sm:text-left flex-1 min-w-0">
+            <div className="relative group shrink-0">
               <img 
                 src={currentUser.avatar} 
                 alt={currentUser.name} 
@@ -397,9 +431,9 @@ export default function ProfileSection({
               </button>
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-2 min-w-0">
               <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
-                <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+                <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight truncate">
                   {currentUser.name}
                 </h1>
                 <span className="text-xs font-mono font-bold px-2.5 py-0.5 rounded-lg bg-purple-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-500/30">
@@ -416,7 +450,7 @@ export default function ProfileSection({
 
               <p className="text-xs sm:text-sm text-purple-700 dark:text-purple-200 font-semibold">{currentUser.title}</p>
               
-              <p className="text-xs text-slate-700 dark:text-slate-300 max-w-xl leading-relaxed font-medium">
+              <p className="text-xs text-slate-700 dark:text-slate-300 max-w-2xl leading-relaxed font-medium">
                 {currentUser.bio}
               </p>
 
@@ -431,18 +465,18 @@ export default function ProfileSection({
           </div>
 
           {/* Quick Action Profile Edit & Earnings Badge with Withdraw Button */}
-          <div className="flex flex-col sm:flex-row lg:flex-col items-center lg:items-end justify-between lg:justify-center gap-3 pt-4 lg:pt-0 border-t lg:border-t-0 border-purple-200 dark:border-purple-500/20">
+          <div className="flex flex-col sm:flex-row xl:flex-col items-center xl:items-end justify-between xl:justify-center gap-3 pt-4 xl:pt-0 border-t xl:border-t-0 border-purple-200 dark:border-purple-500/20 shrink-0">
             <button
               type="button"
               onClick={() => setIsEditOpen(true)}
-              className="w-full sm:w-auto px-4 py-2.5 rounded-xl text-xs font-bold border border-purple-300 dark:border-purple-400/40 bg-purple-50 dark:bg-purple-900/40 hover:bg-purple-100 dark:hover:bg-purple-800/60 flex items-center justify-center gap-2 cursor-pointer transition-all text-purple-900 dark:text-white shadow-md"
+              className="w-full sm:w-auto px-5 py-2.5 rounded-xl text-xs font-extrabold border border-purple-300 dark:border-purple-400/40 bg-purple-50 dark:bg-purple-900/40 hover:bg-purple-100 dark:hover:bg-purple-800/60 flex items-center justify-center gap-2 cursor-pointer transition-all text-purple-900 dark:text-white shadow-sm hover:-translate-y-0.5"
             >
               <Edit3 className="w-4 h-4 text-purple-600 dark:text-purple-300" />
               <span>Edit Profile Workspace</span>
             </button>
 
-            <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto justify-end">
-              <div className="bg-slate-50 dark:bg-slate-900/90 border border-emerald-300 dark:border-emerald-500/40 px-4 py-2 rounded-2xl flex items-center gap-3 shadow-lg">
+            <div className="flex flex-wrap items-center gap-2.5 w-full sm:w-auto justify-end">
+              <div className="bg-slate-50 dark:bg-slate-900/90 border border-emerald-300 dark:border-emerald-500/40 px-4 py-2 rounded-2xl flex items-center gap-3 shadow-md">
                 <div className="p-2 rounded-xl bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400">
                   <IndianRupee className="w-4 h-4" />
                 </div>
@@ -559,13 +593,14 @@ export default function ProfileSection({
           </span>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-          {statsCards.map((card) => {
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+          {statsCards.map((card, idx) => {
             const IconComponent = card.icon;
+            const isLastOdd = idx === 4;
             return (
               <div 
                 key={card.id}
-                className={`bg-white dark:bg-slate-900/80 backdrop-blur-md border ${card.borderColor} rounded-2xl p-4 space-y-3 shadow-lg hover:-translate-y-1.5 transition-all duration-300 group cursor-default`}
+                className={`bg-white dark:bg-slate-900/80 backdrop-blur-md border ${card.borderColor} rounded-2xl p-4 space-y-3 shadow-lg hover:-translate-y-1.5 transition-all duration-300 group cursor-default flex flex-col justify-between min-h-[145px] ${isLastOdd ? 'col-span-2 sm:col-span-1' : ''}`}
               >
                 <div className="flex items-center justify-between">
                   <div className={`p-2.5 rounded-xl ${card.badgeColor} border ${card.borderColor} group-hover:scale-110 transition-transform`}>
@@ -617,13 +652,31 @@ export default function ProfileSection({
 
             <div className="space-y-4">
               {enrolledCourses.map((course) => (
-                <div key={course.id} className="bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-purple-500/20 rounded-2xl p-4 space-y-3 hover:border-purple-400 transition-all">
+                <div 
+                  key={course.id} 
+                  className={`border rounded-2xl p-4 space-y-3 transition-all ${
+                    course.isUnlocked 
+                      ? 'bg-slate-50 dark:bg-slate-800/60 border-purple-300 dark:border-purple-500/40 hover:border-purple-500 shadow-sm' 
+                      : 'bg-slate-100/60 dark:bg-slate-800/30 border-dashed border-slate-300 dark:border-slate-700 opacity-90'
+                  }`}
+                >
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                     <div>
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 flex-wrap">
                         <span className="text-[10px] uppercase tracking-wider font-extrabold bg-purple-100 dark:bg-purple-500/20 text-purple-800 dark:text-purple-300 px-2 py-0.5 rounded-md border border-purple-300 dark:border-purple-500/30">
                           {course.category}
                         </span>
+                        {course.isUnlocked ? (
+                          <span className="inline-flex items-center gap-1 text-[10px] uppercase tracking-wider font-extrabold bg-emerald-100 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-300 px-2 py-0.5 rounded-md border border-emerald-300 dark:border-emerald-500/30">
+                            <Unlock className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
+                            Lectures Open in Profile
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 text-[10px] uppercase tracking-wider font-extrabold bg-amber-100 text-amber-800 dark:bg-amber-500/20 dark:text-amber-300 px-2 py-0.5 rounded-md border border-amber-300 dark:border-amber-500/30">
+                            <Lock className="w-3 h-3 text-amber-600 dark:text-amber-400" />
+                            Locked
+                          </span>
+                        )}
                         <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">• Instructor: {course.instructor}</span>
                       </div>
                       <h4 className="text-sm font-bold text-slate-900 dark:text-white mt-1">{course.title}</h4>
@@ -644,19 +697,41 @@ export default function ProfileSection({
                     </div>
                     <div className="flex justify-between items-center text-[11px] text-slate-500 dark:text-slate-400 font-medium">
                       <span>{course.lessonsDone} of {course.totalLessons} lessons completed</span>
-                      <span className="text-purple-700 dark:text-purple-300 font-semibold">{course.nextLesson}</span>
+                      <span className={course.isUnlocked ? "text-purple-700 dark:text-purple-300 font-semibold" : "text-amber-700 dark:text-amber-400 font-semibold"}>
+                        {course.nextLesson}
+                      </span>
                     </div>
                   </div>
 
-                  <div className="pt-2 flex justify-end">
-                    <button
-                      type="button"
-                      onClick={() => onNavigate && onNavigate('learn')}
-                      className="btn-gradient-award text-xs py-2 px-4 font-bold cursor-pointer shadow-sm"
-                    >
-                      <span>{course.progress === 100 ? 'View Certificate' : 'Continue Learning'}</span>
-                      <ArrowRight className="w-3.5 h-3.5" />
-                    </button>
+                  <div className="pt-2 flex justify-end gap-2">
+                    {course.isUnlocked ? (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (course.progress === 100) {
+                            setSelectedCertCourse(course.title);
+                            setIsCertModalOpen(true);
+                          } else {
+                            onNavigate && onNavigate('track-detail', { trackId: course.id });
+                          }
+                        }}
+                        className="btn-gradient-award text-xs py-2 px-4 font-bold cursor-pointer shadow-sm flex items-center gap-1.5"
+                      >
+                        <Play className="w-3.5 h-3.5" />
+                        <span>{course.progress === 100 ? 'View Certificate' : 'Open Lectures & Learn'}</span>
+                        <ArrowRight className="w-3.5 h-3.5" />
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => onNavigate && onNavigate('opportunities')}
+                        className="bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/40 dark:hover:bg-amber-900/50 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-500/30 rounded-xl text-xs py-2 px-4 font-bold cursor-pointer shadow-sm flex items-center gap-1.5 transition-all"
+                      >
+                        <Lock className="w-3.5 h-3.5" />
+                        <span>Apply Opportunity to Unlock</span>
+                        <ArrowRight className="w-3.5 h-3.5" />
+                      </button>
+                    )}
                   </div>
                 </div>
               ))}
@@ -1184,68 +1259,13 @@ export default function ProfileSection({
         </div>
       )}
 
-      {/* --- DOWNLOAD CERTIFICATE MODAL --- */}
-      {isCertModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-fade-in">
-          <div className="bg-white dark:bg-slate-900 border border-purple-200 dark:border-purple-500/40 rounded-3xl max-w-lg w-full p-6 text-slate-900 dark:text-white shadow-2xl relative space-y-5 text-xs">
-            <button 
-              type="button"
-              onClick={() => setIsCertModalOpen(false)}
-              className="absolute top-4 right-4 p-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white rounded-full bg-slate-100 dark:bg-slate-800 cursor-pointer"
-            >
-              <X className="w-4 h-4" />
-            </button>
-
-            <div className="flex items-center gap-2 border-b border-purple-200 dark:border-purple-500/20 pb-3">
-              <Award className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
-              <div>
-                <h3 className="text-base font-extrabold text-slate-900 dark:text-white">Verified Certificate Download</h3>
-                <p className="text-[11px] text-slate-500 dark:text-slate-400">Download high-resolution official PDF credential</p>
-              </div>
-            </div>
-
-            {/* Certificate Preview Card */}
-            <div className="bg-gradient-to-br from-purple-950 via-slate-900 to-indigo-950 border-2 border-emerald-500/40 rounded-2xl p-6 text-center space-y-3 relative overflow-hidden shadow-inner text-white">
-              <div className="inline-flex p-3 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 mb-1">
-                <Trophy className="w-8 h-8" />
-              </div>
-              <p className="text-[10px] uppercase font-extrabold tracking-widest text-emerald-400">Certificate of Completion</p>
-              <h4 className="text-xl font-black text-white">{currentUser.name}</h4>
-              <p className="text-xs text-purple-200">has successfully mastered all capstone modules for</p>
-              <p className="text-sm font-extrabold text-pink-300 border-y border-purple-500/30 py-2">
-                {selectedCertCourse}
-              </p>
-              <p className="text-[10px] text-slate-400">Credential ID: HE-2026-CERT-8842 • Verified by HerEarn Foundation</p>
-            </div>
-
-            <div className="space-y-2">
-              <label className="block font-bold text-slate-700 dark:text-slate-300">Select Completed Course Track:</label>
-              <select 
-                value={selectedCertCourse}
-                onChange={(e) => setSelectedCertCourse(e.target.value)}
-                className="w-full bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white p-3 rounded-xl border border-slate-300 dark:border-slate-700 focus:outline-none focus:border-purple-500 text-xs font-semibold"
-              >
-                <option value="Graphic Design with Canva">Graphic Design with Canva (100% Completed)</option>
-                <option value="Digital Marketing & Social Media">Digital Marketing & Social Media (75% Completed - Certificate Draft)</option>
-              </select>
-            </div>
-
-            <div className="flex items-center gap-3 pt-2">
-              <button
-                type="button"
-                onClick={() => {
-                  alert(`Certificate for "${selectedCertCourse}" downloaded successfully!`);
-                  setIsCertModalOpen(false);
-                }}
-                className="flex-1 btn-gradient-award justify-center py-3 font-bold cursor-pointer text-xs"
-              >
-                <Download className="w-4 h-4" />
-                <span>Download Official PDF</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* --- OFFICIAL VERIFIED CERTIFICATE MODAL --- */}
+      <CertificateModal
+        isOpen={isCertModalOpen}
+        onClose={() => setIsCertModalOpen(false)}
+        user={currentUser}
+        initialCourseTitle={selectedCertCourse}
+      />
 
       {/* --- WALLET WITHDRAWAL MODAL --- */}
       <WalletWithdrawModal

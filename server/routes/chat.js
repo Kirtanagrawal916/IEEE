@@ -78,10 +78,10 @@ async function callGeminiAPI(apiKey, systemPrompt, history) {
 
   const candidateModels = [
     process.env.GEMINI_MODEL,
-    'gemini-2.5-flash',
-    'gemini-2.0-flash',
-    'gemini-1.5-flash',
-    'gemini-2.5-flash-lite'
+    'gemini-3.5-flash-lite',
+    'gemini-3.5-flash',
+    'gemini-3.6-flash',
+    'gemini-flash-latest'
   ].filter(Boolean);
   const modelsToTry = [...new Set(candidateModels)];
 
@@ -202,14 +202,11 @@ async function callOpenAICompatible(apiKey, endpoint, model, systemPrompt, histo
 router.post('/', chatRateLimiter, async (req, res) => {
   try {
     let { message, sessionId } = req.body;
+    sessionId = String(sessionId || `session_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`).trim();
 
-    if (!message || !sessionId) {
-      return res.status(400).json({ error: 'message and sessionId required' });
-    }
-
-    message = String(message).trim().slice(0, 500);
+    message = String(message || '').trim().slice(0, 500);
     if (!message) {
-      return res.status(400).json({ error: 'Empty message' });
+      return res.status(400).json({ error: 'Message cannot be empty' });
     }
 
     const now = Date.now();

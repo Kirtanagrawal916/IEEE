@@ -29,11 +29,17 @@ const getAuthHeaders = (endpoint = '') => {
   return headers;
 };
 
-// Helper for HTTP requests
+// Helper for HTTP requests with appropriate timeout (30s for AI chat, 8s for standard endpoints)
 const request = async (endpoint, options = {}) => {
+  const isChat = endpoint === '/api/chat' || endpoint.startsWith('/api/chat');
+  const timeoutMs = options.timeoutMs || (isChat ? 30000 : 8000);
+  const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+  const timeoutId = controller ? setTimeout(() => controller.abort(), timeoutMs) : null;
+
   const config = {
     ...options,
     credentials: 'include', // Ensure HttpOnly cookies are sent and received
+    signal: options.signal || (controller ? controller.signal : undefined),
     headers: {
       ...getAuthHeaders(endpoint),
       ...options.headers,
@@ -45,22 +51,24 @@ const request = async (endpoint, options = {}) => {
     try {
       res = await fetch(`${API_BASE}${endpoint}`, config);
     } catch (fetchErr) {
-      // If relative URL failed, attempt direct backend port 5000 fallback
+      // If relative URL failed, attempt direct backend port 5001 fallback
       if (!API_BASE && typeof window !== 'undefined') {
         try {
-          res = await fetch(`http://localhost:5000${endpoint}`, config);
+          res = await fetch(`http://localhost:5001${endpoint}`, config);
         } catch {
           throw fetchErr;
         }
       } else {
         throw fetchErr;
       }
+    } finally {
+      if (timeoutId) clearTimeout(timeoutId);
     }
 
-    // If Vite proxy returned 503 (e.g. proxy mismatch), retry directly to backend port 5000
+    // If Vite proxy returned 503 (e.g. proxy mismatch), retry directly to backend port 5001
     if (!API_BASE && res && res.status === 503 && typeof window !== 'undefined') {
       try {
-        const directRes = await fetch(`http://localhost:5000${endpoint}`, config);
+        const directRes = await fetch(`http://localhost:5001${endpoint}`, config);
         if (directRes && directRes.status !== 503) {
           res = directRes;
         }
@@ -75,11 +83,16 @@ const request = async (endpoint, options = {}) => {
     if (contentType.includes('application/json')) {
       data = await res.json();
     } else {
-      const text = await res.text();
+      await res.text().catch(() => '');
       data = { message: `Server error (${res.status}): Non-JSON response received` };
     }
 
     if (!res.ok) {
+      if (res.status === 401 && endpoint === '/api/auth/me') {
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('herearn_jwt_token');
+        }
+      }
       const error = new Error(data.message || `HTTP ${res.status} Error`);
       error.status = res.status;
       error.data = data;
@@ -87,7 +100,10 @@ const request = async (endpoint, options = {}) => {
     }
     return data;
   } catch (err) {
-    console.warn(`[API Error] ${endpoint}:`, err.message);
+    const isAbort = err?.name === 'AbortError' || err?.message?.includes('aborted');
+    if (!isAbort && endpoint !== '/api/health' && (endpoint !== '/api/auth/me' || err?.status !== 401)) {
+      console.warn(`[API Error] ${endpoint}:`, err.message);
+    }
     throw err;
   }
 };
@@ -101,6 +117,9 @@ export const api = {
   deleteRecruiterJob: (id) => request(`/api/recruiter/jobs/${id}`, { method: 'DELETE' }),
   getRecruiterApplicants: () => request('/api/recruiter/applicants'),
   updateApplicantStatus: (id, status) => request(`/api/recruiter/applicants/${id}/status`, { method: 'PATCH', body: JSON.stringify({ status }) }),
+  scheduleInterview: (id, data) => request(`/api/recruiter/applicants/${id}/interview`, { method: 'POST', body: JSON.stringify(data) }),
+  approveApplicantPayout: (id) => request(`/api/recruiter/applicants/${id}/approve-payout`, { method: 'POST' }),
+  submitRecruiterReview: (id, data) => request(`/api/recruiter/applicants/${id}/review`, { method: 'POST', body: JSON.stringify(data) }),
   // Auth APIs
   register: (userData) => request('/api/auth/register', { method: 'POST', body: JSON.stringify(userData) }),
   login: (credentials) => request('/api/auth/login', { method: 'POST', body: JSON.stringify(credentials) }),
@@ -148,16 +167,25 @@ export const api = {
     return request(`/api/opportunities${query ? `?${query}` : ''}`);
   },
   getOpportunityDetails: (id) => request(`/api/opportunities/${id}`),
+  createOpportunity: (data) => request('/api/opportunities', { method: 'POST', body: JSON.stringify(data) }),
 
   // Application APIs
   applyOpportunity: (opportunityId, appData) => request(`/api/opportunities/${opportunityId}/apply`, { method: 'POST', body: JSON.stringify(appData) }),
   getMyApplications: () => request('/api/applications/me'),
   getApplicationDetails: (id) => request(`/api/applications/${id}`),
+  submitDeliverable: (id, data) => request(`/api/applications/${id}/deliverable`, { method: 'POST', body: JSON.stringify(data) }),
+  submitApplicationReview: (id, data) => request(`/api/applications/${id}/review`, { method: 'POST', body: JSON.stringify(data) }),
+  approvePayout: (id) => request(`/api/applications/${id}/approve-payout`, { method: 'POST' }),
+
+  // Wallet APIs
+  getWalletBalance: () => request('/api/wallet/balance'),
+  getWalletHistory: () => request('/api/wallet/history'),
+  withdrawWallet: (data) => request('/api/wallet/withdraw', { method: 'POST', body: JSON.stringify(data) }),
 
   // Dashboard & Specific Mine APIs
   getProgressMine: () => request('/api/progress'),
   getApplicationsMine: () => request('/api/applications/mine'),
-  getProjectsMine: () => request('/api/projects/mine'),
+  getProjectsMine: () => request('/api/portfolio/mine'),
 
   // Dashboard API
   getDashboardMetrics: () => request('/api/dashboard'),
@@ -185,6 +213,29 @@ export const api = {
   updateAdminSettings: (settings) => request('/api/admin/settings', { method: 'PATCH', body: JSON.stringify(settings) }),
   getAdminAuditLogs: () => request('/api/admin/audit-logs'),
   createAuditLog: (logData) => request('/api/admin/audit-logs', { method: 'POST', body: JSON.stringify(logData) }),
+  pingAdmin: () => request('/api/admin/ping'),
+
+  // Live Telemetry & Network Latency Tracker
+  checkLatency: async () => {
+    const t0 = performance.now();
+    try {
+      const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+      const timeoutId = controller ? setTimeout(() => controller.abort(), 3500) : null;
+      const res = await fetch(`${API_BASE}/api/health`, {
+        signal: controller ? controller.signal : undefined,
+        cache: 'no-store'
+      }).finally(() => {
+        if (timeoutId) clearTimeout(timeoutId);
+      });
+      if (res.ok) {
+        const latencyMs = Math.round(performance.now() - t0);
+        return { ok: true, latency: latencyMs };
+      }
+      return { ok: false, latency: null };
+    } catch {
+      return { ok: false, latency: null };
+    }
+  },
 
   // Community APIs
   getCommunityUsers: (filters = {}) => {

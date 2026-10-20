@@ -4,20 +4,38 @@ import { authMiddleware } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
+const resolveOpportunity = async (targetId) => {
+  if (!targetId) return null;
+  let opp = await prisma.opportunity.findUnique({ where: { id: targetId } });
+  if (opp) return opp;
+
+  if (targetId === 'gig-1' || targetId === 'opp-1') {
+    return prisma.opportunity.findFirst({ where: { title: { contains: 'Organic Spices' } } });
+  }
+  if (targetId === 'gig-2' || targetId === 'opp-2') {
+    return prisma.opportunity.findFirst({ where: { title: { contains: 'Banner & Flyer' } } });
+  }
+  if (targetId === 'gig-3' || targetId === 'opp-3') {
+    return prisma.opportunity.findFirst({ where: { title: { contains: 'Shopify Product' } } });
+  }
+  return null;
+};
+
 // POST /api/opportunities/:id/apply
 router.post('/opportunities/:id/apply', authMiddleware, async (req, res) => {
   try {
-    const opportunityId = req.params.id;
+    const targetId = req.params.id;
     const { coverNote, portfolioProjectIds } = req.body;
 
     if (!coverNote) {
       return res.status(400).json({ success: false, message: 'Cover note is required' });
     }
 
-    const opportunity = await prisma.opportunity.findUnique({ where: { id: opportunityId } });
+    const opportunity = await resolveOpportunity(targetId);
     if (!opportunity) {
       return res.status(404).json({ success: false, message: 'Opportunity not found' });
     }
+    const opportunityId = opportunity.id;
 
     if (!opportunity.isOpen) {
       return res.status(400).json({ success: false, message: 'This opportunity is closed' });
@@ -100,6 +118,16 @@ const getMyApplicationsHandler = async (req, res) => {
       category: app.opportunity.category,
       coverNote: app.coverNote,
       status: app.status,
+      deliveryStatus: app.deliveryStatus || 'NOT_STARTED',
+      deliverableUrl: app.deliverableUrl,
+      deliverableNotes: app.deliverableNotes,
+      submittedAt: app.submittedAt,
+      interviewTime: app.interviewTime,
+      interviewLink: app.interviewLink,
+      interviewStatus: app.interviewStatus || 'NONE',
+      rating: app.rating,
+      reviewText: app.reviewText,
+      reviewAuthor: app.reviewAuthor,
       appliedAt: app.appliedAt,
       attachedProjects: app.applicationProjects.map((ap) => ({
         ...ap.project,
@@ -115,6 +143,7 @@ const getMyApplicationsHandler = async (req, res) => {
 
 router.get('/applications/me', authMiddleware, getMyApplicationsHandler);
 router.get('/applications/mine', authMiddleware, getMyApplicationsHandler);
+router.get('/applications/my-applications', authMiddleware, getMyApplicationsHandler);
 
 // GET /api/applications/:id
 router.get('/applications/:id', authMiddleware, async (req, res) => {
@@ -139,6 +168,159 @@ router.get('/applications/:id', authMiddleware, async (req, res) => {
     res.json({ success: true, application });
   } catch (error) {
     res.status(500).json({ success: false, message: 'Failed to fetch application details', error: error.message });
+  }
+});
+
+// POST /api/applications/:id/deliverable - Submit deliverable url and notes (Applicant)
+router.post('/applications/:id/deliverable', authMiddleware, async (req, res) => {
+  try {
+    const { deliverableUrl, deliverableNotes } = req.body;
+    if (!deliverableUrl || typeof deliverableUrl !== 'string' || !deliverableUrl.trim()) {
+      return res.status(400).json({ success: false, message: 'A valid project deliverable link is required.' });
+    }
+
+    const application = await prisma.application.findUnique({
+      where: { id: req.params.id },
+      include: { opportunity: true },
+    });
+
+    if (!application) {
+      return res.status(404).json({ success: false, message: 'Application not found.' });
+    }
+
+    if (application.userId !== req.user.id && req.user.role !== 'ADMIN') {
+      return res.status(403).json({ success: false, message: 'You can only submit deliverables for your own application.' });
+    }
+
+    const updated = await prisma.application.update({
+      where: { id: application.id },
+      data: {
+        deliverableUrl: deliverableUrl.trim(),
+        deliverableNotes: (deliverableNotes || '').trim(),
+        deliveryStatus: 'SUBMITTED',
+        submittedAt: new Date(),
+      },
+    });
+
+    await prisma.auditLog.create({
+      data: {
+        action: 'DELIVERABLE_SUBMITTED',
+        detail: `User submitted deliverable for ${application.opportunity?.title || 'Gig'}: ${deliverableUrl.trim()}`,
+        type: 'approval',
+      },
+    }).catch(() => {});
+
+    res.json({
+      success: true,
+      message: 'Deliverable submitted successfully for client review.',
+      application: updated,
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Failed to submit deliverable', error: error.message });
+  }
+});
+
+// POST /api/applications/:id/review - Submit post-gig rating and review
+router.post('/applications/:id/review', authMiddleware, async (req, res) => {
+  try {
+    const { rating, reviewText } = req.body;
+    const numRating = parseInt(rating, 10);
+    if (isNaN(numRating) || numRating < 1 || numRating > 5) {
+      return res.status(400).json({ success: false, message: 'Please provide a valid rating between 1 and 5 stars.' });
+    }
+
+    const application = await prisma.application.findUnique({
+      where: { id: req.params.id },
+      include: { opportunity: true },
+    });
+
+    if (!application) {
+      return res.status(404).json({ success: false, message: 'Application not found.' });
+    }
+
+    const authorName = req.user.name || req.user.email || 'Verified Member';
+
+    const updated = await prisma.application.update({
+      where: { id: application.id },
+      data: {
+        rating: numRating,
+        reviewText: String(reviewText || '').trim(),
+        reviewAuthor: authorName,
+      },
+    });
+
+    res.json({
+      success: true,
+      message: 'Rating and review recorded successfully.',
+      application: updated,
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Failed to record review', error: error.message });
+  }
+});
+
+// POST /api/applications/:id/approve-payout - Approve deliverable and disburse escrow to freelancer wallet
+router.post('/applications/:id/approve-payout', authMiddleware, async (req, res) => {
+  try {
+    const application = await prisma.application.findUnique({
+      where: { id: req.params.id },
+      include: { opportunity: true, user: true },
+    });
+
+    if (!application) {
+      return res.status(404).json({ success: false, message: 'Application not found.' });
+    }
+
+    // Must be job poster, employer, admin, or the applicant in demo mode
+    const isOwner = application.opportunity.postedById === req.user.id;
+    const isEmployerOrAdmin = req.user.role === 'EMPLOYER' || req.user.role === 'ADMIN';
+    const isApplicant = application.userId === req.user.id;
+
+    if (!isOwner && !isEmployerOrAdmin && !isApplicant) {
+      return res.status(403).json({ success: false, message: 'Unauthorized to approve this milestone payout.' });
+    }
+
+    // Extract numeric stipend amount
+    const stipendStr = application.opportunity?.stipend || '₹5000';
+    const numAmount = parseInt(String(stipendStr).replace(/[^0-9]/g, ''), 10) || 5000;
+
+    // Execute atomic milestone signoff and wallet increment
+    const [updatedApp, updatedFreelancer] = await prisma.$transaction([
+      prisma.application.update({
+        where: { id: application.id },
+        data: {
+          deliveryStatus: 'APPROVED',
+          status: 'ACCEPTED',
+        },
+      }),
+      prisma.user.update({
+        where: { id: application.userId },
+        data: {
+          walletBalance: { increment: numAmount },
+          totalEarned: { increment: numAmount },
+          earnings: { increment: numAmount },
+        },
+        select: { id: true, name: true, email: true, walletBalance: true, totalEarned: true },
+      }),
+      prisma.auditLog.create({
+        data: {
+          action: 'ESCROW_PAYOUT_RELEASED',
+          detail: `Approved deliverable for gig "${application.opportunity.title}". Disbursed ₹${numAmount.toLocaleString()} to ${application.user.email}`,
+          type: 'escrow',
+        },
+      }),
+    ]);
+
+    res.json({
+      success: true,
+      message: `Deliverable approved! ₹${numAmount.toLocaleString()} credited to freelancer wallet.`,
+      amount: numAmount,
+      application: updatedApp,
+      freelancer: updatedFreelancer,
+    });
+  } catch (error) {
+    console.error('[Approve Payout Error]:', error);
+    res.status(500).json({ success: false, message: 'Failed to disburse payout', error: error.message });
   }
 });
 

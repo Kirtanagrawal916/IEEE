@@ -19,6 +19,11 @@ const logAudit = async (action, detail, type = 'info') => {
   }
 };
 
+// 0. GET /api/admin/ping - Ultra-lightweight admin ping for round-trip telemetry
+router.get('/ping', (req, res) => {
+  res.json({ success: true, timestamp: Date.now() });
+});
+
 // 1. GET /api/admin/metrics - Real DB & Telemetry Metrics
 router.get('/metrics', async (req, res) => {
   try {
@@ -33,7 +38,9 @@ router.get('/metrics', async (req, res) => {
       verifiedOpportunities,
       pendingOpportunities,
       totalApplications,
-      escrowTransactions
+      heldEscrowAgg,
+      disbursedEscrowAgg,
+      escrowCount
     ] = await Promise.all([
       prisma.user.count(),
       prisma.user.count({ where: { role: 'LEARNER' } }),
@@ -43,18 +50,21 @@ router.get('/metrics', async (req, res) => {
       prisma.opportunity.count({ where: { verifiedClient: true } }),
       prisma.opportunity.count({ where: { verifiedClient: false } }),
       prisma.application.count(),
-      prisma.escrowTransaction.findMany()
+      prisma.escrowTransaction.aggregate({
+        _sum: { amount: true },
+        where: { status: 'HELD_IN_ESCROW' }
+      }),
+      prisma.escrowTransaction.aggregate({
+        _sum: { amount: true },
+        where: { status: 'DISBURSED' }
+      }),
+      prisma.escrowTransaction.count()
     ]);
 
-    const latencyMs = Math.round(performance.now() - startTime);
+    const dbQueryMs = Math.round(performance.now() - startTime);
 
-    const grossEscrowPool = escrowTransactions
-      .filter(t => t.status === 'HELD_IN_ESCROW')
-      .reduce((sum, t) => sum + (t.amount || 0), 0);
-
-    const totalDisbursedEscrow = escrowTransactions
-      .filter(t => t.status === 'DISBURSED')
-      .reduce((sum, t) => sum + (t.amount || 0), 0);
+    const grossEscrowPool = heldEscrowAgg?._sum?.amount || 0;
+    const totalDisbursedEscrow = disbursedEscrowAgg?._sum?.amount || 0;
 
     // Calculate uptime in human readable string
     const uptimeSec = Math.floor(process.uptime());
@@ -82,10 +92,11 @@ router.get('/metrics', async (req, res) => {
         escrow: {
           grossPool: grossEscrowPool,
           totalDisbursed: totalDisbursedEscrow,
-          transactionCount: escrowTransactions.length
+          transactionCount: escrowCount
         },
         telemetry: {
-          latencyMs: Math.max(12, latencyMs),
+          dbQueryMs,
+          latencyMs: dbQueryMs,
           uptime: uptimeStr,
           dbStatus: 'Primary Connected',
           activeDbNodes: 'Primary Node (SQLite)'

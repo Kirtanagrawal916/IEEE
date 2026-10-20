@@ -29,17 +29,39 @@ router.get('/tracks', async (req, res) => {
   }
 });
 
+const resolveTrack = async (targetId) => {
+  if (!targetId) return null;
+  let track = await prisma.skillTrack.findUnique({
+    where: { id: targetId },
+    include: { lessons: { orderBy: { orderIndex: 'asc' } } },
+  });
+  if (track) return track;
+
+  if (targetId === 'track-1') {
+    return prisma.skillTrack.findFirst({
+      where: { title: { contains: 'Digital Marketing' } },
+      include: { lessons: { orderBy: { orderIndex: 'asc' } } },
+    });
+  }
+  if (targetId === 'track-2') {
+    return prisma.skillTrack.findFirst({
+      where: { title: { contains: 'Graphic Design' } },
+      include: { lessons: { orderBy: { orderIndex: 'asc' } } },
+    });
+  }
+  if (targetId === 'track-demo') {
+    return prisma.skillTrack.findFirst({
+      where: { title: { contains: 'Demo' } },
+      include: { lessons: { orderBy: { orderIndex: 'asc' } } },
+    });
+  }
+  return null;
+};
+
 // GET /api/tracks/:id
 router.get('/tracks/:id', async (req, res) => {
   try {
-    const track = await prisma.skillTrack.findUnique({
-      where: { id: req.params.id },
-      include: {
-        lessons: {
-          orderBy: { orderIndex: 'asc' },
-        },
-      },
-    });
+    const track = await resolveTrack(req.params.id);
 
     if (!track) {
       return res.status(404).json({ success: false, message: 'Skill track not found' });
@@ -62,10 +84,18 @@ router.get('/tracks/:id', async (req, res) => {
 // GET /api/tracks/:trackId/lessons
 router.get('/tracks/:trackId/lessons', async (req, res) => {
   try {
-    const lessons = await prisma.lesson.findMany({
-      where: { trackId: req.params.trackId },
+    let trackId = req.params.trackId;
+    let lessons = await prisma.lesson.findMany({
+      where: { trackId },
       orderBy: { orderIndex: 'asc' },
     });
+
+    if (lessons.length === 0) {
+      const resolved = await resolveTrack(trackId);
+      if (resolved && resolved.lessons) {
+        lessons = resolved.lessons;
+      }
+    }
 
     let completedLessonIds = [];
     const authHeader = req.headers.authorization;

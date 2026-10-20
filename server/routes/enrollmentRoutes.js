@@ -4,10 +4,30 @@ import { authMiddleware } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
+const resolveTrackId = async (id) => {
+  if (!id) return id;
+  const existing = await prisma.skillTrack.findUnique({ where: { id }, select: { id: true } });
+  if (existing) return existing.id;
+
+  if (id === 'track-1') {
+    const found = await prisma.skillTrack.findFirst({ where: { title: { contains: 'Digital Marketing' } }, select: { id: true } });
+    if (found) return found.id;
+  }
+  if (id === 'track-2') {
+    const found = await prisma.skillTrack.findFirst({ where: { title: { contains: 'Graphic Design' } }, select: { id: true } });
+    if (found) return found.id;
+  }
+  if (id === 'track-demo') {
+    const found = await prisma.skillTrack.findFirst({ where: { title: { contains: 'Demo' } }, select: { id: true } });
+    if (found) return found.id;
+  }
+  return id;
+};
+
 // POST /api/tracks/:trackId/enroll
 router.post('/tracks/:trackId/enroll', authMiddleware, async (req, res) => {
   try {
-    const { trackId } = req.params;
+    const trackId = await resolveTrackId(req.params.trackId);
 
     const track = await prisma.skillTrack.findUnique({ where: { id: trackId } });
     if (!track) {
@@ -293,7 +313,7 @@ router.post('/lessons/:lessonId/complete', authMiddleware, async (req, res) => {
 // GET /api/progress/:trackId
 router.get('/progress/:trackId', authMiddleware, async (req, res) => {
   try {
-    const { trackId } = req.params;
+    const trackId = await resolveTrackId(req.params.trackId);
 
     const lessons = await prisma.lesson.findMany({
       where: { trackId },

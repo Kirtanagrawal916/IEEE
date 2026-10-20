@@ -308,7 +308,7 @@ export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNaviga
   ];
 
   return (
-    <div className="min-h-[calc(100vh-5rem)] flex items-center justify-center p-4 sm:p-6 lg:p-10 animate-fade-in relative overflow-hidden bg-slate-50 dark:bg-[#0B0F19] text-slate-900 dark:text-white transition-colors duration-300">
+    <div className="min-h-[calc(100vh-5rem)] flex items-center justify-center p-4 sm:p-6 lg:p-10 animate-fade-in relative overflow-hidden bg-[#FFF9F5] dark:bg-[#0F0918] text-[#1F2937] dark:text-white transition-colors duration-300">
       
       {/* Background Animated Floating Ambient Shapes */}
       <div className="absolute top-10 left-10 w-96 h-96 bg-purple-400/20 dark:bg-purple-600/15 rounded-full blur-3xl pointer-events-none animate-pulse"></div>
@@ -384,31 +384,43 @@ export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNaviga
           
           <div className="bg-white dark:bg-slate-900/95 rounded-3xl p-7 sm:p-10 border border-purple-200 dark:border-purple-500/30 shadow-2xl space-y-6 text-slate-900 dark:text-white backdrop-blur-xl relative">
             
-            {/* Dual Login Tab Switcher: User vs Recruiter */}
-            <div className="grid grid-cols-2 p-1.5 rounded-2xl bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-purple-500/20 text-xs font-bold">
+            {/* 3-Way Login Tab Switcher: Learner vs Recruiter vs Admin */}
+            <div className="grid grid-cols-3 p-1.5 rounded-2xl bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-purple-500/20 text-xs font-bold">
               <button
                 type="button"
                 onClick={() => { setLoginType('user'); setError(''); setAdminError(''); }}
-                className={`py-2.5 px-3 rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                className={`py-2 px-2 sm:px-3 rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1 sm:gap-1.5 text-[11px] sm:text-xs ${
                   loginType === 'user'
                     ? 'bg-white dark:bg-slate-800 text-purple-700 dark:text-white shadow-sm font-black'
                     : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
                 }`}
               >
-                <User className="w-3.5 h-3.5 text-purple-500" />
-                <span>Learner & Employer</span>
+                <User className="w-3.5 h-3.5 text-purple-500 shrink-0" />
+                <span className="truncate">Learner</span>
               </button>
               <button
                 type="button"
                 onClick={() => { setLoginType('recruiter'); setError(''); setAdminError(''); }}
-                className={`py-2.5 px-3 rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                className={`py-2 px-2 sm:px-3 rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1 sm:gap-1.5 text-[11px] sm:text-xs ${
                   loginType === 'recruiter'
                     ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-md font-black'
                     : 'text-slate-500 hover:text-purple-600 dark:hover:text-purple-300'
                 }`}
               >
-                <Briefcase className="w-3.5 h-3.5 text-pink-400" />
-                <span>Recruiter Login</span>
+                <Briefcase className="w-3.5 h-3.5 text-pink-400 shrink-0" />
+                <span className="truncate">Recruiter</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => { setLoginType('admin'); setError(''); setAdminError(''); }}
+                className={`py-2 px-2 sm:px-3 rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1 sm:gap-1.5 text-[11px] sm:text-xs ${
+                  loginType === 'admin'
+                    ? 'bg-gradient-to-r from-purple-600 via-indigo-600 to-pink-600 text-white shadow-md font-black'
+                    : 'text-slate-500 hover:text-purple-600 dark:hover:text-purple-300'
+                }`}
+              >
+                <Shield className="w-3.5 h-3.5 text-pink-500 shrink-0" />
+                <span className="truncate">Admin Portal</span>
               </button>
             </div>
 
@@ -708,17 +720,27 @@ export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNaviga
                   disabled={isLoading}
                 />
 
-                {/* Admin access (small discreet link) */}
-                <div className="p-3 rounded-2xl bg-purple-50/70 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-500/20 text-center">
+                {/* Admin access (discreet portal card) */}
+                <div className="p-3.5 rounded-2xl bg-purple-50/70 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-500/20 flex items-center justify-between gap-3 text-left">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-xl bg-pink-100 dark:bg-pink-900/40 flex items-center justify-center text-pink-600 shrink-0">
+                      <Shield className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <p className="text-xs font-bold text-slate-900 dark:text-white">Platform Administrator?</p>
+                      <p className="text-[10px] text-slate-500 dark:text-slate-400">Passkey protected governance & escrow console</p>
+                    </div>
+                  </div>
                   <button
                     type="button"
                     onClick={() => setLoginType('admin')}
-                    className="text-xs font-bold text-purple-700 dark:text-purple-300 hover:text-pink-600 dark:hover:text-pink-400 transition-colors flex items-center justify-center gap-1.5 mx-auto cursor-pointer"
+                    className="px-3 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold transition-all shadow-sm shrink-0 cursor-pointer flex items-center gap-1"
                   >
-                    <Shield className="w-3.5 h-3.5 text-pink-500" />
-                    <span>Platform Administrator? Access Admin Console →</span>
+                    <span>Admin Login</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
                   </button>
                 </div>
+
 
                 {/* CREATE ACCOUNT LINK */}
                 <div className="pt-3 border-t border-slate-200 dark:border-slate-800/80 text-center space-y-1">

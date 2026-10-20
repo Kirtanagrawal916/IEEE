@@ -51,11 +51,22 @@ import { api } from '../services/api';
 import PuzzleHub from './puzzles/PuzzleHub';
 import CertificateModal from './CertificateModal';
 import { triggerCelebrationConfetti } from '../utils/confettiHelper';
+import { isTrackUnlocked, getUnlockedTrackIds } from '../utils/trackLockHelper';
 
 export default function LearnSection({ user, onCompleteLesson, onNavigateToPortfolio, onUpdateUserSkillPoints, showToast }) {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const urlTab = searchParams.get('tab');
+
+  // Derive effective user from props or localStorage
+  const effectiveUser = useMemo(() => {
+    if (user && (user.name || user.email || user.username)) return user;
+    try {
+      const local = JSON.parse(localStorage.getItem('herearn_user') || 'null');
+      if (local && (local.name || local.email || local.username)) return local;
+    } catch {}
+    return user || null;
+  }, [user]);
   
   // Main Tab: 'courses' | 'challenges' | 'puzzles'
   const [activeTab, setActiveTab] = useState(
@@ -179,6 +190,14 @@ export default function LearnSection({ user, onCompleteLesson, onNavigateToPortf
 
   // Launch track into Classroom mode
   const handleLaunchClassroom = (trackId, lessonId) => {
+    if (!isTrackUnlocked(trackId, user)) {
+      const targetTrack = tracks.find(t => t.id === trackId) || skillTracks[0];
+      if (showToast) {
+        showToast("🔒 Course Locked", `To access "${targetTrack.title}" lectures, please apply for an Opportunity in ${targetTrack.category} first!`);
+      }
+      navigate('/opportunities');
+      return;
+    }
     setSelectedTrackId(trackId);
     if (lessonId) {
       setActiveLessonId(lessonId);
@@ -219,12 +238,13 @@ export default function LearnSection({ user, onCompleteLesson, onNavigateToPortf
   };
 
   // Categories for filter
-  const courseCategories = ['All', 'Marketing', 'Design', 'E-Commerce', 'Writing', 'Video', 'Operations'];
+  const courseCategories = ['All', 'Demo Course', 'Marketing', 'Design', 'E-Commerce', 'Writing', 'Video', 'Operations'];
 
   // Filtered tracks
   const filteredTracks = useMemo(() => {
     return tracks.filter(t => {
       const matchesCat = selectedCategory === 'All' || 
+        (selectedCategory === 'Demo Course' && (t.id === 'track-demo' || t.isDemoCourse)) ||
         (t.category || '').toLowerCase().includes(selectedCategory.toLowerCase());
       const query = courseSearch.trim().toLowerCase();
       const matchesSearch = !query ||
@@ -299,11 +319,21 @@ export default function LearnSection({ user, onCompleteLesson, onNavigateToPortf
               setCertificateTrackTitle(currentTrack.title);
               setIsCertificateOpen(true);
             }}
-            className="px-3 py-1.5 rounded-xl bg-purple-50 dark:bg-purple-950/60 hover:bg-purple-100 border border-purple-200 dark:border-purple-800 text-xs font-bold text-purple-700 dark:text-purple-300 flex items-center gap-1.5 cursor-pointer transition-all"
-            title="Preview Verified Certificate"
+            className={`px-3 py-1.5 rounded-xl border text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-all ${
+              progressPercent === 100
+                ? 'bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 border-emerald-300 dark:border-emerald-700 text-emerald-700 dark:text-emerald-300'
+                : 'bg-purple-50 dark:bg-purple-950/60 hover:bg-purple-100 border-purple-200 dark:border-purple-800 text-purple-700 dark:text-purple-300'
+            }`}
+            title={progressPercent === 100 ? "View & Download Official Certificate" : "Certificate Locked — Complete 100% of modules to unlock"}
           >
-            <GraduationCap className="w-4 h-4 text-purple-600 dark:text-purple-400" />
-            <span className="hidden sm:inline">Official Certificate</span>
+            {progressPercent === 100 ? (
+              <GraduationCap className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+            ) : (
+              <Lock className="w-3.5 h-3.5 text-amber-500" />
+            )}
+            <span className="hidden sm:inline">
+              {progressPercent === 100 ? "Claim Certificate ✓" : `Certificate (${progressPercent}%)`}
+            </span>
           </button>
 
           <div className="flex items-center gap-2 bg-slate-100 dark:bg-slate-800 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-bold">
@@ -450,7 +480,25 @@ export default function LearnSection({ user, onCompleteLesson, onNavigateToPortf
 
               {/* Curriculum Dossiers List */}
               <div className="space-y-6">
-                {filteredTracks.map((t, trackIndex) => {
+                {isLoadingTracks && tracks.length === 0 ? (
+                  <div className="space-y-6 animate-pulse">
+                    {[1, 2].map((n) => (
+                      <div key={n} className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-8 space-y-6 shadow-sm">
+                        <div className="flex justify-between items-center pb-4 border-b border-slate-100 dark:border-slate-800">
+                          <div className="space-y-2">
+                            <div className="h-4 w-28 bg-purple-100 dark:bg-purple-900/40 rounded"></div>
+                            <div className="h-6 w-64 bg-slate-200 dark:bg-slate-800 rounded"></div>
+                          </div>
+                          <div className="h-10 w-32 bg-slate-200 dark:bg-slate-800 rounded-2xl"></div>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div className="h-20 bg-slate-100 dark:bg-slate-800/60 rounded-2xl"></div>
+                          <div className="h-20 bg-slate-100 dark:bg-slate-800/60 rounded-2xl"></div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : filteredTracks.map((t, trackIndex) => {
                   const trackCompletedCount = (t.lessons || []).filter(l => userCompletedLessons.includes(l.id)).length;
                   const trackPercent = Math.round((trackCompletedCount / ((t.lessons && t.lessons.length) || 1)) * 100);
 
@@ -463,6 +511,12 @@ export default function LearnSection({ user, onCompleteLesson, onNavigateToPortf
                       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-slate-100 dark:border-slate-800 pb-5">
                         <div className="space-y-2">
                           <div className="flex items-center gap-2.5 flex-wrap">
+                            {(t.isDemoCourse || t.id === 'track-demo') && (
+                              <span className="text-[11px] font-black px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700 flex items-center gap-1 shadow-xs">
+                                <Sparkles className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                                Free Demo Course • Unlocked for Everyone
+                              </span>
+                            )}
                             <span className="font-mono text-[11px] font-black px-2.5 py-0.5 rounded-md bg-purple-100 dark:bg-purple-950 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800">
                               TRACK 0{trackIndex + 1}
                             </span>
@@ -493,14 +547,43 @@ export default function LearnSection({ user, onCompleteLesson, onNavigateToPortf
                             </div>
                           )}
 
-                          <button
-                            type="button"
-                            onClick={() => handleLaunchClassroom(t.id)}
-                            className="px-5 py-2.5 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold text-xs hover:opacity-90 transition-all flex items-center gap-2 cursor-pointer shadow-sm"
-                          >
-                            <Play className="w-3.5 h-3.5 fill-current" />
-                            <span>{trackPercent > 0 ? `Resume (${trackPercent}%)` : 'Start Track'}</span>
-                          </button>
+                          {(() => {
+                            const isUnlocked = isTrackUnlocked(t.id, user);
+                            if (isUnlocked) {
+                              return (
+                                <div className="flex items-center gap-2">
+                                  <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-xl bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700 flex items-center gap-1 shadow-xs">
+                                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+                                    <span>Unlocked</span>
+                                  </span>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleLaunchClassroom(t.id)}
+                                    className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-bold text-xs transition-all flex items-center gap-2 cursor-pointer shadow-md"
+                                  >
+                                    <Play className="w-3.5 h-3.5 fill-current" />
+                                    <span>{trackPercent > 0 ? `Resume (${trackPercent}%)` : 'Start Track'}</span>
+                                  </button>
+                                </div>
+                              );
+                            }
+                            return (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  if (showToast) {
+                                    showToast("🔒 Course Locked", `To unlock "${t.title}", please apply for an Opportunity in ${t.category} on the board first!`);
+                                  }
+                                  navigate('/opportunities');
+                                }}
+                                className="px-5 py-2.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 text-amber-900 dark:text-amber-200 border border-amber-300 dark:border-amber-700/60 font-bold text-xs hover:bg-amber-100 dark:hover:bg-amber-900/60 transition-all flex items-center gap-2 cursor-pointer shadow-xs group"
+                                title="Course Locked — Apply for an Opportunity to Unlock"
+                              >
+                                <Lock className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 group-hover:scale-110 transition-transform" />
+                                <span>Start Track (Locked)</span>
+                              </button>
+                            );
+                          })()}
                         </div>
                       </div>
 
@@ -508,19 +591,24 @@ export default function LearnSection({ user, onCompleteLesson, onNavigateToPortf
                       <div className="space-y-3">
                         <div className="flex items-center justify-between text-xs font-bold text-slate-400 uppercase tracking-wider">
                           <span>Modules & Syllabus Breakdown ({t.lessons?.length || 0} Lessons)</span>
-                          <span className="text-slate-500 font-normal">Click any lesson to launch video</span>
+                          <span className="text-slate-500 font-normal">
+                            {isTrackUnlocked(t.id, user) ? 'Click any lesson to launch video' : '🔒 Apply opportunity to unlock lectures'}
+                          </span>
                         </div>
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                           {(t.lessons || []).map((lesson, lessonIdx) => {
                             const isDone = userCompletedLessons.includes(lesson.id);
+                            const isTrackOpen = isTrackUnlocked(t.id, user);
 
                             return (
                               <div
                                 key={lesson.id}
                                 onClick={() => handleLaunchClassroom(t.id, lesson.id)}
                                 className={`p-3.5 rounded-2xl border transition-all cursor-pointer flex flex-col justify-between space-y-2 group ${
-                                  isDone
+                                  !isTrackOpen
+                                    ? 'bg-slate-100/70 dark:bg-slate-800/30 border-dashed border-slate-300 dark:border-slate-700 hover:border-amber-400'
+                                    : isDone
                                     ? 'bg-emerald-50/50 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-800/60 hover:border-emerald-400'
                                     : 'bg-slate-50 dark:bg-slate-800/50 border-slate-100 dark:border-slate-800 hover:border-purple-400 dark:hover:border-purple-600'
                                 }`}
@@ -529,7 +617,9 @@ export default function LearnSection({ user, onCompleteLesson, onNavigateToPortf
                                   <span className="font-mono text-[10px] font-bold text-slate-400 group-hover:text-purple-600 dark:group-hover:text-purple-400">
                                     MODULE 0{lessonIdx + 1}
                                   </span>
-                                  {isDone ? (
+                                  {!isTrackOpen ? (
+                                    <Lock className="w-3.5 h-3.5 text-amber-500 group-hover:scale-110 transition-transform" />
+                                  ) : isDone ? (
                                     <CheckCircle className="w-4 h-4 text-emerald-500" />
                                   ) : (
                                     <Play className="w-3 h-3 text-slate-400 group-hover:text-purple-600 dark:group-hover:text-purple-400 group-hover:fill-current" />
@@ -542,7 +632,11 @@ export default function LearnSection({ user, onCompleteLesson, onNavigateToPortf
 
                                 <div className="flex items-center justify-between text-[10px] text-slate-500 dark:text-slate-400 pt-1 border-t border-slate-200/50 dark:border-slate-700/50">
                                   <span>{lesson.duration || '20 min'}</span>
-                                  {isDone ? (
+                                  {!isTrackOpen ? (
+                                    <span className="font-bold text-amber-600 dark:text-amber-400 flex items-center gap-1">
+                                      <Lock className="w-3 h-3" /> Locked
+                                    </span>
+                                  ) : isDone ? (
                                     <span className="font-bold text-emerald-600 dark:text-emerald-400">Completed</span>
                                   ) : (
                                     <span className="group-hover:underline">Study Now &rarr;</span>
@@ -610,7 +704,8 @@ export default function LearnSection({ user, onCompleteLesson, onNavigateToPortf
                 </span>
               </div>
 
-              <div className="overflow-x-auto">
+              {/* Desktop Table View */}
+              <div className="hidden md:block overflow-x-auto">
                 <table className="w-full text-left text-xs">
                   <thead className="bg-slate-50 dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 uppercase text-[10px] font-extrabold tracking-wider">
                     <tr>
@@ -648,7 +743,12 @@ export default function LearnSection({ user, onCompleteLesson, onNavigateToPortf
                             <span className="text-emerald-600 dark:text-emerald-400 font-bold">{t.earningPotential}</span>
                           </td>
                           <td className="py-4 px-4">
-                            {isFullyDone ? (
+                            {!isTrackUnlocked(t.id, user) ? (
+                              <span className="px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-300 font-bold text-[10px] inline-flex items-center gap-1">
+                                <Lock className="w-2.5 h-2.5 text-amber-600 dark:text-amber-400" />
+                                Locked
+                              </span>
+                            ) : isFullyDone ? (
                               <span className="px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 font-bold text-[10px]">
                                 100% Certified
                               </span>
@@ -657,20 +757,36 @@ export default function LearnSection({ user, onCompleteLesson, onNavigateToPortf
                                 {completedCountForTrack}/{t.lessons?.length || 4} Done
                               </span>
                             ) : (
-                              <span className="px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 text-[10px]">
-                                Ready
+                              <span className="px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 font-bold text-[10px]">
+                                Unlocked
                               </span>
                             )}
                           </td>
                           <td className="py-4 px-5 text-right">
-                            <button
-                              type="button"
-                              onClick={() => handleLaunchClassroom(t.id)}
-                              className="px-3.5 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs transition-all cursor-pointer inline-flex items-center gap-1 shadow-xs"
-                            >
-                              <span>Classroom</span>
-                              <ArrowRight className="w-3 h-3" />
-                            </button>
+                            {!isTrackUnlocked(t.id, user) ? (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  if (showToast) {
+                                    showToast("🔒 Course Locked", `Apply for a ${t.category} Opportunity on the board to unlock "${t.title}"!`);
+                                  }
+                                  navigate('/opportunities');
+                                }}
+                                className="px-3 py-1.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 text-amber-900 dark:text-amber-200 border border-amber-300 dark:border-amber-700/60 font-bold text-xs inline-flex items-center gap-1 cursor-pointer hover:bg-amber-100 transition-all shadow-xs"
+                              >
+                                <Lock className="w-3 h-3 text-amber-600 dark:text-amber-400" />
+                                <span>Locked</span>
+                              </button>
+                            ) : (
+                              <button
+                                type="button"
+                                onClick={() => handleLaunchClassroom(t.id)}
+                                className="px-3.5 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs transition-all cursor-pointer inline-flex items-center gap-1 shadow-xs"
+                              >
+                                <span>Classroom</span>
+                                <ArrowRight className="w-3 h-3" />
+                              </button>
+                            )}
                           </td>
                         </tr>
                       );
@@ -679,13 +795,130 @@ export default function LearnSection({ user, onCompleteLesson, onNavigateToPortf
                 </table>
               </div>
 
+              {/* Mobile Responsive Cards View */}
+              <div className="md:hidden space-y-3 p-4">
+                {filteredTracks.map((t, idx) => {
+                  const completedCountForTrack = (t.lessons || []).filter(l => userCompletedLessons.includes(l.id)).length;
+                  const isFullyDone = completedCountForTrack === (t.lessons?.length || 1);
+                  const isUnlocked = isTrackUnlocked(t.id, user);
+
+                  return (
+                    <div 
+                      key={t.id} 
+                      className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 space-y-3"
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <div>
+                          <span className="font-mono text-[10px] text-purple-600 dark:text-purple-400 font-bold block">
+                            TRK-0{idx + 1} • {t.category}
+                          </span>
+                          <h4 className="font-extrabold text-sm text-slate-900 dark:text-white mt-0.5">
+                            {t.title}
+                          </h4>
+                          <span className="text-[11px] text-slate-500">{t.instructor}</span>
+                        </div>
+                        <div>
+                          {!isUnlocked ? (
+                            <span className="px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-300 font-bold text-[10px] inline-flex items-center gap-1">
+                              <Lock className="w-2.5 h-2.5 text-amber-600" /> Locked
+                            </span>
+                          ) : isFullyDone ? (
+                            <span className="px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 font-bold text-[10px]">
+                              Certified ✓
+                            </span>
+                          ) : (
+                            <span className="px-2 py-0.5 rounded-full bg-purple-100 dark:bg-purple-950 text-purple-700 dark:text-purple-300 font-bold text-[10px]">
+                              {completedCountForTrack}/{t.lessons?.length || 4} Done
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-2 text-xs bg-white dark:bg-slate-900 p-2.5 rounded-xl border border-slate-100 dark:border-slate-800">
+                        <div>
+                          <span className="text-[10px] text-slate-400 block">Duration & Modules</span>
+                          <span className="font-bold">{t.duration || '4h'} • {t.lessons?.length || 4} Lessons</span>
+                        </div>
+                        <div>
+                          <span className="text-[10px] text-slate-400 block">Est. Earnings</span>
+                          <span className="font-bold text-emerald-600 dark:text-emerald-400">{t.earningPotential}</span>
+                        </div>
+                      </div>
+
+                      <div className="pt-1">
+                        {!isUnlocked ? (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (showToast) {
+                                showToast("🔒 Course Locked", `Apply for a ${t.category} Opportunity on the board to unlock "${t.title}"!`);
+                              }
+                              navigate('/opportunities');
+                            }}
+                            className="w-full py-2 rounded-xl bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-200 border border-amber-300 dark:border-amber-700 font-bold text-xs flex items-center justify-center gap-1.5"
+                          >
+                            <Lock className="w-3.5 h-3.5" />
+                            <span>Apply for Opportunity to Unlock</span>
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => handleLaunchClassroom(t.id)}
+                            className="w-full py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-xs"
+                          >
+                            <span>Open Classroom</span>
+                            <ArrowRight className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
             </div>
           )}
 
           {/* ------------------------------------------------------
               FORMAT 3: ACTIVE CLASSROOM & VIDEO STUDIO
              ------------------------------------------------------ */}
-          {courseSubView === 'classroom' && (
+          {courseSubView === 'classroom' && !isTrackUnlocked(currentTrack.id, user) && (
+            <div className="bg-white dark:bg-slate-900 rounded-3xl p-8 sm:p-12 border border-amber-300 dark:border-amber-700/60 text-center space-y-6 shadow-xl animate-fade-in text-slate-900 dark:text-white">
+              <div className="w-16 h-16 rounded-3xl bg-amber-100 dark:bg-amber-950/80 text-amber-600 dark:text-amber-400 border border-amber-300 dark:border-amber-700 flex items-center justify-center mx-auto shadow-md">
+                <Lock className="w-8 h-8" />
+              </div>
+              <div className="space-y-2 max-w-lg mx-auto">
+                <span className="text-[10px] font-black uppercase tracking-widest text-amber-700 dark:text-amber-300 bg-amber-100 dark:bg-amber-950 px-3 py-1 rounded-full border border-amber-300 dark:border-amber-700">
+                  Course Lectures Locked
+                </span>
+                <h2 className="text-2xl sm:text-3xl font-black">
+                  "{currentTrack.title}" is Locked
+                </h2>
+                <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+                  To access these video lectures, please apply for a matching Opportunity in <strong>{currentTrack.category}</strong>. Once applied, this course will automatically open in your profile permanently!
+                </p>
+              </div>
+              <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => navigate('/opportunities')}
+                  className="px-6 py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-extrabold text-xs shadow-lg flex items-center gap-2 cursor-pointer transition-all hover:scale-105"
+                >
+                  <Briefcase className="w-4 h-4" />
+                  <span>Browse Opportunities to Unlock</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setCourseSubView('curriculum')}
+                  className="px-6 py-3.5 rounded-2xl border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-xs font-bold hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
+                >
+                  Back to Courses Catalog
+                </button>
+              </div>
+            </div>
+          )}
+
+          {courseSubView === 'classroom' && isTrackUnlocked(currentTrack.id, user) && (
             <div className="space-y-6 animate-fade-in">
               
               {/* Classroom Header Bar */}
@@ -718,19 +951,21 @@ export default function LearnSection({ user, onCompleteLesson, onNavigateToPortf
                   </div>
                   <div className="flex items-center justify-between text-[11px] text-slate-400">
                     <span>{completedCount} of {trackLessonsCount} Lessons Done</span>
-                    {progressPercent >= 80 ? (
+                    {progressPercent === 100 ? (
                       <button
                         type="button"
                         onClick={() => {
                           setCertificateTrackTitle(currentTrack.title);
                           setIsCertificateOpen(true);
                         }}
-                        className="text-amber-400 hover:underline font-bold flex items-center gap-1 cursor-pointer"
+                        className="text-emerald-400 hover:underline font-bold flex items-center gap-1 cursor-pointer"
                       >
-                        <Award className="w-3.5 h-3.5" /> Claim Certificate
+                        <Award className="w-3.5 h-3.5 text-emerald-400" /> Claim Certificate
                       </button>
                     ) : (
-                      <span className="text-slate-500">Finish 80% to certify</span>
+                      <span className="text-slate-500 font-medium flex items-center gap-1">
+                        <Lock className="w-3 h-3 text-amber-400" /> Finish all {trackLessonsCount} lessons to certify
+                      </span>
                     )}
                   </div>
                 </div>
@@ -1430,7 +1665,7 @@ export default function LearnSection({ user, onCompleteLesson, onNavigateToPortf
       <CertificateModal
         isOpen={isCertificateOpen}
         onClose={() => setIsCertificateOpen(false)}
-        user={user}
+        user={effectiveUser}
         trackTitle={certificateTrackTitle || currentTrack.title}
       />
 

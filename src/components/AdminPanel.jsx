@@ -29,7 +29,6 @@ import {
   Send,
   X,
   ArrowLeft,
-  ArrowRight,
   Server,
   Zap,
   UserCheck,
@@ -152,6 +151,43 @@ export default function AdminPanel({
   const [isLoadingData, setIsLoadingData] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
+  // Live Network RTT Latency Tracker (Real-time telemetry heartbeat)
+  const [liveLatency, setLiveLatency] = useState(null);
+  const [latencyStatus, setLatencyStatus] = useState('measuring'); // 'measuring' | 'optimal' | 'moderate' | 'high' | 'offline'
+
+  // Live Heartbeat: Measure true HTTP round-trip latency to backend API periodically
+  useEffect(() => {
+    let isMounted = true;
+    const measureLiveLatency = async () => {
+      const pingResult = await api.checkLatency();
+      if (!isMounted) return;
+      if (pingResult.ok && typeof pingResult.latency === 'number') {
+        setLiveLatency(pingResult.latency);
+        setLatencyStatus(
+          pingResult.latency < 100 ? 'optimal' : pingResult.latency < 250 ? 'moderate' : 'high'
+        );
+      } else {
+        setLatencyStatus('offline');
+      }
+    };
+
+    measureLiveLatency();
+    const interval = setInterval(measureLiveLatency, 5000);
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
+  }, []);
+
+  const opportunitiesRef = useRef(opportunities);
+  const setOpportunitiesRef = useRef(setOpportunities);
+  const hasLoadedRef = useRef(false);
+
+  useEffect(() => {
+    opportunitiesRef.current = opportunities;
+    setOpportunitiesRef.current = setOpportunities;
+  }, [opportunities, setOpportunities]);
+
   // Load Real Data from Backend API
   const loadAdminData = useCallback(async (isSilent = false) => {
     if (!isAuthenticated) return;
@@ -185,11 +221,11 @@ export default function AdminPanel({
 
       if (gigsRes?.success && Array.isArray(gigsRes.opportunities)) {
         setLocalGigs(gigsRes.opportunities);
-        if (setOpportunities) {
-          setOpportunities(gigsRes.opportunities);
+        if (setOpportunitiesRef.current) {
+          setOpportunitiesRef.current(gigsRes.opportunities);
         }
-      } else if (opportunities && opportunities.length > 0) {
-        setLocalGigs(opportunities);
+      } else if (opportunitiesRef.current && opportunitiesRef.current.length > 0) {
+        setLocalGigs(opportunitiesRef.current);
       }
 
       if (escrowRes?.success && Array.isArray(escrowRes.escrow)) {
@@ -217,11 +253,12 @@ export default function AdminPanel({
       setIsLoadingData(false);
       setIsRefreshing(false);
     }
-  }, [isAuthenticated, opportunities, setOpportunities]);
+  }, [isAuthenticated]);
 
-  // Load data when authenticated and ensure valid session token
+  // Load data when authenticated and ensure valid session token (run once upon auth)
   useEffect(() => {
-    if (isAuthenticated) {
+    if (isAuthenticated && !hasLoadedRef.current) {
+      hasLoadedRef.current = true;
       const ensureSessionAndLoad = async () => {
         if (!sessionStorage.getItem('herearn_admin_token')) {
           const key = sessionStorage.getItem('herearn_admin_verified_key') || MASTER_ADMIN_KEY;
@@ -692,7 +729,7 @@ export default function AdminPanel({
             
             <div className="text-center space-y-3">
               <div className="mx-auto flex justify-center mb-2">
-                <Logo size="lg" />
+                <Logo size="md" />
               </div>
               <div className="space-y-1">
                 <div className="inline-flex items-center gap-1.5 text-[10px] font-black tracking-widest uppercase bg-purple-500/20 text-purple-300 border border-purple-500/30 px-3 py-1 rounded-full">
@@ -829,20 +866,46 @@ export default function AdminPanel({
           </div>
         </div>
 
-        {/* Live System Telemetry Status (Real database telemetry) */}
-        <div className="hidden lg:flex items-center gap-6 text-xs text-slate-400 font-mono">
-          <div className="flex items-center gap-1.5">
-            <Server className="w-3.5 h-3.5 text-purple-400" />
-            <span>API Latency:</span>
-            <span className="text-emerald-400 font-bold">{metrics?.telemetry?.latencyMs || 24}ms</span>
+        {/* Live System Telemetry Status (Real database & network telemetry) */}
+        <div className="flex items-center gap-3 sm:gap-6 text-xs text-slate-400 font-mono">
+          <div 
+            className="flex items-center gap-1.5" 
+            title={`Real-Time HTTP Network RTT: ${liveLatency !== null ? `${liveLatency}ms` : 'Measuring...'} | Local SQLite DB Query: ${metrics?.telemetry?.dbQueryMs !== undefined ? `${metrics.telemetry.dbQueryMs}ms` : 'Ready'}`}
+          >
+            <Server className="w-3.5 h-3.5 text-purple-400 shrink-0" />
+            <span className="hidden sm:inline">API Latency:</span>
+            <span className={`font-bold flex items-center gap-1.5 ${
+              latencyStatus === 'offline'
+                ? 'text-rose-400'
+                : latencyStatus === 'high'
+                  ? 'text-rose-400'
+                  : latencyStatus === 'moderate'
+                    ? 'text-amber-400'
+                    : 'text-emerald-400'
+            }`}>
+              <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${
+                latencyStatus === 'offline'
+                  ? 'bg-rose-500'
+                  : latencyStatus === 'high'
+                    ? 'bg-rose-400 animate-pulse'
+                    : latencyStatus === 'moderate'
+                      ? 'bg-amber-400 animate-pulse'
+                      : 'bg-emerald-400 animate-pulse'
+              }`}></span>
+              {liveLatency !== null 
+                ? `${liveLatency}ms` 
+                : metrics?.telemetry?.latencyMs !== undefined 
+                  ? `${metrics.telemetry.latencyMs}ms` 
+                  : 'measuring...'}
+            </span>
           </div>
-          <div className="flex items-center gap-1.5">
-            <Zap className="w-3.5 h-3.5 text-amber-400" />
+          <div className="hidden md:flex items-center gap-1.5">
+            <Zap className="w-3.5 h-3.5 text-amber-400 shrink-0" />
             <span>Uptime:</span>
             <span className="text-slate-200 font-bold">{metrics?.telemetry?.uptime || 'Online'}</span>
           </div>
-          <div className="flex items-center gap-1.5">
-            <Activity className="w-3.5 h-3.5 text-pink-400" />
+          <div className="hidden lg:flex items-center gap-1.5">
+            <Activity className="w-3.5 h-3.5 text-pink-400 shrink-0" />
             <span>Active DB Nodes:</span>
             <span className="text-slate-200 font-bold">{metrics?.telemetry?.dbStatus || 'SQLite Primary'}</span>
           </div>
@@ -1097,6 +1160,62 @@ export default function AdminPanel({
                 <span className="text-[10px] font-bold text-indigo-400">
                   {learnersCount} Learners • {employersCount} Clients{adminsCount > 0 ? ` • ${adminsCount} Staff` : ''}
                 </span>
+              </div>
+            </div>
+
+            {/* Live System Health & Telemetry Metrics Panel */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 p-4 rounded-2xl bg-slate-900/60 border border-slate-800 text-xs font-mono">
+              <div className="flex items-center gap-3">
+                <div className={`p-2 rounded-xl ${
+                  latencyStatus === 'offline' ? 'bg-rose-500/10 text-rose-400' : 'bg-emerald-500/10 text-emerald-400'
+                }`}>
+                  <Server className="w-4 h-4" />
+                </div>
+                <div>
+                  <div className="text-[10px] uppercase font-bold text-slate-400">HTTP API RTT (Live)</div>
+                  <div className="flex items-center gap-1.5 font-bold text-white text-sm">
+                    <span className={`w-2 h-2 rounded-full ${
+                      latencyStatus === 'offline' ? 'bg-rose-500' : 'bg-emerald-400 animate-pulse'
+                    }`} />
+                    {liveLatency !== null ? `${liveLatency} ms` : 'Measuring...'}
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-xl bg-purple-500/10 text-purple-400">
+                  <Activity className="w-4 h-4" />
+                </div>
+                <div>
+                  <div className="text-[10px] uppercase font-bold text-slate-400">DB Execution Speed</div>
+                  <div className="font-bold text-white text-sm">
+                    {metrics?.telemetry?.dbQueryMs !== undefined ? `${metrics.telemetry.dbQueryMs} ms` : (metrics?.telemetry?.latencyMs !== undefined ? `${metrics.telemetry.latencyMs} ms` : '--')}
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-xl bg-pink-500/10 text-pink-400">
+                  <Shield className="w-4 h-4" />
+                </div>
+                <div>
+                  <div className="text-[10px] uppercase font-bold text-slate-400">Active DB Node</div>
+                  <div className="font-bold text-slate-200 text-sm">
+                    {metrics?.telemetry?.dbStatus || 'SQLite Primary'}
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-xl bg-amber-500/10 text-amber-400">
+                  <Zap className="w-4 h-4" />
+                </div>
+                <div>
+                  <div className="text-[10px] uppercase font-bold text-slate-400">Server Uptime</div>
+                  <div className="font-bold text-slate-200 text-sm">
+                    {metrics?.telemetry?.uptime || 'Online'}
+                  </div>
+                </div>
               </div>
             </div>
 

@@ -12,8 +12,12 @@ router.get('/', authMiddleware, async (req, res) => {
     // 1. User details
     const user = await prisma.user.findUnique({
       where: { id: userId },
-      select: { id: true, name: true, email: true, avatar: true, location: true, bio: true, skills: true, totalEarned: true },
+      select: { id: true, name: true, email: true, avatar: true, location: true, bio: true, skills: true, totalEarned: true, walletBalance: true },
     });
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
 
     // 2. Enrollments & Progress
     const enrollments = await prisma.enrollment.findMany({
@@ -106,6 +110,10 @@ router.get('/', authMiddleware, async (req, res) => {
             stipend: a.opportunity.stipend,
             type: a.opportunity.type,
             status: a.status,
+            deliveryStatus: a.deliveryStatus || 'NOT_STARTED',
+            interviewTime: a.interviewTime,
+            interviewLink: a.interviewLink,
+            interviewStatus: a.interviewStatus || 'NONE',
             appliedAt: a.appliedAt,
           })),
         },

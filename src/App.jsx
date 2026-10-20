@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Link, useNavigate, useLocation } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Link, useNavigate, useLocation, useParams } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import LandingSection from './components/LandingSection';
 import LearnSection from './components/LearnSection';
@@ -10,28 +10,37 @@ import ProfileSection from './components/ProfileSection';
 import LoginPage from './components/LoginPage';
 import SignupPage from './components/SignupPage';
 import AboutPage from './components/AboutPage';
-import TermsPage from './components/TermsPage';
-import PrivacyPage from './components/PrivacyPage';
 import OpportunityDetailPage from './components/OpportunityDetailPage';
 import OpportunityApplyPage from './components/OpportunityApplyPage';
 import TrackDetailPage from './components/TrackDetailPage';
 import LessonPlayerPage from './components/LessonPlayerPage';
 import ApplicationsPage from './components/ApplicationsPage';
-import PublicProfilePage from './components/PublicProfilePage';
 import ProtectedRoute from './components/ProtectedRoute';
 import ChallengeDetailPage from './components/ChallengeDetailPage';
 import SubmitProjectPage from './components/SubmitProjectPage';
 import PortfolioDetailPage from './components/PortfolioDetailPage';
 import PostGigPage from './components/PostGigPage';
-import RecruiterDashboard from './components/RecruiterDashboard';
+
+// Lazy loaded modules for code splitting and instant bundle loading
+const TermsPage = React.lazy(() => import('./components/TermsPage'));
+const PrivacyPage = React.lazy(() => import('./components/PrivacyPage'));
+const PublicProfilePage = React.lazy(() => import('./components/PublicProfilePage'));
+const RecruiterDashboard = React.lazy(() => import('./components/RecruiterDashboard'));
+const AdminPanel = React.lazy(() => import('./components/AdminPanel'));
+const MentorshipSection = React.lazy(() => import('./components/MentorshipSection'));
+const CommunitySection = React.lazy(() => import('./components/CommunitySection'));
 
 import LogoutModal from './components/LogoutModal';
 import ToastNotification from './components/ToastNotification';
 import ChatBot from './components/ChatBot';
-import MentorshipSection from './components/MentorshipSection';
-import CommunitySection from './components/CommunitySection';
-import AdminPanel from './components/AdminPanel';
 import Logo from './components/Logo';
+import { 
+  Compass, 
+  BookOpen, 
+  Briefcase, 
+  Award, 
+  User 
+} from 'lucide-react';
 
 import { 
   initialUser, 
@@ -45,11 +54,58 @@ import { useTheme } from './context/ThemeContext';
 import ThemeToggle from './components/ThemeToggle';
 import NotFoundPage from './components/NotFoundPage';
 import { ScrollProgressBar, BackToTopButton } from './components/ScrollEnhancements';
+import { 
+  getMatchingTrackForOpportunity, 
+  isTrackUnlocked, 
+  getUnlockedTrackIds 
+} from './utils/trackLockHelper';
+
+// Route wrappers that resolve the target opportunity by :id param dynamically
+function OpportunityDetailRouteWrapper({ opportunities, selectedOpportunity, user, onBack, onApply, onToggleSkill }) {
+  const { id } = useParams();
+  const gig = opportunities.find(o => String(o.id) === String(id)) || selectedOpportunity || opportunities[0];
+  return (
+    <OpportunityDetailPage 
+      gig={gig}
+      user={user}
+      onBack={onBack}
+      onApply={onApply}
+      onToggleSkill={onToggleSkill}
+    />
+  );
+}
+
+function OpportunityApplyRouteWrapper({ opportunities, selectedOpportunity, user, userPortfolios, onConfirmApplySuccess }) {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const gig = opportunities.find(o => String(o.id) === String(id)) || selectedOpportunity || opportunities[0];
+  return (
+    <OpportunityApplyPage 
+      gig={gig}
+      user={user}
+      userPortfolios={userPortfolios}
+      onBack={() => navigate(`/opportunities/${gig?.id || ''}`)}
+      onConfirmApplySuccess={onConfirmApplySuccess}
+    />
+  );
+}
+
+function PageLoader() {
+  return (
+    <div className="flex items-center justify-center min-h-[60vh]">
+      <div className="flex flex-col items-center gap-3">
+        <div className="w-10 h-10 border-4 border-purple-600 border-t-transparent rounded-full animate-spin" />
+        <span className="text-sm font-medium text-purple-600 dark:text-purple-400">Loading...</span>
+      </div>
+    </div>
+  );
+}
 
 function AppContent() {
   const navigate = useNavigate();
   const location = useLocation();
   const isAdminRoute = location.pathname.startsWith('/admin');
+  const isHomePage = location.pathname === '/' || location.pathname === '/home' || location.pathname === '/landing' || location.pathname === '/about';
 
   // Unified Auth state via AuthContext
   const { user, setUser, logout: authLogout } = useAuth();
@@ -62,45 +118,63 @@ function AppContent() {
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
   const [selectedOpportunity, setSelectedOpportunity] = useState(null);
 
+  // Derive user applied gigs and portfolios to ensure all records appear in the profile
+  const appliedGigIds = Array.from(new Set([
+    ...(user?.appliedGigIds || []),
+    ...(JSON.parse(localStorage.getItem('herearn_applied_gigs') || '[]'))
+  ]));
+
+  const userAppliedGigs = appliedGigIds.map(id => {
+    const found = opportunities.find(o => o.id === id);
+    if (found) return found;
+    return {
+      id,
+      title: "Micro-Gig Application",
+      company: "HerEarn Partner",
+      category: "Freelance Opportunity",
+      stipend: "₹5,000",
+      status: "Applied",
+      deadline: "Active"
+    };
+  });
+
+  const userPortfolios = portfolios.filter(p => 
+    !user || p.authorName === user.name || p.userId === user.id || p.authorUsername === user.username
+  );
+
   // Toast
   const [toast, setToast] = useState(null);
 
-  // Initial Data Fetching from Express Backend API
+  // Initial Data Fetching from Express Backend API (Parallel, Non-blocking)
   useEffect(() => {
     const fetchBackendData = async () => {
-      // 1. Auto Login via JWT
       const token = localStorage.getItem('herearn_jwt_token');
-      if (token) {
-        try {
-          const meRes = await api.getMe();
+      
+      const promises = [
+        // 1. Auto Login via JWT (if token exists)
+        token ? api.getMe().then(meRes => {
           if (meRes.success && meRes.user) {
             setUser(meRes.user);
             localStorage.setItem('herearn_user', JSON.stringify(meRes.user));
           }
-        } catch (err) {
-          console.log('[App] Auto-login check:', err.message);
-        }
-      }
+        }).catch(err => console.log('[App] Auto-login notice:', err.message)) : Promise.resolve(),
 
-      // 2. Opportunities Feed
-      try {
-        const oppRes = await api.getOpportunities();
-        if (oppRes.success && oppRes.opportunities && oppRes.opportunities.length > 0) {
-          setOpportunities(oppRes.opportunities);
-        }
-      } catch (err) {
-        console.log('[App] Using fallback opportunities:', err.message);
-      }
+        // 2. Opportunities Feed
+        api.getOpportunities().then(oppRes => {
+          if (oppRes.success && oppRes.opportunities && oppRes.opportunities.length > 0) {
+            setOpportunities(oppRes.opportunities);
+          }
+        }).catch(err => console.log('[App] Using fallback opportunities:', err.message)),
 
-      // 3. Public Portfolio Feed
-      try {
-        const portRes = await api.getPublicPortfolio();
-        if (portRes.success && portRes.projects && portRes.projects.length > 0) {
-          setPortfolios(portRes.projects);
-        }
-      } catch (err) {
-        console.log('[App] Using fallback portfolios:', err.message);
-      }
+        // 3. Public Portfolio Feed
+        api.getPublicPortfolio().then(portRes => {
+          if (portRes.success && portRes.projects && portRes.projects.length > 0) {
+            setPortfolios(portRes.projects);
+          }
+        }).catch(err => console.log('[App] Using fallback portfolios:', err.message))
+      ];
+
+      await Promise.allSettled(promises);
     };
 
     fetchBackendData();
@@ -144,7 +218,6 @@ function AppContent() {
   };
 
   const handleOpenAuth = (mode = 'login') => {
-    setAuthMode(mode);
     navigate(mode === 'signup' ? '/signup' : '/login');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -184,37 +257,28 @@ function AppContent() {
 
   // Lesson Completion Action with API integration
   const handleCompleteLesson = async (lessonId) => {
-    if (!user) {
-      handleOpenAuth('login');
-      return;
-    }
+    const currentUser = user || JSON.parse(localStorage.getItem('herearn_user') || 'null') || initialUser;
+    const currentCompleted = currentUser.completedLessons || [];
+    const updatedLessons = currentCompleted.includes(lessonId)
+      ? currentCompleted.filter(id => id !== lessonId)
+      : [...currentCompleted, lessonId];
+
+    const updatedUser = {
+      ...currentUser,
+      completedLessons: updatedLessons,
+    };
+
+    saveUserData(updatedUser);
 
     try {
-      await api.markLessonComplete(lessonId);
-      const currentCompleted = user.completedLessons || [];
-      const updatedLessons = currentCompleted.includes(lessonId)
-        ? currentCompleted.filter(id => id !== lessonId)
-        : [...currentCompleted, lessonId];
-
-      saveUserData({
-        ...user,
-        completedLessons: updatedLessons,
-      });
-
-      showToast("🎉 Lesson Mastered!", "Your skill track progress has increased in database!");
+      if (user && !user.isGuest) {
+        await api.markLessonComplete(lessonId);
+      }
     } catch (error) {
       console.warn('[App] Operation fallback:', error?.message);
-      const currentCompleted = user.completedLessons || [];
-      const updatedLessons = currentCompleted.includes(lessonId)
-        ? currentCompleted.filter(id => id !== lessonId)
-        : [...currentCompleted, lessonId];
-
-      saveUserData({
-        ...user,
-        completedLessons: updatedLessons,
-      });
-      showToast("🎉 Lesson Mastered!", "Your skill track progress has increased!");
     }
+
+    showToast("🎉 Lesson Mastered!", "Your skill track progress has been recorded in your profile!");
   };
 
   // Submit Portfolio Project Action with API integration
@@ -270,10 +334,31 @@ function AppContent() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // Confirm Gig Application Action with Quiz Assessment & API integration
+  // Confirm Gig Application Action with Quiz Assessment & Course Track Unlock
   const handleConfirmApply = async (gigId, coverNote, portfolioId, quizSummary) => {
+    // 1. Find matching gig and course track
+    const targetGig = opportunities.find(g => g.id === gigId) || initialOpportunities.find(g => g.id === gigId);
+    const matchingTrack = getMatchingTrackForOpportunity(targetGig);
+
+    // 2. Compute updated unlocked tracks and applied gigs
+    const currentUnlocked = getUnlockedTrackIds(user);
+    const updatedUnlocked = Array.from(new Set([...currentUnlocked, matchingTrack.id]));
+    const currentApplied = user?.appliedGigIds || [];
+    const updatedApplied = Array.from(new Set([...currentApplied, gigId]));
+
+    // Store in localStorage for permanent persistence
+    try {
+      localStorage.setItem('herearn_unlocked_tracks', JSON.stringify(updatedUnlocked));
+      localStorage.setItem('herearn_applied_gigs', JSON.stringify(updatedApplied));
+    } catch (e) {
+      console.warn('[App] LocalStorage sync warning:', e);
+    }
+
     try {
       await api.applyOpportunity(gigId, { coverNote, portfolioId, quizSummary });
+      // Also try to enroll track on backend
+      api.enrollTrack(matchingTrack.id).catch(() => {});
+
       setOpportunities(opportunities.map(g => {
         if (g.id === gigId) {
           return {
@@ -287,21 +372,18 @@ function AppContent() {
         return g;
       }));
 
-      if (user) {
-        saveUserData({
-          ...user,
-          appliedGigIds: [...(user.appliedGigIds || []), gigId],
-        });
-      }
+      const updatedUser = {
+        ...(user || initialUser || { id: 'guest', name: 'Learner' }),
+        appliedGigIds: updatedApplied,
+        unlockedTrackIds: updatedUnlocked,
+      };
+      saveUserData(updatedUser);
 
-      if (quizSummary) {
-        showToast(
-          quizSummary.isEligible ? "🎉 Application & Quiz Passed!" : "Application Recorded", 
-          quizSummary.isEligible ? `Eligible with ${quizSummary.percentage}% Quiz Score!` : `Quiz Score: ${quizSummary.percentage}%`
-        );
-      } else {
-        showToast("🚀 Application Sent!", "Application recorded in database with portfolio proof.");
-      }
+      // Show celebration toast for unlocking the course lectures
+      showToast(
+        "🎉 Course Lectures Unlocked!", 
+        `"${matchingTrack.title}" is now permanently unlocked in your profile and courses! You can start learning the lectures now.`
+      );
     } catch (error) {
       console.warn('[App] Operation fallback:', error?.message);
       setOpportunities(opportunities.map(g => {
@@ -317,21 +399,17 @@ function AppContent() {
         return g;
       }));
 
-      if (user) {
-        saveUserData({
-          ...user,
-          appliedGigIds: [...(user.appliedGigIds || []), gigId],
-        });
-      }
+      const updatedUser = {
+        ...(user || initialUser || { id: 'guest', name: 'Learner' }),
+        appliedGigIds: updatedApplied,
+        unlockedTrackIds: updatedUnlocked,
+      };
+      saveUserData(updatedUser);
 
-      if (quizSummary) {
-        showToast(
-          quizSummary.isEligible ? "🎉 Application & Quiz Passed!" : "Application Recorded", 
-          quizSummary.isEligible ? `Eligible Candidate status verified (${quizSummary.percentage}% Quiz Score)!` : `Quiz score recorded (${quizSummary.percentage}%).`
-        );
-      } else {
-        showToast("🚀 Application Sent!", "Client received your application with attached portfolio proof.");
-      }
+      showToast(
+        "🎉 Course Lectures Unlocked!", 
+        `"${matchingTrack.title}" is now permanently unlocked in your profile and courses! You can start learning the lectures now.`
+      );
     }
   };
 
@@ -412,9 +490,23 @@ function AppContent() {
 
   // Continue as Guest Handler
   const handleContinueAsGuest = () => {
-    saveUserData(null);
+    const guestUser = {
+      id: 'guest',
+      name: 'Guest Learner',
+      username: 'guest',
+      email: 'guest@herearn.org',
+      role: 'LEARNER',
+      isGuest: true,
+      skills: ['Digital Marketing', 'Canva Design'],
+      skillPoints: 100,
+      totalEarned: 0,
+      walletBalance: 0,
+      appliedGigIds: [],
+      completedLessons: [],
+      badges: []
+    };
+    saveUserData(guestUser);
     navigate('/dashboard');
-    setIsAuthOpen(false);
     showToast("Guest Mode Active 👤", "Exploring HerEarn in Guest Mode.");
   };
 
@@ -429,13 +521,14 @@ function AppContent() {
     showToast("🎯 Skills Updated!", `Skill profile updated (${newSkills.length} skills active). Opportunity match percentages updated.`);
   };
 
-  const userPortfolios = portfolios.filter(p => p.authorName === (user?.name || "Guest Learner"));
-  const userAppliedGigs = opportunities.filter(g => (user?.appliedGigIds || []).includes(g.id));
-
   return (
-    <div className={`min-h-screen flex flex-col font-sans transition-colors duration-300 ${
-      theme === 'dark' ? 'bg-slate-950 text-slate-100' : 'bg-[#FFF9F5] text-slate-900'
+    <div className={`min-h-screen flex flex-col font-sans transition-colors duration-300 relative overflow-x-hidden ${
+      theme === 'dark' ? 'bg-[#0F0918] text-[#F9FAFB]' : 'bg-[#FFF9F5] text-[#1F2937]'
     }`}>
+      {/* Ambient Aurora Orbs */}
+      <div className="absolute top-0 left-1/4 -translate-x-1/2 w-[550px] h-[350px] bg-gradient-to-tr from-purple-600/15 via-pink-500/10 to-transparent rounded-full blur-[130px] pointer-events-none -z-0" />
+      <div className="absolute top-1/3 right-0 w-[450px] h-[350px] bg-gradient-to-bl from-amber-500/10 via-rose-500/10 to-transparent rounded-full blur-[140px] pointer-events-none -z-0" />
+      <div className="absolute bottom-1/4 left-10 w-[500px] h-[300px] bg-gradient-to-tr from-indigo-600/10 via-purple-600/10 to-transparent rounded-full blur-[140px] pointer-events-none -z-0" />
       
       {/* Top Scroll Progress Bar */}
       <ScrollProgressBar />
@@ -453,10 +546,30 @@ function AppContent() {
       )}
 
       {/* Main View Area with React Router Routes */}
-      <main className={`flex-1 ${isAdminRoute ? 'pb-0' : 'pb-16'}`}>
+      <main className={`flex-1 ${isAdminRoute ? 'pb-0' : 'pb-24 md:pb-16'} relative z-10`}>
+        <React.Suspense fallback={<PageLoader />}>
         <Routes>
+          {/* Default Opening Page is AboutPage */}
           <Route 
             path="/" 
+            element={
+              <AboutPage 
+                onNavigate={(page) => navigate(`/${page}`)}
+              />
+            } 
+          />
+
+          <Route 
+            path="/about" 
+            element={
+              <AboutPage 
+                onNavigate={(page) => navigate(`/${page}`)}
+              />
+            } 
+          />
+
+          <Route 
+            path="/home" 
             element={
               <LandingSection 
                 onNavigate={(page) => navigate(`/${page}`)}
@@ -467,10 +580,12 @@ function AppContent() {
           />
 
           <Route 
-            path="/about" 
+            path="/landing" 
             element={
-              <AboutPage 
+              <LandingSection 
                 onNavigate={(page) => navigate(`/${page}`)}
+                onOpenAuth={() => handleOpenAuth('signup')}
+                theme={theme}
               />
             } 
           />
@@ -496,8 +611,7 @@ function AppContent() {
                 user={user}
                 onCompleteLesson={handleCompleteLesson}
                 onNavigateToPortfolio={() => {
-                  navigate('/portfolio');
-                  setIsSubmitOpen(true);
+                  navigate('/portfolio/submit');
                 }}
                 onUpdateUserSkillPoints={(points, badge) => {
                   if (user) {
@@ -520,8 +634,7 @@ function AppContent() {
                 user={user}
                 onCompleteLesson={handleCompleteLesson}
                 onNavigateToPortfolio={() => {
-                  navigate('/portfolio');
-                  setIsSubmitOpen(true);
+                  navigate('/portfolio/submit');
                 }}
                 onUpdateUserSkillPoints={(points, badge) => {
                   if (user) {
@@ -683,8 +796,9 @@ function AppContent() {
           <Route 
             path="/opportunities/:id" 
             element={
-              <OpportunityDetailPage 
-                gig={selectedOpportunity || opportunities[0]}
+              <OpportunityDetailRouteWrapper 
+                opportunities={opportunities}
+                selectedOpportunity={selectedOpportunity}
                 user={user}
                 onBack={() => navigate('/opportunities')}
                 onApply={handleOpenApplyGig}
@@ -697,11 +811,11 @@ function AppContent() {
             path="/opportunities/:id/apply" 
             element={
               <ProtectedRoute user={user}>
-                <OpportunityApplyPage 
-                  gig={selectedOpportunity || opportunities[0]}
+                <OpportunityApplyRouteWrapper 
+                  opportunities={opportunities}
+                  selectedOpportunity={selectedOpportunity}
                   user={user}
                   userPortfolios={userPortfolios}
-                  onBack={() => navigate(`/opportunities/${selectedOpportunity?.id || opportunities[0]?.id}`)}
                   onConfirmApplySuccess={(gigId, coverNote, portId, quizSummary) => handleConfirmApply(gigId, coverNote, portId, quizSummary)}
                 />
               </ProtectedRoute>
@@ -781,7 +895,7 @@ function AppContent() {
           <Route 
             path="/mentorship" 
             element={
-              <MentorshipSection showToast={showToast} />
+              <MentorshipSection user={user} showToast={showToast} />
             } 
           />
 
@@ -796,13 +910,17 @@ function AppContent() {
           />
 
           <Route
-  path="/recruiter/*"
-  element={
-    <ProtectedRoute user={user}>
-      <RecruiterDashboard user={user} showToast={showToast} />
-    </ProtectedRoute>
-  }
-/>
+            path="/recruiter/*"
+            element={
+              <ProtectedRoute 
+                user={user} 
+                allowedRoles={['EMPLOYER', 'RECRUITER', 'ADMIN']} 
+                redirectTo="/dashboard"
+              >
+                <RecruiterDashboard user={user} showToast={showToast} />
+              </ProtectedRoute>
+            }
+          />
 
           <Route 
             path="/admin" 
@@ -824,49 +942,167 @@ function AppContent() {
             element={<NotFoundPage />} 
           />
         </Routes>
+        </React.Suspense>
       </main>
 
       {/* Footer (Hidden on Admin portal) */}
       {!isAdminRoute && (
-        <footer className={`border-t py-10 text-xs transition-colors ${
-          theme === 'dark' ? 'bg-slate-900 border-slate-800 text-slate-400' : 'bg-[#FFF9F5] border-slate-200 text-slate-600'
+        <footer className={`border-t py-12 transition-colors ${
+          theme === 'dark' 
+            ? 'bg-[#140C22] border-purple-900/30 text-slate-300' 
+            : 'bg-[#FFFFFF] border-[#E5E7EB] text-[#4B5563]'
         }`}>
-          <div className="w-full px-4 sm:px-8 lg:px-12 flex flex-col md:flex-row items-center justify-between gap-6 text-center md:text-left">
-            <div className="flex flex-col sm:flex-row items-center gap-3">
-              <Link to="/" className="cursor-pointer group shrink-0" title="HerEarn Home">
-                <Logo size="sm" />
-              </Link>
-              <div className="text-center sm:text-left">
-                <p className="font-bold text-xs">Skill-to-Income Platform for Women</p>
-                <p className="opacity-75 text-[11px] mt-0.5">Empowering women across India to learn skills, build portfolios, and earn income.</p>
+          <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+            
+            {/* Top Row: Mission + Trust Badge */}
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 pb-8 border-b border-slate-200 dark:border-purple-900/30">
+              <div className="flex items-center gap-3">
+                <Link to="/" className="cursor-pointer group shrink-0" title="HerEarn Home">
+                  <Logo size="md" />
+                </Link>
+                <div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="font-extrabold text-sm text-[#1F2937] dark:text-white">Skill to Women</span>
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-[#FFF7ED] text-[#EA580C] border border-[#FED7AA]">
+                      100% Free for Job Seekers
+                    </span>
+                  </div>
+                  <p className="text-xs text-[#6B7280] dark:text-slate-400 mt-0.5">
+                    Empowering women across India to build digital skills and access verified, free job opportunities.
+                  </p>
+                </div>
               </div>
-            </div>
-            <div className="flex flex-wrap items-center justify-center md:justify-end gap-5 font-semibold">
-              <Link to="/dashboard" className="hover:text-indigo-400 cursor-pointer">Dashboard</Link>
-              <Link to="/" className="hover:text-indigo-400 cursor-pointer">Overview</Link>
-              <Link to="/mentorship" className="hover:text-indigo-400 cursor-pointer text-indigo-400 font-bold">Mentorship</Link>
-              <Link to="/about" className="hover:text-indigo-400 cursor-pointer text-purple-400 font-bold">About Us</Link>
-              <Link to="/learn" className="hover:text-indigo-400 cursor-pointer">Courses</Link>
-              <Link to="/portfolio" className="hover:text-indigo-400 cursor-pointer">Show Skill</Link>
-              <Link to="/opportunities" className="hover:text-indigo-400 cursor-pointer">Opportunity</Link>
-              <Link to="/post-gig" className="hover:text-pink-400 cursor-pointer font-bold text-pink-400">Post Gig</Link>
-              <Link to="/admin" className="hover:text-purple-400 cursor-pointer font-bold text-purple-400">Admin</Link>
-              <div className="flex items-center pl-2 border-l border-slate-300 dark:border-slate-700">
-                <ThemeToggle variant="compact" />
-              </div>
-            </div>
-          </div>
 
-          {/* Sub-Footer with Dynamic Copyright and Clickable Contact */}
-          <div className="max-w-[1440px] mx-auto w-full px-4 sm:px-8 lg:px-12 pt-6 mt-6 border-t border-slate-200/60 dark:border-slate-800/80 flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] opacity-80">
-            <p>© {new Date().getFullYear()} HerEarn Platform. All rights reserved.</p>
-            <div className="flex items-center gap-4">
-              <span>Contact: <a href="mailto:support@herearn.platform" className="hover:text-purple-500 underline underline-offset-2">support@herearn.platform</a></span>
-              <span>•</span>
-              <a href="tel:+918001234567" className="hover:text-purple-500 underline underline-offset-2">+91 800 123 4567</a>
+              {/* Safe Job Guarantee Callout */}
+              <div className="bg-[#FFF9F5] dark:bg-[#1E1233] border border-[#FED7AA] dark:border-purple-800/40 rounded-2xl p-3.5 max-w-md flex items-start gap-3">
+                <span className="text-base leading-none">🛡️</span>
+                <p className="text-xs text-[#4B5563] dark:text-slate-300 leading-relaxed">
+                  <strong className="text-[#1F2937] dark:text-white">Safety First:</strong> HerEarn is 100% free. Never pay anyone for interviews, job applications, or registrations.
+                </p>
+              </div>
             </div>
+            {/* Middle Row: Links Columns */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 text-xs font-semibold">
+              <div className="space-y-2.5">
+                <p className="text-xs font-bold text-[#1F2937] dark:text-white uppercase tracking-wider">Opportunities</p>
+                <div className="flex flex-col space-y-2">
+                  <Link to="/opportunities" className="hover:text-[#7C3AED] transition-colors py-1">Browse Free Jobs</Link>
+                  <Link to="/opportunities" className="hover:text-[#7C3AED] transition-colors py-1">Remote Micro-Gigs</Link>
+                  <Link to="/post-gig" className="hover:text-[#7C3AED] transition-colors py-1 font-bold text-[#7C3AED]">Post an Opening</Link>
+                </div>
+              </div>
+
+              <div className="space-y-2.5">
+                <p className="text-xs font-bold text-[#1F2937] dark:text-white uppercase tracking-wider">Free Learning</p>
+                <div className="flex flex-col space-y-2">
+                  <Link to="/learn" className="hover:text-[#7C3AED] transition-colors py-1">Skill Tracks</Link>
+                  <Link to="/portfolio" className="hover:text-[#7C3AED] transition-colors py-1">Portfolio Showcase</Link>
+                  <Link to="/mentorship" className="hover:text-[#7C3AED] transition-colors py-1">Peer Mentorship</Link>
+                </div>
+              </div>
+
+              <div className="space-y-2.5">
+                <p className="text-xs font-bold text-[#1F2937] dark:text-white uppercase tracking-wider">Candidate Hub</p>
+                <div className="flex flex-col space-y-2">
+                  <Link to="/dashboard" className="hover:text-[#7C3AED] transition-colors py-1">Learner Dashboard</Link>
+                  <Link to="/applications" className="hover:text-[#7C3AED] transition-colors py-1">My Applications</Link>
+                  <Link to="/profile" className="hover:text-[#7C3AED] transition-colors py-1">My Profile & Resume</Link>
+                </div>
+              </div>
+
+              <div className="space-y-2.5">
+                <p className="text-xs font-bold text-[#1F2937] dark:text-white uppercase tracking-wider">About & Trust</p>
+                <div className="flex flex-col space-y-2">
+                  <Link to="/about" className="hover:text-[#7C3AED] transition-colors py-1">About HerEarn</Link>
+                  <Link to="/terms" className="hover:text-[#7C3AED] transition-colors py-1">Terms of Service</Link>
+                  <Link to="/privacy" className="hover:text-[#7C3AED] transition-colors py-1">Privacy Policy</Link>
+                  <div className="pt-2 flex items-center gap-2">
+                    <span className="text-[11px] opacity-75">Theme:</span>
+                    <ThemeToggle variant="compact" />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Bottom Row: Copyright & Clickable Contacts */}
+            <div className="pt-6 border-t border-slate-100 dark:border-purple-900/20 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[#6B7280] dark:text-slate-400">
+              <p>© {new Date().getFullYear()} Skill to Women (HerEarn). Open access initiative for women’s economic empowerment.</p>
+              <div className="flex flex-wrap items-center gap-3">
+                <a href="mailto:support@herearn.platform" className="hover:text-purple-500 transition-colors">support@herearn.platform</a>
+                <span>•</span>
+                <a href="tel:+918001234567" className="hover:text-purple-500 transition-colors">+91 800 123 4567</a>
+                <span>•</span>
+                <span className="text-[#EA580C] font-bold">100% Free</span>
+              </div>
+            </div>
+
           </div>
         </footer>
+      )}
+
+      {/* Mobile Bottom Tab Navigation Bar (Phones Only) */}
+      {!isAdminRoute && (
+        <nav aria-label="Mobile Navigation" className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border-t border-slate-200 dark:border-white/10 px-2 py-1.5 flex items-center justify-around shadow-[0_-4px_25px_rgba(0,0,0,0.08)]">
+          <Link
+            to="/home"
+            className={`flex flex-col items-center gap-0.5 py-1 px-2.5 rounded-xl text-[10px] font-extrabold transition-colors ${
+              location.pathname === '/home' || location.pathname === '/'
+                ? 'text-purple-600 dark:text-purple-400'
+                : 'text-slate-500 dark:text-slate-400 hover:text-purple-600'
+            }`}
+          >
+            <Compass className="w-5 h-5" />
+            <span>Home</span>
+          </Link>
+
+          <Link
+            to="/learn"
+            className={`flex flex-col items-center gap-0.5 py-1 px-2.5 rounded-xl text-[10px] font-extrabold transition-colors ${
+              location.pathname.startsWith('/learn') || location.pathname.startsWith('/courses')
+                ? 'text-purple-600 dark:text-purple-400'
+                : 'text-slate-500 dark:text-slate-400 hover:text-purple-600'
+            }`}
+          >
+            <BookOpen className="w-5 h-5" />
+            <span>Learn</span>
+          </Link>
+
+          <Link
+            to="/opportunities"
+            className={`flex flex-col items-center gap-0.5 py-1 px-2.5 rounded-xl text-[10px] font-extrabold transition-colors ${
+              location.pathname.startsWith('/opportunities')
+                ? 'text-purple-600 dark:text-purple-400'
+                : 'text-slate-500 dark:text-slate-400 hover:text-purple-600'
+            }`}
+          >
+            <Briefcase className="w-5 h-5" />
+            <span>Gigs</span>
+          </Link>
+
+          <Link
+            to="/portfolio"
+            className={`flex flex-col items-center gap-0.5 py-1 px-2.5 rounded-xl text-[10px] font-extrabold transition-colors ${
+              location.pathname.startsWith('/portfolio')
+                ? 'text-purple-600 dark:text-purple-400'
+                : 'text-slate-500 dark:text-slate-400 hover:text-purple-600'
+            }`}
+          >
+            <Award className="w-5 h-5" />
+            <span>Showcase</span>
+          </Link>
+
+          <Link
+            to={user ? "/dashboard" : "/login"}
+            className={`flex flex-col items-center gap-0.5 py-1 px-2.5 rounded-xl text-[10px] font-extrabold transition-colors ${
+              location.pathname === '/dashboard' || location.pathname === '/profile'
+                ? 'text-purple-600 dark:text-purple-400'
+                : 'text-slate-500 dark:text-slate-400 hover:text-purple-600'
+            }`}
+          >
+            <User className="w-5 h-5" />
+            <span>{user ? 'Profile' : 'Sign In'}</span>
+          </Link>
+        </nav>
       )}
 
       {/* Confirmation Dialogs & Notifications */}
