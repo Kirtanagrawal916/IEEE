@@ -317,21 +317,6 @@ export default function Navbar({
               <span>Community</span>
             </Link>
 
-            {/* Applications (If Logged In) */}
-            {user && (
-              <Link
-                to="/applications"
-                className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                  pathname === '/applications'
-                    ? 'bg-[#7C3AED] text-white shadow-xs'
-                    : 'text-[#4B5563] dark:text-slate-200 hover:text-[#7C3AED] hover:bg-[#F3E8FF] dark:hover:bg-purple-950/40'
-                }`}
-              >
-                <FileText className="w-4 h-4 text-emerald-500" />
-                <span>{t('applications')}</span>
-              </Link>
-            )}
-
             {/* Recruiter Portal (For Employer or Admin roles) */}
             {(user?.role === 'EMPLOYER' || user?.role === 'RECRUITER' || user?.role === 'ADMIN') && (
               <Link
@@ -707,6 +692,72 @@ export default function Navbar({
         onConfirm={handleConfirmLogout}
         onCancel={() => setIsLogoutModalOpen(false)}
       />
+
+      {/* Mobile Bottom Navigation Bar (Visible only on mobile screens < md) */}
+      <nav 
+        aria-label="Mobile Bottom Navigation"
+        className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-[#120B1D]/95 backdrop-blur-xl border-t border-purple-200/80 dark:border-purple-900/40 px-2 py-1 shadow-[0_-4px_25px_rgba(124,58,237,0.12)] flex items-center justify-around"
+      >
+        <Link
+          to="/home"
+          className={`flex flex-col items-center justify-center py-1.5 px-3 rounded-xl transition-all ${
+            pathname === '/home'
+              ? 'text-purple-600 dark:text-purple-400 font-extrabold'
+              : 'text-slate-500 dark:text-slate-400 hover:text-purple-600 font-medium'
+          }`}
+        >
+          <Compass className={`w-5 h-5 transition-transform ${pathname === '/home' ? 'text-purple-600 dark:text-purple-400 scale-110' : ''}`} />
+          <span className="text-[10px] mt-0.5 tracking-tight">Home</span>
+        </Link>
+
+        <Link
+          to="/courses"
+          className={`flex flex-col items-center justify-center py-1.5 px-3 rounded-xl transition-all ${
+            pathname.startsWith('/courses') || pathname === '/learn'
+              ? 'text-purple-600 dark:text-purple-400 font-extrabold'
+              : 'text-slate-500 dark:text-slate-400 hover:text-purple-600 font-medium'
+          }`}
+        >
+          <BookOpen className={`w-5 h-5 transition-transform ${pathname.startsWith('/courses') || pathname === '/learn' ? 'text-purple-600 dark:text-purple-400 scale-110' : ''}`} />
+          <span className="text-[10px] mt-0.5 tracking-tight">Courses</span>
+        </Link>
+
+        <Link
+          to="/opportunities"
+          className={`flex flex-col items-center justify-center py-1.5 px-3 rounded-xl transition-all ${
+            pathname.startsWith('/opportunities')
+              ? 'text-purple-600 dark:text-purple-400 font-extrabold'
+              : 'text-slate-500 dark:text-slate-400 hover:text-purple-600 font-medium'
+          }`}
+        >
+          <Briefcase className={`w-5 h-5 transition-transform ${pathname.startsWith('/opportunities') ? 'text-purple-600 dark:text-purple-400 scale-110' : ''}`} />
+          <span className="text-[10px] mt-0.5 tracking-tight">Jobs</span>
+        </Link>
+
+        <Link
+          to="/mentorship"
+          className={`flex flex-col items-center justify-center py-1.5 px-3 rounded-xl transition-all ${
+            pathname.startsWith('/mentorship')
+              ? 'text-purple-600 dark:text-purple-400 font-extrabold'
+              : 'text-slate-500 dark:text-slate-400 hover:text-purple-600 font-medium'
+          }`}
+        >
+          <Users className={`w-5 h-5 transition-transform ${pathname.startsWith('/mentorship') ? 'text-purple-600 dark:text-purple-400 scale-110' : ''}`} />
+          <span className="text-[10px] mt-0.5 tracking-tight">Mentors</span>
+        </Link>
+
+        <Link
+          to="/community"
+          className={`flex flex-col items-center justify-center py-1.5 px-3 rounded-xl transition-all ${
+            pathname.startsWith('/community')
+              ? 'text-purple-600 dark:text-purple-400 font-extrabold'
+              : 'text-slate-500 dark:text-slate-400 hover:text-purple-600 font-medium'
+          }`}
+        >
+          <MessageSquare className={`w-5 h-5 transition-transform ${pathname.startsWith('/community') ? 'text-purple-600 dark:text-purple-400 scale-110' : ''}`} />
+          <span className="text-[10px] mt-0.5 tracking-tight">Community</span>
+        </Link>
+      </nav>
     </nav>
   );
 }
