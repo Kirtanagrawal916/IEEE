@@ -89,6 +89,28 @@ export default function LearnSection({ user, onCompleteLesson, onNavigateToPortf
   const [isLoadingTracks, setIsLoadingTracks] = useState(false);
   const [backendProgressPercent, setBackendProgressPercent] = useState(null);
 
+  // Synchronize activeTab, courseSubView, and puzzleSubGame when searchParams change in the URL
+  useEffect(() => {
+    const currentTab = searchParams.get('tab');
+    if (currentTab === 'puzzles' || currentTab === 'games') {
+      setActiveTab('puzzles');
+    } else if (currentTab === 'challenges') {
+      setActiveTab('challenges');
+    } else if (currentTab === 'courses' || currentTab === 'curriculum') {
+      setActiveTab('courses');
+    }
+
+    const currentView = searchParams.get('view');
+    if (currentView && ['curriculum', 'table', 'classroom', 'roadmap'].includes(currentView)) {
+      setCourseSubView(currentView);
+    }
+
+    const currentGame = searchParams.get('game');
+    if (currentGame) {
+      setPuzzleSubGame(currentGame);
+    }
+  }, [searchParams]);
+
   // Search & category filter
   const [courseSearch, setCourseSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');

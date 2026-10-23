@@ -71,7 +71,7 @@ function OpportunityDetailRouteWrapper({ opportunities, selectedOpportunity, use
   );
 }
 
-function OpportunityApplyRouteWrapper({ opportunities, selectedOpportunity, user, userPortfolios, onConfirmApplySuccess }) {
+function OpportunityApplyRouteWrapper({ opportunities, selectedOpportunity, user, userPortfolios, onConfirmApplySuccess, onAddPortfolio }) {
   const { id } = useParams();
   const navigate = useNavigate();
   const gig = opportunities.find(o => String(o.id) === String(id)) || selectedOpportunity || opportunities[0];
@@ -82,6 +82,7 @@ function OpportunityApplyRouteWrapper({ opportunities, selectedOpportunity, user
       userPortfolios={userPortfolios}
       onBack={() => navigate(`/opportunities/${gig?.id || ''}`)}
       onConfirmApplySuccess={onConfirmApplySuccess}
+      onAddPortfolio={onAddPortfolio}
     />
   );
 }
@@ -833,6 +834,7 @@ function AppContent() {
                   user={user}
                   userPortfolios={userPortfolios}
                   onConfirmApplySuccess={(gigId, coverNote, portId, quizSummary) => handleConfirmApply(gigId, coverNote, portId, quizSummary)}
+                  onAddPortfolio={handleSubmitProject}
                 />
               </ProtectedRoute>
             } 
