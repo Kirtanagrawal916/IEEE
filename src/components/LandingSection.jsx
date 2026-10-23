@@ -60,7 +60,7 @@ export default function LandingSection({ onNavigate, onOpenAuth, theme }) {
   const jobCategories = [
     { name: "Digital Marketing", count: "3 Openings", icon: Megaphone, color: "bg-[#F3E8FF] text-[#7C3AED]", desc: "Social media, Instagram management, and ads" },
     { name: "Canva & Graphic Design", count: "2 Openings", icon: Palette, color: "bg-[#FFF7ED] text-[#EA580C]", desc: "Flyers, social banners, and digital graphics" },
-    { name: "E-Commerce Assistant", count: "2 Openings", icon: Laptop, count: "2 Openings", color: "bg-[#DCFCE7] text-[#16A34A]", desc: "Shopify product uploads, catalogs, and tags" },
+    { name: "E-Commerce Assistant", count: "2 Openings", icon: Laptop, color: "bg-[#DCFCE7] text-[#16A34A]", desc: "Shopify product uploads, catalogs, and tags" },
     { name: "Content Writing", count: "1 Opening", icon: Feather, color: "bg-[#FEF3C7] text-[#D97706]", desc: "Product descriptions, captions, and blogs" },
     { name: "Handicrafts & Tailoring", count: "Curated Work", icon: Scissors, color: "bg-[#FCE7F3] text-[#BE185D]", desc: "Boutique orders, embroidery, and tailoring" },
     { name: "Virtual Support", count: "Remote Gigs", icon: Briefcase, color: "bg-[#E0E7FF] text-[#4338CA]", desc: "Data entry, customer support, and coordination" }

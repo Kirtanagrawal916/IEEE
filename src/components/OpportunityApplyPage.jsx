@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { 
   ArrowLeft, 
@@ -18,7 +18,9 @@ import {
   Check,
   BookOpen,
   Play,
-  Lock
+  Lock,
+  Plus,
+  Link2
 } from 'lucide-react';
 import { getQuizForCategory } from '../data/opportunityQuizzes';
 import { triggerCelebrationConfetti } from '../utils/confettiHelper';
@@ -30,15 +32,35 @@ export default function OpportunityApplyPage({
   user, 
   userPortfolios = [], 
   onBack, 
-  onConfirmApplySuccess 
+  onConfirmApplySuccess,
+  onAddPortfolio
 }) {
   const navigate = useNavigate();
   const matchingTrack = getMatchingTrackForOpportunity(gig);
 
   const [step, setStep] = useState(1); // 1: Application Form, 2: Quiz Assessment, 3: Eligibility Results
   const [coverNote, setCoverNote] = useState('');
+  const [availablePortfolios, setAvailablePortfolios] = useState(userPortfolios);
   const [selectedPortfolioId, setSelectedPortfolioId] = useState(userPortfolios[0]?.id || 'capstone-default');
   const [isQuizSubmitted, setIsQuizSubmitted] = useState(false);
+
+  // Inline project creator state
+  const [isAddingProject, setIsAddingProject] = useState(false);
+  const [newProjectTitle, setNewProjectTitle] = useState('');
+  const [newProjectLink, setNewProjectLink] = useState('');
+  const [newProjectDesc, setNewProjectDesc] = useState('');
+  const [isSavingProject, setIsSavingProject] = useState(false);
+
+  // Sync available portfolios when userPortfolios changes
+  useEffect(() => {
+    if (userPortfolios && userPortfolios.length > 0) {
+      setAvailablePortfolios(prev => {
+        const existingIds = new Set(prev.map(p => p.id));
+        const added = userPortfolios.filter(p => !existingIds.has(p.id));
+        return [...prev, ...added];
+      });
+    }
+  }, [userPortfolios]);
 
   // AI Proposal Generator State
   const [isGeneratingAI, setIsGeneratingAI] = useState(false);
@@ -80,12 +102,51 @@ export default function OpportunityApplyPage({
     }));
   };
 
+  // Inline Project Creator Action
+  const handleSaveInlineProject = async (e) => {
+    if (e && e.preventDefault) e.preventDefault();
+    if (!newProjectTitle.trim()) return;
+
+    setIsSavingProject(true);
+    const newProj = {
+      id: `p-${Date.now()}`,
+      title: newProjectTitle.trim(),
+      link: newProjectLink.trim(),
+      description: newProjectDesc.trim() || `Proof-of-work project created for ${gig?.title}`,
+      category: gig?.category || 'Skill Capstone',
+      authorName: user?.name || 'Applicant',
+      authorAvatar: user?.avatar || 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=300',
+      likes: 1,
+      date: 'Just now',
+      verified: true
+    };
+
+    try {
+      if (onAddPortfolio) {
+        await onAddPortfolio(newProj);
+      } else {
+        await api.createProject(newProj).catch(() => {});
+      }
+    } catch (err) {
+      console.warn('Inline project creation note:', err);
+    }
+
+    setAvailablePortfolios(prev => [newProj, ...prev]);
+    setSelectedPortfolioId(newProj.id);
+    setIsAddingProject(false);
+    setNewProjectTitle('');
+    setNewProjectLink('');
+    setNewProjectDesc('');
+    setIsSavingProject(false);
+    triggerCelebrationConfetti();
+  };
+
   // AI Proposal Generator Action
   const handleGenerateAIProposal = async (tone = 'professional') => {
     setIsGeneratingAI(true);
     setProposalTone(tone);
 
-    const attachedProject = userPortfolios.find(p => p.id === selectedPortfolioId) || userPortfolios[0];
+    const attachedProject = availablePortfolios.find(p => p.id === selectedPortfolioId) || availablePortfolios[0];
     const projectTitle = attachedProject?.title || `${gig?.category || 'Skill'} Capstone Project`;
     const skillsList = (gig?.skillsRequired || ['Hands-on Design', 'Deliverables']).slice(0, 3).join(', ');
     const candidateName = user?.name || 'Applicant';
@@ -263,19 +324,104 @@ Make it persuasive, authentic, respectful, and ready to send directly to the cli
           <form onSubmit={handleProceedToQuiz} className="space-y-5 text-xs">
             
             {/* Attach Portfolio Project */}
-            <div className="space-y-2">
-              <label className="block font-bold text-slate-800 dark:text-slate-200 text-xs flex items-center gap-1.5">
-                <FileText className="w-4 h-4 text-purple-600 dark:text-purple-400" />
-                Select Proof-of-Work Portfolio Project to Attach
-              </label>
-              
-              {userPortfolios && userPortfolios.length > 0 ? (
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <label className="block font-bold text-slate-800 dark:text-slate-200 text-xs flex items-center gap-1.5">
+                  <FileText className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                  Select Proof-of-Work Portfolio Project to Attach
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setIsAddingProject(!isAddingProject)}
+                  className="inline-flex items-center gap-1 text-[11px] font-extrabold text-purple-600 dark:text-purple-400 hover:text-purple-700 hover:underline cursor-pointer"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>{isAddingProject ? 'Cancel' : '+ Add Custom Work Link'}</span>
+                </button>
+              </div>
+
+              {/* Inline Quick Add Project Drawer */}
+              {isAddingProject && (
+                <div className="p-4 rounded-2xl bg-purple-50/80 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800/80 space-y-3 animate-fade-in shadow-inner">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-black text-purple-900 dark:text-purple-200 flex items-center gap-1.5">
+                      <Sparkles className="w-3.5 h-3.5 text-pink-500" />
+                      Quickly Add Proof-of-Work Deliverable
+                    </span>
+                    <span className="text-[10px] text-purple-600 dark:text-purple-400 font-semibold">
+                      Category: {gig.category}
+                    </span>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="text-[10px] font-bold text-slate-700 dark:text-slate-300 block mb-1">
+                        Project Title *
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="e.g. Social Media Ad Kit or Website Redesign"
+                        value={newProjectTitle}
+                        onChange={(e) => setNewProjectTitle(e.target.value)}
+                        className="w-full bg-white dark:bg-slate-800 text-slate-900 dark:text-white px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 text-xs focus:outline-none focus:border-purple-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[10px] font-bold text-slate-700 dark:text-slate-300 block mb-1">
+                        Live Work URL (Figma, Canva, Drive, GitHub)
+                      </label>
+                      <input
+                        type="url"
+                        placeholder="https://..."
+                        value={newProjectLink}
+                        onChange={(e) => setNewProjectLink(e.target.value)}
+                        className="w-full bg-white dark:bg-slate-800 text-slate-900 dark:text-white px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 text-xs focus:outline-none focus:border-purple-500"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="text-[10px] font-bold text-slate-700 dark:text-slate-300 block mb-1">
+                      Brief Overview (What did you build?)
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Created 5 responsive templates with high conversion typography."
+                      value={newProjectDesc}
+                      onChange={(e) => setNewProjectDesc(e.target.value)}
+                      className="w-full bg-white dark:bg-slate-800 text-slate-900 dark:text-white px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 text-xs focus:outline-none focus:border-purple-500"
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-end gap-2 pt-1">
+                    <button
+                      type="button"
+                      onClick={() => setIsAddingProject(false)}
+                      className="px-3 py-1.5 rounded-xl border border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-300 text-xs font-bold hover:bg-slate-100 dark:hover:bg-slate-800"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleSaveInlineProject}
+                      disabled={!newProjectTitle.trim() || isSavingProject}
+                      className="px-4 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white text-xs font-extrabold flex items-center gap-1.5 shadow-sm cursor-pointer"
+                    >
+                      <Check className="w-3.5 h-3.5" />
+                      <span>{isSavingProject ? 'Saving...' : 'Save & Attach to Application'}</span>
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Existing or Default Project Selector */}
+              {availablePortfolios && availablePortfolios.length > 0 ? (
                 <select
                   value={selectedPortfolioId}
                   onChange={(e) => setSelectedPortfolioId(e.target.value)}
                   className="w-full bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white p-3.5 rounded-2xl border border-slate-300 dark:border-slate-700 focus:outline-none focus:border-purple-500 font-semibold text-xs"
                 >
-                  {userPortfolios.map((p) => (
+                  {availablePortfolios.map((p) => (
                     <option key={p.id} value={p.id}>
                       {p.title} ({p.category || 'Verified Project'})
                     </option>
