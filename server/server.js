@@ -117,10 +117,42 @@ app.use((err, req, res, next) => {
   });
 });
 
+const HOST = process.env.HOST || '0.0.0.0';
+
+let server;
 if (process.env.NODE_ENV !== 'test') {
-  app.listen(PORT, () => {
-    console.log(`🚀 HerEarn Secure Express Backend running on http://localhost:${PORT}`);
+  server = app.listen(PORT, HOST, () => {
+    console.log(`🚀 HerEarn Secure Express Backend running on http://${HOST}:${PORT}`);
   });
 }
 
+// Graceful shutdown & process crash resilience for cloud hosting (Render/Railway)
+const shutdown = (signal) => {
+  console.log(`[Process] Received ${signal}, closing server gracefully...`);
+  if (server) {
+    server.close(() => {
+      console.log('[Process] HTTP server closed cleanly.');
+      process.exit(0);
+    });
+    setTimeout(() => {
+      console.error('[Process] Forcefully terminating after timeout');
+      process.exit(1);
+    }, 10000);
+  } else {
+    process.exit(0);
+  }
+};
+
+process.on('SIGTERM', () => shutdown('SIGTERM'));
+process.on('SIGINT', () => shutdown('SIGINT'));
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('[Process Error] Unhandled Rejection at:', promise, 'reason:', reason);
+});
+
+process.on('uncaughtException', (err) => {
+  console.error('[Process Error] Uncaught Exception:', err);
+});
+
 export default app;
+
