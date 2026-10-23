@@ -159,11 +159,23 @@ export default function LessonPlayerPage({ user, onCompleteLesson, showToast }) 
     );
   }
 
-  // Construct embedded YouTube URL
-  const videoUrl = currentLesson.videoUrl || 'https://www.youtube.com/embed/dQw4w9WgXcQ';
-  const embedUrl = videoUrl.includes('watch?v=') 
-    ? videoUrl.replace('watch?v=', 'embed/') 
-    : (videoUrl.includes('embed') ? videoUrl : 'https://www.youtube.com/embed/dQw4w9WgXcQ');
+  // Robust constructor for embedded YouTube URL with multiple URL format supports
+  const formatYouTubeEmbed = (url) => {
+    if (!url) return 'https://www.youtube.com/embed/nU-IIXBWlS4';
+    if (url.includes('youtube.com/embed/')) return url;
+    if (url.includes('watch?v=')) {
+      const id = url.split('watch?v=')[1]?.split('&')[0];
+      return `https://www.youtube.com/embed/${id}`;
+    }
+    if (url.includes('youtu.be/')) {
+      const id = url.split('youtu.be/')[1]?.split('?')[0];
+      return `https://www.youtube.com/embed/${id}`;
+    }
+    return url;
+  };
+
+  const videoUrl = currentLesson.videoUrl || 'https://www.youtube.com/embed/nU-IIXBWlS4';
+  const embedUrl = formatYouTubeEmbed(videoUrl);
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 animate-fade-in text-slate-900 dark:text-white">

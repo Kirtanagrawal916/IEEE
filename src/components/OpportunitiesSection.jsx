@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useMemo } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { api } from '../services/api';
 import { 
   Briefcase, 
@@ -43,14 +43,32 @@ export default function OpportunitiesSection({
   onUpdateUserSkills 
 }) {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+
+  // Parse incoming query parameters from home search or category chips
+  const urlSearch = searchParams.get('search') || searchParams.get('q') || '';
+  const urlCategory = searchParams.get('category') || '';
+  const urlSkill = searchParams.get('skill') || '';
+
   const [opportunities, setOpportunities] = useState(propOpportunities || []);
-  const [selectedCategory, setSelectedCategory] = useState('All');
+  const [selectedCategory, setSelectedCategory] = useState(urlCategory || 'All');
   const [selectedType, setSelectedType] = useState('All');
   const [selectedMatchFilter, setSelectedMatchFilter] = useState('All'); // 'All', 'HighMatch' (75%+), 'ExactMatch' (100%)
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState(urlSearch);
   const [sortBy, setSortBy] = useState('highest_match'); // 'highest_match', 'newest', 'highest_pay', 'applicants'
-  const [activeSkillFilter, setActiveSkillFilter] = useState(null);
+  const [activeSkillFilter, setActiveSkillFilter] = useState(urlSkill || null);
   const [isLoading, setIsLoading] = useState(false);
+
+  // Sync state when URL search parameters change
+  useEffect(() => {
+    const query = searchParams.get('search') || searchParams.get('q') || '';
+    const cat = searchParams.get('category') || '';
+    const sk = searchParams.get('skill') || null;
+
+    if (query !== undefined && query !== searchQuery) setSearchQuery(query);
+    if (cat && cat !== selectedCategory) setSelectedCategory(cat);
+    if (sk !== activeSkillFilter) setActiveSkillFilter(sk);
+  }, [searchParams]);
 
   useEffect(() => {
     if (propOpportunities && propOpportunities.length > 0) {
@@ -81,7 +99,11 @@ export default function OpportunitiesSection({
     fetchFiltered();
   }, [selectedCategory, searchQuery, activeSkillFilter]);
 
-  const categories = ['All', 'Startup cohort', 'Scholarship', 'Learning Program', 'Digital Marketing', 'Design'];
+  const categories = useMemo(() => {
+    const fromGigs = (opportunities || []).map(g => g.category).filter(Boolean);
+    const standard = ['Startup cohort', 'Scholarship', 'Learning Program', 'Digital Marketing', 'Design', 'Content Writing', 'E-Commerce & Shopify'];
+    return ['All', ...Array.from(new Set([...fromGigs, ...standard]))];
+  }, [opportunities]);
 
   // Current active user skills
   const userSkills = (user && user.skills && user.skills.length > 0) 
@@ -90,20 +112,32 @@ export default function OpportunitiesSection({
 
   // Filtering logic
   const filteredGigs = opportunities.filter(g => {
-    const matchesCategory = selectedCategory === 'All' || g.category === selectedCategory;
-    const matchesSkill = !activeSkillFilter || (g.skillsRequired && g.skillsRequired.includes(activeSkillFilter));
+    const gigCat = (g.category || '').toLowerCase();
+    const selCat = (selectedCategory || '').toLowerCase();
+    const matchesCategory = selectedCategory === 'All' || 
+                            gigCat === selCat ||
+                            (selCat.includes('design') && gigCat.includes('design')) ||
+                            (selCat.includes('marketing') && gigCat.includes('marketing')) ||
+                            (selCat.includes('commerce') && gigCat.includes('commerce'));
+
+    const gigSkills = Array.isArray(g.skillsRequired) 
+      ? g.skillsRequired 
+      : (Array.isArray(g.skills) ? g.skills : []);
+
+    const matchesSkill = !activeSkillFilter || gigSkills.some(s => s.toLowerCase() === activeSkillFilter.toLowerCase());
     
-    const matchRes = calculateSkillMatch(userSkills, g.skillsRequired);
+    const matchRes = calculateSkillMatch(userSkills, gigSkills);
     const matchesMatchFilter = selectedMatchFilter === 'All' ||
                                (selectedMatchFilter === 'HighMatch' && matchRes.matchPercentage >= 75) ||
                                (selectedMatchFilter === 'ExactMatch' && matchRes.matchPercentage === 100);
 
-    const query = searchQuery.toLowerCase();
-    const matchesSearch = !searchQuery || 
+    const query = searchQuery.trim().toLowerCase();
+    const matchesSearch = !query || 
                           (g.title || '').toLowerCase().includes(query) ||
                           (g.company || '').toLowerCase().includes(query) ||
                           (g.description || '').toLowerCase().includes(query) ||
-                          (g.skillsRequired && g.skillsRequired.some(s => s.toLowerCase().includes(query)));
+                          (g.location || '').toLowerCase().includes(query) ||
+                          gigSkills.some(s => s.toLowerCase().includes(query));
     return matchesCategory && matchesSkill && matchesMatchFilter && matchesSearch;
   });
 

@@ -89,6 +89,28 @@ export default function LearnSection({ user, onCompleteLesson, onNavigateToPortf
   const [isLoadingTracks, setIsLoadingTracks] = useState(false);
   const [backendProgressPercent, setBackendProgressPercent] = useState(null);
 
+  // Synchronize activeTab, courseSubView, and puzzleSubGame when searchParams change in the URL
+  useEffect(() => {
+    const currentTab = searchParams.get('tab');
+    if (currentTab === 'puzzles' || currentTab === 'games') {
+      setActiveTab('puzzles');
+    } else if (currentTab === 'challenges') {
+      setActiveTab('challenges');
+    } else if (currentTab === 'courses' || currentTab === 'curriculum') {
+      setActiveTab('courses');
+    }
+
+    const currentView = searchParams.get('view');
+    if (currentView && ['curriculum', 'table', 'classroom', 'roadmap'].includes(currentView)) {
+      setCourseSubView(currentView);
+    }
+
+    const currentGame = searchParams.get('game');
+    if (currentGame) {
+      setPuzzleSubGame(currentGame);
+    }
+  }, [searchParams]);
+
   // Search & category filter
   const [courseSearch, setCourseSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
@@ -429,10 +451,10 @@ export default function LearnSection({ user, onCompleteLesson, onNavigateToPortf
                   <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-amber-300 text-xs font-mono font-bold tracking-wider uppercase border border-white/15">
                     <span>// HER_EARN_SKILL_MATRIX_V2</span>
                   </div>
-                  <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight leading-tight">
+                  <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight leading-tight text-white !text-white">
                     Structured Skill Syllabi for Remote Earnings
                   </h1>
-                  <p className="text-xs sm:text-sm text-slate-300 leading-relaxed font-normal">
+                  <p className="text-xs sm:text-sm text-slate-200 leading-relaxed font-normal">
                     Explore full course syllabi with direct lesson roadmaps. No fluff or generic theory—each lesson delivers a tangible workflow used by paid freelancers and agencies.
                   </p>
                 </div>
@@ -448,7 +470,7 @@ export default function LearnSection({ user, onCompleteLesson, onNavigateToPortf
                         className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
                           selectedCategory === cat
                             ? 'bg-white text-slate-950 font-black shadow-sm'
-                            : 'bg-white/10 text-white hover:bg-white/20 border border-white/10'
+                            : 'bg-white/10 text-slate-200 hover:text-white hover:bg-white/20 border border-white/10'
                         }`}
                       >
                         {cat}
@@ -469,7 +491,7 @@ export default function LearnSection({ user, onCompleteLesson, onNavigateToPortf
                       <button 
                         type="button" 
                         onClick={() => setCourseSearch('')}
-                        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400"
+                        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white"
                       >
                         <X className="w-3.5 h-3.5" />
                       </button>
@@ -589,9 +611,9 @@ export default function LearnSection({ user, onCompleteLesson, onNavigateToPortf
 
                       {/* Lesson Modules Roadmap Strip (Interactive Timeline) */}
                       <div className="space-y-3">
-                        <div className="flex items-center justify-between text-xs font-bold text-slate-400 uppercase tracking-wider">
+                        <div className="flex items-center justify-between text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
                           <span>Modules & Syllabus Breakdown ({t.lessons?.length || 0} Lessons)</span>
-                          <span className="text-slate-500 font-normal">
+                          <span className="text-slate-600 dark:text-slate-400 font-medium">
                             {isTrackUnlocked(t.id, user) ? 'Click any lesson to launch video' : '🔒 Apply opportunity to unlock lectures'}
                           </span>
                         </div>
@@ -614,7 +636,7 @@ export default function LearnSection({ user, onCompleteLesson, onNavigateToPortf
                                 }`}
                               >
                                 <div className="flex items-center justify-between">
-                                  <span className="font-mono text-[10px] font-bold text-slate-400 group-hover:text-purple-600 dark:group-hover:text-purple-400">
+                                  <span className="font-mono text-[10px] font-bold text-slate-500 dark:text-slate-400 group-hover:text-purple-600 dark:group-hover:text-purple-400">
                                     MODULE 0{lessonIdx + 1}
                                   </span>
                                   {!isTrackOpen ? (
@@ -630,7 +652,7 @@ export default function LearnSection({ user, onCompleteLesson, onNavigateToPortf
                                   {lesson.title.replace(/^Lesson \d+:\s*/i, '')}
                                 </h4>
 
-                                <div className="flex items-center justify-between text-[10px] text-slate-500 dark:text-slate-400 pt-1 border-t border-slate-200/50 dark:border-slate-700/50">
+                                <div className="flex items-center justify-between text-[10px] text-slate-600 dark:text-slate-400 pt-1 border-t border-slate-200/50 dark:border-slate-700/50 font-medium">
                                   <span>{lesson.duration || '20 min'}</span>
                                   {!isTrackOpen ? (
                                     <span className="font-bold text-amber-600 dark:text-amber-400 flex items-center gap-1">
@@ -652,7 +674,7 @@ export default function LearnSection({ user, onCompleteLesson, onNavigateToPortf
                       <div className="pt-4 border-t border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-xs">
                         {/* Skills pills */}
                         <div className="flex flex-wrap items-center gap-1.5">
-                          <span className="text-[10px] font-bold uppercase text-slate-400 mr-1">Skills:</span>
+                          <span className="text-[10px] font-bold uppercase text-slate-600 dark:text-slate-400 mr-1">Skills:</span>
                           {(t.skillsCovered || []).map((skill, idx) => (
                             <span 
                               key={idx}
@@ -665,7 +687,7 @@ export default function LearnSection({ user, onCompleteLesson, onNavigateToPortf
 
                         {/* Progress metric */}
                         <div className="flex items-center gap-4">
-                          <span className="text-[11px] text-slate-500">
+                          <span className="text-[11px] text-slate-600 dark:text-slate-400">
                             Instructor: <strong className="text-slate-800 dark:text-slate-200">{t.instructor ? t.instructor.split('(')[0] : 'Expert Mentor'}</strong>
                           </span>
 
@@ -696,8 +718,8 @@ export default function LearnSection({ user, onCompleteLesson, onNavigateToPortf
               
               <div className="p-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between flex-wrap gap-2">
                 <div>
-                  <h3 className="font-black text-base">Comprehensive Skill Track Comparison Matrix</h3>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">Overview of duration, lessons count, certified outcomes, and earning estimates.</p>
+                  <h3 className="font-black text-base text-slate-900 dark:text-white">Comprehensive Skill Track Comparison Matrix</h3>
+                  <p className="text-xs text-slate-600 dark:text-slate-300 font-medium">Overview of duration, lessons count, certified outcomes, and earning estimates.</p>
                 </div>
                 <span className="text-xs font-mono font-bold text-purple-600 dark:text-purple-400">
                   {tracks.length} Tracks Live
@@ -891,7 +913,7 @@ export default function LearnSection({ user, onCompleteLesson, onNavigateToPortf
                 <span className="text-[10px] font-black uppercase tracking-widest text-amber-700 dark:text-amber-300 bg-amber-100 dark:bg-amber-950 px-3 py-1 rounded-full border border-amber-300 dark:border-amber-700">
                   Course Lectures Locked
                 </span>
-                <h2 className="text-2xl sm:text-3xl font-black">
+                <h2 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white">
                   "{currentTrack.title}" is Locked
                 </h2>
                 <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
@@ -1094,7 +1116,7 @@ export default function LearnSection({ user, onCompleteLesson, onNavigateToPortf
                     {/* Tab 2: Key Concepts */}
                     {classroomTab === 'takeaways' && (
                       <div className="space-y-3 animate-fade-in">
-                        <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                        <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
                           Checklist of Core Concepts:
                         </h4>
                         <div className="grid sm:grid-cols-2 gap-2 text-xs">

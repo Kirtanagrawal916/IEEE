@@ -25,7 +25,8 @@ import {
   Sparkles,
   Gamepad2,
   MessageSquare,
-  Check
+  Check,
+  Plus
 } from 'lucide-react';
 import LogoutModal from './LogoutModal';
 import WalletWithdrawModal from './WalletWithdrawModal';
@@ -268,6 +269,25 @@ export default function Navbar({
                     </div>
                   </Link>
 
+                  {/* Post an Opening */}
+                  <Link
+                    to="/post-gig"
+                    onClick={() => setIsCareerOpen(false)}
+                    className={`flex items-center gap-3 px-3 py-2 rounded-xl text-xs transition-all ${
+                      pathname === '/post-gig'
+                        ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 font-bold border border-emerald-300 dark:border-emerald-500/30'
+                        : 'text-slate-700 dark:text-slate-200 hover:bg-emerald-50 dark:hover:bg-slate-800'
+                    }`}
+                  >
+                    <div className="w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-900/50 flex items-center justify-center text-emerald-600 dark:text-emerald-400 shrink-0">
+                      <Plus className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <p className="font-bold text-slate-900 dark:text-white leading-tight">Post an Opening</p>
+                      <p className="text-[10px] text-slate-500 dark:text-slate-400">Hire verified women freelancers & interns</p>
+                    </div>
+                  </Link>
+
                 </div>
               )}
             </div>
@@ -310,6 +330,23 @@ export default function Navbar({
               >
                 <FileText className="w-4 h-4 text-emerald-500" />
                 <span>{t('applications')}</span>
+              </Link>
+            )}
+
+            {/* Recruiter Portal (For Employer or Admin roles) */}
+            {(user?.role === 'EMPLOYER' || user?.role === 'RECRUITER' || user?.role === 'ADMIN') && (
+              <Link
+                to="/recruiter"
+                className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                  pathname.startsWith('/recruiter')
+                    ? 'bg-[#7C3AED] text-white shadow-xs'
+                    : 'text-[#4B5563] dark:text-slate-200 hover:text-[#7C3AED] hover:bg-[#F3E8FF] dark:hover:bg-purple-950/40'
+                }`}
+                title="Recruiter Portal (Manage openings, applicants & milestones)"
+              >
+                <Briefcase className="w-4 h-4 text-amber-500" />
+                <span>Recruiter</span>
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
               </Link>
             )}
 
@@ -554,7 +591,24 @@ export default function Navbar({
                     </button>
                   </div>
 
-                  {/* 3. STAFF / ADMIN LINK */}
+                  {/* 3. RECRUITER PORTAL LINK */}
+                  <div className="pt-1">
+                    <Link
+                      to="/recruiter"
+                      onClick={() => setIsMenuOpen(false)}
+                      className="w-full text-left px-3 py-2 rounded-xl text-xs font-semibold flex items-center justify-between bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-500/30 text-amber-900 dark:text-amber-200 hover:bg-amber-100 dark:hover:bg-amber-900/60 transition-colors cursor-pointer"
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <Briefcase className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+                        <span>Recruiter Portal</span>
+                      </div>
+                      <span className="text-[9px] font-black uppercase px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-700 dark:text-amber-300">
+                        Hire Talent
+                      </span>
+                    </Link>
+                  </div>
+
+                  {/* 4. STAFF / ADMIN LINK */}
                   <div className="pt-1">
                     <Link
                       to="/admin"
