@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Link, useNavigate, useLocation, useParams } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Link, useNavigate, useLocation, useParams, Navigate } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import LandingSection from './components/LandingSection';
 import LearnSection from './components/LearnSection';
@@ -14,7 +14,6 @@ import OpportunityDetailPage from './components/OpportunityDetailPage';
 import OpportunityApplyPage from './components/OpportunityApplyPage';
 import TrackDetailPage from './components/TrackDetailPage';
 import LessonPlayerPage from './components/LessonPlayerPage';
-import ApplicationsPage from './components/ApplicationsPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import ChallengeDetailPage from './components/ChallengeDetailPage';
 import SubmitProjectPage from './components/SubmitProjectPage';
@@ -826,15 +825,7 @@ function AppContent() {
 
           <Route 
             path="/applications" 
-            element={
-              <ProtectedRoute user={user}>
-                <ApplicationsPage 
-                  user={user} 
-                  onUpdateWallet={(updated) => saveUserData(updated)}
-                  showToast={showToast}
-                />
-              </ProtectedRoute>
-            } 
+            element={<Navigate to="/dashboard" replace />} 
           />
 
           <Route 
@@ -1007,7 +998,6 @@ function AppContent() {
                 <p className="text-xs font-bold text-[#1F2937] dark:text-white uppercase tracking-wider">Candidate Hub</p>
                 <div className="flex flex-col space-y-2">
                   <Link to="/dashboard" className="hover:text-[#7C3AED] transition-colors py-1">Learner Dashboard</Link>
-                  <Link to="/applications" className="hover:text-[#7C3AED] transition-colors py-1">My Applications</Link>
                   <Link to="/profile" className="hover:text-[#7C3AED] transition-colors py-1">My Profile & Resume</Link>
                 </div>
               </div>

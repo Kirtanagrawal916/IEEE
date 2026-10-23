@@ -315,11 +315,11 @@ export default function Dashboard({ user, onOpenSubmitModal, onOpenLogoutModal }
 
           <button
             type="button"
-            onClick={() => navigate('/applications')}
+            onClick={() => navigate('/opportunities')}
             className="px-4 py-3 rounded-2xl bg-white/10 hover:bg-white/20 border border-white/20 text-white font-extrabold text-xs transition-all flex items-center gap-1.5 cursor-pointer"
           >
             <Briefcase className="w-4 h-4 text-pink-300" />
-            <span>Workrooms</span>
+            <span>Opportunities</span>
           </button>
         </div>
       </div>
@@ -727,10 +727,10 @@ export default function Dashboard({ user, onOpenSubmitModal, onOpenLogoutModal }
                       <span>Applied: {app.appliedAt ? new Date(app.appliedAt).toLocaleDateString() : 'Recently'}</span>
                       <button
                         type="button"
-                        onClick={() => navigate('/applications')}
+                        onClick={() => navigate('/opportunities')}
                         className="font-bold text-purple-600 dark:text-purple-400 hover:underline flex items-center gap-0.5 cursor-pointer"
                       >
-                        <span>Workroom</span>
+                        <span>View Gig</span>
                         <ArrowUpRight className="w-3 h-3" />
                       </button>
                     </div>
@@ -1075,11 +1075,11 @@ export default function Dashboard({ user, onOpenSubmitModal, onOpenLogoutModal }
                         type="button"
                         onClick={() => {
                           setIsOpportunitiesModalOpen(false);
-                          navigate(`/applications`);
+                          navigate(`/opportunities`);
                         }}
                         className="py-1.5 px-3 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-400/30 text-xs font-bold transition-all flex items-center gap-1 cursor-pointer"
                       >
-                        <span>View Workroom</span>
+                        <span>View Gig Details</span>
                         <ArrowRight className="w-3 h-3" />
                       </button>
                     </div>
