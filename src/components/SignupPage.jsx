@@ -4,6 +4,7 @@ import { api } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import GoogleSignInButton from './GoogleSignInButton';
 import Logo from './Logo';
+import CaptchaChallenge, { generateRandomCaptcha } from './CaptchaChallenge';
 import { 
   Sparkles, 
   User, 
@@ -40,6 +41,17 @@ export default function SignupPage({ onLoginSuccess, onNavigateToLogin, onNaviga
   const [agreeTerms, setAgreeTerms] = useState(true);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+
+  // Security CAPTCHA State
+  const [captchaCode, setCaptchaCode] = useState(() => generateRandomCaptcha());
+  const [captchaInput, setCaptchaInput] = useState('');
+  const [captchaError, setCaptchaError] = useState('');
+
+  const handleRefreshCaptcha = () => {
+    setCaptchaCode(generateRandomCaptcha());
+    setCaptchaInput('');
+    setCaptchaError('');
+  };
 
   // Email Confirmation State
   const [signupComplete, setSignupComplete] = useState(false);
@@ -129,7 +141,21 @@ export default function SignupPage({ onLoginSuccess, onNavigateToLogin, onNaviga
       return;
     }
 
-    // 7. Terms of Service & Privacy Policy agreement
+    // 7. Security CAPTCHA Verification
+    if (!captchaInput.trim()) {
+      setError('Please complete the security CAPTCHA verification code.');
+      setCaptchaError('Please enter the security code shown above.');
+      return;
+    }
+
+    if (captchaInput.trim().toUpperCase() !== captchaCode.toUpperCase()) {
+      setError('Invalid security code. A new code has been generated. Please try again.');
+      setCaptchaError('Incorrect code. Please enter the new code.');
+      handleRefreshCaptcha();
+      return;
+    }
+
+    // 8. Terms of Service & Privacy Policy agreement
     if (!agreeTerms) {
       setError('You must agree to the Terms of Service and Privacy Policy to create an account.');
       return;
@@ -643,6 +669,22 @@ export default function SignupPage({ onLoginSuccess, onNavigateToLogin, onNaviga
                   </div>
                 </label>
               </div>
+
+              {/* Security Verification CAPTCHA */}
+              <CaptchaChallenge
+                captchaCode={captchaCode}
+                captchaInput={captchaInput}
+                setCaptchaInput={(val) => {
+                  setCaptchaInput(val);
+                  if (captchaError) setCaptchaError('');
+                  if (error && error.toLowerCase().includes('captcha') || error.toLowerCase().includes('security code')) {
+                    setError('');
+                  }
+                }}
+                onRefresh={handleRefreshCaptcha}
+                hasError={Boolean(captchaError)}
+                errorMessage={captchaError}
+              />
 
               {/* Terms Checkbox */}
               <div className="pt-0.5">

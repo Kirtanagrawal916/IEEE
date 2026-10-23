@@ -50,6 +50,10 @@ import {
 
 import { api } from './services/api';
 import { useAuth } from './context/AuthContext';
+import { useTheme } from './context/ThemeContext';
+import ThemeToggle from './components/ThemeToggle';
+import NotFoundPage from './components/NotFoundPage';
+import { ScrollProgressBar, BackToTopButton } from './components/ScrollEnhancements';
 import { 
   getMatchingTrackForOpportunity, 
   isTrackUnlocked, 
@@ -109,9 +113,7 @@ function AppContent() {
 
   const [portfolios, setPortfolios] = useState(initialPortfolios);
   const [opportunities, setOpportunities] = useState(initialOpportunities);
-  const [theme, setTheme] = useState(() => {
-    return localStorage.getItem('herearn_theme') || 'light';
-  });
+  const { theme, toggleTheme: handleToggleTheme } = useTheme();
 
   // Modals & Navigation state
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
@@ -143,23 +145,6 @@ function AppContent() {
 
   // Toast
   const [toast, setToast] = useState(null);
-
-  useEffect(() => {
-    const root = document.documentElement;
-    const body = document.body;
-    if (theme === 'dark') {
-      root.classList.add('dark');
-      root.classList.remove('light');
-      body.classList.add('dark');
-      body.classList.remove('light');
-    } else {
-      root.classList.add('light');
-      root.classList.remove('dark');
-      body.classList.add('light');
-      body.classList.remove('dark');
-    }
-    localStorage.setItem('herearn_theme', theme);
-  }, [theme]);
 
   // Initial Data Fetching from Express Backend API (Parallel, Non-blocking)
   useEffect(() => {
@@ -226,10 +211,6 @@ function AppContent() {
       localStorage.removeItem('herearn_user');
       localStorage.removeItem('herearn_jwt_token');
     }
-  };
-
-  const handleToggleTheme = () => {
-    setTheme(prev => prev === 'dark' ? 'light' : 'dark');
   };
 
   const showToast = (title, message) => {
@@ -550,7 +531,10 @@ function AppContent() {
       <div className="absolute top-1/3 right-0 w-[450px] h-[350px] bg-gradient-to-bl from-amber-500/10 via-rose-500/10 to-transparent rounded-full blur-[140px] pointer-events-none -z-0" />
       <div className="absolute bottom-1/4 left-10 w-[500px] h-[300px] bg-gradient-to-tr from-indigo-600/10 via-purple-600/10 to-transparent rounded-full blur-[140px] pointer-events-none -z-0" />
       
-      {/* Sticky Navigation Header */}
+      {/* Top Scroll Progress Bar */}
+      <ScrollProgressBar />
+
+      {/* Sticky Navigation Header (Hidden on Admin portal for dedicated admin console) */}
       {!isAdminRoute && (
         <Navbar 
           user={user}
@@ -954,6 +938,11 @@ function AppContent() {
               />
             } 
           />
+
+          <Route 
+            path="*" 
+            element={<NotFoundPage />} 
+          />
         </Routes>
         </React.Suspense>
       </main>
@@ -994,7 +983,6 @@ function AppContent() {
                 </p>
               </div>
             </div>
-
             {/* Middle Row: Links Columns */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 text-xs font-semibold">
               <div className="space-y-2.5">
@@ -1030,17 +1018,24 @@ function AppContent() {
                   <Link to="/about" className="hover:text-[#7C3AED] transition-colors py-1">About HerEarn</Link>
                   <Link to="/terms" className="hover:text-[#7C3AED] transition-colors py-1">Terms of Service</Link>
                   <Link to="/privacy" className="hover:text-[#7C3AED] transition-colors py-1">Privacy Policy</Link>
+                  <div className="pt-2 flex items-center gap-2">
+                    <span className="text-[11px] opacity-75">Theme:</span>
+                    <ThemeToggle variant="compact" />
+                  </div>
                 </div>
               </div>
             </div>
 
-            {/* Bottom Row: Copyright */}
+            {/* Bottom Row: Copyright & Clickable Contacts */}
             <div className="pt-6 border-t border-slate-100 dark:border-purple-900/20 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[#6B7280] dark:text-slate-400">
-              <p>© 2026 Skill to Women (HerEarn). Open access initiative for women’s economic empowerment.</p>
-              <p className="flex items-center gap-3">
-                <span>Made for all women across India</span>
+              <p>© {new Date().getFullYear()} Skill to Women (HerEarn). Open access initiative for women’s economic empowerment.</p>
+              <div className="flex flex-wrap items-center gap-3">
+                <a href="mailto:support@herearn.platform" className="hover:text-purple-500 transition-colors">support@herearn.platform</a>
+                <span>•</span>
+                <a href="tel:+918001234567" className="hover:text-purple-500 transition-colors">+91 800 123 4567</a>
+                <span>•</span>
                 <span className="text-[#EA580C] font-bold">100% Free</span>
-              </p>
+              </div>
             </div>
 
           </div>
@@ -1126,6 +1121,9 @@ function AppContent() {
 
       {/* Floating AI Chatbot on every page */}
       <ChatBot />
+
+      {/* Floating Back-To-Top Action Button */}
+      <BackToTopButton />
 
     </div>
   );
