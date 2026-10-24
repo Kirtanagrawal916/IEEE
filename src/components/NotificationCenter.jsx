@@ -177,7 +177,7 @@ export default function NotificationCenter({ theme, onNavigate }) {
 
       {/* Dropdown Popup Drawer */}
       {isOpen && (
-        <div className="absolute right-0 mt-3 w-80 sm:w-96 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-purple-500/30 shadow-2xl p-4 z-50 animate-fade-in text-slate-900 dark:text-white space-y-3">
+        <div className="absolute right-0 mt-3 w-80 sm:w-96 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-purple-500/30 shadow-2xl p-4 z-50 dropdown-animate text-slate-900 dark:text-white space-y-3">
           
           {/* Header */}
           <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">

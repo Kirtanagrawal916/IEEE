@@ -57,6 +57,30 @@ import {
   isTrackUnlocked, 
   getUnlockedTrackIds 
 } from './utils/trackLockHelper';
+import { useScrollReveal } from './utils/useScrollReveal';
+
+// Smooth Scroll to Top on Client-Side Route Change (Preserves Hash Anchors)
+function ScrollToTopOnRoute() {
+  const { pathname, hash } = useLocation();
+
+  useEffect(() => {
+    if (hash) {
+      const targetId = hash.replace('#', '');
+      const element = document.getElementById(targetId);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+        return;
+      }
+    }
+    window.scrollTo({
+      top: 0,
+      left: 0,
+      behavior: 'instant'
+    });
+  }, [pathname, hash]);
+
+  return null;
+}
 
 // Route wrappers that resolve the target opportunity by :id param dynamically
 function OpportunityDetailRouteWrapper({ opportunities, selectedOpportunity, user, onBack, onApply, onToggleSkill }) {
@@ -105,6 +129,9 @@ function AppContent() {
   const location = useLocation();
   const isAdminRoute = location.pathname.startsWith('/admin');
   const isHomePage = location.pathname === '/' || location.pathname === '/home' || location.pathname === '/landing' || location.pathname === '/about';
+
+  // Automatically reveal elements with .reveal-on-scroll as user scrolls through any page
+  useScrollReveal([location.pathname]);
 
   // Unified Auth state via AuthContext
   const { user, setUser, logout: authLogout } = useAuth();
@@ -566,6 +593,9 @@ function AppContent() {
       <div className="absolute top-1/3 right-0 w-[450px] h-[350px] bg-gradient-to-bl from-amber-500/10 via-rose-500/10 to-transparent rounded-full blur-[140px] pointer-events-none -z-0" />
       <div className="absolute bottom-1/4 left-10 w-[500px] h-[300px] bg-gradient-to-tr from-indigo-600/10 via-purple-600/10 to-transparent rounded-full blur-[140px] pointer-events-none -z-0" />
       
+      {/* Smooth Scroll to Top on Route Change */}
+      <ScrollToTopOnRoute />
+
       {/* Top Scroll Progress Bar */}
       <ScrollProgressBar />
 
@@ -581,9 +611,10 @@ function AppContent() {
         />
       )}
 
-      {/* Main View Area with React Router Routes */}
+      {/* Main View Area with React Router Routes and Subtle Entrance Animation */}
       <main className={`flex-1 ${isAdminRoute ? 'pb-0' : 'pb-24 md:pb-16'} relative z-10`}>
         <React.Suspense fallback={<PageLoader />}>
+        <div key={location.pathname} className="page-entrance">
         <Routes>
           {/* Default Opening Page is AboutPage */}
           <Route 
@@ -972,6 +1003,7 @@ function AppContent() {
             element={<NotFoundPage />} 
           />
         </Routes>
+        </div>
         </React.Suspense>
       </main>
 

@@ -165,8 +165,8 @@ export default function WalletWithdrawModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-fade-in overflow-y-auto">
-      <div className="relative w-full max-w-lg bg-white dark:bg-slate-900 border border-purple-200 dark:border-purple-500/40 rounded-3xl shadow-2xl overflow-hidden my-8 text-slate-900 dark:text-white">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md modal-backdrop-animate overflow-y-auto">
+      <div className="relative w-full max-w-lg bg-white dark:bg-slate-900 border border-purple-200 dark:border-purple-500/40 rounded-3xl shadow-2xl overflow-hidden my-8 text-slate-900 dark:text-white modal-content-animate">
         
         {/* Header */}
         <div className="flex items-center justify-between p-5 border-b border-purple-100 dark:border-purple-500/20 bg-slate-50 dark:bg-slate-950">

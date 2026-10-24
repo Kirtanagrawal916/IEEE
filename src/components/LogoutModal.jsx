@@ -16,16 +16,16 @@ export default function LogoutModal({ isOpen, onConfirm, onCancel }) {
 
   return (
     <div 
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/75 backdrop-blur-sm animate-fade-in"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/75 backdrop-blur-sm modal-backdrop-animate"
       onClick={onCancel}
     >
       <div 
-        className="bg-white dark:bg-slate-900 border border-purple-500/30 rounded-3xl max-w-sm w-full p-6 text-slate-900 dark:text-white shadow-2xl relative space-y-5 text-center"
+        className="bg-white dark:bg-slate-900 border border-purple-500/30 rounded-3xl max-w-sm w-full p-6 text-slate-900 dark:text-white shadow-2xl relative space-y-5 text-center modal-content-animate"
         onClick={(e) => e.stopPropagation()}
       >
         <button
           onClick={onCancel}
-          className="absolute top-4 right-4 p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-white rounded-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 transition-colors"
+          className="absolute top-4 right-4 p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-white rounded-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 transition-colors active:scale-95"
         >
           <X className="w-4 h-4" />
         </button>
@@ -50,14 +50,14 @@ export default function LogoutModal({ isOpen, onConfirm, onCancel }) {
           <button
             type="button"
             onClick={onCancel}
-            className="flex-1 py-3 rounded-2xl border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-xs font-bold hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+            className="flex-1 py-3 rounded-2xl border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-xs font-bold hover:bg-slate-100 dark:hover:bg-slate-800 active:scale-[0.98] transition-all cursor-pointer"
           >
             Cancel
           </button>
           <button
             type="button"
             onClick={onConfirm}
-            className="flex-1 py-3 rounded-2xl bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-700 hover:to-red-700 text-white text-xs font-extrabold shadow-md transition-all cursor-pointer"
+            className="flex-1 py-3 rounded-2xl bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-700 hover:to-red-700 text-white text-xs font-extrabold shadow-md active:scale-[0.98] transition-all cursor-pointer"
           >
             Yes, Log Out
           </button>
