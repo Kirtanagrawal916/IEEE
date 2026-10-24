@@ -219,13 +219,23 @@ const DEFAULT_DISCUSSIONS = [
   }
 ];
 
+const getInitials = (name) => {
+  if (!name || typeof name !== 'string') return 'U';
+  const parts = name.trim().split(/\s+/);
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+};
+
 export default function CommunitySection({ user, showToast }) {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const initialTab = searchParams.get('tab') || 'discussions';
+
   // Main Tab: 'discussions' | 'discover' | 'connections' | 'chat'
-  const [activeTab, setActiveTab] = useState('discussions');
+  const [activeTab, setActiveTab] = useState(initialTab);
 
   // Discover state
-  const [users, setUsers] = useState([]);
-  const [loadingUsers, setLoadingUsers] = useState(true);
+  const [users, setUsers] = useState(FALLBACK_COMMUNITY_USERS);
+  const [loadingUsers, setLoadingUsers] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedPath, setSelectedPath] = useState('All Learning Paths');
   const [selectedSkill, setSelectedSkill] = useState('All Skills');
@@ -257,6 +267,13 @@ export default function CommunitySection({ user, showToast }) {
       return [];
     }
   });
+  const [friends, setFriends] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem('herearn_community_connections') || '[]');
+    } catch {
+      return [];
+    }
+  });
   const [pendingRequests, setPendingRequests] = useState([]);
   const [sentRequests, setSentRequests] = useState(() => {
     try {
@@ -267,6 +284,7 @@ export default function CommunitySection({ user, showToast }) {
   });
   const [loadingConnections, setLoadingConnections] = useState(false);
   const [connectionsSubTab, setConnectionsSubTab] = useState('friends'); // 'friends' | 'pending' | 'sent'
+  const [actionLoadingId, setActionLoadingId] = useState(null);
 
   // 1:1 Chat state
   const [conversations, setConversations] = useState([]);
@@ -394,27 +412,41 @@ export default function CommunitySection({ user, showToast }) {
   }, [searchQuery, selectedSkill, selectedPath, sentRequests, connections]);
 
   // Fetch Connections & Requests with Resilience
-  const fetchConnectionsData = useCallback(async () => {
-    if (!user) return;
+  const fetchConnections = useCallback(async () => {
+    if (!user) {
+      setLoadingConnections(false);
+      return;
+    }
     setLoadingConnections(true);
     try {
-      const [friendsRes, pendingRes, sentRes] = await Promise.all([
+      const [connRes, pendingRes, sentRes] = await Promise.all([
         api.getCommunityConnections().catch(() => ({ success: false })),
         api.getPendingRequests().catch(() => ({ success: false })),
         api.getSentRequests().catch(() => ({ success: false })),
       ]);
 
-      if (connRes.status === 'fulfilled' && connRes.value.success && connRes.value.connections?.length > 0) {
-        setConnections(connRes.value.connections);
-        localStorage.setItem('herearn_community_connections', JSON.stringify(connRes.value.connections));
+      if (connRes?.success && Array.isArray(connRes.connections)) {
+        setConnections(connRes.connections);
+        setFriends(connRes.connections);
+        try {
+          localStorage.setItem('herearn_community_connections', JSON.stringify(connRes.connections));
+        } catch {}
+      } else {
+        const local = localStorage.getItem('herearn_community_connections');
+        const parsed = local ? JSON.parse(local) : [];
+        setConnections(parsed);
+        setFriends(parsed);
       }
 
       if (pendingRes?.success && Array.isArray(pendingRes.requests)) {
         setPendingRequests(pendingRes.requests);
       }
-      if (sentRes.status === 'fulfilled' && sentRes.value.success && sentRes.value.requests?.length > 0) {
-        setSentRequests(sentRes.value.requests);
-        localStorage.setItem('herearn_community_sent_requests', JSON.stringify(sentRes.value.requests));
+
+      if (sentRes?.success && Array.isArray(sentRes.requests)) {
+        setSentRequests(sentRes.requests);
+        try {
+          localStorage.setItem('herearn_community_sent_requests', JSON.stringify(sentRes.requests));
+        } catch {}
       }
     } catch (err) {
       console.warn('[Community] Fetch connections failed, relying on local cache:', err);
@@ -566,11 +598,12 @@ export default function CommunitySection({ user, showToast }) {
 
   // Select partner to chat
   const handleSelectPartner = async (partner) => {
+    if (!partner) return;
     setActivePartner(partner);
     setLoadingMessages(true);
     try {
       const res = await api.getMessages(partner.id);
-      if (res.success && Array.isArray(res.messages) && res.messages.length > 0) {
+      if (res?.success && Array.isArray(res.messages) && res.messages.length > 0) {
         setMessages(res.messages);
       } else {
         const local = localStorage.getItem(`herearn_local_chat_${partner.id}`);
@@ -586,7 +619,7 @@ export default function CommunitySection({ user, showToast }) {
           }
         ]);
       }
-      fetchConversations();
+      fetchConversations(false);
     } catch (err) {
       console.warn('[Community] Load messages error, using local fallback:', err);
       const local = localStorage.getItem(`herearn_local_chat_${partner.id}`);
@@ -604,6 +637,20 @@ export default function CommunitySection({ user, showToast }) {
     } finally {
       setLoadingMessages(false);
     }
+  };
+
+  // Check URL query parameters (e.g. ?chat=userId)
+  useEffect(() => {
+    const chatUserId = searchParams.get('chat');
+    if (chatUserId && activePartner?.id !== chatUserId) {
+      setActiveTab('chat');
+      const foundInUsers =
+        users.find((u) => u.id === chatUserId) ||
+        conversations.find((c) => c.partner?.id === chatUserId)?.partner;
+      if (foundInUsers) {
+        handleSelectPartner(foundInUsers);
+      }
+    }
   }, [searchParams, users, conversations, activePartner?.id]);
 
   // Send Message with Offline Resilience & Peer Simulation
@@ -616,7 +663,7 @@ export default function CommunitySection({ user, showToast }) {
     setSendingMessage(true);
 
     const tempId = `temp-${Date.now()}`;
-    const optimisticMessage = {
+    const optimisticMsg = {
       id: tempId,
       senderId: user?.id || 'me',
       receiverId: activePartner.id,
@@ -644,8 +691,8 @@ export default function CommunitySection({ user, showToast }) {
     });
 
     try {
-      const res = await api.sendMessage(activePartner.id, contentToSend);
-      if (res.success && res.message) {
+      const res = await api.sendMessage(activePartner.id, content);
+      if (res?.success && res.message) {
         setMessages((prev) => {
           const next = prev.map((m) => (m.id === tempId ? res.message : m));
           try {
@@ -653,7 +700,7 @@ export default function CommunitySection({ user, showToast }) {
           } catch {}
           return next;
         });
-        fetchConversations();
+        fetchConversations(false);
       }
     } catch (err) {
       console.warn('[Community] API sendMessage failed, persisting locally:', err);
@@ -913,11 +960,9 @@ export default function CommunitySection({ user, showToast }) {
   };
 
   // Open Chat directly from Discover or Connections
-  const handleOpenChatWithUser = async (partnerUser) => {
-    if (!user) {
-      showToast?.('Authentication Required', 'Please log in to chat with connections.');
-      return;
-    }
+  const handleOpenChatWithUser = async (targetUser) => {
+    if (!targetUser) return;
+    setActivePartner(targetUser);
     setActiveTab('chat');
     setSearchParams({ tab: 'chat', chat: targetUser.id }, { replace: true, preventScrollReset: true });
 
@@ -936,6 +981,8 @@ export default function CommunitySection({ user, showToast }) {
         ...prev,
       ];
     });
+
+    handleSelectPartner(targetUser);
 
     // If logged in, persist the conversation thread on the backend database immediately!
     if (user && targetUser.id) {
@@ -1027,61 +1074,45 @@ export default function CommunitySection({ user, showToast }) {
               </button>
             </div>
           </div>
+        </div>
 
-          {/* Navigation Tabs */}
-          <div className="flex items-center gap-2 mt-6 overflow-x-auto no-scrollbar border-b border-purple-200/50 dark:border-purple-800/40">
-            <button
-              type="button"
-              onClick={() => setActiveTab('discussions')}
-              className={`pb-3 px-4 text-xs font-bold transition-all relative flex items-center gap-2 whitespace-nowrap cursor-pointer ${
-                activeTab === 'discussions'
-                  ? 'text-purple-700 dark:text-pink-400 border-b-2 border-purple-600 dark:border-pink-500'
-                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-              }`}
+        {/* Guest Mode Notice */}
+        {!user && (
+          <div className="p-3.5 rounded-2xl bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border border-purple-200/80 dark:border-purple-800/60 shadow-xs flex items-center justify-between gap-4 text-xs">
+            <div className="flex items-center gap-2.5 text-slate-700 dark:text-purple-200">
+              <AlertCircle className="w-4 h-4 text-pink-500 shrink-0" />
+              <span>You are in <strong>Guest Preview Mode</strong>. Explore verified profiles, participate in discussions, and test 1:1 peer messaging!</span>
+            </div>
+            <a
+              href="/login"
+              className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold text-xs hover:opacity-95 transition-all shrink-0 shadow-sm"
             >
-              <MessageCircle className="w-4 h-4" />
-              <span>Discussions & Feed</span>
-              <span className="ml-1 text-[10px] px-2 py-0.5 rounded-full bg-pink-100 dark:bg-pink-950 text-pink-700 dark:text-pink-300 font-extrabold">
-                {discussions.length}
-              </span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setActiveTab('discover')}
-              className={`pb-3 px-4 text-xs font-bold transition-all relative flex items-center gap-2 whitespace-nowrap cursor-pointer ${
-                activeTab === 'discover'
-                  ? 'text-purple-700 dark:text-pink-400 border-b-2 border-purple-600 dark:border-pink-500'
-                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-              }`}
-            >
-              <Compass className="w-4 h-4" />
-              <span>Discover Learners</span>
-              <span className="ml-1 text-[10px] px-2 py-0.5 rounded-full bg-purple-100 dark:bg-purple-950 text-purple-700 dark:text-purple-300">
-                {users.length}
-              </span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setActiveTab('connections')}
-              className={`pb-3 px-4 text-xs font-bold transition-all relative flex items-center gap-2 whitespace-nowrap cursor-pointer ${
-                activeTab === 'connections'
-                  ? 'text-purple-700 dark:text-pink-400 border-b-2 border-purple-600 dark:border-pink-500'
-                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-              }`}
-            >
-              <Users className="w-4 h-4" />
-              <span>My Connections & Requests</span>
-              {pendingRequests.length > 0 && (
-                <span className="w-5 h-5 rounded-full bg-pink-500 text-white text-[10px] font-black flex items-center justify-center animate-pulse">
-                  {pendingRequests.length}
-                </span>
-              )}
-            </button>
+              Log In to Save History
+            </a>
+          </div>
+        )}
 
         {/* TOP LEVEL NAVIGATION TABS */}
         <div className="flex items-center gap-2 bg-white dark:bg-slate-900 p-2 rounded-2xl border border-purple-100 dark:border-slate-800 shadow-sm overflow-x-auto">
+          <button
+            type="button"
+            onClick={() => {
+              setActiveTab('discussions');
+              setSearchParams({ tab: 'discussions' }, { replace: true, preventScrollReset: true });
+            }}
+            className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer shrink-0 ${
+              activeTab === 'discussions'
+                ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-md'
+                : 'text-slate-600 dark:text-slate-300 hover:text-purple-600 hover:bg-purple-50 dark:hover:bg-slate-800'
+            }`}
+          >
+            <MessageCircle className="w-4 h-4" />
+            <span>Discussions & Feed</span>
+            <span className="ml-1 text-[10px] px-2 py-0.5 rounded-full bg-pink-100 dark:bg-pink-950 text-pink-700 dark:text-pink-300 font-extrabold">
+              {discussions.length}
+            </span>
+          </button>
+
           <button
             type="button"
             onClick={() => {
@@ -1115,7 +1146,7 @@ export default function CommunitySection({ user, showToast }) {
                 : 'text-slate-600 dark:text-slate-300 hover:text-purple-600 hover:bg-purple-50 dark:hover:bg-slate-800'
             }`}
           >
-            <Users className="w-4 h-4" />
+            <Compass className="w-4 h-4" />
             <span>Discover Learners</span>
             <span className="ml-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-100 dark:bg-purple-950 text-purple-700 dark:text-purple-300">
               {users.length}
@@ -1838,161 +1869,147 @@ export default function CommunitySection({ user, showToast }) {
                 </button>
               </div>
             ) : (
-              <div className="bg-white dark:bg-slate-900 rounded-3xl border border-purple-100 dark:border-purple-900/30 shadow-md overflow-hidden grid grid-cols-1 md:grid-cols-12 min-h-[620px] max-h-[750px]">
-                {/* Conversations Sidebar (Cols 1-4) - Hidden on mobile when viewing chat */}
-                <div className={`md:col-span-4 border-r border-purple-100 dark:border-slate-800 flex flex-col bg-slate-50/50 dark:bg-slate-950/40 ${activePartner ? 'hidden md:flex' : 'flex'}`}>
-                  {/* Search Conversations */}
-                  <div className="p-3.5 border-b border-purple-100 dark:border-slate-800">
-                    <div className="relative">
-                      <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                      <input
-                        type="text"
-                        value={chatSearch}
-                        onChange={(e) => setChatSearch(e.target.value)}
-                        placeholder="Search conversations..."
-                        className="w-full pl-9 pr-3 py-2 rounded-xl border border-purple-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 text-xs focus:outline-none focus:ring-1 focus:ring-purple-500"
-                      />
-                    </div>
-                  </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {users.map((learner) => {
+                  const isConnecting = actionLoadingId === learner.id;
+                  const isConnected = learner.connectionStatus === 'CONNECTED';
+                  const isPendingSent = learner.connectionStatus === 'PENDING_SENT';
+                  const isPendingReceived = learner.connectionStatus === 'PENDING_RECEIVED';
 
                   return (
                     <div
-                      key={u.id}
-                      className="bg-white dark:bg-slate-900 rounded-2xl border border-purple-100/80 dark:border-slate-800 p-3.5 shadow-xs hover:shadow-md hover:border-purple-200 dark:hover:border-purple-800/80 transition-all flex flex-col justify-between group"
+                      key={learner.id}
+                      className="bg-white dark:bg-slate-900 rounded-2xl p-5 border border-purple-100 dark:border-purple-900/30 hover:border-purple-300 dark:hover:border-purple-700 transition-all shadow-sm hover:shadow-md flex flex-col justify-between group"
                     >
-                      <div className="space-y-2">
-                        {/* Compact Header: Monogram/Initials, Name, Handle, Online Indicator */}
-                        <div className="flex items-start justify-between gap-2">
-                          <div className="flex items-center gap-2.5 min-w-0">
-                            {/* Stylized Initials Monogram Badge (NO Image) */}
-                            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-purple-500/10 to-pink-500/10 dark:from-purple-950/60 dark:to-pink-950/60 text-purple-700 dark:text-purple-300 font-extrabold text-[11px] flex items-center justify-center border border-purple-200/60 dark:border-purple-800/60 shrink-0">
-                              {initials}
-                            </div>
-
-                            <div className="min-w-0">
-                              <div className="flex items-center gap-1">
-                                <h4 className="font-bold text-xs text-slate-900 dark:text-white truncate">
-                                  {u.name}
-                                </h4>
-                                {u.verified && (
-                                  <ShieldCheck className="w-3.5 h-3.5 text-purple-500 shrink-0" title="Verified Member" />
-                                )}
-                              </div>
-                              <p className="text-[10px] text-purple-600 dark:text-pink-400 font-medium truncate">
-                                @{u.username}
-                              </p>
-                            </div>
-                          </div>
-
-                {/* Chat Pane (Cols 5-12) - Hidden on mobile if no active partner */}
-                <div className={`md:col-span-8 flex flex-col bg-white dark:bg-slate-900 ${!activePartner ? 'hidden md:flex' : 'flex'}`}>
-                  {activePartner ? (
-                    <>
-                      {/* Chat Header */}
-                      <div className="p-3.5 sm:p-4 border-b border-purple-100 dark:border-slate-800 flex items-center justify-between gap-3 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm">
-                        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-                          {/* Mobile Back Button to return to conversation list */}
-                          <button
-                            type="button"
-                            onClick={() => setActivePartner(null)}
-                            className="md:hidden p-2 -ml-1 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 cursor-pointer"
-                            title="Back to conversations"
-                          >
-                            <ArrowLeft className="w-4 h-4" />
-                          </button>
+                      <div>
+                        {/* Header: Avatar, Name, Handle, Location */}
+                        <div className="flex items-start gap-3.5 mb-3">
                           <img
-                            src={activePartner.avatar}
-                            alt={activePartner.name}
-                            className="w-10 h-10 rounded-xl object-cover border border-purple-200 dark:border-purple-800 shrink-0"
+                            src={learner.avatar}
+                            alt={learner.name}
+                            className="w-14 h-14 rounded-2xl object-cover border-2 border-purple-200 dark:border-purple-800 shrink-0"
+                            onError={(e) => {
+                              e.currentTarget.src = `https://api.dicebear.com/7.x/avataaars/svg?seed=${learner.username}`;
+                            }}
                           />
-                          <div className="min-w-0">
-                            <div className="flex items-center gap-1.5">
-                              <h3 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white truncate">
-                                {activePartner.name}
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <h3 className="text-sm font-bold text-slate-900 dark:text-white truncate">
+                                {learner.name}
                               </h3>
-                              <span className="text-[9px] font-extrabold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded-full">
-                                Connected
-                              </span>
+                              {learner.verified && (
+                                <ShieldCheck className="w-4 h-4 text-emerald-500 shrink-0" title="Verified Member" />
+                              )}
                             </div>
-                            <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate">
-                              {activePartner.title} • @{activePartner.username}
+                            <p className="text-[11px] text-purple-600 dark:text-pink-400 font-semibold truncate">
+                              @{learner.username}
                             </p>
+                            <div className="flex items-center gap-1 text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+                              <MapPin className="w-3 h-3 text-slate-400 shrink-0" />
+                              <span className="truncate">{learner.location || 'India'}</span>
+                            </div>
                           </div>
                         </div>
 
-                        {/* Title & Bio (Compact) */}
-                        <div>
-                          <p className="text-[11px] font-bold text-slate-800 dark:text-slate-200 truncate">
-                            {u.title || 'Digital Specialist'}
-                          </p>
-                          <p className="text-[10px] text-slate-500 dark:text-slate-400 line-clamp-2 mt-0.5 leading-snug">
-                            {u.bio || `Learner on HerEarn (@${u.username})`}
-                          </p>
+                        {/* Title & Bio */}
+                        <p className="text-xs font-bold text-slate-800 dark:text-slate-200 mb-1.5 line-clamp-1">
+                          {learner.title}
+                        </p>
+                        <p className="text-xs text-slate-600 dark:text-slate-400 mb-4 line-clamp-2 leading-relaxed">
+                          {learner.bio}
+                        </p>
+
+                        {/* Learning Path & Career Goal Badge */}
+                        <div className="bg-purple-50/70 dark:bg-purple-950/40 rounded-xl p-2.5 mb-4 border border-purple-100/80 dark:border-purple-900/30">
+                          <div className="flex items-center gap-1.5 text-[11px] font-bold text-purple-800 dark:text-purple-300">
+                            <GraduationCap className="w-3.5 h-3.5 text-pink-500 shrink-0" />
+                            <span className="truncate">{learner.learningPath}</span>
+                          </div>
+                          <div className="flex items-center gap-1.5 text-[10px] text-slate-600 dark:text-slate-400 mt-1">
+                            <Target className="w-3.5 h-3.5 text-purple-500 shrink-0" />
+                            <span className="truncate font-medium">Goal: {learner.learningGoal}</span>
+                          </div>
                         </div>
 
-                        {/* Track Badge & Top Skills */}
-                        <div className="flex flex-wrap items-center gap-1 pt-0.5">
-                          {u.learningPath && (
-                            <span className="px-2 py-0.5 rounded-md bg-purple-50 dark:bg-purple-950/60 text-[9px] font-bold text-purple-700 dark:text-purple-300 border border-purple-100 dark:border-purple-900/50 truncate max-w-[150px]">
-                              {u.learningPath}
-                            </span>
-                          )}
-                          {(u.skills || []).slice(0, 2).map((sk) => (
-                            <span
-                              key={sk}
-                              className="px-1.5 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[9px] font-medium"
-                            >
-                              {sk}
-                            </span>
-                          ))}
+                        {/* Skills Pills */}
+                        <div className="mb-4">
+                          <p className="text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-1.5">
+                            Skills & Expertise
+                          </p>
+                          <div className="flex flex-wrap gap-1.5">
+                            {(learner.skills || []).slice(0, 4).map((sk) => (
+                              <span
+                                key={sk}
+                                className="px-2 py-0.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-[10px] font-semibold text-slate-700 dark:text-slate-300"
+                              >
+                                {sk}
+                              </span>
+                            ))}
+                            {(learner.skills || []).length > 4 && (
+                              <span className="px-1.5 py-0.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-[10px] font-semibold text-slate-500">
+                                +{(learner.skills || []).length - 4}
+                              </span>
+                            )}
+                          </div>
                         </div>
                       </div>
 
-                      {/* Compact Footer Actions */}
-                      <div className="pt-2.5 mt-2.5 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-1.5">
+                      {/* Card Footer Actions */}
+                      <div className="pt-3 border-t border-purple-100 dark:border-slate-800/80 flex items-center justify-between gap-2">
                         <button
                           type="button"
-                          onClick={() => setViewingProfile(u)}
-                          className="px-2 py-1 rounded-lg text-[10px] font-bold text-slate-500 hover:text-purple-600 hover:bg-purple-50 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+                          onClick={() => setViewingProfile(learner)}
+                          className="px-3 py-2 rounded-xl text-xs font-bold text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-slate-800 transition-colors cursor-pointer"
                         >
-                          Profile
+                          View Profile
                         </button>
 
-                        <div>
-                          {isConnected ? (
-                            <button
-                              type="button"
-                              onClick={() => handleOpenChatWithUser(u)}
-                              className="px-3 py-1 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold text-[11px] flex items-center gap-1 shadow-xs hover:opacity-95 transition-all cursor-pointer"
-                            >
-                              <MessageSquare className="w-3 h-3" />
-                              <span>Chat 1:1</span>
-                            </button>
-                          ) : isPendingSent ? (
-                            <span className="px-2.5 py-1 rounded-xl bg-purple-50 dark:bg-purple-950 text-purple-600 dark:text-purple-300 font-bold text-[10px] flex items-center gap-1">
-                              <Clock className="w-3 h-3" />
-                              <span>Pending</span>
-                            </span>
-                          ) : isPendingReceived ? (
-                            <button
-                              type="button"
-                              onClick={() => handleAcceptRequest(u.connectionId, u.name)}
-                              className="px-3 py-1 rounded-xl bg-emerald-600 text-white font-bold text-[11px] flex items-center gap-1 shadow-xs cursor-pointer"
-                            >
-                              <Check className="w-3 h-3" />
-                              <span>Accept</span>
-                            </button>
-                          ) : (
-                            <button
-                              type="button"
-                              onClick={() => handleSendConnection(u.id, u.name)}
-                              className="px-3 py-1 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-[11px] flex items-center gap-1 shadow-xs transition-all cursor-pointer"
-                            >
-                              <UserPlus className="w-3 h-3" />
-                              <span>Connect</span>
-                            </button>
-                          )}
-                        </div>
+                        {/* Connect / Pending / Connected CTAs */}
+                        {isConnected ? (
+                          <button
+                            type="button"
+                            onClick={() => handleOpenChatWithUser(learner)}
+                            className="px-4 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold text-xs flex items-center gap-1.5 shadow-sm hover:shadow-md cursor-pointer"
+                          >
+                            <MessageSquare className="w-3.5 h-3.5" />
+                            <span>Message</span>
+                          </button>
+                        ) : isPendingSent ? (
+                          <button
+                            type="button"
+                            disabled
+                            className="px-3.5 py-2 rounded-xl bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-300 font-bold text-xs flex items-center gap-1.5 border border-purple-200 dark:border-purple-800/50 opacity-80 cursor-default"
+                          >
+                            <Clock className="w-3.5 h-3.5 animate-spin" />
+                            <span>Requested</span>
+                          </button>
+                        ) : isPendingReceived ? (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setActiveTab('connections');
+                              setConnectionsSubTab('pending');
+                            }}
+                            className="px-3.5 py-2 rounded-xl bg-pink-100 dark:bg-pink-950 text-pink-700 dark:text-pink-300 font-bold text-xs flex items-center gap-1.5 cursor-pointer"
+                          >
+                            <UserCheck className="w-3.5 h-3.5" />
+                            <span>Respond</span>
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => handleSendConnection(learner.id, learner.name)}
+                            disabled={isConnecting}
+                            className="px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 disabled:bg-purple-400 text-white font-bold text-xs flex items-center gap-1.5 shadow-sm transition-all cursor-pointer"
+                          >
+                            {isConnecting ? (
+                              <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                            ) : (
+                              <UserPlus className="w-3.5 h-3.5" />
+                            )}
+                            <span>{isConnecting ? 'Connecting...' : 'Connect'}</span>
+                          </button>
+                        )}
                       </div>
                     </div>
                   );

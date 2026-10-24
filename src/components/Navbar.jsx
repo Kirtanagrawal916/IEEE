@@ -28,6 +28,7 @@ import {
   Check,
   Plus
 } from 'lucide-react';
+import LogoutModal from './LogoutModal';
 import WalletWithdrawModal from './WalletWithdrawModal';
 import NotificationCenter from './NotificationCenter';
 import { useLanguage } from '../context/LanguageContext';
@@ -49,6 +50,7 @@ export default function Navbar({
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isCareerOpen, setIsCareerOpen] = useState(false);
   const [isLangOpen, setIsLangOpen] = useState(false);
+  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
   const [isWithdrawModalOpen, setIsWithdrawModalOpen] = useState(false);
   const [scrollProgress, setScrollProgress] = useState(0);
 
@@ -78,10 +80,20 @@ export default function Navbar({
       if (langRef.current && !langRef.current.contains(event.target)) {
         setIsLangOpen(false);
       }
-    }
+    };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  const handleConfirmLogout = () => {
+    setIsLogoutModalOpen(false);
+    setIsMenuOpen(false);
+    if (onLogout) {
+      onLogout();
+    }
+    navigate('/');
+  };
+
   const currentLangObj = LANGUAGES.find(l => l.code === language) || LANGUAGES[0];
 
   // Active check for Career Opportunity group
@@ -669,9 +681,7 @@ export default function Navbar({
                         type="button"
                         onClick={() => {
                           setIsMenuOpen(false);
-                          if (onLogout) {
-                            onLogout();
-                          }
+                          setIsLogoutModalOpen(true);
                         }}
                         className="w-full text-left px-3 py-2 rounded-xl text-xs font-bold flex items-center gap-2.5 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors cursor-pointer"
                       >
