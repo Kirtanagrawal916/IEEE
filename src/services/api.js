@@ -237,7 +237,7 @@ export const api = {
     }
   },
 
-  // Community APIs
+  // Community & 1:1 Chat APIs
   getCommunityUsers: (filters = {}) => {
     const query = new URLSearchParams(filters).toString();
     return request(`/api/community/users${query ? `?${query}` : ''}`);
@@ -251,10 +251,20 @@ export const api = {
   cancelConnectionRequest: (requestId) => request(`/api/community/requests/${requestId}/cancel`, { method: 'DELETE' }),
   removeConnection: (connectionId) => request(`/api/community/connections/${connectionId}`, { method: 'DELETE' }),
   getConversations: () => request('/api/community/conversations'),
+  startConversation: (partnerId) => request('/api/community/conversations', {
+    method: 'POST',
+    body: JSON.stringify({ partnerId }),
+  }),
   getMessages: (partnerId) => request(`/api/community/messages/${partnerId}`),
-  sendMessage: (partnerId, content) => request(`/api/community/messages/${partnerId}`, { method: 'POST', body: JSON.stringify({ content }) }),
+  sendMessage: (partnerId, content) => request(`/api/community/messages/${partnerId}`, {
+    method: 'POST',
+    body: JSON.stringify({ content }),
+  }),
   markMessagesRead: (partnerId) => request(`/api/community/messages/${partnerId}/read`, { method: 'POST' }),
   getCommunityProfile: (userId) => request(`/api/community/profile/${userId}`),
-  updateCommunityProfile: (profileData) => request('/api/community/profile', { method: 'PATCH', body: JSON.stringify(profileData) }),
+  updateCommunityProfile: (profileData) => request('/api/community/profile', {
+    method: 'PATCH',
+    body: JSON.stringify(profileData),
+  }),
 };
 

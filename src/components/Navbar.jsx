@@ -80,7 +80,7 @@ export default function Navbar({
       if (langRef.current && !langRef.current.contains(event.target)) {
         setIsLangOpen(false);
       }
-    }
+    };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
@@ -305,7 +305,7 @@ export default function Navbar({
               <span>Mentorship</span>
             </Link>
 
-            {/* Community */}
+            {/* Community & 1:1 Chat */}
             <Link
               to="/community"
               className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
@@ -316,6 +316,7 @@ export default function Navbar({
             >
               <MessageSquare className="w-4 h-4 text-pink-500" />
               <span>Community</span>
+              <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
             </Link>
 
             {/* Recruiter Portal (For Employer or Admin roles) */}
@@ -574,6 +575,23 @@ export default function Navbar({
                       </div>
                       <ArrowUpRight className="w-4 h-4 text-emerald-600 dark:text-emerald-400 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform shrink-0" />
                     </button>
+                  </div>
+
+                  {/* COMMUNITY LINK */}
+                  <div className="pt-1">
+                    <Link
+                      to="/community"
+                      onClick={() => setIsMenuOpen(false)}
+                      className="w-full text-left px-3 py-2 rounded-xl text-xs font-semibold flex items-center justify-between bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-500/30 text-purple-700 dark:text-purple-200 hover:bg-purple-100 dark:hover:bg-purple-900/60 transition-colors cursor-pointer"
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <MessageSquare className="w-4 h-4 text-pink-500" />
+                        <span>Community & 1:1 Chat</span>
+                      </div>
+                      <span className="text-[9px] font-black uppercase px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-600 dark:text-emerald-300">
+                        Live
+                      </span>
+                    </Link>
                   </div>
 
                   {/* 3. RECRUITER PORTAL LINK */}
