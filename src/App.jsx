@@ -50,7 +50,6 @@ import {
 import { api } from './services/api';
 import { useAuth } from './context/AuthContext';
 import { useTheme } from './context/ThemeContext';
-import ThemeToggle from './components/ThemeToggle';
 import NotFoundPage from './components/NotFoundPage';
 import { ScrollProgressBar, BackToTopButton } from './components/ScrollEnhancements';
 import { 
@@ -1046,10 +1045,6 @@ function AppContent() {
                   <Link to="/about" className="hover:text-[#7C3AED] transition-colors py-1">About HerEarn</Link>
                   <Link to="/terms" className="hover:text-[#7C3AED] transition-colors py-1">Terms of Service</Link>
                   <Link to="/privacy" className="hover:text-[#7C3AED] transition-colors py-1">Privacy Policy</Link>
-                  <div className="pt-2 flex items-center gap-2">
-                    <span className="text-[11px] opacity-75">Theme:</span>
-                    <ThemeToggle variant="compact" />
-                  </div>
                 </div>
               </div>
             </div>
