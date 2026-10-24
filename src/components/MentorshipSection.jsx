@@ -26,9 +26,11 @@ import {
   UserCheck, 
   Plus, 
   Check, 
-  Info 
+  Info,
+  RotateCcw
 } from 'lucide-react';
 import { triggerCelebrationConfetti } from '../utils/confettiHelper';
+import { api } from '../services/api';
 
 export default function MentorshipSection({ user, showToast }) {
   // Active navigation tab: 'mentors' | 'masterclasses' | 'my-bookings'
@@ -1297,40 +1299,171 @@ export default function MentorshipSection({ user, showToast }) {
 }
 
 /**
+ * Intelligent Client-Side Fallback for Mentor Chat
+ * Ensures domain-aware, non-generic replies even if offline or if backend is unreachable.
+ */
+function getClientMentorReply(message, mentor, booking, user) {
+  const text = (message || '').toLowerCase().trim();
+  const domain = (mentor?.domain || '').toLowerCase();
+  const slot = booking?.slot || mentor?.nextSlot || 'our scheduled session';
+  const topic = booking?.topic || 'Portfolio & Strategy';
+
+  // 1. Portfolio Review
+  if (text.includes('portfolio') || text.includes('review') || text.includes('resume') || text.includes('cv') || text.includes('github') || text.includes('behance') || text.includes('draft') || text.includes('sample')) {
+    if (domain.includes('design') || domain.includes('canva') || domain.includes('ui')) {
+      return `I would love to review your design work! For our meeting on ${slot}, please prepare:
+• 3 curated case studies (e.g. 1 brand identity kit, 1 high-converting Instagram carousel, and 1 client mockup).
+• A brief note explaining the client's goal and your design rationale.
+• You can paste your Canva view-only or Behance link right here in our chat, and I'll inspect it before our ${topic} session!`;
+    }
+    if (domain.includes('marketing')) {
+      return `Reviewing marketing campaigns is my specialty! Before our call on ${slot}:
+• Gather 2 or 3 snapshots showing your ad creative, audience targeting logic, and metrics (like CTR, CPC, or simulated ROAS).
+• Summarize the core problem you solved for the brand in 2 sentences.
+• Feel free to share your Google Docs or slide deck link right here anytime!`;
+    }
+    if (domain.includes('shopify') || domain.includes('commerce')) {
+      return `Yes, reviewing your store build or catalog structure is key! For our session on ${slot}:
+• Have your Shopify store preview link ready (including password if unpublished).
+• Test your mobile navigation, banner contrast, and checkout badges (COD / Razorpay).
+• Drop the link here so I can give it a preliminary look before we connect!`;
+    }
+    if (domain.includes('code') || domain.includes('tech') || domain.includes('web')) {
+      return `Absolutely! For developer portfolios, here is my golden rule:
+• Make sure your GitHub repos have a clear README with a live deployment link (Vercel/Netlify), tech stack badges, and screenshots.
+• Highlight 2 clean, production-grade projects rather than tutorial clones.
+• Drop your GitHub profile or live project link right here, and I'll inspect the code structure before our session on ${slot}!`;
+    }
+    return `I will gladly review your portfolio! Please share the link or summary points here. For our session on ${slot}, have your 2 best project samples ready so we can optimize them for paying clients and higher rates!`;
+  }
+
+  // 2. Pricing & Rates in ₹ INR
+  if (text.includes('rate') || text.includes('price') || text.includes('charge') || text.includes('fee') || text.includes('cost') || text.includes('how much') || text.includes('quote') || text.includes('retainer') || text.includes('rupee') || text.includes('inr')) {
+    if (domain.includes('design') || domain.includes('canva') || domain.includes('ui')) {
+      return `Pricing is where many freelance designers leave money on the table. Here are the realistic rates I recommend in India:
+• **Starter Social Media Kit:** ₹5,000 – ₹9,000 for 12 branded Canva posts + 4 story templates.
+• **Monthly Design Retainer:** ₹12,000 – ₹20,000/month for ongoing social graphics and promotional banners.
+• **Complete Brand Identity Kit:** ₹15,000 – ₹30,000 including logo variations, color palette, typography guidelines, and mockups.
+Never charge per hour for design—always charge per deliverable with 50% upfront via HerEarn Escrow. We will calibrate your custom pricing sheet during our session on ${slot}!`;
+    }
+    if (domain.includes('marketing')) {
+      return `For digital marketing and ad management in India, here are standard freelance benchmarks:
+• **Social Media Management:** ₹8,000 – ₹18,000/month per brand (content calendar + posting + basic engagement).
+• **Performance Ad Setup (Meta/Google Ads):** ₹12,000 – ₹25,000/month retainer or a base fee of ₹10,000 + 10% of ad spend.
+• **Lead Generation Campaign Audit:** ₹4,000 – ₹7,000 one-time fee.
+During our ${topic} session on ${slot}, we will craft a tiered proposal template you can send to prospective clients!`;
+    }
+    if (domain.includes('shopify') || domain.includes('commerce')) {
+      return `E-commerce clients have clear ROI expectations, so you can charge premium rates:
+• **Single Product / Micro Shopify Store:** ₹10,000 – ₹18,000 for complete theme customization and payment gateway integration.
+• **Catalog Setup & Multi-Collection Store:** ₹22,000 – ₹45,000 including 30 products, shipping zones, and WhatsApp checkout.
+• **Monthly Store Maintenance & App Management:** ₹15,000/month retainer.
+We will detail how to present this quote during our upcoming meeting!`;
+    }
+    if (domain.includes('code') || domain.includes('tech') || domain.includes('web')) {
+      return `For web development projects in India and international remote gigs:
+• **Landing Page (React / Tailwind):** ₹12,000 – ₹25,000 with mobile responsiveness and contact forms.
+• **Full Multi-page Web App / MVP:** ₹35,000 – ₹80,000+ depending on database and API integrations.
+• **Bug Fixing / Performance Optimization:** ₹3,500 – ₹8,000 per milestone.
+Always use milestone-based contracts with HerEarn Escrow protection so you never have to chase payments.`;
+    }
+    return `In freelancing, pricing depends on perceived business value rather than hours spent. For beginners in India, aim for ₹6,000 – ₹15,000 per project or retainer. Always ask for 50% advance or Escrow funding. We will fine-tune your specific pricing during our meeting on ${slot}!`;
+  }
+
+  // 3. Client Acquisition & Pitching
+  if (text.includes('client') || text.includes('pitch') || text.includes('proposal') || text.includes('find work') || text.includes('gig') || text.includes('cold') || text.includes('outreach') || text.includes('lead')) {
+    return `Landing your first clients is all about a high-value, low-friction pitch! Here is my 3-step outreach framework:
+1. **The Specific Audit:** Find a local brand or creator on Instagram or LinkedIn. Identify ONE specific thing they could improve (e.g. low-res post template, missing call-to-action, or slow mobile page).
+2. **The Free Sample Hook:** Create a 1-slide mockup solving that exact problem and send a polite DM: "Hi [Name], I noticed your recent product launch and designed 2 alternative creative mockups to test CTR. Happy to share them if you'd like!"
+3. **The Escrow Transition:** Once they reply with enthusiasm, offer a small paid starter package protected by HerEarn Escrow.
+During our ${topic} session on ${slot}, I'll share exact cold DM templates that have worked for my mentees!`;
+  }
+
+  // 4. Career Gap & Confidence
+  if (text.includes('gap') || text.includes('break') || text.includes('restart') || text.includes('motherhood') || text.includes('marriage') || text.includes('confidence') || text.includes('fear') || text.includes('scared') || text.includes('late')) {
+    return `First, take a deep breath. A career break is never a barrier—it is simply a chapter of life.
+Clients and modern remote employers do not judge how many years you took off; they care whether you can solve their problem today.
+• **Reframe the narrative:** Never apologize for your gap. State: "I took intentional time for family responsibilities, and recently completed rigorous hands-on training in ${mentor?.domain || 'digital skills'} on HerEarn."
+• **Let proof-of-work speak:** When you show 2 verified project case studies and verified client testimonials, your skill is unquestionable.
+You have so much resilience and maturity to bring to the table. We will map out your confidence building strategy together on ${slot}!`;
+  }
+
+  // 5. Session Preparation / Agenda
+  if (text.includes('session') || text.includes('meeting') || text.includes('slot') || text.includes('schedule') || text.includes('call') || text.includes('prep') || text.includes('agenda') || text.includes('ready') || text.includes('looking forward')) {
+    return `I'm very much looking forward to our session as well! Our meeting is scheduled for **${slot}**, and our focus will be **"${topic}"**.
+To get maximum value from our 1-on-1 time, please prepare:
+1. **Your #1 Challenge:** The single biggest hurdle you want clarity on right now.
+2. **Draft Work Links:** Any portfolio link, proposal draft, or profile you want me to inspect.
+3. **Your 60-Day Income Goal:** E.g., securing your first ₹10,000 freelance retainer.
+Feel free to drop any questions here beforehand so I can review them prior to our call!`;
+  }
+
+  // 6. Greetings
+  if (text.match(/^(hi|hello|hey|good morning|good evening|good afternoon|namaste)\b/i)) {
+    return `Hello! It's wonderful to connect with you. As your mentor for **${topic}**, I'm here to support your journey every step of the way. 
+Our session is confirmed for **${slot}**. How is your learning progressing, and is there any particular challenge you'd like to brainstorm together right now?`;
+  }
+
+  // 7. General Contextual Fallback
+  return `Thank you for sharing that question! As your mentor in ${mentor?.domain || 'this field'}, I want to make sure you have complete clarity.
+The key next step is applying this directly to a concrete project sample that you can showcase to clients with confidence.
+I have noted this question down for our upcoming session on **${slot}** focused on **"${topic}"**. Feel free to share any more context or drafts here in the meantime!`;
+}
+
+/**
  * Interactive Mentor Chat Window Modal
- * Allows user to chat 1-on-1 with their assigned mentor.
+ * Allows user to chat 1-on-1 dynamically with their assigned mentor via AI & domain-aware NLP.
  */
 function MentorChatModal({ mentor, booking, user, onClose, showToast }) {
+  const chatStorageKey = `herearn_mentor_chat_${mentor.id}`;
+
   const [messages, setMessages] = useState(() => {
     try {
-      const saved = localStorage.getItem(`herearn_mentor_chat_${mentor.id}`);
+      const saved = localStorage.getItem(chatStorageKey);
       if (saved) return JSON.parse(saved);
     } catch {}
     return [
       {
         id: 'msg-init-1',
         sender: 'mentor',
-        text: `Hello ${user?.name?.split(' ')[0] || 'there'}! 👋 Welcome to our mentorship workspace. Our meeting is confirmed for ${booking?.slot || 'our scheduled time'} to focus on "${booking?.topic || 'Portfolio & Strategy'}". Feel free to share your questions, portfolio links, or any challenges below anytime!`,
+        text: `Hello ${user?.name?.split(' ')[0] || 'there'}! 👋 I'm ${mentor.name}. Welcome to our 1-on-1 mentorship workspace. Our meeting is confirmed for ${booking?.slot || mentor.nextSlot || 'our scheduled time'} to focus on "${booking?.topic || 'Portfolio & Strategy'}". Feel free to share questions on portfolio drafts, pricing in ₹ INR, client pitches, or session prep below anytime!`,
         time: 'Just now'
       }
     ];
   });
+
   const [inputText, setInputText] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const chatEndRef = useRef(null);
 
   useEffect(() => {
     try {
-      localStorage.setItem(`herearn_mentor_chat_${mentor.id}`, JSON.stringify(messages));
+      localStorage.setItem(chatStorageKey, JSON.stringify(messages));
     } catch (e) {
       console.warn('Storage error:', e);
     }
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, mentor.id]);
+  }, [messages, chatStorageKey]);
 
-  const handleSend = (textToSend = inputText) => {
+  const handleClearChat = () => {
+    const initMsg = [
+      {
+        id: `msg-init-${Date.now()}`,
+        sender: 'mentor',
+        text: `Hello ${user?.name?.split(' ')[0] || 'there'}! 👋 Welcome back. Feel free to ask any questions ahead of our session on ${booking?.slot || mentor.nextSlot || 'our scheduled time'}!`,
+        time: 'Just now'
+      }
+    ];
+    setMessages(initMsg);
+    try {
+      localStorage.setItem(chatStorageKey, JSON.stringify(initMsg));
+    } catch {}
+    if (showToast) showToast('Chat history cleared', 'info');
+  };
+
+  const handleSend = async (textToSend = inputText) => {
     const trimmed = (typeof textToSend === 'string' ? textToSend : inputText).trim();
-    if (!trimmed) return;
+    if (!trimmed || isTyping) return;
 
     const userMsg = {
       id: `msg-${Date.now()}`,
@@ -1343,16 +1476,40 @@ function MentorChatModal({ mentor, booking, user, onClose, showToast }) {
     setInputText('');
     setIsTyping(true);
 
-    // Simulated realistic mentor reply
+    const sessionId = `mentor_${mentor.id}_${user?.id || 'guest'}`;
+    const mentorContext = {
+      name: mentor.name,
+      role: mentor.role,
+      company: mentor.company,
+      experience: mentor.experience,
+      domain: mentor.domain,
+      skills: mentor.skills,
+      bio: mentor.bio,
+      topic: booking?.topic || 'Mentorship Strategy',
+      slot: booking?.slot || mentor.nextSlot || 'Scheduled Session',
+      userName: user?.name || 'Learner'
+    };
+
+    try {
+      const res = await api.sendChatMessage(trimmed, sessionId, mentorContext);
+      if (res && res.reply) {
+        const mentorMsg = {
+          id: `msg-${Date.now() + 1}`,
+          sender: 'mentor',
+          text: res.reply,
+          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        };
+        setMessages(prev => [...prev, mentorMsg]);
+        setIsTyping(false);
+        return;
+      }
+    } catch (err) {
+      console.warn('Backend chat API failed, using intelligent fallback:', err);
+    }
+
+    // Dynamic, domain-aware fallback if backend is unreachable
     setTimeout(() => {
-      setIsTyping(false);
-      const mentorReplies = [
-        `Thanks for sharing that! That is a crucial area. I recommend structuring your proposal to highlight measurable business results (e.g., 'Designed 20 high-converting social media creatives for local retail brands'). We'll break down the exact client pitch during our meeting on ${booking?.slot || 'our session'}!`,
-        `Great question! For beginners in India, starting with a retainer package of ₹6,000 - ₹12,000/month for 15 Canva social posts + captions works best. Be sure to show 3 portfolio samples that reflect the client's industry.`,
-        `I love your initiative! I've noted down your goal for "${booking?.topic || 'Strategy'}". I'll prepare a tailored checklist for our session. Keep practicing and bring any draft work you want reviewed!`,
-        `That's a very common doubt when restarting after a career break. The key is positioning your project milestones and transferable leadership skills. We'll map that out step-by-step together!`
-      ];
-      const replyText = mentorReplies[Math.floor(Math.random() * mentorReplies.length)];
+      const replyText = getClientMentorReply(trimmed, mentor, booking, user);
       const mentorMsg = {
         id: `msg-${Date.now() + 1}`,
         sender: 'mentor',
@@ -1360,15 +1517,55 @@ function MentorChatModal({ mentor, booking, user, onClose, showToast }) {
         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       };
       setMessages(prev => [...prev, mentorMsg]);
-    }, 1100);
+      setIsTyping(false);
+    }, 700);
   };
 
-  const quickPrompts = [
-    'Can you review my portfolio draft?',
-    'What rate should I charge for Canva kits?',
-    'How do I pitch local business clients?',
-    'Looking forward to our scheduled session!'
-  ];
+  const quickPrompts = useMemo(() => {
+    const d = (mentor.domain || '').toLowerCase();
+    if (d.includes('marketing')) {
+      return [
+        'How to improve ROAS on social media ads?',
+        'What monthly retainer should I charge clients?',
+        'Can you review my marketing proposal draft?',
+        'How should I prepare for our scheduled session?'
+      ];
+    } else if (d.includes('design') || d.includes('canva') || d.includes('ui')) {
+      return [
+        'What rate should I charge for Canva brand kits?',
+        'Can you review my design portfolio draft?',
+        'How do I pitch local retail business clients?',
+        'How should I prepare for our scheduled session?'
+      ];
+    } else if (d.includes('shopify') || d.includes('commerce')) {
+      return [
+        'How do I setup Razorpay & WhatsApp checkout?',
+        'What should I charge to build a Shopify store?',
+        'How do I optimize store conversion rates?',
+        'How should I prepare for our scheduled session?'
+      ];
+    } else if (d.includes('career') || d.includes('confidence') || d.includes('restart')) {
+      return [
+        'How do I explain a 3-year career break?',
+        'How can I optimize my LinkedIn for remote work?',
+        'How do I build confidence for client calls?',
+        'How should I prepare for our scheduled session?'
+      ];
+    } else if (d.includes('web') || d.includes('tech') || d.includes('code')) {
+      return [
+        'Can you review my GitHub project repo?',
+        'Which tech stack is best for freelance web gigs?',
+        'How do I estimate project milestones and pricing?',
+        'How should I prepare for our scheduled session?'
+      ];
+    }
+    return [
+      'Can you review my portfolio draft?',
+      'What rates should I charge as a beginner in INR?',
+      'How do I pitch my first freelance client?',
+      'How should I prepare for our scheduled session?'
+    ];
+  }, [mentor.domain]);
 
   return (
     <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4 animate-fade-in">
@@ -1394,8 +1591,15 @@ function MentorChatModal({ mentor, booking, user, onClose, showToast }) {
           <div className="flex items-center gap-2">
             <div className="hidden sm:flex flex-col items-end text-right">
               <span className="text-[10px] font-bold text-slate-400 uppercase">Assigned Meeting</span>
-              <span className="text-xs font-black text-purple-700 dark:text-purple-300">{booking?.slot || 'Upcoming'}</span>
+              <span className="text-xs font-black text-purple-700 dark:text-purple-300">{booking?.slot || mentor.nextSlot || 'Upcoming'}</span>
             </div>
+            <button
+              onClick={handleClearChat}
+              title="Reset conversation"
+              className="w-9 h-9 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-300 flex items-center justify-center cursor-pointer transition-colors"
+            >
+              <RotateCcw className="w-4 h-4" />
+            </button>
             <button
               onClick={onClose}
               className="w-9 h-9 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-300 flex items-center justify-center cursor-pointer transition-colors"
@@ -1414,7 +1618,7 @@ function MentorChatModal({ mentor, booking, user, onClose, showToast }) {
             </span>
           </div>
           <span className="text-[11px] font-bold bg-white/80 dark:bg-slate-900/80 px-2.5 py-0.5 rounded-full border border-purple-300 dark:border-purple-700 shrink-0">
-            {booking?.duration || '35 mins'}
+            {booking?.duration || mentor.sessionDuration || '35 mins'}
           </span>
         </div>
 

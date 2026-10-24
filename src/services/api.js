@@ -191,7 +191,10 @@ export const api = {
   getDashboardMetrics: () => request('/api/dashboard'),
 
   // AI Chatbot API
-  sendChatMessage: (message, sessionId) => request('/api/chat', { method: 'POST', body: JSON.stringify({ message, sessionId }) }),
+  sendChatMessage: (message, sessionId, mentorContext) => request('/api/chat', { 
+    method: 'POST', 
+    body: JSON.stringify({ message, sessionId, mentorContext }) 
+  }),
 
   // Admin APIs
   getAdminMetrics: () => request('/api/admin/metrics'),
