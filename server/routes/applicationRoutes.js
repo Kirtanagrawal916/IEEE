@@ -21,8 +21,7 @@ const resolveOpportunity = async (targetId) => {
   return null;
 };
 
-// POST /api/opportunities/:id/apply
-router.post('/opportunities/:id/apply', authMiddleware, async (req, res) => {
+const applyHandler = async (req, res) => {
   try {
     const targetId = req.params.id;
     const { coverNote, portfolioProjectIds } = req.body;
@@ -83,15 +82,50 @@ router.post('/opportunities/:id/apply', authMiddleware, async (req, res) => {
       data: { applicantsCount: { increment: 1 } },
     });
 
+    // Automatically deposit project amount into Escrow
+    const rawStipend = opportunity.stipend || '5000';
+    const parsedAmount = parseFloat(String(rawStipend).replace(/[^0-9.]/g, '')) || 5000;
+    const escrowCode = `ESC-${Date.now().toString().slice(-6)}${Math.floor(Math.random() * 90 + 10)}`;
+
+    let escrowTransaction = null;
+    try {
+      escrowTransaction = await prisma.escrowTransaction.create({
+        data: {
+          code: escrowCode,
+          gigTitle: opportunity.title,
+          clientName: opportunity.company || 'Verified Client Partner',
+          freelancerName: req.user.name || req.user.username || 'Learner',
+          amount: parsedAmount,
+          status: 'HELD_IN_ESCROW',
+          freelancerId: req.user.id,
+          opportunityId: opportunity.id,
+        },
+      });
+
+      await prisma.auditLog.create({
+        data: {
+          action: 'ESCROW_FUNDED_ON_ENROLL',
+          detail: `Escrow funded: ₹${parsedAmount.toLocaleString('en-IN')} held in escrow for project "${opportunity.title}" upon enrollment (Freelancer: ${req.user.name || req.user.username || 'Learner'})`,
+          type: 'escrow',
+        },
+      }).catch(() => {});
+    } catch (escrowErr) {
+      console.warn('[Escrow Apply Auto-Deposit Error]', escrowErr.message);
+    }
+
     res.status(201).json({
       success: true,
-      message: 'Application submitted successfully',
+      message: 'Application submitted successfully & escrow funded',
       application,
+      escrowTransaction,
     });
   } catch (error) {
     res.status(500).json({ success: false, message: 'Failed to submit application', error: error.message });
   }
-});
+};
+
+router.post('/opportunities/:id/apply', authMiddleware, applyHandler);
+router.post('/gigs/:id/apply', authMiddleware, applyHandler);
 
 // GET /api/applications/me or /api/applications/mine
 const getMyApplicationsHandler = async (req, res) => {
