@@ -3,180 +3,302 @@ import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
 
-const communityLearners = [
+const COMMUNITY_MEMBERS = [
   {
     name: 'Priya Patel',
-    username: 'priyacodes',
+    username: 'priya_uiux',
     email: 'priya.patel@herearn.org',
     role: 'LEARNER',
-    title: 'Full-Stack React & Node Specialist',
-    bio: 'Self-taught developer building accessible web apps for rural education. Loves Next.js and Tailwind.',
+    avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=400',
     location: 'Ahmedabad, Gujarat',
-    skills: JSON.stringify(['React', 'Node.js', 'TypeScript', 'Tailwind CSS', 'REST APIs']),
-    interests: JSON.stringify(['Web Development', 'Open Source', 'Mentorship', 'Hackathons']),
-    learningPath: 'Frontend Development',
-    learningGoal: 'Full-Stack Web Developer',
-    portfolioLinks: JSON.stringify([
-      { label: 'GitHub', url: 'https://github.com/priyapatel' },
-      { label: 'Portfolio', url: 'https://priyadev.vercel.app' },
-    ]),
-    avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=300',
-    skillPoints: 420,
-    totalEarned: 8500,
-    earnings: 8500,
-  },
-  {
-    name: 'Ritu Sengupta',
-    username: 'ritusengupta',
-    email: 'ritu.sengupta@herearn.org',
-    role: 'LEARNER',
-    title: 'UI/UX Designer & Design Systems',
-    bio: 'Designing empowering mobile apps and fintech solutions for women entrepreneurs. Figma advocate.',
-    location: 'Kolkata, West Bengal',
-    skills: JSON.stringify(['UI/UX Design', 'Figma', 'User Research', 'Wireframing', 'Design Systems']),
-    interests: JSON.stringify(['Product Design', 'Inclusive Tech', 'Freelancing', 'Case Studies']),
-    learningPath: 'UI/UX Design',
-    learningGoal: 'Lead Product Designer',
-    portfolioLinks: JSON.stringify([
-      { label: 'Behance', url: 'https://behance.net/ritusengupta' },
-      { label: 'Figma', url: 'https://figma.com/@ritu' },
-    ]),
-    avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=300',
-    skillPoints: 390,
-    totalEarned: 11200,
-    earnings: 11200,
+    title: 'Lead UI/UX & Canva Brand Designer',
+    bio: 'Passionate about crafting clean, human-centered mobile apps and branding. Completed Graphic Design track on HerEarn! Happy to review portfolios and collaborate.',
+    skills: JSON.stringify(['UI/UX Design', 'Figma', 'Canva Pro', 'Brand Identity', 'Wireframing']),
+    interests: JSON.stringify(['Design Systems', 'Micro-Gigs', 'Freelancing', 'Mentoring']),
+    learningPath: 'Graphic Design with Canva',
+    learningGoal: 'Design Agency Founder',
+    skillPoints: 480,
+    verified: true,
   },
   {
     name: 'Sneha Roy',
-    username: 'sneharoy',
+    username: 'sneha_shopify',
     email: 'sneha.roy@herearn.org',
     role: 'LEARNER',
-    title: 'Data Analyst & BI Specialist',
-    bio: 'Turning messy numbers into clear business growth insights. Python, SQL, and PowerBI enthusiast.',
+    avatar: 'https://images.unsplash.com/photo-1580894732454-def939105436?auto=format&fit=crop&q=80&w=400',
+    location: 'Kolkata, West Bengal',
+    title: 'Shopify Store Builder & E-Commerce Expert',
+    bio: 'Helped 6+ local boutiques launch their Shopify storefronts. Love product copywriting, inventory organization, and payment gateways. Let’s connect!',
+    skills: JSON.stringify(['Shopify E-Commerce', 'Product Listings', 'Inventory Setup', 'Dropshipping', 'WhatsApp Business']),
+    interests: JSON.stringify(['E-Commerce', 'D2C Brands', 'Remote Work', 'Financial Freedom']),
+    learningPath: 'Shopify E-Commerce',
+    learningGoal: 'Independent Shopify Consultant',
+    skillPoints: 520,
+    verified: true,
+  },
+  {
+    name: 'Ritu Sengupta',
+    username: 'ritu_writes',
+    email: 'ritu.sengupta@herearn.org',
+    role: 'LEARNER',
+    avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=400',
     location: 'Bengaluru, Karnataka',
-    skills: JSON.stringify(['Python', 'SQL', 'PowerBI', 'Data Visualization', 'Excel Advanced']),
-    interests: JSON.stringify(['Data Science', 'Business Analytics', 'AI Ethics', 'Freelance Analytics']),
-    learningPath: 'Data Analytics & AI',
-    learningGoal: 'Senior Data Analyst',
-    portfolioLinks: JSON.stringify([
-      { label: 'Kaggle', url: 'https://kaggle.com/sneharoy' },
-      { label: 'GitHub', url: 'https://github.com/sneharoy' },
-    ]),
-    avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&q=80&w=300',
-    skillPoints: 480,
-    totalEarned: 15400,
-    earnings: 15400,
+    title: 'SEO Content Strategist & Copywriter',
+    bio: 'Storyteller with a love for high-ranking blog articles, Google Search Console, and keyword research. Balancing freelancing with motherhood.',
+    skills: JSON.stringify(['SEO Content Writing', 'Keyword Research', 'Blog Copywriting', 'Google Docs', 'On-Page SEO']),
+    interests: JSON.stringify(['Content Strategy', 'Blogging', 'Work From Home', 'Parenting & Tech']),
+    learningPath: 'SEO Content Writing',
+    learningGoal: 'Freelance Editorial Director',
+    skillPoints: 460,
+    verified: true,
   },
   {
     name: 'Meera Nair',
-    username: 'meeranair',
+    username: 'meera_growth',
     email: 'meera.nair@herearn.org',
     role: 'LEARNER',
-    title: 'SEO & Growth Marketing Strategist',
-    bio: 'Helping small women-led brands scale organic traffic from 0 to 50k monthly visits. Content & copy expert.',
+    avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=400',
     location: 'Kochi, Kerala',
-    skills: JSON.stringify(['Digital Marketing', 'SEO', 'Google Analytics', 'Content Strategy', 'Email Marketing']),
-    interests: JSON.stringify(['Growth Hacking', 'E-commerce', 'Storytelling', 'Community Building']),
+    title: 'Digital Marketing & Social Media Strategist',
+    bio: 'Former school teacher transitioning into digital marketing. Loving Meta ad campaigns, ROAS optimization, and Canva storytelling.',
+    skills: JSON.stringify(['Digital Marketing', 'Meta Ads', 'Instagram Growth', 'Canva Pro', 'Analytics']),
+    interests: JSON.stringify(['Performance Marketing', 'Community Building', 'Social Strategy']),
     learningPath: 'Digital Marketing',
-    learningGoal: 'Head of Growth Marketing',
-    portfolioLinks: JSON.stringify([
-      { label: 'Substack', url: 'https://meeranair.substack.com' },
-      { label: 'LinkedIn', url: 'https://linkedin.com/in/meeranair' },
-    ]),
-    avatar: 'https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?auto=format&fit=crop&q=80&w=300',
-    skillPoints: 310,
-    totalEarned: 6700,
-    earnings: 6700,
+    learningGoal: 'Growth Marketing Lead',
+    skillPoints: 390,
+    verified: true,
   },
   {
     name: 'Diya Varma',
-    username: 'diyavarma',
+    username: 'diya_code',
     email: 'diya.varma@herearn.org',
     role: 'LEARNER',
-    title: 'Cloud Solutions & DevOps Learner',
-    bio: 'Computer science graduate diving into AWS, Docker, and CI/CD pipelines. Aspiring DevOps engineer.',
+    avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&q=80&w=400',
     location: 'Pune, Maharashtra',
-    skills: JSON.stringify(['Docker', 'AWS', 'Linux', 'CI/CD', 'Python', 'Git']),
-    interests: JSON.stringify(['Cloud Computing', 'DevOps', 'Infrastructure as Code', 'Tech Talks']),
-    learningPath: 'Cloud & DevOps',
-    learningGoal: 'Cloud DevOps Specialist',
-    portfolioLinks: JSON.stringify([
-      { label: 'Dev.to', url: 'https://dev.to/diyavarma' },
-      { label: 'GitHub', url: 'https://github.com/diyavarma' },
-    ]),
-    avatar: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&q=80&w=300',
-    skillPoints: 360,
-    totalEarned: 4200,
-    earnings: 4200,
+    title: 'Frontend React Developer & Open Source Fan',
+    bio: 'Building accessible, fast web apps. Learning full-stack development while working on community client projects on HerEarn. Code with me!',
+    skills: JSON.stringify(['React', 'JavaScript', 'Tailwind CSS', 'Vite', 'Git & GitHub']),
+    interests: JSON.stringify(['Frontend Web', 'Open Source', 'Hackathons', 'Tech Community']),
+    learningPath: 'Frontend Development',
+    learningGoal: 'Full-Stack Software Engineer',
+    skillPoints: 610,
+    verified: true,
   },
   {
     name: 'Tanvi Kulkarni',
-    username: 'tanvicreates',
+    username: 'tanvi_art',
     email: 'tanvi.kulkarni@herearn.org',
     role: 'LEARNER',
-    title: 'Content Creator & Video Producer',
-    bio: 'Producing educational short-form reels and product launch videos for lifestyle and D2C brands.',
+    avatar: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&q=80&w=400',
     location: 'Mumbai, Maharashtra',
-    skills: JSON.stringify(['Video Editing', 'Premiere Pro', 'Scriptwriting', 'CapCut', 'Canva']),
-    interests: JSON.stringify(['Creator Economy', 'Video Production', 'Brand Deals', 'Podcasting']),
-    learningPath: 'Content Creation',
+    title: 'Brand Illustrator & Visual Designer',
+    bio: 'Illustrating stories for digital brands. Always curious about new color palettes, social templates, and creative freelancing.',
+    skills: JSON.stringify(['Canva Pro', 'Digital Illustration', 'Logo Design', 'Social Media Templates', 'Visual Branding']),
+    interests: JSON.stringify(['Graphic Art', 'Branding', 'Typography', 'Creative Entrepreneurship']),
+    learningPath: 'Graphic Design with Canva',
     learningGoal: 'Creative Director',
-    portfolioLinks: JSON.stringify([
-      { label: 'YouTube', url: 'https://youtube.com/@tanvicreates' },
-      { label: 'Instagram', url: 'https://instagram.com/tanvicreates' },
-    ]),
-    avatar: 'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?auto=format&fit=crop&q=80&w=300',
-    skillPoints: 410,
-    totalEarned: 9800,
-    earnings: 9800,
+    skillPoints: 350,
+    verified: true,
   },
 ];
 
 async function seed() {
-  console.log('Seeding Community Learners...');
-  const defaultPasswordHash = await bcrypt.hash('password123', 10);
+  console.log('🌱 Starting Community & 1:1 Chat seeding...');
+  const defaultPasswordHash = await bcrypt.hash('HerEarn2026!', 10);
 
-  for (const learner of communityLearners) {
-    await prisma.user.upsert({
-      where: { email: learner.email },
-      update: {
-        title: learner.title,
-        bio: learner.bio,
-        location: learner.location,
-        skills: learner.skills,
-        interests: learner.interests,
-        learningPath: learner.learningPath,
-        learningGoal: learner.learningGoal,
-        portfolioLinks: learner.portfolioLinks,
-        avatar: learner.avatar,
-      },
-      create: {
-        ...learner,
-        passwordHash: defaultPasswordHash,
-      },
-    });
-    console.log(`Seeded learner: ${learner.name} (@${learner.username})`);
+  // 1. Create or update community seed users
+  const createdSeedUsers = [];
+  for (const m of COMMUNITY_MEMBERS) {
+    const existing = await prisma.user.findUnique({ where: { email: m.email } });
+    if (existing) {
+      const updated = await prisma.user.update({
+        where: { id: existing.id },
+        data: {
+          name: m.name,
+          username: m.username,
+          avatar: m.avatar,
+          location: m.location,
+          title: m.title,
+          bio: m.bio,
+          skills: m.skills,
+          interests: m.interests,
+          learningPath: m.learningPath,
+          learningGoal: m.learningGoal,
+          skillPoints: m.skillPoints,
+          verified: m.verified,
+        },
+      });
+      createdSeedUsers.push(updated);
+    } else {
+      const created = await prisma.user.create({
+        data: {
+          ...m,
+          passwordHash: defaultPasswordHash,
+          status: 'Active',
+          portfolioLinks: JSON.stringify([
+            { label: 'Portfolio Showcase', url: 'https://herearn.vercel.app' },
+            { label: 'LinkedIn', url: 'https://linkedin.com' },
+          ]),
+        },
+      });
+      createdSeedUsers.push(created);
+    }
   }
 
-  // Also update Ananya's community fields
-  await prisma.user.updateMany({
-    where: { email: 'ananya@herearn.org' },
-    data: {
-      learningGoal: 'Digital Marketing Lead',
-      learningPath: 'Digital Marketing',
-      interests: JSON.stringify(['E-commerce', 'Social Media', 'Canva Design', 'Micro-gigs']),
-      portfolioLinks: JSON.stringify([
-        { label: 'Portfolio', url: 'https://herearn.vercel.app/portfolio' }
-      ]),
-    },
-  });
+  console.log(`✅ Seeded ${createdSeedUsers.length} community members.`);
 
-  console.log('Community seeding completed successfully!');
-  await prisma.$disconnect();
+  // 2. Fetch existing platform learners to establish friendly connections & starter chats
+  const allUsers = await prisma.user.findMany();
+  const primaryUsers = allUsers.filter((u) => !u.email.endsWith('@herearn.org'));
+
+  const [priya, sneha, ritu, meera] = createdSeedUsers;
+
+  for (const learner of primaryUsers) {
+    if (!priya || !sneha) continue;
+
+    // Connect with Priya Patel (ACCEPTED friend)
+    let connPriya = await prisma.connection.findFirst({
+      where: {
+        OR: [
+          { senderId: learner.id, receiverId: priya.id },
+          { senderId: priya.id, receiverId: learner.id },
+        ],
+      },
+    });
+
+    if (!connPriya) {
+      connPriya = await prisma.connection.create({
+        data: {
+          senderId: priya.id,
+          receiverId: learner.id,
+          status: 'ACCEPTED',
+        },
+      });
+    } else if (connPriya.status !== 'ACCEPTED') {
+      await prisma.connection.update({
+        where: { id: connPriya.id },
+        data: { status: 'ACCEPTED' },
+      });
+    }
+
+    // Connect with Sneha Roy (ACCEPTED friend)
+    let connSneha = await prisma.connection.findFirst({
+      where: {
+        OR: [
+          { senderId: learner.id, receiverId: sneha.id },
+          { senderId: sneha.id, receiverId: learner.id },
+        ],
+      },
+    });
+
+    if (!connSneha) {
+      connSneha = await prisma.connection.create({
+        data: {
+          senderId: sneha.id,
+          receiverId: learner.id,
+          status: 'ACCEPTED',
+        },
+      });
+    } else if (connSneha.status !== 'ACCEPTED') {
+      await prisma.connection.update({
+        where: { id: connSneha.id },
+        data: { status: 'ACCEPTED' },
+      });
+    }
+
+    // Connect with Ritu Sengupta (PENDING inbound request)
+    let connRitu = await prisma.connection.findFirst({
+      where: {
+        OR: [
+          { senderId: learner.id, receiverId: ritu.id },
+          { senderId: ritu.id, receiverId: learner.id },
+        ],
+      },
+    });
+
+    if (!connRitu) {
+      await prisma.connection.create({
+        data: {
+          senderId: ritu.id,
+          receiverId: learner.id,
+          status: 'PENDING',
+        },
+      });
+    }
+
+    // Check if initial messages exist between Priya and learner
+    const existingMsg = await prisma.message.findFirst({
+      where: {
+        OR: [
+          { senderId: priya.id, receiverId: learner.id },
+          { senderId: learner.id, receiverId: priya.id },
+        ],
+      },
+    });
+
+    if (!existingMsg) {
+      await prisma.message.create({
+        data: {
+          senderId: priya.id,
+          receiverId: learner.id,
+          content: `Hi ${learner.name.split(' ')[0]}! 👋 Welcome to the HerEarn Community. I saw you're working on building your digital skills. How are your lessons going?`,
+          read: true,
+          createdAt: new Date(Date.now() - 3600000 * 4),
+        },
+      });
+
+      await prisma.message.create({
+        data: {
+          senderId: learner.id,
+          receiverId: priya.id,
+          content: `Hey Priya! Thanks for reaching out. I'm practicing creating my first proof-of-work project!`,
+          read: true,
+          createdAt: new Date(Date.now() - 3600000 * 2),
+        },
+      });
+
+      await prisma.message.create({
+        data: {
+          senderId: priya.id,
+          receiverId: learner.id,
+          content: `That's great! Let me know if you want feedback on your Canva graphics or color palette. We're all in this together! 💖`,
+          read: false,
+          createdAt: new Date(Date.now() - 1000 * 60 * 15),
+        },
+      });
+    }
+
+    // Seed messages with Sneha
+    const snehaMsg = await prisma.message.findFirst({
+      where: {
+        OR: [
+          { senderId: sneha.id, receiverId: learner.id },
+          { senderId: learner.id, receiverId: sneha.id },
+        ],
+      },
+    });
+
+    if (!snehaMsg) {
+      await prisma.message.create({
+        data: {
+          senderId: sneha.id,
+          receiverId: learner.id,
+          content: `Hello! If you ever need help with e-commerce product listings or Shopify micro-gigs, feel free to ask anytime! 🛍️✨`,
+          read: false,
+          createdAt: new Date(Date.now() - 1000 * 60 * 50),
+        },
+      });
+    }
+  }
+
+  console.log('🎉 Community & 1:1 chat seeding completed successfully!');
 }
 
-seed().catch((e) => {
-  console.error('Error seeding community:', e);
-  prisma.$disconnect();
-  process.exit(1);
-});
+seed()
+  .catch((e) => {
+    console.error('❌ Seeding error:', e);
+    process.exit(1);
+  })
+  .finally(async () => {
+    await prisma.$disconnect();
+  });
