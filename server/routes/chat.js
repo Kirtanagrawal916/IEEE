@@ -235,8 +235,19 @@ router.post('/', chatRateLimiter, async (req, res) => {
     // Build persona-specific system prompt if chatting with an expert mentor
     let effectiveSystemPrompt = SYSTEM_PROMPT;
     if (mentorContext && typeof mentorContext === 'object') {
-      const { name, role, company, experience, domain, skills, bio, topic, slot, userName } = mentorContext;
+      const { name, role, company, experience, domain, skills, bio, topic, slot, userName, preferredLanguage, hasImageAttachment } = mentorContext;
       const skillsList = Array.isArray(skills) ? skills.join(', ') : (skills || 'General Freelancing & Strategy');
+      
+      const langInstruction = preferredLanguage === 'HI'
+        ? '\n6. Language: Reply in warm, respectful, fluent Hindi (or clear Hinglish) with practical Indian market terms.'
+        : preferredLanguage === 'Hinglish'
+        ? '\n6. Language: Reply in conversational, encouraging Hinglish (natural Hindi-English mix as spoken by professionals in India).'
+        : '';
+
+      const visualInstruction = hasImageAttachment
+        ? '\n7. Visual Feedback: The learner attached an image/mockup. Provide constructive feedback on layout balance, contrast, typography, and CTA clarity.'
+        : '';
+
       effectiveSystemPrompt = `You are "${name || 'Mentor'}", a senior industry expert acting as a dedicated 1-on-1 mentor on HerEarn (an Indian platform empowering women to transition into digital careers and financial independence).
 
 Your Professional Profile:
@@ -253,7 +264,7 @@ Instructions for your response:
 2. Directly address ${userName || 'the learner'}'s exact question with actionable, practical advice suited to the Indian remote/freelance ecosystem (e.g. realistic freelance pricing in ₹ INR, portfolio standards, dealing with Indian/global clients, overcoming career breaks).
 3. Be warm, empathetic, encouraging, yet professional and specific.
 4. Reference your upcoming 1-on-1 session ("${slot || 'our scheduled call'}") where you can dive even deeper into their drafts, metrics, or questions.
-5. Keep your response concise (2 to 4 focused paragraphs or actionable bullet points). Avoid repetitive phrases and avoid generic non-answers.`;
+5. Keep your response concise (2 to 4 focused paragraphs or actionable bullet points). Avoid repetitive phrases and avoid generic non-answers.${langInstruction}${visualInstruction}`;
     }
 
     // 1. Try Google Gemini API (Free tier)
@@ -602,6 +613,15 @@ function generateMentorAIReply(message, mentorContext, session) {
   const slot = mentorContext?.slot || 'our scheduled session';
   const topic = mentorContext?.topic || 'Portfolio & Strategy';
   const skills = Array.isArray(mentorContext?.skills) ? mentorContext.skills.join(', ') : (mentorContext?.skills || 'Freelance & Career Growth');
+
+  // 0. Visual / Image Attachment Feedback
+  if (mentorContext?.hasImageAttachment) {
+    return `I can see your uploaded preview! Here are 3 immediate design feedback points based on industry standards:
+• **Visual Hierarchy:** Ensure your primary heading is at least 2.5x larger than any subtext so the core value proposition is immediately visible.
+• **Breathing Room & Contrast:** Maintain at least 24px of clear padding around all canvas edges. Check that text contrast pops cleanly against the background colors.
+• **Call-To-Action (CTA):** Give your button or main link accent contrast (such as vibrant amber or brand purple) to guide the user's eye.
+We will pull up this exact creative during our session on **${slot}** to polish it to client-ready standards!`;
+  }
 
   // 1. Portfolio / Project / Resume review
   if (text.includes('portfolio') || text.includes('review') || text.includes('resume') || text.includes('cv') || text.includes('github') || text.includes('behance') || text.includes('draft') || text.includes('sample') || text.includes('check my')) {
