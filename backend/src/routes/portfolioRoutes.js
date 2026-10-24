@@ -7,10 +7,10 @@ const router = express.Router();
 // GET /api/portfolio/stats
 router.get('/stats', async (req, res) => {
   try {
-    const totalProjects = await prisma.portfolioProject.count();
+    const totalProjects = await prisma.portfolioProject.count().catch(() => 0);
     const projects = await prisma.portfolioProject.findMany({
       select: { likesCount: true, category: true, verified: true }
-    });
+    }).catch(() => []);
 
     const totalLikes = projects.reduce((acc, p) => acc + (p.likesCount || 0), 0);
     const verifiedCount = projects.filter(p => p.verified).length;
@@ -65,7 +65,7 @@ router.get('/', async (req, res) => {
         user: { select: { id: true, name: true, avatar: true, location: true, username: true } },
       },
       orderBy,
-    });
+    }).catch(() => []);
 
     if (projects.length === 0 && (!category || category === 'All') && !search) {
       projects = CURATED_PROJECTS.map((p, idx) => ({

@@ -33,5 +33,6 @@ COPY src ./src
 
 EXPOSE 5000
 
-# Start server
-CMD ["node", "src/server.js"]
+# Start server and auto-sync schema
+CMD ["sh", "-c", "npx prisma db push --skip-generate && node src/server.js"]
+
