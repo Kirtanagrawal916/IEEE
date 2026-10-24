@@ -1,6 +1,6 @@
 import express from 'express';
 import prisma from '../config/db.js';
-import { CURATED_PROJECTS } from '../../../server/routes/portfolioRoutes.js';
+import { CURATED_PROJECTS } from '../data/curatedProjects.js';
 
 const router = express.Router();
 

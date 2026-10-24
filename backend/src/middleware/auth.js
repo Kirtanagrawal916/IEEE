@@ -191,8 +191,48 @@ export const requireOwnership = (userIdParamName = 'userId') => {
   };
 };
 
+/**
+ * Optional Authentication Middleware
+ * Populates req.user if a valid token is provided, without rejecting anonymous requests
+ */
+export const optionalAuth = async (req, res, next) => {
+  const authHeader = req.headers['authorization'];
+  let token = authHeader && authHeader.startsWith('Bearer ')
+    ? authHeader.split(' ')[1]
+    : null;
+
+  if (!token && req.cookies) {
+    token = req.cookies.herearn_access_token || req.cookies['sb-access-token'] || null;
+  }
+
+  if (!token) {
+    req.user = null;
+    return next();
+  }
+
+  try {
+    const decoded = verifyToken(token);
+    if (decoded && (decoded.id || decoded.userId || decoded.sub)) {
+      const targetId = decoded.id || decoded.userId || decoded.sub;
+      const user = await prisma.user.findUnique({ where: { id: targetId } }).catch(() => null);
+      req.user = user || null;
+    }
+  } catch {
+    req.user = null;
+  }
+
+  next();
+};
+
+export const authMiddleware = authenticateToken;
+export const optionalAuthMiddleware = optionalAuth;
+
 export default {
   authenticateToken,
+  authMiddleware,
+  optionalAuth,
+  optionalAuthMiddleware,
   requireRole,
   requireOwnership,
 };
+
