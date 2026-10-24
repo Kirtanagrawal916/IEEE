@@ -78,6 +78,9 @@ async function callGeminiAPI(apiKey, systemPrompt, history) {
 
   const candidateModels = [
     process.env.GEMINI_MODEL,
+    'gemini-2.5-flash',
+    'gemini-2.0-flash',
+    'gemini-1.5-flash',
     'gemini-3.5-flash-lite',
     'gemini-3.5-flash',
     'gemini-3.6-flash',
@@ -201,7 +204,7 @@ async function callOpenAICompatible(apiKey, endpoint, model, systemPrompt, histo
 // POST /api/chat
 router.post('/', chatRateLimiter, async (req, res) => {
   try {
-    let { message, sessionId } = req.body;
+    let { message, sessionId, mentorContext } = req.body;
     sessionId = String(sessionId || `session_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`).trim();
 
     message = String(message || '').trim().slice(0, 500);
@@ -229,11 +232,35 @@ router.post('/', chatRateLimiter, async (req, res) => {
     let botReply = '';
     let usedProvider = 'local';
 
+    // Build persona-specific system prompt if chatting with an expert mentor
+    let effectiveSystemPrompt = SYSTEM_PROMPT;
+    if (mentorContext && typeof mentorContext === 'object') {
+      const { name, role, company, experience, domain, skills, bio, topic, slot, userName } = mentorContext;
+      const skillsList = Array.isArray(skills) ? skills.join(', ') : (skills || 'General Freelancing & Strategy');
+      effectiveSystemPrompt = `You are "${name || 'Mentor'}", a senior industry expert acting as a dedicated 1-on-1 mentor on HerEarn (an Indian platform empowering women to transition into digital careers and financial independence).
+
+Your Professional Profile:
+- Name: ${name || 'Mentor'}
+- Title & Company: ${role || 'Mentor'} at ${company || 'Industry'} (${experience || '5+ years experience'})
+- Primary Domain: ${domain || 'Freelance & Career Development'}
+- Key Skills & Focus Areas: ${skillsList}
+- Background: ${bio || 'Experienced professional helping women upskill and build sustainable freelance income.'}
+- Learner You Are Advising: ${userName || 'Learner'}
+- Booked Mentorship Session: "${topic || 'Portfolio & Strategy Review'}" (Scheduled Time: ${slot || 'Upcoming Session'})
+
+Instructions for your response:
+1. Always stay in character as ${name || 'Mentor'} and reply in the first person ("I", "in my work at ${company || 'my projects'}").
+2. Directly address ${userName || 'the learner'}'s exact question with actionable, practical advice suited to the Indian remote/freelance ecosystem (e.g. realistic freelance pricing in ₹ INR, portfolio standards, dealing with Indian/global clients, overcoming career breaks).
+3. Be warm, empathetic, encouraging, yet professional and specific.
+4. Reference your upcoming 1-on-1 session ("${slot || 'our scheduled call'}") where you can dive even deeper into their drafts, metrics, or questions.
+5. Keep your response concise (2 to 4 focused paragraphs or actionable bullet points). Avoid repetitive phrases and avoid generic non-answers.`;
+    }
+
     // 1. Try Google Gemini API (Free tier)
     const geminiKey = process.env.GEMINI_API_KEY;
     if (geminiKey && geminiKey !== 'your_gemini_key_here' && !geminiKey.includes('dummy')) {
       try {
-        botReply = await callGeminiAPI(geminiKey, SYSTEM_PROMPT, history);
+        botReply = await callGeminiAPI(geminiKey, effectiveSystemPrompt, history);
         usedProvider = 'gemini';
       } catch (err) {
         console.warn('[Gemini API Fallback]:', err.message);
@@ -248,7 +275,7 @@ router.post('/', chatRateLimiter, async (req, res) => {
           groqKey,
           'https://api.groq.com/openai/v1/chat/completions',
           'llama-3.3-70b-versatile',
-          SYSTEM_PROMPT,
+          effectiveSystemPrompt,
           history
         );
         usedProvider = 'groq';
@@ -261,7 +288,7 @@ router.post('/', chatRateLimiter, async (req, res) => {
     const anthropicKey = process.env.ANTHROPIC_API_KEY;
     if (!botReply && anthropicKey && anthropicKey !== 'your_key_here' && !anthropicKey.includes('dummy')) {
       try {
-        botReply = await callAnthropicAPI(anthropicKey, SYSTEM_PROMPT, history);
+        botReply = await callAnthropicAPI(anthropicKey, effectiveSystemPrompt, history);
         usedProvider = 'anthropic';
       } catch (err) {
         console.warn('[Claude API Fallback]:', err.message);
@@ -276,7 +303,7 @@ router.post('/', chatRateLimiter, async (req, res) => {
           openaiKey,
           'https://api.openai.com/v1/chat/completions',
           'gpt-4o-mini',
-          SYSTEM_PROMPT,
+          effectiveSystemPrompt,
           history
         );
         usedProvider = 'openai';
@@ -287,7 +314,12 @@ router.post('/', chatRateLimiter, async (req, res) => {
 
     // 5. Intelligent Multi-Intent NLP Engine (Zero API Key / Offline Fallback)
     if (!botReply) {
-      botReply = generateDynamicAIReply(message, sessionData);
+      if (mentorContext && typeof mentorContext === 'object') {
+        botReply = generateMentorAIReply(message, mentorContext, sessionData);
+        usedProvider = 'mentor-nlp';
+      } else {
+        botReply = generateDynamicAIReply(message, sessionData);
+      }
     }
 
     history.push({ role: 'assistant', content: botReply });
@@ -553,6 +585,150 @@ function generateDynamicAIReply(message, session) {
     "I appreciate you reaching out! If you have a question about HerEarn — whether it is about learning, applying for projects, or earning safely from home — I am happy to help. What would you like to know more about?",
     "Happy to help! HerEarn supports women across India in building digital skills and achieving financial independence from home. Please ask me anything about the courses, client projects, payment protection, or your career journey."
   ]);
+}
+
+/**
+ * Context-Aware Mentor Dynamic NLP AI Engine
+ * Provides specialized, realistic 1-on-1 mentor guidance tailored to the mentor's
+ * specific domain (Marketing, Canva, Shopify, Career Restart, Web Dev, Content Writing)
+ * and the user's questions (pricing, portfolio, client pitching, career breaks, session agenda).
+ */
+function generateMentorAIReply(message, mentorContext, session) {
+  const text = (message || '').toLowerCase().trim();
+  const name = mentorContext?.name || 'Mentor';
+  const role = mentorContext?.role || 'Mentor';
+  const company = mentorContext?.company || 'Industry';
+  const domain = (mentorContext?.domain || '').toLowerCase();
+  const slot = mentorContext?.slot || 'our scheduled session';
+  const topic = mentorContext?.topic || 'Portfolio & Strategy';
+  const skills = Array.isArray(mentorContext?.skills) ? mentorContext.skills.join(', ') : (mentorContext?.skills || 'Freelance & Career Growth');
+
+  // 1. Portfolio / Project / Resume review
+  if (text.includes('portfolio') || text.includes('review') || text.includes('resume') || text.includes('cv') || text.includes('github') || text.includes('behance') || text.includes('draft') || text.includes('sample') || text.includes('check my')) {
+    if (domain.includes('design') || domain.includes('canva') || domain.includes('ui')) {
+      return `I would love to review your design work, and that's exactly what we will do! For our session on ${slot}, here is how to prepare your portfolio:
+• Select 3 focused case studies rather than 20 random posts (e.g. 1 brand identity kit, 1 carousel ad set with high CTR, and 1 packaging/social template pack).
+• Include a 2-sentence context for each: Client goal, your design decision, and measurable results.
+• If you have Canva or Behance links, paste them right here or have them ready on your screen. I'll give you live feedback during our ${topic} session!`;
+    }
+    if (domain.includes('marketing')) {
+      return `Reviewing marketing campaigns is my favorite part! Before we meet on ${slot}:
+• Pull together 2 or 3 campaign snapshots showing the creative, your audience targeting logic, and metrics like CTR, CPC, or conversion count.
+• Even for dummy or practice projects, outline what problem you solved and what the simulated ROAS was.
+• Feel free to paste your draft Google Docs or slide deck link here in our chat, and I'll review it ahead of our call!`;
+    }
+    if (domain.includes('shopify') || domain.includes('commerce')) {
+      return `Yes, reviewing your store build or catalog setup is essential! For our meeting on ${slot}:
+• Make sure your Shopify preview link (with storefront password if unpublished) is accessible.
+• Check your mobile navigation, banner hero contrast, and product page trust badges (like COD / Razorpay icons).
+• Send the link over here anytime so I can check your checkout funnel before we connect!`;
+    }
+    if (domain.includes('code') || domain.includes('tech') || domain.includes('web')) {
+      return `Absolutely! As a software mentor, here is what I look for when reviewing developer portfolios:
+• Ensure your GitHub repos have a clear README with a live deployment link (Vercel/Netlify), tech stack badges, and screenshots.
+• Highlight 2 clean, production-grade projects rather than 10 tutorial clones.
+• Drop your GitHub profile or live project link right here, and I'll inspect the code structure before our session on ${slot}!`;
+    }
+    if (domain.includes('career') || domain.includes('confidence') || domain.includes('restart')) {
+      return `I will gladly review your resume and portfolio! For women restarting their careers, we focus on functional storytelling:
+• Group your experience by impact and transferable skills (project coordination, budgeting, digital tools) rather than highlighting dates.
+• Add a dedicated "Recent Upskilling & Projects" section showing your HerEarn certifications and verified client simulations.
+• Share your draft link or summary points here so I can tailor our discussion for ${slot}!`;
+    }
+    return `I'd be glad to review your portfolio! Please share the link or brief overview here. For our session on ${slot}, have your 2 best project samples ready so we can optimize them for paying clients and higher rates!`;
+  }
+
+  // 2. Pricing, Rates, How much to charge in ₹ INR
+  if (text.includes('rate') || text.includes('price') || text.includes('charge') || text.includes('fee') || text.includes('cost') || text.includes('how much') || text.includes('quote') || text.includes('retainer') || text.includes('rupee') || text.includes('inr')) {
+    if (domain.includes('design') || domain.includes('canva') || domain.includes('ui')) {
+      return `Pricing is where most freelance designers undercharge. Here is the realistic benchmark I recommend in India:
+• **Starter Social Media Kit:** ₹5,000 – ₹9,000 for 12 branded Canva posts + 4 story templates.
+• **Monthly Design Retainer:** ₹12,000 – ₹20,000/month for ongoing social graphics and promotional banners.
+• **Complete Brand Identity Kit:** ₹15,000 – ₹30,000 including logo variations, color palette, typography guidelines, and mockups.
+Never charge per hour for design—always charge per deliverable with 50% upfront via HerEarn Escrow. We will calibrate your custom pricing sheet during our session on ${slot}!`;
+    }
+    if (domain.includes('marketing')) {
+      return `For digital marketing and ad management in India, here are standard freelance benchmarks:
+• **Social Media Management:** ₹8,000 – ₹18,000/month per brand (content calendar + posting + basic engagement).
+• **Performance Ad Setup (Meta/Google Ads):** ₹12,000 – ₹25,000/month retainer or a base fee of ₹10,000 + 10% of ad spend.
+• **Lead Generation Campaign Audit:** ₹4,000 – ₹7,000 one-time fee.
+During our ${topic} session on ${slot}, we will craft a tiered proposal template you can send to prospective clients!`;
+    }
+    if (domain.includes('shopify') || domain.includes('commerce')) {
+      return `E-commerce clients have clear ROI expectations, so you can charge premium rates:
+• **Single Product / Micro Shopify Store:** ₹10,000 – ₹18,000 for complete theme customization and payment gateway integration.
+• **Catalog Setup & Multi-Collection Store:** ₹22,000 – ₹45,000 including 30 products, shipping zones, and WhatsApp checkout.
+• **Monthly Store Maintenance & App Management:** ₹15,000/month retainer.
+We will detail how to present this quote during our upcoming meeting!`;
+    }
+    if (domain.includes('code') || domain.includes('tech') || domain.includes('web')) {
+      return `For web development projects in India and international remote gigs:
+• **Landing Page (React / Tailwind):** ₹12,000 – ₹25,000 with mobile responsiveness and contact forms.
+• **Full Multi-page Web App / MVP:** ₹35,000 – ₹80,000+ depending on database and API integrations.
+• **Bug Fixing / Performance Optimization:** ₹3,500 – ₹8,000 per milestone.
+Always use milestone-based contracts with HerEarn Escrow protection so you never have to chase payments.`;
+    }
+    return `In freelancing, pricing depends on perceived business value rather than hours spent. For beginners in India, aim for ₹6,000 – ₹15,000 per project or retainer. Always ask for 50% advance or Escrow funding. We will fine-tune your specific pricing during our meeting on ${slot}!`;
+  }
+
+  // 3. Client Acquisition / Pitching / Cold Email / Proposals
+  if (text.includes('client') || text.includes('pitch') || text.includes('proposal') || text.includes('find work') || text.includes('gig') || text.includes('cold') || text.includes('outreach') || text.includes('lead') || text.includes('upwork')) {
+    return `Landing your first clients is all about a high-value, low-friction pitch! Here is my 3-step outreach framework:
+1. **The Specific Audit:** Find a local brand or creator on Instagram or LinkedIn. Identify ONE specific thing they could improve (e.g. low-res post template, missing call-to-action, or slow mobile page).
+2. **The Free Sample Hook:** Create a 1-slide mockup solving that exact problem and send a polite DM: *"Hi [Name], I noticed your recent product launch and designed 2 alternative creative mockups to test CTR. Happy to share them if you'd like!"*
+3. **The Escrow Transition:** Once they reply with enthusiasm, offer a small paid starter package protected by HerEarn Escrow.
+During our ${topic} session on ${slot}, I'll share exact cold DM templates that have worked for my mentees!`;
+  }
+
+  // 4. Career Gap / Career Restart / Maternity / Confidence
+  if (text.includes('gap') || text.includes('break') || text.includes('restart') || text.includes('motherhood') || text.includes('marriage') || text.includes('confidence') || text.includes('fear') || text.includes('scared') || text.includes('late')) {
+    return `First, take a deep breath. A career break is never a barrier—it is simply a chapter of life.
+Clients and modern remote employers do not judge how many years you took off; they care whether you can solve their problem today.
+• **Reframe the narrative:** Never apologize for your gap. State: *"I took intentional time for family responsibilities, and recently completed rigorous hands-on training in ${mentorContext?.domain || 'digital skills'} on HerEarn."*
+• **Let proof-of-work speak:** When you show 2 verified project case studies and verified client testimonials, your skill is unquestionable.
+You have so much resilience and maturity to bring to the table. We will map out your confidence building strategy together on ${slot}!`;
+  }
+
+  // 5. Meeting / Session Prep / Scheduling / Agenda
+  if (text.includes('session') || text.includes('meeting') || text.includes('slot') || text.includes('schedule') || text.includes('call') || text.includes('prep') || text.includes('agenda') || text.includes('ready') || text.includes('looking forward')) {
+    return `I'm very much looking forward to our session as well! Our meeting is scheduled for **${slot}**, and our focus will be **"${topic}"**.
+To get maximum value from our 1-on-1 time, please prepare:
+1. **Your #1 Challenge:** The single biggest hurdle you want clarity on right now.
+2. **Draft Work Links:** Any portfolio link, proposal draft, or profile you want me to inspect.
+3. **Your 60-Day Income Goal:** E.g., securing your first ₹10,000 freelance retainer.
+Feel free to drop any questions here beforehand so I can review them prior to our call!`;
+  }
+
+  // 6. Greetings & Intro
+  if (text.match(/^(hi|hello|hey|good morning|good evening|good afternoon|namaste)\b/i)) {
+    return `Hello! It's wonderful to connect with you. As your mentor for **${topic}**, I'm here to support your journey every step of the way. 
+Our session is confirmed for **${slot}**. How is your learning progressing, and is there any particular challenge you'd like to brainstorm together right now?`;
+  }
+
+  // 7. Domain-specific contextual response
+  if (domain.includes('marketing')) {
+    return `That's a very relevant point for modern digital marketing. In my work at ${company}, we focus on ROI-driven metrics like ROAS, audience segmentation, and organic funnels.
+For your current stage, mastering one core channel (like Meta Ads or Instagram content funnels) before branching out is the fastest route to high-paying client retainers.
+Let's analyze how this applies to your portfolio during our meeting on ${slot}!`;
+  }
+  if (domain.includes('design') || domain.includes('canva') || domain.includes('ui')) {
+    return `Design consistency and visual hierarchy make all the difference between an amateur and a professional designer.
+When working with tools like Canva Pro or Figma, always establish an 8px grid system, consistent brand font pairing (max 2 fonts), and high-contrast color palettes.
+I'll demonstrate some practical workflow shortcuts for this during our session on ${slot}!`;
+  }
+  if (domain.includes('shopify') || domain.includes('commerce')) {
+    return `E-commerce stores live or die by conversion rate and trust. When building Shopify storefronts for Indian merchants, seamless Cash on Delivery (COD) confirmation and instant WhatsApp support integrations increase completed orders by over 35%.
+We will go through the exact store architecture checklist during our session on ${slot}!`;
+  }
+  if (domain.includes('code') || domain.includes('tech') || domain.includes('web')) {
+    return `In software and web development, clean modular code and responsive performance are paramount. Clients value developers who write maintainable code, test edge cases, and communicate progress proactively.
+Make sure to keep your Git commits descriptive. We'll review your technical architecture in detail during our session on ${slot}!`;
+  }
+
+  // 8. General Encouraging Fallback
+  return `Thank you for sharing that! As your mentor in ${mentorContext?.domain || 'this field'}, I want to make sure you have complete clarity and tangible progress.
+The key next step is applying this directly to a concrete project sample that you can showcase to clients with confidence.
+I have noted this question down for our upcoming session on **${slot}** focused on **"${topic}"**. Feel free to share any more context or drafts here in the meantime!`;
 }
 
 export default router;
