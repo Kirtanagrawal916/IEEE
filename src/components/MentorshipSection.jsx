@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { 
   Users, 
   Calendar, 
@@ -11,7 +11,7 @@ import {
   Sparkles, 
   Search, 
   Filter, 
-  Video, 
+  Send, 
   ExternalLink, 
   ChevronRight, 
   X, 
@@ -26,9 +26,18 @@ import {
   UserCheck, 
   Plus, 
   Check, 
-  Info 
+  Info,
+  RotateCcw,
+  Mic,
+  MicOff,
+  Paperclip,
+  Video,
+  FileText,
+  Copy,
+  Image as ImageIcon
 } from 'lucide-react';
 import { triggerCelebrationConfetti } from '../utils/confettiHelper';
+import { api } from '../services/api';
 
 export default function MentorshipSection({ user, showToast }) {
   // Active navigation tab: 'mentors' | 'masterclasses' | 'my-bookings'
@@ -66,6 +75,9 @@ export default function MentorshipSection({ user, showToast }) {
 
   // Success Confirmation Modal
   const [confirmedBooking, setConfirmedBooking] = useState(null);
+
+  // Active Mentor Chat Modal ({ mentor, booking })
+  const [activeChatMentor, setActiveChatMentor] = useState(null);
 
   // Volunteer Mentor Application Modal
   const [showApplyMentorModal, setShowApplyMentorModal] = useState(false);
@@ -290,15 +302,13 @@ export default function MentorshipSection({ user, showToast }) {
     setBookingNotes('');
   };
 
-  // Confirm booking handler
+  // Confirm meeting assignment handler
   const handleConfirmBooking = () => {
     if (!bookingModalMentor || !selectedSlot) return;
 
     setIsSubmittingBooking(true);
 
     const bookingId = `book-${Date.now()}`;
-    const meetId = `meet-${Math.random().toString(36).substring(2, 6)}-${Math.random().toString(36).substring(2, 6)}`;
-    const meetUrl = `https://meet.google.com/${meetId}`;
 
     const newBooking = {
       id: bookingId,
@@ -309,7 +319,6 @@ export default function MentorshipSection({ user, showToast }) {
       slot: selectedSlot,
       topic: selectedTopic,
       notes: bookingNotes,
-      meetUrl,
       duration: bookingModalMentor.sessionDuration,
       status: 'Confirmed',
       createdAt: new Date().toISOString()
@@ -331,7 +340,7 @@ export default function MentorshipSection({ user, showToast }) {
       setConfirmedBooking(newBooking);
       triggerCelebrationConfetti();
       if (showToast) {
-        showToast("🎉 Session Booked!", `Free strategy call confirmed with ${bookingModalMentor.name} for ${selectedSlot}.`);
+        showToast("🎉 Meeting Assigned!", `Session assigned with ${bookingModalMentor.name} for ${selectedSlot}. Direct chat is now unlocked!`);
       }
     }, 400);
   };
@@ -347,7 +356,7 @@ export default function MentorshipSection({ user, showToast }) {
       console.warn('[Mentorship] Storage error:', e);
     }
     if (showToast) {
-      showToast("Booking Cancelled", `Session with ${mentorName} has been cancelled.`);
+      showToast("Meeting Cancelled", `Assigned meeting with ${mentorName} has been cancelled.`);
     }
   };
 
@@ -365,16 +374,16 @@ export default function MentorshipSection({ user, showToast }) {
         showToast("RSVP Cancelled", `You have cancelled your seat for "${masterclass.title}".`);
       } else {
         triggerCelebrationConfetti();
-        showToast("🎟️ Seat Reserved!", `Your free pass for "${masterclass.title}" is confirmed. Check email for link.`);
+        showToast("🎟️ Seat Reserved!", `Your free pass for "${masterclass.title}" is confirmed. Check email for details.`);
       }
     }
   };
 
   // Generate Google Calendar Link
   const getGoogleCalendarUrl = (booking) => {
-    const title = encodeURIComponent(`HerEarn 1-on-1 Mentorship: ${booking.mentorName} & You`);
-    const details = encodeURIComponent(`1-on-1 Session via HerEarn Mentorship Network.\nTopic: ${booking.topic}\nMeeting Link: ${booking.meetUrl}\nDuration: ${booking.duration}`);
-    return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&details=${details}&location=${encodeURIComponent(booking.meetUrl)}`;
+    const title = encodeURIComponent(`HerEarn Mentorship Session: ${booking.mentorName} & You`);
+    const details = encodeURIComponent(`HerEarn Mentorship Session.\nMentor: ${booking.mentorName}\nTopic: ${booking.topic}\nDuration: ${booking.duration}\nChat with your mentor directly on the HerEarn platform!`);
+    return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&details=${details}`;
   };
 
   // Handle Mentor Application
@@ -411,17 +420,17 @@ export default function MentorshipSection({ user, showToast }) {
             </div>
 
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight leading-tight">
-              Learn 1-on-1 From Accomplished <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-400 via-purple-300 to-indigo-300">Women in Tech & Business</span>
+              Connect & Chat Directly With <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-400 via-purple-300 to-indigo-300">Women Leaders in Tech & Business</span>
             </h1>
 
             <p className="text-xs sm:text-sm text-slate-200 leading-relaxed font-medium">
-              Connect directly with verified female leaders across India. Receive tailored feedback on your portfolio, overcome career break hesitation, learn freelance rate negotiation, and land your next micro-gig.
+              Schedule meetings with verified female leaders across India. Unlock direct 1:1 mentor chat for tailored feedback on your portfolio, freelance proposal reviews, and career restart strategies.
             </p>
 
             <div className="flex flex-wrap items-center gap-4 pt-2">
               <div className="flex items-center gap-2 text-xs font-bold text-slate-200">
                 <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                <span>Zero Cost Strategy Calls</span>
+                <span>1:1 Mentor Chat Unlocked</span>
               </div>
               <div className="flex items-center gap-2 text-xs font-bold text-slate-200">
                 <CheckCircle2 className="w-4 h-4 text-pink-400" />
@@ -429,7 +438,7 @@ export default function MentorshipSection({ user, showToast }) {
               </div>
               <div className="flex items-center gap-2 text-xs font-bold text-slate-200">
                 <CheckCircle2 className="w-4 h-4 text-purple-300" />
-                <span>Verifiable Google Meet Sessions</span>
+                <span>100% Free Mentorship</span>
               </div>
             </div>
           </div>
@@ -449,7 +458,7 @@ export default function MentorshipSection({ user, showToast }) {
             <div className="grid grid-cols-2 gap-3 pt-2 text-center">
               <div className="p-3 bg-white/5 rounded-2xl border border-white/10">
                 <p className="text-lg font-black text-white">850+</p>
-                <p className="text-[10px] text-purple-200 uppercase font-bold tracking-wider">Completed Calls</p>
+                <p className="text-[10px] text-purple-200 uppercase font-bold tracking-wider">Mentorship Sessions</p>
               </div>
               <div className="p-3 bg-white/5 rounded-2xl border border-white/10">
                 <p className="text-lg font-black text-pink-300">4.9 ★</p>
@@ -469,7 +478,7 @@ export default function MentorshipSection({ user, showToast }) {
       </div>
 
       {/* ========================================================
-          2. NAVIGATION TABS (1-on-1 vs Masterclasses vs Bookings)
+          2. NAVIGATION TABS (Mentors vs Masterclasses vs Bookings)
          ======================================================== */}
       <div className="flex flex-wrap items-center justify-between gap-4 border-b border-purple-200 dark:border-purple-900/40 pb-4">
         <div className="flex items-center gap-2 overflow-x-auto scrollbar-none py-1">
@@ -482,7 +491,7 @@ export default function MentorshipSection({ user, showToast }) {
             }`}
           >
             <Users className="w-4 h-4" />
-            <span>1-on-1 Strategy Mentors ({mentors.length})</span>
+            <span>Strategy Mentors ({mentors.length})</span>
           </button>
 
           <button
@@ -493,7 +502,7 @@ export default function MentorshipSection({ user, showToast }) {
                 : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-purple-50 dark:hover:bg-slate-800 border border-purple-100 dark:border-purple-900/30'
             }`}
           >
-            <Video className="w-4 h-4 text-pink-500" />
+            <Sparkles className="w-4 h-4 text-pink-500" />
             <span>Live Group Masterclasses ({masterclasses.length})</span>
             <span className="px-1.5 py-0.5 rounded-full bg-pink-500/20 text-pink-500 text-[10px] font-extrabold uppercase">Free</span>
           </button>
@@ -507,7 +516,7 @@ export default function MentorshipSection({ user, showToast }) {
             }`}
           >
             <Calendar className="w-4 h-4 text-purple-500" />
-            <span>My Booked Calls ({bookings.length})</span>
+            <span>My Scheduled Mentorships ({bookings.length})</span>
             {bookings.length > 0 && (
               <span className="px-2 py-0.5 rounded-full bg-emerald-500 text-white text-[10px] font-extrabold">
                 {bookings.length} Active
@@ -681,24 +690,22 @@ export default function MentorshipSection({ user, showToast }) {
                           <div className="p-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-300 dark:border-emerald-800 text-center">
                             <p className="text-[11px] font-bold text-emerald-700 dark:text-emerald-300 flex items-center justify-center gap-1.5">
                               <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                              <span>Session Confirmed ({activeBooking?.slot || m.nextSlot})</span>
+                              <span>Meeting Assigned ({activeBooking?.slot || m.nextSlot})</span>
                             </p>
                           </div>
                           <div className="flex items-center gap-2">
-                            {activeBooking && (
-                              <a
-                                href={activeBooking.meetUrl}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="flex-1 py-2 px-3 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-xs"
-                              >
-                                <Video className="w-3.5 h-3.5" />
-                                <span>Join Call</span>
-                              </a>
-                            )}
                             <button
+                              type="button"
+                              onClick={() => setActiveChatMentor({ mentor: m, booking: activeBooking })}
+                              className="flex-1 py-2.5 px-3 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-black text-xs flex items-center justify-center gap-1.5 shadow-sm cursor-pointer transition-all"
+                            >
+                              <MessageSquare className="w-3.5 h-3.5" />
+                              <span>Chat with Mentor</span>
+                            </button>
+                            <button
+                              type="button"
                               onClick={() => handleCancelBooking(activeBooking?.id, m.name)}
-                              className="px-3 py-2 rounded-xl bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-900 text-xs font-bold hover:bg-rose-100 cursor-pointer"
+                              className="px-3 py-2.5 rounded-xl bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-900 text-xs font-bold hover:bg-rose-100 cursor-pointer"
                             >
                               Cancel
                             </button>
@@ -706,11 +713,12 @@ export default function MentorshipSection({ user, showToast }) {
                         </div>
                       ) : (
                         <button
+                          type="button"
                           onClick={() => openBookingModal(m)}
                           className="w-full py-3 rounded-2xl bg-gradient-to-r from-purple-600 via-indigo-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-black text-xs shadow-md shadow-purple-500/20 hover:shadow-lg transition-all cursor-pointer flex items-center justify-center gap-2"
                         >
                           <Calendar className="w-4 h-4" />
-                          <span>Book Free 1-on-1 Call</span>
+                          <span>Assign Meeting & Chat</span>
                           <ChevronRight className="w-3.5 h-3.5 opacity-80" />
                         </button>
                       )}
@@ -824,7 +832,7 @@ export default function MentorshipSection({ user, showToast }) {
       )}
 
       {/* ========================================================
-          5. TAB 3: MY BOOKED CALLS
+          5. TAB 3: MY SCHEDULED MENTORSHIPS
          ======================================================== */}
       {activeTab === 'my-bookings' && (
         <div className="space-y-6">
@@ -833,9 +841,9 @@ export default function MentorshipSection({ user, showToast }) {
               <div className="w-16 h-16 rounded-3xl bg-purple-100 dark:bg-purple-950 text-purple-600 flex items-center justify-center mx-auto shadow-inner">
                 <Calendar className="w-8 h-8" />
               </div>
-              <h3 className="text-xl font-black text-slate-900 dark:text-white">No active mentorship bookings</h3>
+              <h3 className="text-xl font-black text-slate-900 dark:text-white">No active mentorship meetings</h3>
               <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-                You haven't reserved any 1-on-1 calls yet. All strategy sessions are 100% free and sponsored by HerEarn mentors.
+                You haven't assigned any mentorship meetings yet. Schedule a session with any verified mentor to unlock direct 1:1 chat guidance.
               </p>
               <button
                 onClick={() => setActiveTab('mentors')}
@@ -859,7 +867,7 @@ export default function MentorshipSection({ user, showToast }) {
                         <div className="flex items-center gap-2">
                           <h4 className="font-extrabold text-base text-slate-900 dark:text-white">{b.mentorName}</h4>
                           <span className="px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 text-[10px] font-black uppercase">
-                            Confirmed
+                            Assigned
                           </span>
                         </div>
                         <p className="text-xs text-purple-600 dark:text-purple-400 font-bold">{b.mentorRole}</p>
@@ -888,7 +896,7 @@ export default function MentorshipSection({ user, showToast }) {
                       <span className="font-bold text-purple-700 dark:text-purple-300">{b.topic}</span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-slate-500">Call Duration:</span>
+                      <span className="text-slate-500">Session Duration:</span>
                       <span className="font-bold text-slate-700 dark:text-slate-300">{b.duration || '35 mins'}</span>
                     </div>
                     {b.notes && (
@@ -898,17 +906,25 @@ export default function MentorshipSection({ user, showToast }) {
                     )}
                   </div>
 
-                  {/* Actions: Join Call + Add to Calendar */}
+                  {/* Actions: Chat with Mentor + Add to Calendar */}
                   <div className="flex items-center gap-3 pt-1">
-                    <a
-                      href={b.meetUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="flex-1 py-3 px-4 rounded-2xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-black text-xs flex items-center justify-center gap-2 shadow-md cursor-pointer"
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const m = mentors.find(item => item.id === b.mentorId) || {
+                          id: b.mentorId,
+                          name: b.mentorName,
+                          role: b.mentorRole,
+                          avatar: b.mentorAvatar,
+                          sessionDuration: b.duration
+                        };
+                        setActiveChatMentor({ mentor: m, booking: b });
+                      }}
+                      className="flex-1 py-3 px-4 rounded-2xl bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-black text-xs flex items-center justify-center gap-2 shadow-md cursor-pointer transition-all"
                     >
-                      <Video className="w-4 h-4" />
-                      <span>Join Google Meet</span>
-                    </a>
+                      <MessageSquare className="w-4 h-4" />
+                      <span>Chat with Mentor</span>
+                    </button>
 
                     <a
                       href={getGoogleCalendarUrl(b)}
@@ -917,7 +933,7 @@ export default function MentorshipSection({ user, showToast }) {
                       className="px-4 py-3 rounded-2xl bg-white dark:bg-slate-800 border border-purple-200 dark:border-purple-500/30 text-purple-700 dark:text-purple-300 font-bold text-xs flex items-center justify-center gap-2 hover:bg-purple-50 dark:hover:bg-slate-700 shadow-xs cursor-pointer"
                     >
                       <Calendar className="w-4 h-4" />
-                      <span>Add to Calendar</span>
+                      <span>Calendar</span>
                     </a>
                   </div>
 
@@ -997,7 +1013,7 @@ export default function MentorshipSection({ user, showToast }) {
                 <div className="flex items-center gap-2 text-[11px] text-slate-500 mt-1">
                   <span>★ {bookingModalMentor.rating}</span>
                   <span>•</span>
-                  <span>{bookingModalMentor.sessionDuration} Free Strategy Call</span>
+                  <span>{bookingModalMentor.sessionDuration} Mentorship & Chat</span>
                 </div>
               </div>
             </div>
@@ -1035,7 +1051,7 @@ export default function MentorshipSection({ user, showToast }) {
             <div className="space-y-2">
               <label className="text-xs font-black uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
                 <Calendar className="w-3.5 h-3.5 text-pink-500" />
-                <span>2. Choose Live Strategy Call Time:</span>
+                <span>2. Choose Meeting Time:</span>
               </label>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                 {bookingModalMentor.availabilitySlots.map(slot => (
@@ -1088,12 +1104,12 @@ export default function MentorshipSection({ user, showToast }) {
                 {isSubmittingBooking ? (
                   <>
                     <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    <span>Reserving Slot...</span>
+                    <span>Assigning Session...</span>
                   </>
                 ) : (
                   <>
                     <CheckCircle2 className="w-4 h-4" />
-                    <span>Confirm Free 1-on-1 Session</span>
+                    <span>Confirm Meeting & Unlock Chat</span>
                   </>
                 )}
               </button>
@@ -1113,38 +1129,64 @@ export default function MentorshipSection({ user, showToast }) {
               <CheckCircle2 className="w-8 h-8" />
             </div>
 
-            <h3 className="text-2xl font-black">Session Confirmed!</h3>
+            <h3 className="text-2xl font-black">Meeting Assigned & Chat Unlocked!</h3>
             
             <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
-              Your free 1-on-1 strategy call with <strong className="text-purple-600 dark:text-purple-400">{confirmedBooking.mentorName}</strong> has been scheduled for:
+              Your meeting with <strong className="text-purple-600 dark:text-purple-400">{confirmedBooking.mentorName}</strong> is confirmed. You can now chat directly with your mentor to discuss your goals, share portfolio links, or ask questions!
             </p>
 
             <div className="p-4 rounded-2xl bg-purple-50 dark:bg-slate-950 border border-purple-200 dark:border-slate-800 text-xs space-y-1">
               <p className="font-extrabold text-base text-slate-900 dark:text-white">{confirmedBooking.slot}</p>
               <p className="text-purple-600 dark:text-purple-400 font-bold">{confirmedBooking.topic}</p>
-              <p className="text-[11px] text-slate-400 font-medium">Platform: Google Meet (Video Call)</p>
+              <p className="text-[11px] text-emerald-600 dark:text-emerald-400 font-bold flex items-center justify-center gap-1.5 mt-1">
+                <MessageSquare className="w-3.5 h-3.5" />
+                <span>1:1 Mentor Chat is Now Open</span>
+              </p>
             </div>
 
             <div className="space-y-2 pt-2">
-              <a
-                href={getGoogleCalendarUrl(confirmedBooking)}
-                target="_blank"
-                rel="noreferrer"
-                className="w-full py-3 rounded-2xl bg-purple-600 hover:bg-purple-700 text-white font-extrabold text-xs flex items-center justify-center gap-2 shadow-md cursor-pointer"
+              <button
+                type="button"
+                onClick={() => {
+                  const m = mentors.find(item => item.id === confirmedBooking.mentorId) || {
+                    id: confirmedBooking.mentorId,
+                    name: confirmedBooking.mentorName,
+                    role: confirmedBooking.mentorRole,
+                    avatar: confirmedBooking.mentorAvatar,
+                    sessionDuration: confirmedBooking.duration
+                  };
+                  setActiveChatMentor({ mentor: m, booking: confirmedBooking });
+                  setConfirmedBooking(null);
+                }}
+                className="w-full py-3 rounded-2xl bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-black text-xs flex items-center justify-center gap-2 shadow-md cursor-pointer transition-all"
               >
-                <Calendar className="w-4 h-4" />
-                <span>Add to Google Calendar</span>
-              </a>
+                <MessageSquare className="w-4 h-4" />
+                <span>💬 Chat with {confirmedBooking.mentorName.split(' ')[0]} Now</span>
+              </button>
 
               <button
+                type="button"
                 onClick={() => { setConfirmedBooking(null); setActiveTab('my-bookings'); }}
                 className="w-full py-2.5 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold text-xs hover:bg-slate-200 cursor-pointer"
               >
-                View in "My Booked Calls"
+                View in "My Scheduled Mentorships"
               </button>
             </div>
           </div>
         </div>
+      )}
+
+      {/* ========================================================
+          8b. DIRECT MENTOR CHAT MODAL
+         ======================================================== */}
+      {activeChatMentor && (
+        <MentorChatModal
+          mentor={activeChatMentor.mentor}
+          booking={activeChatMentor.booking}
+          user={user}
+          onClose={() => setActiveChatMentor(null)}
+          showToast={showToast}
+        />
       )}
 
       {/* ========================================================
@@ -1259,6 +1301,766 @@ export default function MentorshipSection({ user, showToast }) {
         </div>
       )}
 
+    </div>
+  );
+}
+
+/**
+ * Intelligent Client-Side Fallback for Mentor Chat
+ * Ensures domain-aware, non-generic replies even if offline or if backend is unreachable.
+ */
+function getClientMentorReply(message, mentor, booking, user, options = {}) {
+  const text = (message || '').toLowerCase().trim();
+  const domain = (mentor?.domain || '').toLowerCase();
+  const slot = booking?.slot || mentor?.nextSlot || 'our scheduled session';
+  const topic = booking?.topic || 'Portfolio & Strategy';
+  const hasImage = Boolean(options?.hasImageAttachment);
+  const lang = options?.preferredLanguage || 'EN';
+
+  // 0. Visual / Image Attachment Feedback
+  if (hasImage) {
+    if (lang === 'HI') {
+      return `मैंने आपका अटैच किया हुआ डिज़ाइन/प्रोजेक्ट प्रीव्यू देखा! 
+• **विज़ुअल बैलेंस (Visual Hierarchy):** मुख्य हेडिंग को सबटेक्स्ट से कम से कम 2.5x बड़ा रखें ताकि क्लाइंट का ध्यान सबसे पहले मुख्य मैसेज पर जाए।
+• **कंट्रास्ट और मार्जिन:** कैनवस के किनारों पर कम से कम 24px की खाली जगह रखें और टेक्स्ट को बैकग्राउंड पर आसानी से पढ़ने योग्य बनाएं।
+• **कॉल-टू-एक्शन (CTA):** बटन को ब्राइट एक्सेंट कलर दें ताकि यूज़र तुरंत एक्शन ले।
+हमारे ${slot} के सेशन में हम इसे क्लाइंट-रेडी फ़ाइनल टच देंगे!`;
+    }
+    return `I can see your uploaded preview! Here are 3 immediate design feedback points based on industry standards:
+• **Visual Hierarchy:** Ensure your primary heading is at least 2.5x larger than any subtext so the core value proposition is immediately visible.
+• **Breathing Room & Contrast:** Maintain at least 24px of clear padding around all canvas edges. Check that text contrast pops cleanly against the background colors.
+• **Call-To-Action (CTA):** Give your button or main link accent contrast (such as vibrant amber or brand purple) to guide the user's eye.
+We will pull up this exact creative during our session on **${slot}** to polish it to client-ready standards!`;
+  }
+
+  // Hindi / Hinglish Response branch
+  if (lang === 'HI') {
+    if (text.includes('rate') || text.includes('price') || text.includes('charge') || text.includes('inr') || text.includes('rupee')) {
+      return `भारत में फ्रीलांसिंग के लिए सही रेट तय करना बहुत जरूरी है:
+• **कैनवा सोशल मीडिया स्टार्टर किट:** 12 पोस्ट्स + 4 स्टोरीज़ के लिए ₹5,000 – ₹9,000।
+• **मंथली डिज़ाइन रिटेनर:** ₹12,000 – ₹20,000 प्रति माह।
+• **शॉपिफ़ाई स्टोर सेटअप:** ₹10,000 – ₹22,000 बेसिक स्टोर के लिए।
+कभी भी बिना 50% एडवांस या HerEarn Escrow के काम शुरू न करें। हमारे ${slot} के सेशन में हम आपकी कस्टमाइज्ड प्राइसिंग शीट बनाएंगे!`;
+    }
+    if (text.includes('portfolio') || text.includes('review') || text.includes('resume')) {
+      return `मैं आपके पोर्टफोलियो को ज़रूर रिव्यू करूँगी! हमारे ${slot} के सेशन के लिए:
+• 20 साधारण पोस्ट्स के बजाय केवल 3 बेहतरीन केस स्टडीज चुनें।
+• हर प्रोजेक्ट के साथ क्लाइंट का उद्देश्य और आपका सॉल्यूशन 2 लाइनों में लिखें।
+• अपना ड्राफ्ट लिंक यहाँ शेयर कर सकते हैं, मैं सेशन से पहले इसे देख लूँगी!`;
+    }
+    return `नमस्ते! ${mentor.name} के तौर पर मैं आपके '${topic}' सेशन (समय: ${slot}) के लिए तैयार हूँ। आप अपने प्रोजेक्ट, प्राइसिंग या क्लाइंट पिचिंग से जुड़ा कोई भी सवाल यहाँ बेझिझक पूछ सकते हैं!`;
+  }
+
+  // 1. Portfolio Review
+  if (text.includes('portfolio') || text.includes('review') || text.includes('resume') || text.includes('cv') || text.includes('github') || text.includes('behance') || text.includes('draft') || text.includes('sample')) {
+    if (domain.includes('design') || domain.includes('canva') || domain.includes('ui')) {
+      return `I would love to review your design work! For our meeting on ${slot}, please prepare:
+• 3 curated case studies (e.g. 1 brand identity kit, 1 high-converting Instagram carousel, and 1 client mockup).
+• A brief note explaining the client's goal and your design rationale.
+• You can paste your Canva view-only or Behance link right here in our chat, and I'll inspect it before our ${topic} session!`;
+    }
+    if (domain.includes('marketing')) {
+      return `Reviewing marketing campaigns is my specialty! Before our call on ${slot}:
+• Gather 2 or 3 snapshots showing your ad creative, audience targeting logic, and metrics (like CTR, CPC, or simulated ROAS).
+• Summarize the core problem you solved for the brand in 2 sentences.
+• Feel free to share your Google Docs or slide deck link right here anytime!`;
+    }
+    if (domain.includes('shopify') || domain.includes('commerce')) {
+      return `Yes, reviewing your store build or catalog structure is key! For our session on ${slot}:
+• Have your Shopify store preview link ready (including password if unpublished).
+• Test your mobile navigation, banner contrast, and checkout badges (COD / Razorpay).
+• Drop the link here so I can give it a preliminary look before we connect!`;
+    }
+    if (domain.includes('code') || domain.includes('tech') || domain.includes('web')) {
+      return `Absolutely! For developer portfolios, here is my golden rule:
+• Make sure your GitHub repos have a clear README with a live deployment link (Vercel/Netlify), tech stack badges, and screenshots.
+• Highlight 2 clean, production-grade projects rather than tutorial clones.
+• Drop your GitHub profile or live project link right here, and I'll inspect the code structure before our session on ${slot}!`;
+    }
+    return `I will gladly review your portfolio! Please share the link or summary points here. For our session on ${slot}, have your 2 best project samples ready so we can optimize them for paying clients and higher rates!`;
+  }
+
+  // 2. Pricing & Rates in ₹ INR
+  if (text.includes('rate') || text.includes('price') || text.includes('charge') || text.includes('fee') || text.includes('cost') || text.includes('how much') || text.includes('quote') || text.includes('retainer') || text.includes('rupee') || text.includes('inr')) {
+    if (domain.includes('design') || domain.includes('canva') || domain.includes('ui')) {
+      return `Pricing is where many freelance designers leave money on the table. Here are the realistic rates I recommend in India:
+• **Starter Social Media Kit:** ₹5,000 – ₹9,000 for 12 branded Canva posts + 4 story templates.
+• **Monthly Design Retainer:** ₹12,000 – ₹20,000/month for ongoing social graphics and promotional banners.
+• **Complete Brand Identity Kit:** ₹15,000 – ₹30,000 including logo variations, color palette, typography guidelines, and mockups.
+Never charge per hour for design—always charge per deliverable with 50% upfront via HerEarn Escrow. We will calibrate your custom pricing sheet during our session on ${slot}!`;
+    }
+    if (domain.includes('marketing')) {
+      return `For digital marketing and ad management in India, here are standard freelance benchmarks:
+• **Social Media Management:** ₹8,000 – ₹18,000/month per brand (content calendar + posting + basic engagement).
+• **Performance Ad Setup (Meta/Google Ads):** ₹12,000 – ₹25,000/month retainer or a base fee of ₹10,000 + 10% of ad spend.
+• **Lead Generation Campaign Audit:** ₹4,000 – ₹7,000 one-time fee.
+During our ${topic} session on ${slot}, we will craft a tiered proposal template you can send to prospective clients!`;
+    }
+    if (domain.includes('shopify') || domain.includes('commerce')) {
+      return `E-commerce clients have clear ROI expectations, so you can charge premium rates:
+• **Single Product / Micro Shopify Store:** ₹10,000 – ₹18,000 for complete theme customization and payment gateway integration.
+• **Catalog Setup & Multi-Collection Store:** ₹22,000 – ₹45,000 including 30 products, shipping zones, and WhatsApp checkout.
+• **Monthly Store Maintenance & App Management:** ₹15,000/month retainer.
+We will detail how to present this quote during our upcoming meeting!`;
+    }
+    if (domain.includes('code') || domain.includes('tech') || domain.includes('web')) {
+      return `For web development projects in India and international remote gigs:
+• **Landing Page (React / Tailwind):** ₹12,000 – ₹25,000 with mobile responsiveness and contact forms.
+• **Full Multi-page Web App / MVP:** ₹35,000 – ₹80,000+ depending on database and API integrations.
+• **Bug Fixing / Performance Optimization:** ₹3,500 – ₹8,000 per milestone.
+Always use milestone-based contracts with HerEarn Escrow protection so you never have to chase payments.`;
+    }
+    return `In freelancing, pricing depends on perceived business value rather than hours spent. For beginners in India, aim for ₹6,000 – ₹15,000 per project or retainer. Always ask for 50% advance or Escrow funding. We will fine-tune your specific pricing during our meeting on ${slot}!`;
+  }
+
+  // 3. Client Acquisition & Pitching
+  if (text.includes('client') || text.includes('pitch') || text.includes('proposal') || text.includes('find work') || text.includes('gig') || text.includes('cold') || text.includes('outreach') || text.includes('lead')) {
+    return `Landing your first clients is all about a high-value, low-friction pitch! Here is my 3-step outreach framework:
+1. **The Specific Audit:** Find a local brand or creator on Instagram or LinkedIn. Identify ONE specific thing they could improve (e.g. low-res post template, missing call-to-action, or slow mobile page).
+2. **The Free Sample Hook:** Create a 1-slide mockup solving that exact problem and send a polite DM: "Hi [Name], I noticed your recent product launch and designed 2 alternative creative mockups to test CTR. Happy to share them if you'd like!"
+3. **The Escrow Transition:** Once they reply with enthusiasm, offer a small paid starter package protected by HerEarn Escrow.
+During our ${topic} session on ${slot}, I'll share exact cold DM templates that have worked for my mentees!`;
+  }
+
+  // 4. Career Gap & Confidence
+  if (text.includes('gap') || text.includes('break') || text.includes('restart') || text.includes('motherhood') || text.includes('marriage') || text.includes('confidence') || text.includes('fear') || text.includes('scared') || text.includes('late')) {
+    return `First, take a deep breath. A career break is never a barrier—it is simply a chapter of life.
+Clients and modern remote employers do not judge how many years you took off; they care whether you can solve their problem today.
+• **Reframe the narrative:** Never apologize for your gap. State: "I took intentional time for family responsibilities, and recently completed rigorous hands-on training in ${mentor?.domain || 'digital skills'} on HerEarn."
+• **Let proof-of-work speak:** When you show 2 verified project case studies and verified client testimonials, your skill is unquestionable.
+You have so much resilience and maturity to bring to the table. We will map out your confidence building strategy together on ${slot}!`;
+  }
+
+  // 5. Session Preparation / Agenda
+  if (text.includes('session') || text.includes('meeting') || text.includes('slot') || text.includes('schedule') || text.includes('call') || text.includes('prep') || text.includes('agenda') || text.includes('ready') || text.includes('looking forward')) {
+    return `I'm very much looking forward to our session as well! Our meeting is scheduled for **${slot}**, and our focus will be **"${topic}"**.
+To get maximum value from our 1-on-1 time, please prepare:
+1. **Your #1 Challenge:** The single biggest hurdle you want clarity on right now.
+2. **Draft Work Links:** Any portfolio link, proposal draft, or profile you want me to inspect.
+3. **Your 60-Day Income Goal:** E.g., securing your first ₹10,000 freelance retainer.
+Feel free to drop any questions here beforehand so I can review them prior to our call!`;
+  }
+
+  // 6. Greetings
+  if (text.match(/^(hi|hello|hey|good morning|good evening|good afternoon|namaste)\b/i)) {
+    return `Hello! It's wonderful to connect with you. As your mentor for **${topic}**, I'm here to support your journey every step of the way. 
+Our session is confirmed for **${slot}**. How is your learning progressing, and is there any particular challenge you'd like to brainstorm together right now?`;
+  }
+
+  // 7. General Contextual Fallback
+  return `Thank you for sharing that question! As your mentor in ${mentor?.domain || 'this field'}, I want to make sure you have complete clarity.
+The key next step is applying this directly to a concrete project sample that you can showcase to clients with confidence.
+I have noted this question down for our upcoming session on **${slot}** focused on **"${topic}"**. Feel free to share any more context or drafts here in the meantime!`;
+}
+
+/**
+ * Interactive Mentor Chat Window Modal
+ * Allows user to chat 1-on-1 dynamically with their assigned mentor via AI & domain-aware NLP.
+ * Features: Voice Mic Input, Image Attachments, Cal Sync, Video Room, Prep Sheet, and Language Switching.
+ */
+function MentorChatModal({ mentor, booking, user, onClose, showToast }) {
+  const chatStorageKey = `herearn_mentor_chat_${mentor.id}`;
+
+  const [messages, setMessages] = useState(() => {
+    try {
+      const saved = localStorage.getItem(chatStorageKey);
+      if (saved) return JSON.parse(saved);
+    } catch {}
+    return [
+      {
+        id: 'msg-init-1',
+        sender: 'mentor',
+        text: `Hello ${user?.name?.split(' ')[0] || 'there'}! 👋 I'm ${mentor.name}. Welcome to our 1-on-1 mentorship workspace. Our meeting is confirmed for ${booking?.slot || mentor.nextSlot || 'our scheduled time'} to focus on "${booking?.topic || 'Portfolio & Strategy'}". Feel free to share questions, attach design mockups, ask about freelance pricing in ₹ INR, or prepare for our call below!`,
+        time: 'Just now'
+      }
+    ];
+  });
+
+  const [inputText, setInputText] = useState('');
+  const [isTyping, setIsTyping] = useState(false);
+  const [isListening, setIsListening] = useState(false);
+  const [attachedImage, setAttachedImage] = useState(null);
+  const [preferredLanguage, setPreferredLanguage] = useState('EN'); // 'EN' | 'HI' | 'Hinglish'
+  const [showPrepSheet, setShowPrepSheet] = useState(false);
+  const [previewZoomImage, setPreviewZoomImage] = useState(null);
+
+  const chatEndRef = useRef(null);
+  const fileInputRef = useRef(null);
+  const recognitionRef = useRef(null);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(chatStorageKey, JSON.stringify(messages));
+    } catch (e) {
+      console.warn('Storage error:', e);
+    }
+    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages, chatStorageKey]);
+
+  // Handle Speech-to-Text Voice Input
+  const toggleListening = () => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      if (showToast) showToast('Voice input is not supported in this browser.', 'warning');
+      return;
+    }
+
+    if (isListening) {
+      try {
+        recognitionRef.current?.stop();
+      } catch {}
+      setIsListening(false);
+      return;
+    }
+
+    try {
+      const recognition = new SpeechRecognition();
+      recognition.continuous = false;
+      recognition.interimResults = false;
+      recognition.lang = preferredLanguage === 'HI' ? 'hi-IN' : 'en-IN';
+
+      recognition.onstart = () => setIsListening(true);
+      recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        setInputText(prev => (prev ? `${prev} ${transcript}` : transcript));
+        setIsListening(false);
+        if (showToast) showToast('Voice captured!', 'success');
+      };
+      recognition.onerror = () => setIsListening(false);
+      recognition.onend = () => setIsListening(false);
+
+      recognitionRef.current = recognition;
+      recognition.start();
+    } catch (err) {
+      console.warn('Speech recognition start error:', err);
+      setIsListening(false);
+    }
+  };
+
+  // Handle Image File Selection
+  const handleImageSelect = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 6 * 1024 * 1024) {
+      if (showToast) showToast('Please select an image file under 6MB', 'warning');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      setAttachedImage({
+        dataUrl: event.target.result,
+        name: file.name
+      });
+      if (showToast) showToast(`Attached: ${file.name}`, 'info');
+    };
+    reader.readAsDataURL(file);
+    e.target.value = '';
+  };
+
+  // Google Calendar Link
+  const handleAddToCalendar = () => {
+    const title = encodeURIComponent(`HerEarn Mentorship with ${mentor.name}: ${booking?.topic || 'Strategy'}`);
+    const details = encodeURIComponent(`1-on-1 Mentorship session on HerEarn with ${mentor.name} (${mentor.role} at ${mentor.company}).\nFocus: ${booking?.topic || 'Portfolio & Strategy'}\nDuration: ${booking?.duration || mentor.sessionDuration || '35 mins'}`);
+    const calUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&details=${details}&location=HerEarn+Online+Workspace`;
+    window.open(calUrl, '_blank');
+  };
+
+  // Direct Video Room Link
+  const handleJoinVideoRoom = () => {
+    const safeTopic = (booking?.topic || 'Mentorship').replace(/[^a-zA-Z0-9]/g, '');
+    const meetUrl = `https://meet.jit.si/HerEarn-${mentor.id}-${safeTopic}`;
+    window.open(meetUrl, '_blank');
+  };
+
+  const handleClearChat = () => {
+    const initMsg = [
+      {
+        id: `msg-init-${Date.now()}`,
+        sender: 'mentor',
+        text: `Hello ${user?.name?.split(' ')[0] || 'there'}! 👋 Welcome back. Feel free to ask any questions ahead of our session on ${booking?.slot || mentor.nextSlot || 'our scheduled time'}!`,
+        time: 'Just now'
+      }
+    ];
+    setMessages(initMsg);
+    setAttachedImage(null);
+    try {
+      localStorage.setItem(chatStorageKey, JSON.stringify(initMsg));
+    } catch {}
+    if (showToast) showToast('Chat history cleared', 'info');
+  };
+
+  const handleSend = async (textToSend = inputText) => {
+    const trimmed = (typeof textToSend === 'string' ? textToSend : inputText).trim();
+    if ((!trimmed && !attachedImage) || isTyping) return;
+
+    const userMsg = {
+      id: `msg-${Date.now()}`,
+      sender: 'user',
+      text: trimmed || (attachedImage ? `[Attached creative draft: ${attachedImage.name}]` : ''),
+      image: attachedImage?.dataUrl || null,
+      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    };
+
+    setMessages(prev => [...prev, userMsg]);
+    const sentImage = attachedImage;
+    setAttachedImage(null);
+    setInputText('');
+    setIsTyping(true);
+
+    const sessionId = `mentor_${mentor.id}_${user?.id || 'guest'}`;
+    const mentorContext = {
+      name: mentor.name,
+      role: mentor.role,
+      company: mentor.company,
+      experience: mentor.experience,
+      domain: mentor.domain,
+      skills: mentor.skills,
+      bio: mentor.bio,
+      topic: booking?.topic || 'Mentorship Strategy',
+      slot: booking?.slot || mentor.nextSlot || 'Scheduled Session',
+      userName: user?.name || 'Learner',
+      preferredLanguage,
+      hasImageAttachment: Boolean(sentImage)
+    };
+
+    try {
+      const res = await api.sendChatMessage(
+        trimmed || 'Can you review this attached visual draft?', 
+        sessionId, 
+        mentorContext
+      );
+      if (res && res.reply) {
+        const mentorMsg = {
+          id: `msg-${Date.now() + 1}`,
+          sender: 'mentor',
+          text: res.reply,
+          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        };
+        setMessages(prev => [...prev, mentorMsg]);
+        setIsTyping(false);
+        return;
+      }
+    } catch (err) {
+      console.warn('Backend chat API failed, using intelligent fallback:', err);
+    }
+
+    // Dynamic, domain-aware fallback if backend is unreachable
+    setTimeout(() => {
+      const replyText = getClientMentorReply(
+        trimmed || 'Review my design draft', 
+        mentor, 
+        booking, 
+        user, 
+        { hasImageAttachment: Boolean(sentImage), preferredLanguage }
+      );
+      const mentorMsg = {
+        id: `msg-${Date.now() + 1}`,
+        sender: 'mentor',
+        text: replyText,
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      };
+      setMessages(prev => [...prev, mentorMsg]);
+      setIsTyping(false);
+    }, 700);
+  };
+
+  const quickPrompts = useMemo(() => {
+    const d = (mentor.domain || '').toLowerCase();
+    if (d.includes('marketing')) {
+      return [
+        'How to improve ROAS on social media ads?',
+        'What monthly retainer should I charge clients?',
+        'Can you review my marketing proposal draft?',
+        'How should I prepare for our scheduled session?'
+      ];
+    } else if (d.includes('design') || d.includes('canva') || d.includes('ui')) {
+      return [
+        'What rate should I charge for Canva brand kits?',
+        'Can you review my design portfolio draft?',
+        'How do I pitch local retail business clients?',
+        'How should I prepare for our scheduled session?'
+      ];
+    } else if (d.includes('shopify') || d.includes('commerce')) {
+      return [
+        'How do I setup Razorpay & WhatsApp checkout?',
+        'What should I charge to build a Shopify store?',
+        'How do I optimize store conversion rates?',
+        'How should I prepare for our scheduled session?'
+      ];
+    } else if (d.includes('career') || d.includes('confidence') || d.includes('restart')) {
+      return [
+        'How do I explain a 3-year career break?',
+        'How can I optimize my LinkedIn for remote work?',
+        'How do I build confidence for client calls?',
+        'How should I prepare for our scheduled session?'
+      ];
+    } else if (d.includes('web') || d.includes('tech') || d.includes('code')) {
+      return [
+        'Can you review my GitHub project repo?',
+        'Which tech stack is best for freelance web gigs?',
+        'How do I estimate project milestones and pricing?',
+        'How should I prepare for our scheduled session?'
+      ];
+    }
+    return [
+      'Can you review my portfolio draft?',
+      'What rates should I charge as a beginner in INR?',
+      'How do I pitch my first freelance client?',
+      'How should I prepare for our scheduled session?'
+    ];
+  }, [mentor.domain]);
+
+  return (
+    <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4 animate-fade-in">
+      <div className="relative bg-white dark:bg-slate-900 border border-purple-200 dark:border-purple-500/30 rounded-3xl w-full max-w-2xl h-[92vh] sm:h-[700px] flex flex-col shadow-2xl overflow-hidden">
+        
+        {/* Session Prep Sheet Modal Overlay */}
+        {showPrepSheet && (
+          <div className="absolute inset-0 z-30 bg-slate-950/80 backdrop-blur-sm p-4 sm:p-6 flex flex-col justify-between animate-fade-in">
+            <div className="space-y-4 overflow-y-auto">
+              <div className="flex items-center justify-between pb-3 border-b border-purple-200/40 dark:border-slate-800">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-xl bg-purple-500/20 text-purple-600 dark:text-purple-400 flex items-center justify-center font-bold">
+                    <FileText className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h4 className="font-extrabold text-sm text-slate-900 dark:text-white">Session Preparation Checklist</h4>
+                    <p className="text-[11px] text-purple-600 dark:text-purple-400">Tailored for your 1-on-1 with {mentor.name}</p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowPrepSheet(false)}
+                  className="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-slate-800 dark:hover:text-white flex items-center justify-center cursor-pointer"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <div className="p-3.5 rounded-2xl bg-purple-50/80 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800 text-xs text-slate-700 dark:text-slate-200 space-y-2">
+                <div className="flex justify-between font-bold">
+                  <span>Topic:</span>
+                  <span className="text-purple-700 dark:text-purple-300">{booking?.topic || 'Portfolio & Strategy'}</span>
+                </div>
+                <div className="flex justify-between font-bold">
+                  <span>Scheduled Time:</span>
+                  <span className="text-purple-700 dark:text-purple-300">{booking?.slot || mentor.nextSlot || 'Confirmed Slot'}</span>
+                </div>
+                <div className="flex justify-between font-bold">
+                  <span>Mentor Domain:</span>
+                  <span className="text-purple-700 dark:text-purple-300">{mentor.domain}</span>
+                </div>
+              </div>
+
+              <div className="space-y-2 text-xs">
+                <h5 className="font-bold text-slate-900 dark:text-white uppercase tracking-wider text-[10px]">Action Items to Prepare:</h5>
+                <ul className="space-y-2.5 text-slate-600 dark:text-slate-300">
+                  <li className="flex items-start gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
+                    <span><strong>1. Curate 2-3 Best Work Samples:</strong> Have live links (Canva, GitHub, Behance, Shopify preview) open in browser tabs.</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
+                    <span><strong>2. Define Your Pricing Goal:</strong> Know your target monthly freelance income (e.g. ₹8,000–₹20,000/mo) to validate with {mentor.name.split(' ')[0]}.</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
+                    <span><strong>3. Pinpoint Your #1 Bottleneck:</strong> Whether client outreach, proposal pitching, or career gap confidence.</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
+                    <span><strong>4. Test Audio & Video:</strong> Ensure your mic and browser camera permissions are enabled for the video room.</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            <div className="pt-4 border-t border-purple-100 dark:border-slate-800 flex items-center justify-between gap-3">
+              <button
+                type="button"
+                onClick={() => {
+                  const checklistText = `HerEarn Mentorship Prep with ${mentor.name}\nTopic: ${booking?.topic || 'Strategy'}\nSlot: ${booking?.slot || mentor.nextSlot}\n\nChecklist:\n1. Curate 2-3 best work samples.\n2. Target income goal defined.\n3. Pinpoint #1 question/bottleneck.\n4. Mic and video tested.`;
+                  navigator.clipboard.writeText(checklistText);
+                  if (showToast) showToast('Checklist copied to clipboard!', 'success');
+                }}
+                className="flex-1 py-2.5 px-4 rounded-xl bg-purple-100 dark:bg-purple-900/60 hover:bg-purple-200 text-purple-700 dark:text-purple-300 font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
+              >
+                <Copy className="w-3.5 h-3.5" />
+                <span>Copy Checklist</span>
+              </button>
+              <button
+                type="button"
+                onClick={handleAddToCalendar}
+                className="flex-1 py-2.5 px-4 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer shadow-md hover:opacity-95 transition-opacity"
+              >
+                <Calendar className="w-3.5 h-3.5" />
+                <span>Add to Google Cal</span>
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Lightbox zoom modal for attached image */}
+        {previewZoomImage && (
+          <div 
+            className="fixed inset-0 z-60 bg-black/85 flex items-center justify-center p-4 cursor-pointer" 
+            onClick={() => setPreviewZoomImage(null)}
+          >
+            <div className="relative max-w-2xl max-h-[90vh]">
+              <img src={previewZoomImage} alt="Zoomed preview" className="max-w-full max-h-[80vh] rounded-2xl object-contain shadow-2xl border border-white/20" />
+              <button
+                type="button"
+                onClick={() => setPreviewZoomImage(null)}
+                className="absolute -top-3 -right-3 w-8 h-8 rounded-full bg-slate-900 text-white flex items-center justify-center cursor-pointer border border-white/30"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Chat Header */}
+        <div className="p-3.5 sm:p-5 border-b border-purple-100 dark:border-slate-800 bg-gradient-to-r from-purple-50 via-white to-pink-50 dark:from-slate-900 dark:via-purple-950/40 dark:to-slate-900 flex items-center justify-between shrink-0">
+          <div className="flex items-center gap-2.5 sm:gap-3">
+            <div className="relative">
+              <img src={mentor.avatar} alt={mentor.name} className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl object-cover border-2 border-purple-400 shadow-md" />
+              <span className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-emerald-500 border-2 border-white dark:border-slate-900 rounded-full" />
+            </div>
+            <div>
+              <div className="flex items-center gap-1.5">
+                <h3 className="font-extrabold text-sm sm:text-base text-slate-900 dark:text-white">{mentor.name}</h3>
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-100 dark:bg-purple-900/60 text-purple-700 dark:text-purple-300">
+                  Mentor
+                </span>
+              </div>
+              <p className="text-[11px] text-purple-600 dark:text-purple-400 font-semibold truncate max-w-[140px] sm:max-w-none">{mentor.role}</p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            {/* Language Switcher */}
+            <div className="flex items-center bg-purple-100/70 dark:bg-slate-800 p-0.5 rounded-xl border border-purple-200 dark:border-slate-700 text-[10px] font-bold">
+              {['EN', 'HI', 'Hinglish'].map(lang => (
+                <button
+                  key={lang}
+                  type="button"
+                  onClick={() => setPreferredLanguage(lang)}
+                  className={`px-1.5 sm:px-2 py-0.5 rounded-lg cursor-pointer transition-all ${
+                    preferredLanguage === lang
+                      ? 'bg-purple-600 text-white shadow-xs'
+                      : 'text-slate-600 dark:text-slate-300 hover:text-purple-600'
+                  }`}
+                >
+                  {lang}
+                </button>
+              ))}
+            </div>
+
+            {/* Prep Checklist Button */}
+            <button
+              type="button"
+              onClick={() => setShowPrepSheet(true)}
+              title="Session preparation checklist"
+              className="h-8 px-2 sm:px-2.5 rounded-xl bg-purple-50 dark:bg-purple-950/60 hover:bg-purple-100 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800 font-bold text-xs flex items-center gap-1 cursor-pointer transition-colors"
+            >
+              <FileText className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Prep Sheet</span>
+            </button>
+
+            {/* Reset Chat Button */}
+            <button
+              type="button"
+              onClick={handleClearChat}
+              title="Reset conversation"
+              className="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-300 flex items-center justify-center cursor-pointer transition-colors"
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+            </button>
+
+            {/* Close Button */}
+            <button
+              type="button"
+              onClick={onClose}
+              className="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-300 flex items-center justify-center cursor-pointer transition-colors"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+
+        {/* Meeting Banner with Live Calendar & Video Room buttons */}
+        <div className="px-3 sm:px-4 py-2 bg-purple-100/70 dark:bg-purple-950/50 border-b border-purple-200/50 dark:border-purple-800/30 flex flex-wrap items-center justify-between gap-2 text-xs text-purple-900 dark:text-purple-200">
+          <div className="flex items-center gap-1.5 truncate max-w-[60%] sm:max-w-none">
+            <Calendar className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400 shrink-0" />
+            <span className="font-medium truncate">
+              Topic: <strong className="font-bold">{booking?.topic || 'General Strategy'}</strong> ({booking?.slot || mentor.nextSlot || 'Upcoming'})
+            </span>
+          </div>
+
+          <div className="flex items-center gap-1.5 shrink-0">
+            <button
+              type="button"
+              onClick={handleAddToCalendar}
+              title="Add session to Google Calendar"
+              className="px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-lg bg-white/90 dark:bg-slate-900 hover:bg-white text-purple-700 dark:text-purple-300 border border-purple-300 dark:border-purple-700 text-[10px] sm:text-[11px] font-bold flex items-center gap-1 cursor-pointer transition-all shadow-2xs"
+            >
+              <Calendar className="w-3 h-3 text-purple-600" />
+              <span>Cal Sync</span>
+            </button>
+            <button
+              type="button"
+              onClick={handleJoinVideoRoom}
+              title="Open video meeting room"
+              className="px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-lg bg-purple-600 hover:bg-purple-700 text-white text-[10px] sm:text-[11px] font-bold flex items-center gap-1 cursor-pointer transition-all shadow-2xs"
+            >
+              <Video className="w-3 h-3" />
+              <span>Video Room</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Message Feed */}
+        <div className="flex-1 p-3.5 sm:p-5 overflow-y-auto space-y-4 bg-slate-50/50 dark:bg-slate-950/50">
+          {messages.map((m) => {
+            const isUser = m.sender === 'user';
+            return (
+              <div key={m.id} className={`flex items-end gap-2.5 ${isUser ? 'justify-end' : 'justify-start'}`}>
+                {!isUser && (
+                  <img src={mentor.avatar} alt={mentor.name} className="w-7 h-7 rounded-xl object-cover border border-purple-300 shrink-0 mb-1" />
+                )}
+                <div
+                  className={`max-w-[85%] sm:max-w-md p-3.5 rounded-2xl text-xs leading-relaxed shadow-xs ${
+                    isUser
+                      ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-br-xs'
+                      : 'bg-white dark:bg-slate-800 border border-purple-100 dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-bl-xs'
+                  }`}
+                >
+                  {/* Attached image preview inside chat message */}
+                  {m.image && (
+                    <div 
+                      className="mb-2 rounded-xl overflow-hidden border border-white/20 shadow-xs cursor-pointer max-w-[220px]" 
+                      onClick={() => setPreviewZoomImage(m.image)}
+                    >
+                      <img src={m.image} alt="Attached draft" className="w-full h-auto object-cover max-h-40 hover:scale-105 transition-transform" />
+                      <span className="block bg-slate-900/80 text-[9px] text-white px-2 py-0.5 text-center font-bold">🔍 Click to zoom</span>
+                    </div>
+                  )}
+
+                  <p className="whitespace-pre-wrap font-medium">{m.text}</p>
+                  <span className={`block text-[9px] mt-1.5 font-bold ${isUser ? 'text-purple-200 text-right' : 'text-slate-400'}`}>
+                    {m.time}
+                  </span>
+                </div>
+              </div>
+            );
+          })}
+
+          {isTyping && (
+            <div className="flex items-center gap-2 text-slate-400 text-xs pl-2">
+              <img src={mentor.avatar} alt={mentor.name} className="w-6 h-6 rounded-lg object-cover" />
+              <div className="bg-white dark:bg-slate-800 px-3 py-2 rounded-2xl border border-purple-100 dark:border-slate-800 flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 bg-purple-500 rounded-full animate-bounce" />
+                <span className="w-1.5 h-1.5 bg-pink-500 rounded-full animate-bounce [animation-delay:0.2s]" />
+                <span className="w-1.5 h-1.5 bg-purple-500 rounded-full animate-bounce [animation-delay:0.4s]" />
+                <span className="text-[11px] text-slate-500 dark:text-slate-400 ml-1 font-medium">{mentor.name.split(' ')[0]} is typing...</span>
+              </div>
+            </div>
+          )}
+          <div ref={chatEndRef} />
+        </div>
+
+        {/* Quick prompt chips */}
+        <div className="px-3 sm:px-4 py-2 border-t border-purple-100 dark:border-slate-800 bg-white dark:bg-slate-900 flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+          <span className="text-[10px] font-black uppercase text-slate-400 shrink-0">Quick Ask:</span>
+          {quickPrompts.map((qp, i) => (
+            <button
+              key={i}
+              type="button"
+              onClick={() => handleSend(qp)}
+              className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-purple-50 dark:bg-purple-950/60 hover:bg-purple-100 dark:hover:bg-purple-900 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800 whitespace-nowrap cursor-pointer transition-colors"
+            >
+              {qp}
+            </button>
+          ))}
+        </div>
+
+        {/* Attached image preview banner */}
+        {attachedImage && (
+          <div className="px-3 sm:px-4 py-2 border-t border-purple-100 dark:border-slate-800 bg-purple-50/80 dark:bg-slate-950 flex items-center justify-between text-xs text-purple-900 dark:text-purple-200">
+            <div className="flex items-center gap-2">
+              <img src={attachedImage.dataUrl} alt="Thumbnail" className="w-8 h-8 rounded-lg object-cover border border-purple-300" />
+              <div className="truncate max-w-[200px] sm:max-w-xs">
+                <span className="font-bold text-xs truncate block">{attachedImage.name}</span>
+                <span className="text-[10px] text-purple-600 dark:text-purple-400">Ready for review</span>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => setAttachedImage(null)}
+              className="w-6 h-6 rounded-lg bg-white dark:bg-slate-800 text-slate-500 hover:text-rose-500 flex items-center justify-center cursor-pointer"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        )}
+
+        {/* Input Bar */}
+        <form
+          onSubmit={(e) => { e.preventDefault(); handleSend(); }}
+          className="p-2.5 sm:p-4 border-t border-purple-100 dark:border-slate-800 bg-white dark:bg-slate-900 flex items-center gap-1.5 sm:gap-2"
+        >
+          {/* File attachment hidden input */}
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleImageSelect}
+            accept="image/*"
+            className="hidden"
+          />
+
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            title="Attach Canva creative, mockup, or image"
+            className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-purple-50 dark:bg-slate-800 hover:bg-purple-100 dark:hover:bg-slate-700 text-purple-600 dark:text-purple-400 flex items-center justify-center cursor-pointer transition-colors shrink-0"
+          >
+            <Paperclip className="w-4 h-4" />
+          </button>
+
+          <button
+            type="button"
+            onClick={toggleListening}
+            title={isListening ? "Stop listening" : "Speak your question (Hindi / English)"}
+            className={`w-9 h-9 sm:w-10 sm:h-10 rounded-2xl flex items-center justify-center cursor-pointer transition-colors shrink-0 ${
+              isListening
+                ? 'bg-rose-500 text-white animate-pulse'
+                : 'bg-purple-50 dark:bg-slate-800 hover:bg-purple-100 dark:hover:bg-slate-700 text-purple-600 dark:text-purple-400'
+            }`}
+          >
+            {isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+          </button>
+
+          <input
+            type="text"
+            value={inputText}
+            onChange={(e) => setInputText(e.target.value)}
+            placeholder={
+              isListening
+                ? 'Listening to voice...'
+                : `Message ${mentor.name.split(' ')[0]} about goals, rates, or attach draft...`
+            }
+            className="flex-1 py-2 sm:py-2.5 px-3 sm:px-4 rounded-2xl bg-purple-50/50 dark:bg-slate-800 border border-purple-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-purple-500 font-medium"
+          />
+          <button
+            type="submit"
+            disabled={!inputText.trim() && !attachedImage}
+            className="h-9 sm:h-10 px-3.5 sm:px-4 rounded-2xl bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 disabled:opacity-40 text-white font-bold text-xs flex items-center gap-1.5 cursor-pointer shadow-md transition-all shrink-0"
+          >
+            <span>Send</span>
+            <Send className="w-3.5 h-3.5" />
+          </button>
+        </form>
+      </div>
     </div>
   );
 }

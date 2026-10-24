@@ -1,10 +1,11 @@
+import 'dotenv/config';
+import dotenv from 'dotenv';
 import express from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
-import dotenv from 'dotenv';
 
 import authRoutes from './routes/authRoutes.js';
 import userRoutes from './routes/userRoutes.js';
@@ -28,7 +29,7 @@ if (fs.existsSync(rootEnvPath)) {
 }
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5001;
 
 // Allowed Origins for CORS Security
 const allowedOrigins = [
@@ -103,8 +104,8 @@ app.use('/api', applicationRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/chat', chatRoutes);
 app.use('/api/admin', adminRoutes);
-app.use('/api/recruiter', recruiterRoutes);
 app.use('/api/community', communityRoutes);
+app.use('/api/recruiter', recruiterRoutes);
 app.use('/api/wallet', walletRoutes);
 
 // Centralized Error Handling Middleware

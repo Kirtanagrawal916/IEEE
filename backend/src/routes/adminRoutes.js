@@ -384,8 +384,69 @@ router.get('/escrow', async (req, res) => {
   }
 });
 
-// 11. POST /api/admin/escrow/:id/release - Release payout to user's real totalEarned
-router.post('/escrow/:id/release', async (req, res) => {
+// 10. GET /api/admin/escrow - Real Escrow transactions ledger
+router.get('/escrow', async (req, res) => {
+  try {
+    let transactions = await prisma.escrowTransaction.findMany({
+      orderBy: { createdAt: 'desc' }
+    });
+
+    if (transactions.length === 0) {
+      const initialSeeds = [
+        {
+          code: 'ESC-884210',
+          gigTitle: 'Canva Banner & Flyer Designer for Event',
+          clientName: 'Women Entrepreneurship Summit',
+          freelancerName: 'Ananya Sharma',
+          amount: 3500.0,
+          status: 'HELD_IN_ESCROW'
+        },
+        {
+          code: 'ESC-672194',
+          gigTitle: 'Shopify Product Catalog Assistant',
+          clientName: 'KalaKriti Handloom Collective',
+          freelancerName: 'Pooja Verma',
+          amount: 12000.0,
+          status: 'HELD_IN_ESCROW'
+        },
+        {
+          code: 'ESC-319502',
+          gigTitle: 'Social Media Strategy for CraftBoutique',
+          clientName: 'CraftBoutique Jaipur',
+          freelancerName: 'Sneha Patel',
+          amount: 5000.0,
+          status: 'DISBURSED'
+        }
+      ];
+
+      for (const s of initialSeeds) {
+        await prisma.escrowTransaction.create({ data: s }).catch(() => {});
+      }
+
+      transactions = await prisma.escrowTransaction.findMany({
+        orderBy: { createdAt: 'desc' }
+      });
+    }
+
+    const formatted = transactions.map(t => ({
+      id: t.code,
+      dbId: t.id,
+      gig: t.gigTitle,
+      client: t.clientName,
+      freelancer: t.freelancerName,
+      amount: t.amount,
+      status: t.status,
+      date: new Date(t.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
+    }));
+
+    res.json({ success: true, count: formatted.length, escrow: formatted });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Failed to fetch escrow ledger', error: error.message });
+  }
+});
+
+// 11. POST /api/admin/escrow/:id/release & /allow - Allow project, add amount to profile, subtract from escrow
+const handleAllowEscrow = async (req, res) => {
   try {
     const tx = await prisma.escrowTransaction.findFirst({
       where: {
@@ -405,40 +466,130 @@ router.post('/escrow/:id/release', async (req, res) => {
       data: { status: 'DISBURSED' }
     });
 
-    // Credit freelancer's totalEarned in DB
-    const freelancer = await prisma.user.findFirst({
-      where: {
-        OR: [
-          { name: { contains: tx.freelancerName } },
-          { id: tx.freelancerId || 'none' }
-        ]
-      }
-    });
+    // Credit freelancer's profile amounts (totalEarned, walletBalance, earnings) in DB
+    let freelancer = null;
+    if (tx.freelancerId) {
+      freelancer = await prisma.user.findUnique({ where: { id: tx.freelancerId } }).catch(() => null);
+    }
+    if (!freelancer && tx.freelancerName) {
+      freelancer = await prisma.user.findFirst({
+        where: {
+          OR: [
+            { name: { contains: tx.freelancerName } },
+            { username: { contains: tx.freelancerName.toLowerCase().replace(/[^a-z0-9]/g, '') } }
+          ]
+        }
+      }).catch(() => null);
+    }
 
     if (freelancer) {
       await prisma.user.update({
         where: { id: freelancer.id },
-        data: { totalEarned: { increment: tx.amount } }
+        data: {
+          totalEarned: { increment: tx.amount },
+          walletBalance: { increment: tx.amount },
+          earnings: { increment: tx.amount }
+        }
       });
     }
 
+    // Update associated application to ACCEPTED & APPROVED
+    if (tx.opportunityId && (tx.freelancerId || freelancer?.id)) {
+      await prisma.application.updateMany({
+        where: {
+          opportunityId: tx.opportunityId,
+          userId: tx.freelancerId || freelancer.id
+        },
+        data: {
+          status: 'ACCEPTED',
+          deliveryStatus: 'APPROVED'
+        }
+      }).catch(() => {});
+    }
+
     await logAudit(
-      'ESCROW_DISBURSED',
-      `Direct UPI payout released: ₹${tx.amount.toLocaleString()} to ${tx.freelancerName}`,
+      'ESCROW_PROJECT_ALLOWED',
+      `Project allowed by Admin: ₹${tx.amount.toLocaleString('en-IN')} added to ${tx.freelancerName}'s profile wallet and deducted from escrow.`,
       'escrow'
     );
 
     res.json({
       success: true,
-      message: `₹${tx.amount.toLocaleString()} released to ${tx.freelancerName}`,
-      transaction: updated
+      message: `Project allowed! ₹${tx.amount.toLocaleString('en-IN')} added to ${tx.freelancerName}'s profile amount and deducted from escrow.`,
+      transaction: updated,
+      amount: tx.amount,
+      freelancerName: tx.freelancerName,
+      creditedUser: freelancer ? { id: freelancer.id, name: freelancer.name } : null
     });
   } catch (error) {
-    res.status(500).json({ success: false, message: 'Failed to release escrow', error: error.message });
+    res.status(500).json({ success: false, message: 'Failed to allow escrow project', error: error.message });
   }
-});
+};
 
-// 12. POST /api/admin/escrow/:id/freeze - Freeze disputed escrow
+router.post('/escrow/:id/release', handleAllowEscrow);
+router.post('/escrow/:id/allow', handleAllowEscrow);
+router.post('/escrow/:id/approve', handleAllowEscrow);
+
+// 12. POST /api/admin/escrow/:id/disprove & /reject - Disprove project, subtract from escrow WITHOUT adding to profile
+const handleDisproveEscrow = async (req, res) => {
+  try {
+    const tx = await prisma.escrowTransaction.findFirst({
+      where: {
+        OR: [
+          { id: req.params.id },
+          { code: req.params.id }
+        ]
+      }
+    });
+
+    if (!tx) {
+      return res.status(404).json({ success: false, message: 'Escrow transaction not found' });
+    }
+
+    const updated = await prisma.escrowTransaction.update({
+      where: { id: tx.id },
+      data: { status: 'DISPROVED' }
+    });
+
+    // Money is SUBTRACTED from escrow pool, but NOT added to profile amount.
+
+    // Update associated application to REJECTED
+    if (tx.opportunityId && tx.freelancerId) {
+      await prisma.application.updateMany({
+        where: {
+          opportunityId: tx.opportunityId,
+          userId: tx.freelancerId
+        },
+        data: {
+          status: 'REJECTED',
+          deliveryStatus: 'REJECTED'
+        }
+      }).catch(() => {});
+    }
+
+    await logAudit(
+      'ESCROW_PROJECT_DISPROVED',
+      `Project disproved by Admin: ₹${tx.amount.toLocaleString('en-IN')} subtracted from escrow. Payout denied for ${tx.freelancerName}.`,
+      'warning'
+    );
+
+    res.json({
+      success: true,
+      message: `Project disproved! ₹${tx.amount.toLocaleString('en-IN')} subtracted from escrow. Amount was NOT credited to ${tx.freelancerName}'s profile.`,
+      transaction: updated,
+      amount: tx.amount,
+      freelancerName: tx.freelancerName
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Failed to disprove escrow project', error: error.message });
+  }
+};
+
+router.post('/escrow/:id/disprove', handleDisproveEscrow);
+router.post('/escrow/:id/reject', handleDisproveEscrow);
+router.post('/escrow/:id/disapprove', handleDisproveEscrow);
+
+// 13. POST /api/admin/escrow/:id/freeze - Freeze disputed escrow
 router.post('/escrow/:id/freeze', async (req, res) => {
   try {
     const tx = await prisma.escrowTransaction.findFirst({
@@ -461,7 +612,7 @@ router.post('/escrow/:id/freeze', async (req, res) => {
 
     await logAudit(
       'ESCROW_DISPUTED',
-      `Dispute freeze placed on transaction ${tx.code} (₹${tx.amount.toLocaleString()})`,
+      `Dispute freeze placed on transaction ${tx.code} (₹${tx.amount.toLocaleString('en-IN')})`,
       'warning'
     );
 

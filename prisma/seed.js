@@ -48,7 +48,7 @@ async function main() {
             id: 'demo-l1',
             title: 'Lesson 1: Welcome to Remote Work & Overcoming Tech Hesitation',
             duration: '15 min',
-            videoUrl: 'https://www.youtube.com/embed/nU-IIXBWlS4',
+            videoUrl: 'https://www.youtube.com/embed/fGddFf8_mP8',
             summary: 'Introduction to work-from-home opportunities, managing your daily schedule, and building confidence with basic digital tools.',
             keyTakeaways: JSON.stringify([
               'Understanding how online freelancing and micro-gigs operate from home',
@@ -61,7 +61,7 @@ async function main() {
             id: 'demo-l2',
             title: 'Lesson 2: Essential Free Tools: Google Drive, Canva & WhatsApp Business',
             duration: '20 min',
-            videoUrl: 'https://www.youtube.com/embed/un50Bs4BvZ8',
+            videoUrl: 'https://www.youtube.com/embed/zJS_f-n8o_s',
             summary: 'Hands-on walkthrough of creating documents, organizing work on cloud folders, and communicating professionally.',
             keyTakeaways: JSON.stringify([
               'Creating shareable Google Drive links for client submissions',
@@ -74,7 +74,7 @@ async function main() {
             id: 'demo-l3',
             title: 'Lesson 3: Finding Your First Gig & Guaranteeing Payouts via Escrow',
             duration: '25 min',
-            videoUrl: 'https://www.youtube.com/embed/VpXJ27p2Wlg',
+            videoUrl: 'https://www.youtube.com/embed/q1S98oBmsxM',
             summary: 'How to browse gigs on HerEarn, submit your deliverables, and ensure your money is safely deposited to your wallet.',
             keyTakeaways: JSON.stringify([
               'How HerEarn Escrow guarantees you get paid upon delivery',
@@ -103,7 +103,7 @@ async function main() {
           {
             title: 'Lesson 1: Social Media Basics for Local Businesses',
             duration: '15 min',
-            videoUrl: 'https://www.youtube.com/embed/nU-IIXBWlS4',
+            videoUrl: 'https://www.youtube.com/embed/bixR-KIJKYM',
             summary: 'Understand how Instagram & WhatsApp Business help small stores reach local customers.',
             keyTakeaways: JSON.stringify(['Setting up a Professional Profile', 'Targeting local audience', 'Content pillars']),
             orderIndex: 1,
@@ -111,7 +111,7 @@ async function main() {
           {
             title: 'Lesson 2: Designing Eye-Catching Posts using Canva',
             duration: '25 min',
-            videoUrl: 'https://www.youtube.com/embed/un50Bs4BvZ8',
+            videoUrl: 'https://www.youtube.com/embed/zJS_f-n8o_s',
             summary: 'Step-by-step guide to choosing brand colors, fonts, and crafting product promo banners.',
             keyTakeaways: JSON.stringify(['Color theory', 'Canva templates', 'Exporting high-res banners']),
             orderIndex: 2,
@@ -119,7 +119,7 @@ async function main() {
           {
             title: 'Lesson 3: Writing Captions & Using Hashtags that Convert',
             duration: '20 min',
-            videoUrl: 'https://www.youtube.com/embed/4y_f0L6J-uQ',
+            videoUrl: 'https://www.youtube.com/embed/mKkCo5Oq_bM',
             summary: 'Mastering hooks, storytelling, call-to-action (CTA), and hyper-local hashtags.',
             keyTakeaways: JSON.stringify(['AIDA formula', 'Hashtag strategy', 'WhatsApp CTA links']),
             orderIndex: 3,
@@ -127,7 +127,7 @@ async function main() {
           {
             title: 'Lesson 4: Running Your First ₹500 Meta Ad Campaign',
             duration: '30 min',
-            videoUrl: 'https://www.youtube.com/embed/3Q95b6XmXn8',
+            videoUrl: 'https://www.youtube.com/embed/7Vb9lXj2V3U',
             summary: 'Learn how to target local customers near a boutique, bakery, or handicraft shop.',
             keyTakeaways: JSON.stringify(['Meta Ads Manager setup', 'Location targeting', 'Tracking lead conversions']),
             orderIndex: 4,
@@ -135,7 +135,7 @@ async function main() {
           {
             title: 'Capstone Project: Submit Your Client Marketing Plan',
             duration: '45 min',
-            videoUrl: 'https://www.youtube.com/embed/VpXJ27p2Wlg',
+            videoUrl: 'https://www.youtube.com/embed/bixR-KIJKYM',
             summary: 'Build a complete 1-week sample Instagram calendar for a local boutique to showcase in your portfolio.',
             keyTakeaways: JSON.stringify(['7-day content schedule', 'Sample Instagram posts', 'Publishing portfolio project']),
             orderIndex: 5,
@@ -160,7 +160,7 @@ async function main() {
           {
             title: 'Lesson 1: Introduction to Graphic Design Fundamentals',
             duration: '20 min',
-            videoUrl: 'https://www.youtube.com/embed/YqQx75OPRa0',
+            videoUrl: 'https://www.youtube.com/embed/WONZVnlam6w',
             summary: 'Learn layout, alignment, typography, and visual hierarchy principles.',
             keyTakeaways: JSON.stringify(['Visual balance', 'Typography rules', 'Color psychology']),
             orderIndex: 1,
@@ -168,7 +168,7 @@ async function main() {
           {
             title: 'Lesson 2: Crafting Brand Logos & Style Guides',
             duration: '30 min',
-            videoUrl: 'https://www.youtube.com/embed/2_Yn127tG_I',
+            videoUrl: 'https://www.youtube.com/embed/dFSia1LZI4Y',
             summary: 'How to design memorable minimalist logos for small enterprises.',
             keyTakeaways: JSON.stringify(['Vector design concepts', 'Iconography selection', 'Exporting SVG & PNG']),
             orderIndex: 2,
