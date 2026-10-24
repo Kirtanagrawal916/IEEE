@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { 
   Users, 
   Calendar, 
@@ -11,7 +11,7 @@ import {
   Sparkles, 
   Search, 
   Filter, 
-  Video, 
+  Send, 
   ExternalLink, 
   ChevronRight, 
   X, 
@@ -66,6 +66,9 @@ export default function MentorshipSection({ user, showToast }) {
 
   // Success Confirmation Modal
   const [confirmedBooking, setConfirmedBooking] = useState(null);
+
+  // Active Mentor Chat Modal ({ mentor, booking })
+  const [activeChatMentor, setActiveChatMentor] = useState(null);
 
   // Volunteer Mentor Application Modal
   const [showApplyMentorModal, setShowApplyMentorModal] = useState(false);
@@ -290,15 +293,13 @@ export default function MentorshipSection({ user, showToast }) {
     setBookingNotes('');
   };
 
-  // Confirm booking handler
+  // Confirm meeting assignment handler
   const handleConfirmBooking = () => {
     if (!bookingModalMentor || !selectedSlot) return;
 
     setIsSubmittingBooking(true);
 
     const bookingId = `book-${Date.now()}`;
-    const meetId = `meet-${Math.random().toString(36).substring(2, 6)}-${Math.random().toString(36).substring(2, 6)}`;
-    const meetUrl = `https://meet.google.com/${meetId}`;
 
     const newBooking = {
       id: bookingId,
@@ -309,7 +310,6 @@ export default function MentorshipSection({ user, showToast }) {
       slot: selectedSlot,
       topic: selectedTopic,
       notes: bookingNotes,
-      meetUrl,
       duration: bookingModalMentor.sessionDuration,
       status: 'Confirmed',
       createdAt: new Date().toISOString()
@@ -331,7 +331,7 @@ export default function MentorshipSection({ user, showToast }) {
       setConfirmedBooking(newBooking);
       triggerCelebrationConfetti();
       if (showToast) {
-        showToast("🎉 Session Booked!", `Free strategy call confirmed with ${bookingModalMentor.name} for ${selectedSlot}.`);
+        showToast("🎉 Meeting Assigned!", `Session assigned with ${bookingModalMentor.name} for ${selectedSlot}. Direct chat is now unlocked!`);
       }
     }, 400);
   };
@@ -347,7 +347,7 @@ export default function MentorshipSection({ user, showToast }) {
       console.warn('[Mentorship] Storage error:', e);
     }
     if (showToast) {
-      showToast("Booking Cancelled", `Session with ${mentorName} has been cancelled.`);
+      showToast("Meeting Cancelled", `Assigned meeting with ${mentorName} has been cancelled.`);
     }
   };
 
@@ -365,16 +365,16 @@ export default function MentorshipSection({ user, showToast }) {
         showToast("RSVP Cancelled", `You have cancelled your seat for "${masterclass.title}".`);
       } else {
         triggerCelebrationConfetti();
-        showToast("🎟️ Seat Reserved!", `Your free pass for "${masterclass.title}" is confirmed. Check email for link.`);
+        showToast("🎟️ Seat Reserved!", `Your free pass for "${masterclass.title}" is confirmed. Check email for details.`);
       }
     }
   };
 
   // Generate Google Calendar Link
   const getGoogleCalendarUrl = (booking) => {
-    const title = encodeURIComponent(`HerEarn 1-on-1 Mentorship: ${booking.mentorName} & You`);
-    const details = encodeURIComponent(`1-on-1 Session via HerEarn Mentorship Network.\nTopic: ${booking.topic}\nMeeting Link: ${booking.meetUrl}\nDuration: ${booking.duration}`);
-    return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&details=${details}&location=${encodeURIComponent(booking.meetUrl)}`;
+    const title = encodeURIComponent(`HerEarn Mentorship Session: ${booking.mentorName} & You`);
+    const details = encodeURIComponent(`HerEarn Mentorship Session.\nMentor: ${booking.mentorName}\nTopic: ${booking.topic}\nDuration: ${booking.duration}\nChat with your mentor directly on the HerEarn platform!`);
+    return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&details=${details}`;
   };
 
   // Handle Mentor Application
@@ -411,17 +411,17 @@ export default function MentorshipSection({ user, showToast }) {
             </div>
 
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight leading-tight">
-              Learn 1-on-1 From Accomplished <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-400 via-purple-300 to-indigo-300">Women in Tech & Business</span>
+              Connect & Chat Directly With <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-400 via-purple-300 to-indigo-300">Women Leaders in Tech & Business</span>
             </h1>
 
             <p className="text-xs sm:text-sm text-slate-200 leading-relaxed font-medium">
-              Connect directly with verified female leaders across India. Receive tailored feedback on your portfolio, overcome career break hesitation, learn freelance rate negotiation, and land your next micro-gig.
+              Schedule meetings with verified female leaders across India. Unlock direct 1:1 mentor chat for tailored feedback on your portfolio, freelance proposal reviews, and career restart strategies.
             </p>
 
             <div className="flex flex-wrap items-center gap-4 pt-2">
               <div className="flex items-center gap-2 text-xs font-bold text-slate-200">
                 <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                <span>Zero Cost Strategy Calls</span>
+                <span>1:1 Mentor Chat Unlocked</span>
               </div>
               <div className="flex items-center gap-2 text-xs font-bold text-slate-200">
                 <CheckCircle2 className="w-4 h-4 text-pink-400" />
@@ -429,7 +429,7 @@ export default function MentorshipSection({ user, showToast }) {
               </div>
               <div className="flex items-center gap-2 text-xs font-bold text-slate-200">
                 <CheckCircle2 className="w-4 h-4 text-purple-300" />
-                <span>Verifiable Google Meet Sessions</span>
+                <span>100% Free Mentorship</span>
               </div>
             </div>
           </div>
@@ -449,7 +449,7 @@ export default function MentorshipSection({ user, showToast }) {
             <div className="grid grid-cols-2 gap-3 pt-2 text-center">
               <div className="p-3 bg-white/5 rounded-2xl border border-white/10">
                 <p className="text-lg font-black text-white">850+</p>
-                <p className="text-[10px] text-purple-200 uppercase font-bold tracking-wider">Completed Calls</p>
+                <p className="text-[10px] text-purple-200 uppercase font-bold tracking-wider">Mentorship Sessions</p>
               </div>
               <div className="p-3 bg-white/5 rounded-2xl border border-white/10">
                 <p className="text-lg font-black text-pink-300">4.9 ★</p>
@@ -469,7 +469,7 @@ export default function MentorshipSection({ user, showToast }) {
       </div>
 
       {/* ========================================================
-          2. NAVIGATION TABS (1-on-1 vs Masterclasses vs Bookings)
+          2. NAVIGATION TABS (Mentors vs Masterclasses vs Bookings)
          ======================================================== */}
       <div className="flex flex-wrap items-center justify-between gap-4 border-b border-purple-200 dark:border-purple-900/40 pb-4">
         <div className="flex items-center gap-2 overflow-x-auto scrollbar-none py-1">
@@ -482,7 +482,7 @@ export default function MentorshipSection({ user, showToast }) {
             }`}
           >
             <Users className="w-4 h-4" />
-            <span>1-on-1 Strategy Mentors ({mentors.length})</span>
+            <span>Strategy Mentors ({mentors.length})</span>
           </button>
 
           <button
@@ -493,7 +493,7 @@ export default function MentorshipSection({ user, showToast }) {
                 : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-purple-50 dark:hover:bg-slate-800 border border-purple-100 dark:border-purple-900/30'
             }`}
           >
-            <Video className="w-4 h-4 text-pink-500" />
+            <Sparkles className="w-4 h-4 text-pink-500" />
             <span>Live Group Masterclasses ({masterclasses.length})</span>
             <span className="px-1.5 py-0.5 rounded-full bg-pink-500/20 text-pink-500 text-[10px] font-extrabold uppercase">Free</span>
           </button>
@@ -507,7 +507,7 @@ export default function MentorshipSection({ user, showToast }) {
             }`}
           >
             <Calendar className="w-4 h-4 text-purple-500" />
-            <span>My Booked Calls ({bookings.length})</span>
+            <span>My Scheduled Mentorships ({bookings.length})</span>
             {bookings.length > 0 && (
               <span className="px-2 py-0.5 rounded-full bg-emerald-500 text-white text-[10px] font-extrabold">
                 {bookings.length} Active
@@ -681,24 +681,22 @@ export default function MentorshipSection({ user, showToast }) {
                           <div className="p-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-300 dark:border-emerald-800 text-center">
                             <p className="text-[11px] font-bold text-emerald-700 dark:text-emerald-300 flex items-center justify-center gap-1.5">
                               <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                              <span>Session Confirmed ({activeBooking?.slot || m.nextSlot})</span>
+                              <span>Meeting Assigned ({activeBooking?.slot || m.nextSlot})</span>
                             </p>
                           </div>
                           <div className="flex items-center gap-2">
-                            {activeBooking && (
-                              <a
-                                href={activeBooking.meetUrl}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="flex-1 py-2 px-3 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-xs"
-                              >
-                                <Video className="w-3.5 h-3.5" />
-                                <span>Join Call</span>
-                              </a>
-                            )}
                             <button
+                              type="button"
+                              onClick={() => setActiveChatMentor({ mentor: m, booking: activeBooking })}
+                              className="flex-1 py-2.5 px-3 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-black text-xs flex items-center justify-center gap-1.5 shadow-sm cursor-pointer transition-all"
+                            >
+                              <MessageSquare className="w-3.5 h-3.5" />
+                              <span>Chat with Mentor</span>
+                            </button>
+                            <button
+                              type="button"
                               onClick={() => handleCancelBooking(activeBooking?.id, m.name)}
-                              className="px-3 py-2 rounded-xl bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-900 text-xs font-bold hover:bg-rose-100 cursor-pointer"
+                              className="px-3 py-2.5 rounded-xl bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-900 text-xs font-bold hover:bg-rose-100 cursor-pointer"
                             >
                               Cancel
                             </button>
@@ -706,11 +704,12 @@ export default function MentorshipSection({ user, showToast }) {
                         </div>
                       ) : (
                         <button
+                          type="button"
                           onClick={() => openBookingModal(m)}
                           className="w-full py-3 rounded-2xl bg-gradient-to-r from-purple-600 via-indigo-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-black text-xs shadow-md shadow-purple-500/20 hover:shadow-lg transition-all cursor-pointer flex items-center justify-center gap-2"
                         >
                           <Calendar className="w-4 h-4" />
-                          <span>Book Free 1-on-1 Call</span>
+                          <span>Assign Meeting & Chat</span>
                           <ChevronRight className="w-3.5 h-3.5 opacity-80" />
                         </button>
                       )}
@@ -824,7 +823,7 @@ export default function MentorshipSection({ user, showToast }) {
       )}
 
       {/* ========================================================
-          5. TAB 3: MY BOOKED CALLS
+          5. TAB 3: MY SCHEDULED MENTORSHIPS
          ======================================================== */}
       {activeTab === 'my-bookings' && (
         <div className="space-y-6">
@@ -833,9 +832,9 @@ export default function MentorshipSection({ user, showToast }) {
               <div className="w-16 h-16 rounded-3xl bg-purple-100 dark:bg-purple-950 text-purple-600 flex items-center justify-center mx-auto shadow-inner">
                 <Calendar className="w-8 h-8" />
               </div>
-              <h3 className="text-xl font-black text-slate-900 dark:text-white">No active mentorship bookings</h3>
+              <h3 className="text-xl font-black text-slate-900 dark:text-white">No active mentorship meetings</h3>
               <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-                You haven't reserved any 1-on-1 calls yet. All strategy sessions are 100% free and sponsored by HerEarn mentors.
+                You haven't assigned any mentorship meetings yet. Schedule a session with any verified mentor to unlock direct 1:1 chat guidance.
               </p>
               <button
                 onClick={() => setActiveTab('mentors')}
@@ -859,7 +858,7 @@ export default function MentorshipSection({ user, showToast }) {
                         <div className="flex items-center gap-2">
                           <h4 className="font-extrabold text-base text-slate-900 dark:text-white">{b.mentorName}</h4>
                           <span className="px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 text-[10px] font-black uppercase">
-                            Confirmed
+                            Assigned
                           </span>
                         </div>
                         <p className="text-xs text-purple-600 dark:text-purple-400 font-bold">{b.mentorRole}</p>
@@ -888,7 +887,7 @@ export default function MentorshipSection({ user, showToast }) {
                       <span className="font-bold text-purple-700 dark:text-purple-300">{b.topic}</span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-slate-500">Call Duration:</span>
+                      <span className="text-slate-500">Session Duration:</span>
                       <span className="font-bold text-slate-700 dark:text-slate-300">{b.duration || '35 mins'}</span>
                     </div>
                     {b.notes && (
@@ -898,17 +897,25 @@ export default function MentorshipSection({ user, showToast }) {
                     )}
                   </div>
 
-                  {/* Actions: Join Call + Add to Calendar */}
+                  {/* Actions: Chat with Mentor + Add to Calendar */}
                   <div className="flex items-center gap-3 pt-1">
-                    <a
-                      href={b.meetUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="flex-1 py-3 px-4 rounded-2xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-black text-xs flex items-center justify-center gap-2 shadow-md cursor-pointer"
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const m = mentors.find(item => item.id === b.mentorId) || {
+                          id: b.mentorId,
+                          name: b.mentorName,
+                          role: b.mentorRole,
+                          avatar: b.mentorAvatar,
+                          sessionDuration: b.duration
+                        };
+                        setActiveChatMentor({ mentor: m, booking: b });
+                      }}
+                      className="flex-1 py-3 px-4 rounded-2xl bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-black text-xs flex items-center justify-center gap-2 shadow-md cursor-pointer transition-all"
                     >
-                      <Video className="w-4 h-4" />
-                      <span>Join Google Meet</span>
-                    </a>
+                      <MessageSquare className="w-4 h-4" />
+                      <span>Chat with Mentor</span>
+                    </button>
 
                     <a
                       href={getGoogleCalendarUrl(b)}
@@ -917,7 +924,7 @@ export default function MentorshipSection({ user, showToast }) {
                       className="px-4 py-3 rounded-2xl bg-white dark:bg-slate-800 border border-purple-200 dark:border-purple-500/30 text-purple-700 dark:text-purple-300 font-bold text-xs flex items-center justify-center gap-2 hover:bg-purple-50 dark:hover:bg-slate-700 shadow-xs cursor-pointer"
                     >
                       <Calendar className="w-4 h-4" />
-                      <span>Add to Calendar</span>
+                      <span>Calendar</span>
                     </a>
                   </div>
 
@@ -997,7 +1004,7 @@ export default function MentorshipSection({ user, showToast }) {
                 <div className="flex items-center gap-2 text-[11px] text-slate-500 mt-1">
                   <span>★ {bookingModalMentor.rating}</span>
                   <span>•</span>
-                  <span>{bookingModalMentor.sessionDuration} Free Strategy Call</span>
+                  <span>{bookingModalMentor.sessionDuration} Mentorship & Chat</span>
                 </div>
               </div>
             </div>
@@ -1035,7 +1042,7 @@ export default function MentorshipSection({ user, showToast }) {
             <div className="space-y-2">
               <label className="text-xs font-black uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
                 <Calendar className="w-3.5 h-3.5 text-pink-500" />
-                <span>2. Choose Live Strategy Call Time:</span>
+                <span>2. Choose Meeting Time:</span>
               </label>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                 {bookingModalMentor.availabilitySlots.map(slot => (
@@ -1088,12 +1095,12 @@ export default function MentorshipSection({ user, showToast }) {
                 {isSubmittingBooking ? (
                   <>
                     <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    <span>Reserving Slot...</span>
+                    <span>Assigning Session...</span>
                   </>
                 ) : (
                   <>
                     <CheckCircle2 className="w-4 h-4" />
-                    <span>Confirm Free 1-on-1 Session</span>
+                    <span>Confirm Meeting & Unlock Chat</span>
                   </>
                 )}
               </button>
@@ -1113,38 +1120,64 @@ export default function MentorshipSection({ user, showToast }) {
               <CheckCircle2 className="w-8 h-8" />
             </div>
 
-            <h3 className="text-2xl font-black">Session Confirmed!</h3>
+            <h3 className="text-2xl font-black">Meeting Assigned & Chat Unlocked!</h3>
             
             <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
-              Your free 1-on-1 strategy call with <strong className="text-purple-600 dark:text-purple-400">{confirmedBooking.mentorName}</strong> has been scheduled for:
+              Your meeting with <strong className="text-purple-600 dark:text-purple-400">{confirmedBooking.mentorName}</strong> is confirmed. You can now chat directly with your mentor to discuss your goals, share portfolio links, or ask questions!
             </p>
 
             <div className="p-4 rounded-2xl bg-purple-50 dark:bg-slate-950 border border-purple-200 dark:border-slate-800 text-xs space-y-1">
               <p className="font-extrabold text-base text-slate-900 dark:text-white">{confirmedBooking.slot}</p>
               <p className="text-purple-600 dark:text-purple-400 font-bold">{confirmedBooking.topic}</p>
-              <p className="text-[11px] text-slate-400 font-medium">Platform: Google Meet (Video Call)</p>
+              <p className="text-[11px] text-emerald-600 dark:text-emerald-400 font-bold flex items-center justify-center gap-1.5 mt-1">
+                <MessageSquare className="w-3.5 h-3.5" />
+                <span>1:1 Mentor Chat is Now Open</span>
+              </p>
             </div>
 
             <div className="space-y-2 pt-2">
-              <a
-                href={getGoogleCalendarUrl(confirmedBooking)}
-                target="_blank"
-                rel="noreferrer"
-                className="w-full py-3 rounded-2xl bg-purple-600 hover:bg-purple-700 text-white font-extrabold text-xs flex items-center justify-center gap-2 shadow-md cursor-pointer"
+              <button
+                type="button"
+                onClick={() => {
+                  const m = mentors.find(item => item.id === confirmedBooking.mentorId) || {
+                    id: confirmedBooking.mentorId,
+                    name: confirmedBooking.mentorName,
+                    role: confirmedBooking.mentorRole,
+                    avatar: confirmedBooking.mentorAvatar,
+                    sessionDuration: confirmedBooking.duration
+                  };
+                  setActiveChatMentor({ mentor: m, booking: confirmedBooking });
+                  setConfirmedBooking(null);
+                }}
+                className="w-full py-3 rounded-2xl bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-black text-xs flex items-center justify-center gap-2 shadow-md cursor-pointer transition-all"
               >
-                <Calendar className="w-4 h-4" />
-                <span>Add to Google Calendar</span>
-              </a>
+                <MessageSquare className="w-4 h-4" />
+                <span>💬 Chat with {confirmedBooking.mentorName.split(' ')[0]} Now</span>
+              </button>
 
               <button
+                type="button"
                 onClick={() => { setConfirmedBooking(null); setActiveTab('my-bookings'); }}
                 className="w-full py-2.5 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold text-xs hover:bg-slate-200 cursor-pointer"
               >
-                View in "My Booked Calls"
+                View in "My Scheduled Mentorships"
               </button>
             </div>
           </div>
         </div>
+      )}
+
+      {/* ========================================================
+          8b. DIRECT MENTOR CHAT MODAL
+         ======================================================== */}
+      {activeChatMentor && (
+        <MentorChatModal
+          mentor={activeChatMentor.mentor}
+          booking={activeChatMentor.booking}
+          user={user}
+          onClose={() => setActiveChatMentor(null)}
+          showToast={showToast}
+        />
       )}
 
       {/* ========================================================
@@ -1259,6 +1292,208 @@ export default function MentorshipSection({ user, showToast }) {
         </div>
       )}
 
+    </div>
+  );
+}
+
+/**
+ * Interactive Mentor Chat Window Modal
+ * Allows user to chat 1-on-1 with their assigned mentor.
+ */
+function MentorChatModal({ mentor, booking, user, onClose, showToast }) {
+  const [messages, setMessages] = useState(() => {
+    try {
+      const saved = localStorage.getItem(`herearn_mentor_chat_${mentor.id}`);
+      if (saved) return JSON.parse(saved);
+    } catch {}
+    return [
+      {
+        id: 'msg-init-1',
+        sender: 'mentor',
+        text: `Hello ${user?.name?.split(' ')[0] || 'there'}! 👋 Welcome to our mentorship workspace. Our meeting is confirmed for ${booking?.slot || 'our scheduled time'} to focus on "${booking?.topic || 'Portfolio & Strategy'}". Feel free to share your questions, portfolio links, or any challenges below anytime!`,
+        time: 'Just now'
+      }
+    ];
+  });
+  const [inputText, setInputText] = useState('');
+  const [isTyping, setIsTyping] = useState(false);
+  const chatEndRef = useRef(null);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(`herearn_mentor_chat_${mentor.id}`, JSON.stringify(messages));
+    } catch (e) {
+      console.warn('Storage error:', e);
+    }
+    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages, mentor.id]);
+
+  const handleSend = (textToSend = inputText) => {
+    const trimmed = (typeof textToSend === 'string' ? textToSend : inputText).trim();
+    if (!trimmed) return;
+
+    const userMsg = {
+      id: `msg-${Date.now()}`,
+      sender: 'user',
+      text: trimmed,
+      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    };
+
+    setMessages(prev => [...prev, userMsg]);
+    setInputText('');
+    setIsTyping(true);
+
+    // Simulated realistic mentor reply
+    setTimeout(() => {
+      setIsTyping(false);
+      const mentorReplies = [
+        `Thanks for sharing that! That is a crucial area. I recommend structuring your proposal to highlight measurable business results (e.g., 'Designed 20 high-converting social media creatives for local retail brands'). We'll break down the exact client pitch during our meeting on ${booking?.slot || 'our session'}!`,
+        `Great question! For beginners in India, starting with a retainer package of ₹6,000 - ₹12,000/month for 15 Canva social posts + captions works best. Be sure to show 3 portfolio samples that reflect the client's industry.`,
+        `I love your initiative! I've noted down your goal for "${booking?.topic || 'Strategy'}". I'll prepare a tailored checklist for our session. Keep practicing and bring any draft work you want reviewed!`,
+        `That's a very common doubt when restarting after a career break. The key is positioning your project milestones and transferable leadership skills. We'll map that out step-by-step together!`
+      ];
+      const replyText = mentorReplies[Math.floor(Math.random() * mentorReplies.length)];
+      const mentorMsg = {
+        id: `msg-${Date.now() + 1}`,
+        sender: 'mentor',
+        text: replyText,
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      };
+      setMessages(prev => [...prev, mentorMsg]);
+    }, 1100);
+  };
+
+  const quickPrompts = [
+    'Can you review my portfolio draft?',
+    'What rate should I charge for Canva kits?',
+    'How do I pitch local business clients?',
+    'Looking forward to our scheduled session!'
+  ];
+
+  return (
+    <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4 animate-fade-in">
+      <div className="bg-white dark:bg-slate-900 border border-purple-200 dark:border-purple-500/30 rounded-3xl w-full max-w-2xl h-[90vh] sm:h-[680px] flex flex-col shadow-2xl overflow-hidden">
+        {/* Chat Header */}
+        <div className="p-4 sm:p-5 border-b border-purple-100 dark:border-slate-800 bg-gradient-to-r from-purple-50 via-white to-pink-50 dark:from-slate-900 dark:via-purple-950/40 dark:to-slate-900 flex items-center justify-between shrink-0">
+          <div className="flex items-center gap-3">
+            <div className="relative">
+              <img src={mentor.avatar} alt={mentor.name} className="w-12 h-12 rounded-2xl object-cover border-2 border-purple-400 shadow-md" />
+              <span className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-emerald-500 border-2 border-white dark:border-slate-900 rounded-full" />
+            </div>
+            <div>
+              <div className="flex items-center gap-1.5">
+                <h3 className="font-extrabold text-sm sm:text-base text-slate-900 dark:text-white">{mentor.name}</h3>
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-100 dark:bg-purple-900/60 text-purple-700 dark:text-purple-300">
+                  Mentor
+                </span>
+              </div>
+              <p className="text-[11px] text-purple-600 dark:text-purple-400 font-semibold">{mentor.role}</p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <div className="hidden sm:flex flex-col items-end text-right">
+              <span className="text-[10px] font-bold text-slate-400 uppercase">Assigned Meeting</span>
+              <span className="text-xs font-black text-purple-700 dark:text-purple-300">{booking?.slot || 'Upcoming'}</span>
+            </div>
+            <button
+              onClick={onClose}
+              className="w-9 h-9 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-300 flex items-center justify-center cursor-pointer transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+
+        {/* Meeting Banner in Chat */}
+        <div className="px-4 py-2.5 bg-purple-100/60 dark:bg-purple-950/50 border-b border-purple-200/50 dark:border-purple-800/30 flex items-center justify-between text-xs text-purple-900 dark:text-purple-200">
+          <div className="flex items-center gap-2 truncate">
+            <Calendar className="w-4 h-4 text-purple-600 dark:text-purple-400 shrink-0" />
+            <span className="font-medium truncate">
+              Session Topic: <strong className="font-bold">{booking?.topic || 'General Strategy'}</strong>
+            </span>
+          </div>
+          <span className="text-[11px] font-bold bg-white/80 dark:bg-slate-900/80 px-2.5 py-0.5 rounded-full border border-purple-300 dark:border-purple-700 shrink-0">
+            {booking?.duration || '35 mins'}
+          </span>
+        </div>
+
+        {/* Message Feed */}
+        <div className="flex-1 p-4 sm:p-5 overflow-y-auto space-y-4 bg-slate-50/50 dark:bg-slate-950/50">
+          {messages.map((m) => {
+            const isUser = m.sender === 'user';
+            return (
+              <div key={m.id} className={`flex items-end gap-2.5 ${isUser ? 'justify-end' : 'justify-start'}`}>
+                {!isUser && (
+                  <img src={mentor.avatar} alt={mentor.name} className="w-7 h-7 rounded-xl object-cover border border-purple-300 shrink-0 mb-1" />
+                )}
+                <div
+                  className={`max-w-[85%] sm:max-w-md p-3.5 rounded-2xl text-xs leading-relaxed shadow-xs ${
+                    isUser
+                      ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-br-xs'
+                      : 'bg-white dark:bg-slate-800 border border-purple-100 dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-bl-xs'
+                  }`}
+                >
+                  <p className="whitespace-pre-wrap font-medium">{m.text}</p>
+                  <span className={`block text-[9px] mt-1.5 font-bold ${isUser ? 'text-purple-200 text-right' : 'text-slate-400'}`}>
+                    {m.time}
+                  </span>
+                </div>
+              </div>
+            );
+          })}
+
+          {isTyping && (
+            <div className="flex items-center gap-2 text-slate-400 text-xs pl-2">
+              <img src={mentor.avatar} alt={mentor.name} className="w-6 h-6 rounded-lg object-cover" />
+              <div className="bg-white dark:bg-slate-800 px-3 py-2 rounded-2xl border border-purple-100 dark:border-slate-800 flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 bg-purple-500 rounded-full animate-bounce" />
+                <span className="w-1.5 h-1.5 bg-pink-500 rounded-full animate-bounce [animation-delay:0.2s]" />
+                <span className="w-1.5 h-1.5 bg-purple-500 rounded-full animate-bounce [animation-delay:0.4s]" />
+                <span className="text-[11px] text-slate-500 dark:text-slate-400 ml-1 font-medium">{mentor.name.split(' ')[0]} is typing...</span>
+              </div>
+            </div>
+          )}
+          <div ref={chatEndRef} />
+        </div>
+
+        {/* Quick prompt chips */}
+        <div className="px-3 sm:px-4 py-2 border-t border-purple-100 dark:border-slate-800 bg-white dark:bg-slate-900 flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+          <span className="text-[10px] font-black uppercase text-slate-400 shrink-0">Quick Ask:</span>
+          {quickPrompts.map((qp, i) => (
+            <button
+              key={i}
+              type="button"
+              onClick={() => handleSend(qp)}
+              className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-purple-50 dark:bg-purple-950/60 hover:bg-purple-100 dark:hover:bg-purple-900 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800 whitespace-nowrap cursor-pointer transition-colors"
+            >
+              {qp}
+            </button>
+          ))}
+        </div>
+
+        {/* Input Bar */}
+        <form
+          onSubmit={(e) => { e.preventDefault(); handleSend(); }}
+          className="p-3 sm:p-4 border-t border-purple-100 dark:border-slate-800 bg-white dark:bg-slate-900 flex items-center gap-2"
+        >
+          <input
+            type="text"
+            value={inputText}
+            onChange={(e) => setInputText(e.target.value)}
+            placeholder={`Message ${mentor.name.split(' ')[0]} about your goals, questions, or portfolio...`}
+            className="flex-1 py-2.5 px-4 rounded-2xl bg-purple-50/50 dark:bg-slate-800 border border-purple-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-purple-500 font-medium"
+          />
+          <button
+            type="submit"
+            disabled={!inputText.trim()}
+            className="h-10 px-4 rounded-2xl bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 disabled:opacity-40 text-white font-bold text-xs flex items-center gap-1.5 cursor-pointer shadow-md transition-all shrink-0"
+          >
+            <span>Send</span>
+            <Send className="w-3.5 h-3.5" />
+          </button>
+        </form>
+      </div>
     </div>
   );
 }

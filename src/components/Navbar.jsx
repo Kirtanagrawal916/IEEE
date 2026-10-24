@@ -31,6 +31,7 @@ import {
 import WalletWithdrawModal from './WalletWithdrawModal';
 import NotificationCenter from './NotificationCenter';
 import { useLanguage } from '../context/LanguageContext';
+import ThemeToggle from './ThemeToggle';
 
 export default function Navbar({ 
   user, 
@@ -306,21 +307,6 @@ export default function Navbar({
               <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
             </Link>
 
-            {/* Applications (If Logged In) */}
-            {user && (
-              <Link
-                to="/applications"
-                className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                  pathname === '/applications'
-                    ? 'bg-[#7C3AED] text-white shadow-xs'
-                    : 'text-[#4B5563] dark:text-slate-200 hover:text-[#7C3AED] hover:bg-[#F3E8FF] dark:hover:bg-purple-950/40'
-                }`}
-              >
-                <FileText className="w-4 h-4 text-emerald-500" />
-                <span>{t('applications')}</span>
-              </Link>
-            )}
-
             {/* Recruiter Portal (For Employer or Admin roles) */}
             {(user?.role === 'EMPLOYER' || user?.role === 'RECRUITER' || user?.role === 'ADMIN') && (
               <Link
@@ -421,24 +407,16 @@ export default function Navbar({
               )}
             </div>
 
-            {/* Light / Dark Mode Switch */}
-            <button
-              type="button"
-              onClick={onToggleTheme}
-              title={`Switch to ${theme === 'dark' ? 'Light' : 'Dark'} Mode`}
-              aria-label={`Switch to ${theme === 'dark' ? 'Light' : 'Dark'} Mode`}
-              className={`p-2.5 rounded-xl border transition-all hover:scale-105 cursor-pointer focus:outline-none focus:ring-2 focus:ring-purple-400 ${
-                theme === 'dark'
-                  ? 'bg-slate-900/80 border-purple-500/30 text-amber-400'
-                  : 'bg-purple-50 border-purple-300 text-purple-700'
-              }`}
-            >
-              {theme === 'dark' ? (
-                <Sun className="w-4 h-4 text-amber-400" />
-              ) : (
-                <Moon className="w-4 h-4 text-purple-600" />
-              )}
-            </button>
+            {/* Dark Mode Compact Toggle Switch */}
+            <div className="flex items-center gap-1.5 px-2 py-1 h-9 rounded-xl border border-purple-200 dark:border-purple-500/30 bg-white/90 dark:bg-slate-900/90 shadow-xs">
+              <ThemeToggle
+                theme={theme}
+                onToggleTheme={onToggleTheme}
+                variant="switch"
+                showIcon={true}
+                size="sm"
+              />
+            </div>
 
             {/* Notification Center */}
             <NotificationCenter 
@@ -638,7 +616,19 @@ export default function Navbar({
                     </Link>
                   </div>
 
-                  {/* 4. POLICIES & INFORMATION */}
+                  {/* 4. APPEARANCE & THEME TOGGLE */}
+                  <div className="space-y-1 pt-1 border-t border-purple-500/20">
+                    <div className="px-3 py-1">
+                      <p className="text-[10px] font-extrabold text-purple-400 uppercase tracking-wider">Appearance</p>
+                    </div>
+                    <ThemeToggle
+                      theme={theme}
+                      onToggleTheme={onToggleTheme}
+                      variant="labeled"
+                    />
+                  </div>
+
+                  {/* 5. POLICIES & INFORMATION */}
                   <div className="space-y-1 pt-1 border-t border-purple-500/20">
                     <div className="px-3 py-1">
                       <p className="text-[10px] font-extrabold text-purple-400 uppercase tracking-wider">Information</p>
@@ -672,7 +662,7 @@ export default function Navbar({
                     </Link>
                   </div>
 
-                  {/* 5. LOG OUT OPTION (MUST BE AT THE VERY LAST) */}
+                  {/* 6. LOG OUT OPTION (MUST BE AT THE VERY LAST) */}
                   {user && (
                     <div className="pt-2 border-t border-purple-200 dark:border-purple-500/20">
                       <button
@@ -708,6 +698,79 @@ export default function Navbar({
         onConfirmWithdrawal={handleConfirmWithdrawal}
         showToast={showToast}
       />
+
+      {/* Logout Confirmation Modal */}
+      <LogoutModal
+        isOpen={isLogoutModalOpen}
+        onConfirm={handleConfirmLogout}
+        onCancel={() => setIsLogoutModalOpen(false)}
+      />
+
+      {/* Mobile Bottom Navigation Bar (Visible only on mobile screens < md) */}
+      <nav 
+        aria-label="Mobile Bottom Navigation"
+        className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-[#120B1D]/95 backdrop-blur-xl border-t border-purple-200/80 dark:border-purple-900/40 px-2 py-1 shadow-[0_-4px_25px_rgba(124,58,237,0.12)] flex items-center justify-around"
+      >
+        <Link
+          to="/home"
+          className={`flex flex-col items-center justify-center py-1.5 px-3 rounded-xl transition-all ${
+            pathname === '/home'
+              ? 'text-purple-600 dark:text-purple-400 font-extrabold'
+              : 'text-slate-500 dark:text-slate-400 hover:text-purple-600 font-medium'
+          }`}
+        >
+          <Compass className={`w-5 h-5 transition-transform ${pathname === '/home' ? 'text-purple-600 dark:text-purple-400 scale-110' : ''}`} />
+          <span className="text-[10px] mt-0.5 tracking-tight">Home</span>
+        </Link>
+
+        <Link
+          to="/courses"
+          className={`flex flex-col items-center justify-center py-1.5 px-3 rounded-xl transition-all ${
+            pathname.startsWith('/courses') || pathname === '/learn'
+              ? 'text-purple-600 dark:text-purple-400 font-extrabold'
+              : 'text-slate-500 dark:text-slate-400 hover:text-purple-600 font-medium'
+          }`}
+        >
+          <BookOpen className={`w-5 h-5 transition-transform ${pathname.startsWith('/courses') || pathname === '/learn' ? 'text-purple-600 dark:text-purple-400 scale-110' : ''}`} />
+          <span className="text-[10px] mt-0.5 tracking-tight">Courses</span>
+        </Link>
+
+        <Link
+          to="/opportunities"
+          className={`flex flex-col items-center justify-center py-1.5 px-3 rounded-xl transition-all ${
+            pathname.startsWith('/opportunities')
+              ? 'text-purple-600 dark:text-purple-400 font-extrabold'
+              : 'text-slate-500 dark:text-slate-400 hover:text-purple-600 font-medium'
+          }`}
+        >
+          <Briefcase className={`w-5 h-5 transition-transform ${pathname.startsWith('/opportunities') ? 'text-purple-600 dark:text-purple-400 scale-110' : ''}`} />
+          <span className="text-[10px] mt-0.5 tracking-tight">Jobs</span>
+        </Link>
+
+        <Link
+          to="/mentorship"
+          className={`flex flex-col items-center justify-center py-1.5 px-3 rounded-xl transition-all ${
+            pathname.startsWith('/mentorship')
+              ? 'text-purple-600 dark:text-purple-400 font-extrabold'
+              : 'text-slate-500 dark:text-slate-400 hover:text-purple-600 font-medium'
+          }`}
+        >
+          <Users className={`w-5 h-5 transition-transform ${pathname.startsWith('/mentorship') ? 'text-purple-600 dark:text-purple-400 scale-110' : ''}`} />
+          <span className="text-[10px] mt-0.5 tracking-tight">Mentors</span>
+        </Link>
+
+        <Link
+          to="/community"
+          className={`flex flex-col items-center justify-center py-1.5 px-3 rounded-xl transition-all ${
+            pathname.startsWith('/community')
+              ? 'text-purple-600 dark:text-purple-400 font-extrabold'
+              : 'text-slate-500 dark:text-slate-400 hover:text-purple-600 font-medium'
+          }`}
+        >
+          <MessageSquare className={`w-5 h-5 transition-transform ${pathname.startsWith('/community') ? 'text-purple-600 dark:text-purple-400 scale-110' : ''}`} />
+          <span className="text-[10px] mt-0.5 tracking-tight">Community</span>
+        </Link>
+      </nav>
     </nav>
   );
 }

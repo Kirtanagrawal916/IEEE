@@ -161,7 +161,7 @@ export default function LessonPlayerPage({ user, onCompleteLesson, showToast }) 
 
   // Robust constructor for embedded YouTube URL with multiple URL format supports
   const formatYouTubeEmbed = (url) => {
-    if (!url) return 'https://www.youtube.com/embed/nU-IIXBWlS4';
+    if (!url) return 'https://www.youtube.com/embed/fGddFf8_mP8';
     if (url.includes('youtube.com/embed/')) return url;
     if (url.includes('watch?v=')) {
       const id = url.split('watch?v=')[1]?.split('&')[0];
@@ -174,7 +174,7 @@ export default function LessonPlayerPage({ user, onCompleteLesson, showToast }) 
     return url;
   };
 
-  const videoUrl = currentLesson.videoUrl || 'https://www.youtube.com/embed/nU-IIXBWlS4';
+  const videoUrl = currentLesson.videoUrl || 'https://www.youtube.com/embed/fGddFf8_mP8';
   const embedUrl = formatYouTubeEmbed(videoUrl);
 
   return (

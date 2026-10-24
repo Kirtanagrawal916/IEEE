@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { 
   ArrowLeft, 
   Briefcase, 
@@ -7,22 +7,14 @@ import {
   ShieldCheck, 
   CheckCircle2, 
   Award, 
-  BrainCircuit, 
-  AlertCircle, 
-  RotateCcw, 
-  Target, 
   ChevronRight,
   Sparkles,
   Wand2,
-  Copy,
   Check,
   BookOpen,
   Play,
-  Lock,
-  Plus,
-  Link2
+  Plus
 } from 'lucide-react';
-import { getQuizForCategory } from '../data/opportunityQuizzes';
 import { triggerCelebrationConfetti } from '../utils/confettiHelper';
 import { getMatchingTrackForOpportunity } from '../utils/trackLockHelper';
 import { api } from '../services/api';
@@ -38,11 +30,11 @@ export default function OpportunityApplyPage({
   const navigate = useNavigate();
   const matchingTrack = getMatchingTrackForOpportunity(gig);
 
-  const [step, setStep] = useState(1); // 1: Application Form, 2: Quiz Assessment, 3: Eligibility Results
+  const [step, setStep] = useState(1); // 1: Proposal & Portfolio Details, 2: Application Submitted Confirmation
   const [coverNote, setCoverNote] = useState('');
   const [availablePortfolios, setAvailablePortfolios] = useState(userPortfolios);
   const [selectedPortfolioId, setSelectedPortfolioId] = useState(userPortfolios[0]?.id || 'capstone-default');
-  const [isQuizSubmitted, setIsQuizSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Inline project creator state
   const [isAddingProject, setIsAddingProject] = useState(false);
@@ -67,13 +59,6 @@ export default function OpportunityApplyPage({
   const [proposalTone, setProposalTone] = useState('professional');
   const [aiSuccessMsg, setAiSuccessMsg] = useState(false);
 
-  // Quiz state
-  const questions = getQuizForCategory(gig?.category);
-  const [currentQIndex, setCurrentQIndex] = useState(0);
-  const [userAnswers, setUserAnswers] = useState({}); // { questionId: optionIndex }
-  const [selectedOption, setSelectedOption] = useState(null);
-  const [resultData, setResultData] = useState(null);
-
   if (!gig) {
     return (
       <div className="max-w-4xl mx-auto px-4 py-16 text-center space-y-4 text-slate-900 dark:text-white">
@@ -85,21 +70,29 @@ export default function OpportunityApplyPage({
     );
   }
 
-  // Handle Form Submission -> Move to Quiz Step
-  const handleProceedToQuiz = (e) => {
-    e.preventDefault();
+  // Handle Form Submission -> Direct Apply Without Quiz
+  const handleSubmitApplication = (e) => {
+    if (e && e.preventDefault) e.preventDefault();
     if (!coverNote.trim()) return;
-    setStep(2);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
 
-  // Handle selecting an option in current quiz question
-  const handleSelectOption = (optionIdx) => {
-    setSelectedOption(optionIdx);
-    setUserAnswers(prev => ({
-      ...prev,
-      [questions[currentQIndex].id]: optionIdx
-    }));
+    setIsSubmitting(true);
+    triggerCelebrationConfetti();
+
+    const applicationSummary = {
+      isEligible: true,
+      percentage: 100,
+      appliedAt: new Date().toISOString()
+    };
+
+    if (onConfirmApplySuccess) {
+      onConfirmApplySuccess(gig.id, coverNote, selectedPortfolioId, applicationSummary);
+    }
+
+    setTimeout(() => {
+      setIsSubmitting(false);
+      setStep(2);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }, 300);
   };
 
   // Inline Project Creator Action
@@ -181,111 +174,33 @@ Make it persuasive, authentic, respectful, and ready to send directly to the cli
     }
   };
 
-  // Handle Next Question or Finish Quiz
-  const handleNextQuestion = () => {
-    if (currentQIndex < questions.length - 1) {
-      const nextIdx = currentQIndex + 1;
-      setCurrentQIndex(nextIdx);
-      setSelectedOption(userAnswers[questions[nextIdx].id] ?? null);
-    } else {
-      // Calculate Quiz Results
-      evaluateQuizResults();
-    }
-  };
-
-  // Calculate score and eligibility threshold
-  const evaluateQuizResults = () => {
-    let earnedPoints = 0;
-    let maxPoints = 0;
-    const difficultyBreakdown = {
-      Easy: { correct: 0, total: 0 },
-      Medium: { correct: 0, total: 0 },
-      Hard: { correct: 0, total: 0 }
-    };
-
-    questions.forEach((q) => {
-      const diff = q.difficulty || 'Easy';
-      const points = q.points || 10;
-      maxPoints += points;
-      difficultyBreakdown[diff].total += 1;
-
-      const userAns = userAnswers[q.id];
-      if (userAns === q.correctAnswer) {
-        earnedPoints += points;
-        difficultyBreakdown[diff].correct += 1;
-      }
-    });
-
-    const percentage = Math.round((earnedPoints / maxPoints) * 100);
-    // User can apply regardless of quiz score — 100% eligible even with 0 points
-    const isEligible = true;
-
-    const summary = {
-      earnedPoints,
-      maxPoints,
-      percentage,
-      isEligible: true,
-      passingThreshold: 0,
-      difficultyBreakdown
-    };
-
-    setResultData(summary);
-    setIsQuizSubmitted(true);
-    setStep(3);
-
-    // Always unlock the corresponding course track upon application
-    triggerCelebrationConfetti();
-    if (onConfirmApplySuccess) {
-      onConfirmApplySuccess(gig.id, coverNote, selectedPortfolioId, summary);
-    }
-
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  // Handle retaking quiz
-  const handleRetryQuiz = () => {
-    setUserAnswers({});
-    setSelectedOption(null);
-    setCurrentQIndex(0);
-    setIsQuizSubmitted(false);
-    setResultData(null);
-    setStep(2);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  const currentQuestion = questions[currentQIndex];
-
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8 animate-fade-in text-slate-900 dark:text-white">
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10 space-y-6 sm:space-y-8 animate-fade-in text-slate-900 dark:text-white">
       
       {/* Top Header Navigation */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-3">
         <button
           onClick={onBack}
           className="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-purple-500/30 text-xs font-extrabold text-purple-600 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-slate-800 transition-all shadow-xs cursor-pointer"
         >
           <ArrowLeft className="w-4 h-4" />
-          Back to Opportunity Details
+          <span>Back to Opportunities</span>
         </button>
 
         {/* Step Indicator Badges */}
         <div className="flex items-center gap-2 text-xs font-extrabold">
-          <span className={`px-3 py-1 rounded-full border ${step === 1 ? 'bg-purple-600 text-white border-purple-500' : 'bg-slate-200 dark:bg-slate-800 text-slate-500 border-transparent'}`}>
-            1. Details
+          <span className={`px-3 py-1 rounded-full border ${step === 1 ? 'bg-purple-600 text-white border-purple-500 shadow-xs' : 'bg-slate-200 dark:bg-slate-800 text-slate-500 border-transparent'}`}>
+            1. Proposal & Portfolio
           </span>
           <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
-          <span className={`px-3 py-1 rounded-full border ${step === 2 ? 'bg-purple-600 text-white border-purple-500' : 'bg-slate-200 dark:bg-slate-800 text-slate-500 border-transparent'}`}>
-            2. Skill Quiz
-          </span>
-          <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
-          <span className={`px-3 py-1 rounded-full border ${step === 3 ? 'bg-purple-600 text-white border-purple-500' : 'bg-slate-200 dark:bg-slate-800 text-slate-500 border-transparent'}`}>
-            3. Eligibility
+          <span className={`px-3 py-1 rounded-full border ${step === 2 ? 'bg-emerald-600 text-white border-emerald-500 shadow-xs' : 'bg-slate-200 dark:bg-slate-800 text-slate-500 border-transparent'}`}>
+            2. Confirmation
           </span>
         </div>
       </div>
 
       {/* Target Opportunity Banner */}
-      <div className="bg-gradient-to-r from-purple-900 via-indigo-900 to-slate-900 rounded-3xl p-6 border border-purple-500/30 text-white shadow-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      <div className="bg-gradient-to-r from-purple-900 via-indigo-900 to-slate-900 rounded-3xl p-5 sm:p-6 border border-purple-500/30 text-white shadow-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
           <img 
             src={gig.logo} 
@@ -297,38 +212,38 @@ Make it persuasive, authentic, respectful, and ready to send directly to the cli
               <Briefcase className="w-3 h-3 text-pink-400" />
               {gig.category} • {gig.type}
             </div>
-            <h1 className="text-xl font-bold text-white">{gig.title}</h1>
+            <h1 className="text-lg sm:text-xl font-bold text-white">{gig.title}</h1>
             <p className="text-xs text-purple-200 font-semibold">{gig.company} • Stipend: <strong className="text-emerald-400 font-extrabold">{gig.stipend}</strong></p>
           </div>
         </div>
 
         <div className="bg-slate-950/60 p-3 rounded-2xl border border-purple-400/20 text-center text-xs backdrop-blur-md">
-          <span className="text-[10px] text-purple-300 font-bold uppercase block">Application Policy</span>
-          <span className="text-emerald-400 font-extrabold text-xs">✨ 100% Eligible (No Score Cutoff)</span>
+          <span className="text-[10px] text-purple-300 font-bold uppercase block">Escrow Protected</span>
+          <span className="text-emerald-400 font-extrabold text-xs">✨ Guaranteed Payout on Delivery</span>
         </div>
       </div>
 
       {/* STEP 1: APPLICATION FORM DETAILS */}
       {step === 1 && (
-        <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-8 border border-slate-200 dark:border-purple-500/30 shadow-md space-y-6">
+        <div className="bg-white dark:bg-slate-900 rounded-3xl p-5 sm:p-8 border border-slate-200 dark:border-purple-500/30 shadow-md space-y-6">
           <div className="space-y-1 pb-4 border-b border-slate-100 dark:border-slate-800">
-            <h2 className="text-lg font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
+            <h2 className="text-base sm:text-lg font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
               <FileText className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-              Step 1: Fill Application Proposal & Attach Work
+              <span>Submit Direct Application</span>
             </h2>
             <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
-              Submit your proposal note and select a verified portfolio project to attach to your application.
+              Write a personalized pitch and attach your proof-of-work project to stand out to the client.
             </p>
           </div>
 
-          <form onSubmit={handleProceedToQuiz} className="space-y-5 text-xs">
+          <form onSubmit={handleSubmitApplication} className="space-y-5 text-xs">
             
             {/* Attach Portfolio Project */}
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <label className="block font-bold text-slate-800 dark:text-slate-200 text-xs flex items-center gap-1.5">
                   <FileText className="w-4 h-4 text-purple-600 dark:text-purple-400" />
-                  Select Proof-of-Work Portfolio Project to Attach
+                  <span>Select Proof-of-Work Portfolio Project</span>
                 </label>
                 <button
                   type="button"
@@ -397,7 +312,7 @@ Make it persuasive, authentic, respectful, and ready to send directly to the cli
                     <button
                       type="button"
                       onClick={() => setIsAddingProject(false)}
-                      className="px-3 py-1.5 rounded-xl border border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-300 text-xs font-bold hover:bg-slate-100 dark:hover:bg-slate-800"
+                      className="px-3 py-1.5 rounded-xl border border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-300 text-xs font-bold hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
                     >
                       Cancel
                     </button>
@@ -443,21 +358,20 @@ Make it persuasive, authentic, respectful, and ready to send directly to the cli
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <label className="font-bold text-slate-800 dark:text-slate-200 text-xs flex items-center gap-1.5">
                   <FileText className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />
-                  <span>Proposal Note to Client Partner</span>
+                  <span>Proposal Pitch to Client Partner</span>
                   <span className="text-pink-500">*</span>
                 </label>
 
                 {/* AI Assistant Quick Generator */}
-                <div className="flex items-center gap-1.5 bg-purple-50 dark:bg-purple-950/60 p-1 rounded-2xl border border-purple-200 dark:border-purple-800/60 shadow-xs">
-                  <span className="text-[10px] font-extrabold text-purple-700 dark:text-purple-300 px-1.5 flex items-center gap-1">
-                    <Sparkles className="w-3 h-3 text-pink-500 animate-spin" />
-                    AI Proposal:
+                <div className="flex items-center gap-1.5 bg-purple-50 dark:bg-slate-800 border border-purple-200 dark:border-slate-700 rounded-xl p-1 text-[11px]">
+                  <span className="font-bold text-purple-700 dark:text-purple-300 px-2 flex items-center gap-1">
+                    <Wand2 className="w-3 h-3 text-pink-500" /> AI Proposal:
                   </span>
                   <button
                     type="button"
                     onClick={() => handleGenerateAIProposal('professional')}
                     disabled={isGeneratingAI}
-                    title="Generate formal, client-ready proposal"
+                    title="Generate formal client pitch"
                     className={`px-2.5 py-1 rounded-xl text-[10px] font-bold transition-all cursor-pointer ${
                       proposalTone === 'professional' && aiSuccessMsg
                         ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-xs'
@@ -470,7 +384,7 @@ Make it persuasive, authentic, respectful, and ready to send directly to the cli
                     type="button"
                     onClick={() => handleGenerateAIProposal('creative')}
                     disabled={isGeneratingAI}
-                    title="Generate upbeat, creative pitch"
+                    title="Generate engaging creator pitch"
                     className={`px-2.5 py-1 rounded-xl text-[10px] font-bold transition-all cursor-pointer ${
                       proposalTone === 'creative' && aiSuccessMsg
                         ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-xs'
@@ -517,178 +431,40 @@ Make it persuasive, authentic, respectful, and ready to send directly to the cli
               ></textarea>
             </div>
 
-            {/* Practice Assessment Info Box */}
-            <div className="p-4 bg-emerald-50 dark:bg-emerald-950/40 rounded-2xl border border-emerald-200 dark:border-emerald-800/60 text-xs text-emerald-800 dark:text-emerald-300 space-y-1">
-              <p className="flex items-center gap-1.5 font-extrabold">
+            {/* Direct Submission Info Box */}
+            <div className="p-4 bg-purple-50 dark:bg-purple-950/40 rounded-2xl border border-purple-200 dark:border-purple-800/60 text-xs text-purple-900 dark:text-purple-300 space-y-1">
+              <p className="flex items-center gap-1.5 font-extrabold text-purple-800 dark:text-purple-200">
                 <ShieldCheck className="w-4 h-4 text-emerald-500" />
-                Next Step: Practice Self-Check Quiz (Bilingual • English & हिंदी)
+                Direct Application Guarantee
               </p>
-              <p className="text-emerald-700 dark:text-emerald-400 text-[11px] leading-relaxed">
-                You will take a friendly 6-question self-check for <strong>{gig.category}</strong> available in English and Hindi. <strong>No score cutoff required:</strong> Even with 0 correct points, your application will be 100% submitted and registered immediately!
+              <p className="text-purple-700 dark:text-purple-400 text-[11px] leading-relaxed">
+                Your proposal and attached work link will be delivered directly to <strong>{gig.company}</strong>. No score cutoffs or barrier quizzes required. Payouts are safely held in HerEarn Escrow.
               </p>
             </div>
 
             <button
               type="submit"
-              className="w-full py-4 rounded-2xl btn-gradient-award text-xs font-extrabold shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer"
+              disabled={isSubmitting || !coverNote.trim()}
+              className="w-full py-4 rounded-2xl bg-gradient-to-r from-purple-600 via-indigo-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white text-xs font-extrabold shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
             >
-              <span>Proceed to Practice Self-Check Quiz</span>
-              <ChevronRight className="w-4 h-4" />
+              {isSubmitting ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  <span>Submitting Application...</span>
+                </>
+              ) : (
+                <>
+                  <span>Submit Application Directly to Client</span>
+                  <ChevronRight className="w-4 h-4" />
+                </>
+              )}
             </button>
           </form>
         </div>
       )}
 
-      {/* STEP 2: INTERACTIVE SKILL QUIZ (EASY, MEDIUM, HARD) */}
-      {step === 2 && currentQuestion && (
-        <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-8 border border-slate-200 dark:border-purple-500/30 shadow-xl space-y-6">
-          
-          {/* Quiz Top Progress & Difficulty Indicator */}
-          <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800">
-            <div className="space-y-1">
-              <div className="flex items-center gap-2">
-                <BrainCircuit className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-                <h2 className="text-base sm:text-lg font-extrabold text-slate-900 dark:text-white">
-                  Skill Assessment Quiz for {gig.category}
-                </h2>
-              </div>
-              <p className="text-xs text-slate-500 dark:text-slate-400 font-semibold">
-                Question {currentQIndex + 1} of {questions.length}
-              </p>
-            </div>
-
-            {/* Difficulty Badge */}
-            <div className="flex items-center gap-2">
-              <span className={`px-3 py-1 rounded-full text-xs font-extrabold border ${
-                currentQuestion.difficulty === 'Easy'
-                  ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 border-emerald-300'
-                  : currentQuestion.difficulty === 'Medium'
-                  ? 'bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 border-amber-300'
-                  : 'bg-purple-100 dark:bg-purple-950 text-purple-700 dark:text-purple-300 border-purple-300'
-              }`}>
-                Difficulty: {currentQuestion.difficulty} ({currentQuestion.points} pts)
-              </span>
-            </div>
-          </div>
-
-          {/* Progress Bar */}
-          <div className="w-full bg-slate-100 dark:bg-slate-800 h-2.5 rounded-full overflow-hidden">
-            <div 
-              className="bg-gradient-to-r from-purple-600 to-pink-600 h-full transition-all duration-300"
-              style={{ width: `${((currentQIndex + 1) / questions.length) * 100}%` }}
-            ></div>
-          </div>
-
-          {/* Question Box */}
-          <div className="bg-purple-50/60 dark:bg-purple-950/40 p-5 rounded-2xl border border-purple-200 dark:border-purple-800/60 space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-[11px] font-extrabold text-purple-600 dark:text-purple-400 uppercase tracking-wider">
-                {currentQuestion.difficulty} Level Question:
-              </span>
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-100 dark:bg-purple-900/60 text-purple-700 dark:text-purple-300">
-                🌐 Bilingual (English + हिंदी)
-              </span>
-            </div>
-
-            {currentQuestion.question.includes(' / ') ? (
-              <div className="space-y-1.5">
-                <h3 className="text-base sm:text-lg font-extrabold text-slate-900 dark:text-white leading-snug">
-                  {currentQuestion.question.split(' / ')[0]}
-                </h3>
-                <p className="text-xs sm:text-sm text-purple-700 dark:text-purple-300 font-semibold leading-relaxed">
-                  🇮🇳 {currentQuestion.question.split(' / ')[1]}
-                </p>
-              </div>
-            ) : (
-              <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white leading-snug">
-                {currentQuestion.question}
-              </h3>
-            )}
-          </div>
-
-          {/* Answer Options */}
-          <div className="space-y-3">
-            {currentQuestion.options.map((optText, optionIdx) => {
-              const isSelected = selectedOption === optionIdx;
-              const hasTranslation = optText.includes(' / ');
-              const enPart = hasTranslation ? optText.split(' / ')[0] : optText;
-              const hiPart = hasTranslation ? optText.split(' / ')[1] : '';
-
-              return (
-                <button
-                  key={optionIdx}
-                  type="button"
-                  onClick={() => handleSelectOption(optionIdx)}
-                  className={`w-full text-left p-4 rounded-2xl border text-xs font-semibold transition-all flex items-center justify-between cursor-pointer ${
-                    isSelected
-                      ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white border-pink-400 shadow-md ring-2 ring-purple-400/40'
-                      : 'bg-slate-50 dark:bg-slate-800/80 text-slate-800 dark:text-slate-200 border-slate-200 dark:border-slate-700 hover:border-purple-400 hover:bg-purple-50/30'
-                  }`}
-                >
-                  <div className="flex items-center gap-3">
-                    <span className={`w-7 h-7 rounded-xl flex items-center justify-center font-extrabold text-xs shrink-0 ${
-                      isSelected
-                        ? 'bg-white text-purple-900'
-                        : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300'
-                    }`}>
-                      {String.fromCharCode(65 + optionIdx)}
-                    </span>
-                    <div className="flex flex-col text-left">
-                      <span className="font-bold text-xs sm:text-sm">{enPart}</span>
-                      {hiPart && (
-                        <span className={`text-[11px] font-medium mt-0.5 ${isSelected ? 'text-purple-100' : 'text-purple-600 dark:text-purple-300'}`}>
-                          🇮🇳 {hiPart}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-
-                  {isSelected && <CheckCircle2 className="w-5 h-5 text-white shrink-0 ml-2" />}
-                </button>
-              );
-            })}
-          </div>
-
-          {/* Navigation Controls */}
-          <div className="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-slate-800">
-            <button
-              type="button"
-              disabled={currentQIndex === 0}
-              onClick={() => {
-                const prevIdx = currentQIndex - 1;
-                setCurrentQIndex(prevIdx);
-                setSelectedOption(userAnswers[questions[prevIdx].id] ?? null);
-              }}
-              className="px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed"
-            >
-              Previous Question
-            </button>
-
-            <button
-              type="button"
-              disabled={selectedOption === null}
-              onClick={handleNextQuestion}
-              className="px-6 py-3 rounded-2xl btn-gradient-award text-xs font-extrabold shadow-md disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center gap-2"
-            >
-              {currentQIndex < questions.length - 1 ? (
-                <>
-                  <span>Next Question</span>
-                  <ChevronRight className="w-4 h-4" />
-                </>
-              ) : (
-                <>
-                  <Award className="w-4 h-4" />
-                  <span>Submit Assessment & Check Score</span>
-                </>
-              )}
-            </button>
-          </div>
-
-        </div>
-      )}
-
-      {/* STEP 3: ELIGIBILITY QUIZ RESULTS & SCORE EVALUATION */}
-      {step === 3 && resultData && (
+      {/* STEP 2: CONFIRMATION & RESULTS SCREEN */}
+      {step === 2 && (
         <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-8 border border-slate-200 dark:border-purple-500/30 shadow-xl space-y-6">
           
           {/* Result Banner */}
@@ -698,14 +474,40 @@ Make it persuasive, authentic, respectful, and ready to send directly to the cli
             </div>
             <div className="space-y-1">
               <span className="text-xs font-extrabold uppercase tracking-widest text-emerald-200">
-                Self-Check Score: {resultData.percentage}% ({resultData.earnedPoints} pts) • 100% Eligible & Accepted
+                Application Successfully Sent
               </span>
               <h2 className="text-2xl sm:text-3xl font-extrabold text-white">
-                🎉 Application Successfully Submitted!
+                🎉 Application Submitted!
               </h2>
               <p className="text-xs sm:text-sm text-emerald-100 font-medium max-w-lg mx-auto">
-                Your application for <strong>{gig.title}</strong> has been registered. On HerEarn, every woman has an equal opportunity—no minimum score cutoff is required!
+                Your proposal and verified proof-of-work project for <strong>{gig.title}</strong> have been registered with <strong>{gig.company}</strong>.
               </p>
+            </div>
+          </div>
+
+          {/* Application Details Summary Card */}
+          <div className="p-5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 space-y-3 text-xs">
+            <h3 className="font-extrabold text-slate-900 dark:text-white uppercase tracking-wider text-[11px] flex items-center gap-2">
+              <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+              Submission Details
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-slate-700 dark:text-slate-300">
+              <div>
+                <span className="text-slate-400 block text-[10px]">Company / Recruiter:</span>
+                <span className="font-bold">{gig.company}</span>
+              </div>
+              <div>
+                <span className="text-slate-400 block text-[10px]">Stipend Amount:</span>
+                <span className="font-bold text-emerald-600 dark:text-emerald-400">{gig.stipend}</span>
+              </div>
+              <div>
+                <span className="text-slate-400 block text-[10px]">Category & Type:</span>
+                <span className="font-bold">{gig.category} • {gig.type}</span>
+              </div>
+              <div>
+                <span className="text-slate-400 block text-[10px]">Status:</span>
+                <span className="font-bold text-purple-600 dark:text-purple-400">Under Review by Employer</span>
+              </div>
             </div>
           </div>
 
@@ -728,7 +530,7 @@ Make it persuasive, authentic, respectful, and ready to send directly to the cli
                       {matchingTrack.title}
                     </h3>
                     <p className="text-xs text-purple-200/90 leading-relaxed">
-                      All video lectures, modules, and capstone materials are now unlocked for you. All other courses remain locked until you apply for their corresponding opportunities.
+                      All video lectures, modules, and capstone materials are now unlocked for you. Complete the lessons and take the end-of-course assessment quiz to earn your official verified certificate!
                     </p>
                   </div>
                 </div>
@@ -745,59 +547,22 @@ Make it persuasive, authentic, respectful, and ready to send directly to the cli
             </div>
           )}
 
-          {/* Difficulty Score Breakdown Cards (Easy, Medium, Hard) */}
-          <div className="space-y-3">
-            <h3 className="text-xs font-extrabold text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-2">
-              <Target className="w-4 h-4 text-purple-600 dark:text-purple-400" />
-              Score Breakdown by Difficulty Level:
-            </h3>
-
-            <div className="grid sm:grid-cols-3 gap-4">
-              {['Easy', 'Medium', 'Hard'].map((diff) => {
-                const b = resultData.difficultyBreakdown[diff];
-                const pct = b.total > 0 ? Math.round((b.correct / b.total) * 100) : 0;
-                return (
-                  <div 
-                    key={diff} 
-                    className={`p-4 rounded-2xl border space-y-1 text-center ${
-                      pct >= 50 
-                        ? 'bg-emerald-50/60 dark:bg-emerald-950/40 border-emerald-300 dark:border-emerald-800' 
-                        : 'bg-rose-50/60 dark:bg-rose-950/40 border-rose-300 dark:border-rose-800'
-                    }`}
-                  >
-                    <span className="text-[10px] font-extrabold uppercase tracking-wider block text-slate-600 dark:text-slate-300">
-                      {diff} Level
-                    </span>
-                    <span className="text-xl font-extrabold block text-slate-900 dark:text-white">
-                      {b.correct} / {b.total} Correct
-                    </span>
-                    <span className={`text-xs font-bold ${pct >= 50 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
-                      {pct}% Accuracy
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
           {/* Action CTAs */}
           <div className="pt-4 border-t border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-center gap-4">
-            {matchingTrack && (
-              <button
-                type="button"
-                onClick={() => navigate(`/courses/${matchingTrack.id}`)}
-                className="w-full sm:w-auto px-8 py-3.5 rounded-2xl bg-gradient-to-r from-purple-600 via-indigo-600 to-pink-600 hover:opacity-95 text-white text-xs font-extrabold shadow-xl flex items-center justify-center gap-2 cursor-pointer transition-all hover:scale-105"
-              >
-                <Play className="w-4 h-4 fill-current" />
-                <span>Open Course Lectures in Profile</span>
-              </button>
-            )}
+            <button
+              type="button"
+              onClick={() => navigate('/dashboard')}
+              className="w-full sm:w-auto px-8 py-3.5 rounded-2xl bg-gradient-to-r from-purple-600 via-indigo-600 to-pink-600 hover:opacity-95 text-white text-xs font-extrabold shadow-xl flex items-center justify-center gap-2 cursor-pointer transition-all hover:scale-105"
+            >
+              <span>Go to Learner Dashboard</span>
+              <ChevronRight className="w-4 h-4" />
+            </button>
             <button
               type="button"
               onClick={onBack}
               className="w-full sm:w-auto px-8 py-3.5 rounded-2xl border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-xs font-bold hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
             >
-              Back to Opportunities Board
+              Explore More Opportunities
             </button>
           </div>
 

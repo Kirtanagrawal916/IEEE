@@ -23,7 +23,7 @@ export const skillTracks = [
         id: "demo-l1",
         title: "Lesson 1: Welcome to Remote Work & Overcoming Tech Hesitation",
         duration: "15 min",
-        videoUrl: "https://www.youtube.com/embed/nU-IIXBWlS4",
+        videoUrl: "https://www.youtube.com/embed/fGddFf8_mP8",
         summary: "Introduction to work-from-home opportunities, managing your daily schedule, and building confidence with basic digital tools.",
         keyTakeaways: [
           "Understanding how online freelancing and micro-gigs operate from home",
@@ -35,7 +35,7 @@ export const skillTracks = [
         id: "demo-l2",
         title: "Lesson 2: Essential Free Tools: Google Drive, Canva & WhatsApp Business",
         duration: "20 min",
-        videoUrl: "https://www.youtube.com/embed/un50Bs4BvZ8",
+        videoUrl: "https://www.youtube.com/embed/zJS_f-n8o_s",
         summary: "Hands-on walkthrough of creating documents, organizing work on cloud folders, and communicating professionally.",
         keyTakeaways: [
           "Creating shareable Google Drive links for client submissions",
@@ -47,7 +47,7 @@ export const skillTracks = [
         id: "demo-l3",
         title: "Lesson 3: Finding Your First Gig & Guaranteeing Payouts via Escrow",
         duration: "25 min",
-        videoUrl: "https://www.youtube.com/embed/VpXJ27p2Wlg",
+        videoUrl: "https://www.youtube.com/embed/q1S98oBmsxM",
         summary: "How to browse gigs on HerEarn, submit your deliverables, and ensure your money is safely deposited to your wallet.",
         keyTakeaways: [
           "How HerEarn Escrow guarantees you get paid upon delivery",
@@ -78,7 +78,7 @@ export const skillTracks = [
         id: "m1-l1",
         title: "Lesson 1: Social Media Basics for Local Businesses",
         duration: "15 min",
-        videoUrl: "https://www.youtube.com/embed/nU-IIXBWlS4",
+        videoUrl: "https://www.youtube.com/embed/bixR-KIJKYM",
         summary: "Understand how Instagram & WhatsApp Business help small stores reach local customers.",
         keyTakeaways: [
           "Setting up a Professional Instagram Business Profile",
@@ -90,7 +90,7 @@ export const skillTracks = [
         id: "m1-l2",
         title: "Lesson 2: Designing Eye-Catching Posts using Canva",
         duration: "25 min",
-        videoUrl: "https://www.youtube.com/embed/un50Bs4BvZ8",
+        videoUrl: "https://www.youtube.com/embed/zJS_f-n8o_s",
         summary: "Step-by-step guide to choosing brand colors, fonts, and crafting product promo banners.",
         keyTakeaways: [
           "Color theory for brand identity",
@@ -102,7 +102,7 @@ export const skillTracks = [
         id: "m1-l3",
         title: "Lesson 3: Writing Captions & Using Hashtags that Convert",
         duration: "20 min",
-        videoUrl: "https://www.youtube.com/embed/4y_f0L6J-uQ",
+        videoUrl: "https://www.youtube.com/embed/mKkCo5Oq_bM",
         summary: "Mastering hooks, storytelling, call-to-action (CTA), and hyper-local hashtags.",
         keyTakeaways: [
           "The AIDA formula for captions (Attention, Interest, Desire, Action)",
@@ -114,7 +114,7 @@ export const skillTracks = [
         id: "m1-l4",
         title: "Lesson 4: Running Your First ₹500 Meta Ad Campaign",
         duration: "30 min",
-        videoUrl: "https://www.youtube.com/embed/3Q95b6XmXn8",
+        videoUrl: "https://www.youtube.com/embed/7Vb9lXj2V3U",
         summary: "Learn how to target local customers near a boutique, bakery, or handicraft shop.",
         keyTakeaways: [
           "Setting up Meta Ads Manager",
@@ -126,7 +126,7 @@ export const skillTracks = [
         id: "m1-l5",
         title: "Capstone Project: Submit Your Client Marketing Plan",
         duration: "45 min",
-        videoUrl: "https://www.youtube.com/embed/VpXJ27p2Wlg",
+        videoUrl: "https://www.youtube.com/embed/bixR-KIJKYM",
         summary: "Build a complete 1-week sample Instagram calendar for a local boutique to showcase in your portfolio.",
         keyTakeaways: [
           "Creating a 7-day content schedule",
@@ -157,7 +157,7 @@ export const skillTracks = [
         id: "m2-l1",
         title: "Lesson 1: Introduction to Graphic Design Fundamentals",
         duration: "20 min",
-        videoUrl: "https://www.youtube.com/embed/YqQx75OPRa0",
+        videoUrl: "https://www.youtube.com/embed/WONZVnlam6w",
         summary: "Learn layout, alignment, typography, and visual hierarchy principles.",
         keyTakeaways: ["Visual balance and whitespace", "Typography rules and pairings", "Color psychology for packaging"]
       },
@@ -165,7 +165,7 @@ export const skillTracks = [
         id: "m2-l2",
         title: "Lesson 2: Crafting Brand Logos & Style Guides",
         duration: "30 min",
-        videoUrl: "https://www.youtube.com/embed/2_Yn127tG_I",
+        videoUrl: "https://www.youtube.com/embed/dFSia1LZI4Y",
         summary: "How to design memorable minimalist logos for small enterprises.",
         keyTakeaways: ["Vector design concepts", "Iconography selection", "Exporting SVG & PNG formats"]
       },
@@ -173,7 +173,7 @@ export const skillTracks = [
         id: "m2-l3",
         title: "Lesson 3: Packaging & Product Label Dielines in Canva Pro",
         duration: "35 min",
-        videoUrl: "https://www.youtube.com/embed/nU-IIXBWlS4",
+        videoUrl: "https://www.youtube.com/embed/XbZk_wQ4VzE",
         summary: "Step-by-step packaging design for jars, bottles, kraft pouches, and retail boxes.",
         keyTakeaways: ["Measuring bleed and margins for print", "Regulatory ingredients layout", "Mockup presentations for clients"]
       },
@@ -181,7 +181,7 @@ export const skillTracks = [
         id: "m2-l4",
         title: "Lesson 4: High-Converting Promo Banners & Instagram Carousels",
         duration: "25 min",
-        videoUrl: "https://www.youtube.com/embed/un50Bs4BvZ8",
+        videoUrl: "https://www.youtube.com/embed/zJS_f-n8o_s",
         summary: "Design seamless 5-slide seamless carousels that drive engagement and save-worthy metrics.",
         keyTakeaways: ["Seamless panorama slicing", "High-contrast callout boxes", "Exporting high-fidelity WebP/PNG"]
       },
@@ -189,7 +189,7 @@ export const skillTracks = [
         id: "m2-l5",
         title: "Capstone Project: Complete Boutique Brand Identity Kit",
         duration: "50 min",
-        videoUrl: "https://www.youtube.com/embed/VpXJ27p2Wlg",
+        videoUrl: "https://www.youtube.com/embed/WONZVnlam6w",
         summary: "Design a full brand suite including logo, color palette, business card, and product label.",
         keyTakeaways: ["Client presentation PDF creation", "Exporting print-ready assets", "Publishing to HerEarn portfolio"]
       }
@@ -216,7 +216,7 @@ export const skillTracks = [
         id: "m3-l1",
         title: "Lesson 1: Setting up Product Listings & Descriptions",
         duration: "25 min",
-        videoUrl: "https://www.youtube.com/embed/1vR_2fA9O4w",
+        videoUrl: "https://www.youtube.com/embed/yVw1mE_zT7g",
         summary: "Writing product titles, descriptions, pricing, and SEO tags for online sales.",
         keyTakeaways: ["Product SEO writing", "High-converting photo zoom rules", "Inventory & variant structuring"]
       },
@@ -224,7 +224,7 @@ export const skillTracks = [
         id: "m3-l2",
         title: "Lesson 2: Organizing Collections & Mobile Navigation",
         duration: "30 min",
-        videoUrl: "https://www.youtube.com/embed/un50Bs4BvZ8",
+        videoUrl: "https://www.youtube.com/embed/f4GgD59Z-9Q",
         summary: "Create intuitive navigation so mobile shoppers can find categories in under 2 taps.",
         keyTakeaways: ["Mobile mega-menus", "Seasonal sale banners", "Product filter tags"]
       },
@@ -232,7 +232,7 @@ export const skillTracks = [
         id: "m3-l3",
         title: "Lesson 3: Automated WhatsApp Checkout & Abandoned Cart Recovery",
         duration: "35 min",
-        videoUrl: "https://www.youtube.com/embed/3Q95b6XmXn8",
+        videoUrl: "https://www.youtube.com/embed/yVw1mE_zT7g",
         summary: "Set up instant WhatsApp order confirmation and recover up to 25% of abandoned carts.",
         keyTakeaways: ["Razorpay & UPI gateway setup", "WhatsApp Business API alerts", "Cart recovery coupon triggers"]
       },
@@ -240,7 +240,7 @@ export const skillTracks = [
         id: "m3-l4",
         title: "Capstone Project: Launch an Artisan Handmade Storefront",
         duration: "45 min",
-        videoUrl: "https://www.youtube.com/embed/VpXJ27p2Wlg",
+        videoUrl: "https://www.youtube.com/embed/f4GgD59Z-9Q",
         summary: "Configure 10 handcrafted products with variants, shipping zones, and publish a live store link.",
         keyTakeaways: ["Store testing checklist", "Domain linking", "Portfolio deliverable verification"]
       }
@@ -267,7 +267,7 @@ export const skillTracks = [
         id: "m4-l1",
         title: "Lesson 1: Writing Hooks & Headlines that Stop the Scroll",
         duration: "20 min",
-        videoUrl: "https://www.youtube.com/embed/4y_f0L6J-uQ",
+        videoUrl: "https://www.youtube.com/embed/mKkCo5Oq_bM",
         summary: "Understand the psychology of curiosity, emotional resonance, and high-CTR headline formulas.",
         keyTakeaways: ["The 4 U's of headline writing", "Emotional power words in Indian context", "A/B testing hooks"]
       },
@@ -275,7 +275,7 @@ export const skillTracks = [
         id: "m4-l2",
         title: "Lesson 2: 5-Part Email Welcome Sequence for D2C Brands",
         duration: "30 min",
-        videoUrl: "https://www.youtube.com/embed/1vR_2fA9O4w",
+        videoUrl: "https://www.youtube.com/embed/r9peP9GTn4I",
         summary: "Craft a founder origin story, social proof breakdown, and discount incentive sequence.",
         keyTakeaways: ["Founder storytelling template", "Subject line open-rate tactics", "Subtle urgency in CTAs"]
       },
@@ -283,7 +283,7 @@ export const skillTracks = [
         id: "m4-l3",
         title: "Lesson 3: On-Page SEO Writing that Ranks on Google",
         duration: "35 min",
-        videoUrl: "https://www.youtube.com/embed/nU-IIXBWlS4",
+        videoUrl: "https://www.youtube.com/embed/mKkCo5Oq_bM",
         summary: "Structure search-friendly guides with primary keywords, LSI terms, and meta descriptions.",
         keyTakeaways: ["Search intent matching", "H2/H3 outline structuring", "Writing meta titles that win clicks"]
       },
@@ -291,7 +291,7 @@ export const skillTracks = [
         id: "m4-l4",
         title: "Capstone Project: 3-Piece Client Copywriting Portfolio",
         duration: "45 min",
-        videoUrl: "https://www.youtube.com/embed/VpXJ27p2Wlg",
+        videoUrl: "https://www.youtube.com/embed/r9peP9GTn4I",
         summary: "Deliver a homepage hero rewrite, an Instagram sales caption, and a 500-word SEO blog sample.",
         keyTakeaways: ["Formatting clean Google Docs deliverable", "Self-editing checklist", "Portfolio submission"]
       }
@@ -318,7 +318,7 @@ export const skillTracks = [
         id: "m5-l1",
         title: "Lesson 1: Pacing, Cuts & Mobile Timeline in CapCut",
         duration: "25 min",
-        videoUrl: "https://www.youtube.com/embed/un50Bs4BvZ8",
+        videoUrl: "https://www.youtube.com/embed/m7wFq9z8u8A",
         summary: "How to trim dead air, maintain high viewer retention, and build smooth jump cuts.",
         keyTakeaways: ["First 3-second hook principle", "Trimming micro-pauses", "Aspect ratio formatting 9:16"]
       },
@@ -326,7 +326,7 @@ export const skillTracks = [
         id: "m5-l2",
         title: "Lesson 2: Audio Beat Matching & Sound Design",
         duration: "30 min",
-        videoUrl: "https://www.youtube.com/embed/YqQx75OPRa0",
+        videoUrl: "https://www.youtube.com/embed/Vb1fl-eJ0XU",
         summary: "Sync clip cuts to trending beats and elevate productions with whooshes and subtle risers.",
         keyTakeaways: ["Waveform beat marking", "Balancing voiceover vs background audio", "Royalty-free trending music"]
       },
@@ -334,7 +334,7 @@ export const skillTracks = [
         id: "m5-l3",
         title: "Lesson 3: Animated Subtitles & B-Roll Overlays",
         duration: "30 min",
-        videoUrl: "https://www.youtube.com/embed/3Q95b6XmXn8",
+        videoUrl: "https://www.youtube.com/embed/m7wFq9z8u8A",
         summary: "Auto-caption generation, animated highlight keywords, and contextual image overlays.",
         keyTakeaways: ["CapCut auto-captions styling", "Highlighting punchy keywords", "Picture-in-picture b-roll"]
       },
@@ -342,7 +342,7 @@ export const skillTracks = [
         id: "m5-l4",
         title: "Capstone Project: 3 Commercial Client Reels",
         duration: "45 min",
-        videoUrl: "https://www.youtube.com/embed/VpXJ27p2Wlg",
+        videoUrl: "https://www.youtube.com/embed/Vb1fl-eJ0XU",
         summary: "Produce 3 complete 20-second Reels for a food, fashion, or craft business.",
         keyTakeaways: ["Color grade preset application", "1080p 60fps export settings", "Client delivery on Drive"]
       }
@@ -369,7 +369,7 @@ export const skillTracks = [
         id: "m6-l1",
         title: "Lesson 1: Inbox Zero & Executive Calendar Management",
         duration: "25 min",
-        videoUrl: "https://www.youtube.com/embed/1vR_2fA9O4w",
+        videoUrl: "https://www.youtube.com/embed/fGddFf8_mP8",
         summary: "Master labels, filters, calendar scheduling buffers, and client email etiquette.",
         keyTakeaways: ["Email filtering rules", "Calendly & Google Calendar setup", "Professional canned email templates"]
       },
@@ -377,7 +377,7 @@ export const skillTracks = [
         id: "m6-l2",
         title: "Lesson 2: Building Notion Client Hubs & Dashboards",
         duration: "30 min",
-        videoUrl: "https://www.youtube.com/embed/nU-IIXBWlS4",
+        videoUrl: "https://www.youtube.com/embed/aA7si7AmPkY",
         summary: "Build relational databases for project task tracking, client CRM, and meeting notes.",
         keyTakeaways: ["Notion Kanban boards", "Client onboarding database", "Template sharing"]
       },
@@ -385,7 +385,7 @@ export const skillTracks = [
         id: "m6-l3",
         title: "Lesson 3: Invoicing, Basic Bookkeeping & Receipt Tracking",
         duration: "30 min",
-        videoUrl: "https://www.youtube.com/embed/un50Bs4BvZ8",
+        videoUrl: "https://www.youtube.com/embed/fGddFf8_mP8",
         summary: "Manage monthly expenditure spreadsheets, generate professional invoices, and log payments.",
         keyTakeaways: ["Google Sheets budget formulas", "Invoice generation tools", "Expense category reconciliation"]
       },
@@ -393,7 +393,7 @@ export const skillTracks = [
         id: "m6-l4",
         title: "Capstone Project: Complete VA Client Onboarding Blueprint",
         duration: "45 min",
-        videoUrl: "https://www.youtube.com/embed/VpXJ27p2Wlg",
+        videoUrl: "https://www.youtube.com/embed/aA7si7AmPkY",
         summary: "Assemble a turnkey client management workspace in Google Drive & Notion to prove your operational chops.",
         keyTakeaways: ["Folder hierarchy standardization", "Standard Operating Procedure (SOP) writing", "Verified badge unlock"]
       }

@@ -1002,7 +1002,7 @@ export default function LearnSection({ user, onCompleteLesson, onNavigateToPortf
                   {/* Embedded Video Cinema Frame */}
                   <div className="bg-black rounded-3xl overflow-hidden shadow-2xl border border-slate-800 aspect-video relative">
                     <iframe
-                      src={activeLesson.videoUrl || "https://www.youtube.com/embed/nU-IIXBWlS4"}
+                      src={activeLesson.videoUrl || "https://www.youtube.com/embed/fGddFf8_mP8"}
                       title={activeLesson.title || "Lesson Video"}
                       className="w-full h-full border-0"
                       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
