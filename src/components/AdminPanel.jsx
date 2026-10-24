@@ -46,6 +46,7 @@ export const MASTER_ADMIN_KEY = 'HEREARN-ADMIN-2026-X9K';
 export default function AdminPanel({ 
   user,
   onLoginSuccess,
+  onUpdateUser,
   opportunities = [], 
   setOpportunities, 
   showToast 
@@ -548,19 +549,62 @@ export default function AdminPanel({
     }
   };
 
-  // Escrow Actions: Release Payout
+  // Escrow Actions: Allow Project & Release Payout to User Profile
   const handleReleaseEscrow = async (id, amount, freelancer) => {
     try {
-      const res = await api.releaseEscrow(id);
+      const res = await api.allowEscrow(id).catch(() => api.releaseEscrow(id));
       if (res?.success) {
         setEscrowLedger(prev => prev.map(t => (t.id === id || t.dbId === id) ? { ...t, status: 'DISBURSED' } : t));
-        pushAuditLog('ESCROW_DISBURSED', `Direct UPI payout released: ₹${Number(amount).toLocaleString()} to ${freelancer}`, 'escrow');
-        if (showToast) showToast('💸 Payout Disbursed', `₹${Number(amount).toLocaleString()} released to ${freelancer}'s UPI.`);
+        pushAuditLog('ESCROW_PROJECT_ALLOWED', `Project allowed: ₹${Number(amount).toLocaleString('en-IN')} added to ${freelancer}'s profile amount & deducted from escrow`, 'escrow');
+        
+        // Update user profile in local storage and active React state if it matches current user or learner
+        try {
+          const rawSaved = localStorage.getItem('herearn_user');
+          if (rawSaved) {
+            const parsed = JSON.parse(rawSaved);
+            const isMatch = !freelancer || 
+              parsed.name?.toLowerCase() === freelancer?.toLowerCase() || 
+              parsed.username?.toLowerCase() === freelancer?.toLowerCase() ||
+              freelancer === 'Learner' || 
+              freelancer === 'Ananya Sharma';
+            
+            if (isMatch) {
+              const updated = {
+                ...parsed,
+                walletBalance: (Number(parsed.walletBalance) || 0) + Number(amount),
+                totalEarned: (Number(parsed.totalEarned) || 0) + Number(amount),
+                earnings: (Number(parsed.earnings) || 0) + Number(amount),
+              };
+              localStorage.setItem('herearn_user', JSON.stringify(updated));
+              if (onUpdateUser) onUpdateUser(updated);
+            }
+          }
+        } catch (e) {
+          console.warn('[Admin] Profile sync error:', e);
+        }
+
+        if (showToast) showToast('✅ Project Allowed & Disbursed', `₹${Number(amount).toLocaleString('en-IN')} added to ${freelancer}'s profile amount and deducted from escrow.`);
         loadAdminData(true);
       }
     } catch (err) {
       console.error(err);
-      if (showToast) showToast('Error', 'Failed to release escrow payout.');
+      if (showToast) showToast('Error', 'Failed to allow escrow project.');
+    }
+  };
+
+  // Escrow Actions: Disprove Project (Subtract from escrow, DO NOT add to profile amount)
+  const handleDisproveEscrow = async (id, amount, freelancer) => {
+    try {
+      const res = await api.disproveEscrow(id);
+      if (res?.success) {
+        setEscrowLedger(prev => prev.map(t => (t.id === id || t.dbId === id) ? { ...t, status: 'DISPROVED' } : t));
+        pushAuditLog('ESCROW_PROJECT_DISPROVED', `Project disproved: ₹${Number(amount).toLocaleString('en-IN')} subtracted from escrow. No payout credited to ${freelancer}.`, 'warning');
+        if (showToast) showToast('❌ Project Disproved', `₹${Number(amount).toLocaleString('en-IN')} subtracted from escrow. Amount was NOT credited to ${freelancer}'s profile.`);
+        loadAdminData(true);
+      }
+    } catch (err) {
+      console.error(err);
+      if (showToast) showToast('Error', 'Failed to disprove escrow project.');
     }
   };
 
@@ -673,6 +717,7 @@ export default function AdminPanel({
     return escrowLedger.filter(tx => {
       if (escrowFilter === 'HELD' && tx.status !== 'HELD_IN_ESCROW') return false;
       if (escrowFilter === 'DISBURSED' && tx.status !== 'DISBURSED') return false;
+      if (escrowFilter === 'DISPROVED' && tx.status !== 'DISPROVED') return false;
       if (escrowFilter === 'DISPUTED' && tx.status !== 'DISPUTED_FROZEN') return false;
       return true;
     });
@@ -680,13 +725,24 @@ export default function AdminPanel({
 
   // Real Dynamic Financial & User Counts (NO fake padding!)
   const totalHeldEscrow = useMemo(() => {
-    if (metrics?.escrow?.grossPool !== undefined && metrics?.escrow?.grossPool !== null) return Number(metrics.escrow.grossPool) || 0;
-    return escrowLedger.filter(t => t.status === 'HELD_IN_ESCROW').reduce((acc, curr) => acc + (Number(curr.amount) || 0), 0);
+    if (escrowLedger.length > 0) {
+      return escrowLedger.filter(t => t.status === 'HELD_IN_ESCROW').reduce((acc, curr) => acc + (Number(curr.amount) || 0), 0);
+    }
+    return Number(metrics?.escrow?.grossPool) || 0;
   }, [escrowLedger, metrics]);
 
   const totalDisbursedEscrow = useMemo(() => {
-    if (metrics?.escrow?.totalDisbursed !== undefined && metrics?.escrow?.totalDisbursed !== null) return Number(metrics.escrow.totalDisbursed) || 0;
-    return escrowLedger.filter(t => t.status === 'DISBURSED').reduce((acc, curr) => acc + (Number(curr.amount) || 0), 0);
+    if (escrowLedger.length > 0) {
+      return escrowLedger.filter(t => t.status === 'DISBURSED').reduce((acc, curr) => acc + (Number(curr.amount) || 0), 0);
+    }
+    return Number(metrics?.escrow?.totalDisbursed) || 0;
+  }, [escrowLedger, metrics]);
+
+  const totalDisprovedEscrow = useMemo(() => {
+    if (escrowLedger.length > 0) {
+      return escrowLedger.filter(t => t.status === 'DISPROVED').reduce((acc, curr) => acc + (Number(curr.amount) || 0), 0);
+    }
+    return Number(metrics?.escrow?.totalDisproved) || 0;
   }, [escrowLedger, metrics]);
 
   const simulatedRevenue = Math.round((totalDisbursedEscrow * platformFeePercent) / 100);
@@ -1567,7 +1623,7 @@ export default function AdminPanel({
               </div>
 
               <div className="flex items-center gap-1.5">
-                {['ALL', 'HELD', 'DISBURSED', 'DISPUTED'].map(f => (
+                {['ALL', 'HELD', 'DISBURSED', 'DISPROVED', 'DISPUTED'].map(f => (
                   <button
                     key={f}
                     onClick={() => setEscrowFilter(f)}
@@ -1580,6 +1636,22 @@ export default function AdminPanel({
                     {f}
                   </button>
                 ))}
+              </div>
+            </div>
+
+            {/* Quick Financial State Pill Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-4 rounded-2xl bg-slate-950/70 border border-slate-800">
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-slate-400 font-bold">Gross Escrow Held:</span>
+                <span className="text-sm font-black font-mono text-purple-400">₹{totalHeldEscrow.toLocaleString()}</span>
+              </div>
+              <div className="flex items-center justify-between border-t sm:border-t-0 sm:border-l border-slate-800 sm:pl-3 pt-2 sm:pt-0">
+                <span className="text-xs text-slate-400 font-bold">Total Disbursed:</span>
+                <span className="text-sm font-black font-mono text-emerald-400">₹{totalDisbursedEscrow.toLocaleString()}</span>
+              </div>
+              <div className="flex items-center justify-between border-t sm:border-t-0 sm:border-l border-slate-800 sm:pl-3 pt-2 sm:pt-0">
+                <span className="text-xs text-slate-400 font-bold">Total Disproved / Voided:</span>
+                <span className="text-sm font-black font-mono text-rose-400">₹{totalDisprovedEscrow.toLocaleString()}</span>
               </div>
             </div>
 
@@ -1603,9 +1675,11 @@ export default function AdminPanel({
                             ? 'bg-indigo-500/20 text-indigo-400 border border-indigo-500/30'
                             : tx.status === 'DISBURSED'
                             ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
-                            : 'bg-red-500/20 text-red-400 border border-red-500/30'
+                            : tx.status === 'DISPROVED'
+                            ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30'
+                            : 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
                         }`}>
-                          {tx.status.replace(/_/g, ' ')}
+                          {tx.status === 'DISBURSED' ? 'ALLOWED & DISBURSED' : tx.status === 'DISPROVED' ? 'DISPROVED / SUBTRACTED' : tx.status.replace(/_/g, ' ')}
                         </span>
                       </div>
 
@@ -1619,25 +1693,51 @@ export default function AdminPanel({
                       <span className="text-lg font-black text-white font-mono">₹{Number(tx.amount).toLocaleString()}</span>
 
                       {tx.status === 'HELD_IN_ESCROW' ? (
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
                           <button
                             onClick={() => handleReleaseEscrow(tx.dbId || tx.id, tx.amount, tx.freelancer)}
-                            className="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs shadow-md transition-all flex items-center gap-1.5 cursor-pointer"
+                            className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs shadow-md transition-all flex items-center gap-1.5 cursor-pointer"
+                            title="Allow project: Add to freelancer profile & subtract from escrow"
                           >
                             <Check className="w-3.5 h-3.5" />
-                            <span>Release UPI Payout</span>
+                            <span>Allow Project & Credit Profile</span>
+                          </button>
+                          <button
+                            onClick={() => handleDisproveEscrow(tx.dbId || tx.id, tx.amount, tx.freelancer)}
+                            className="px-3 py-1.5 rounded-xl bg-rose-950/70 text-rose-300 hover:bg-rose-900 border border-rose-500/40 font-bold text-xs transition-all flex items-center gap-1.5 cursor-pointer"
+                            title="Disprove project: Subtract from escrow, do NOT credit profile"
+                          >
+                            <X className="w-3.5 h-3.5" />
+                            <span>Disprove Project</span>
                           </button>
                           <button
                             onClick={() => handleFreezeEscrow(tx.dbId || tx.id, tx.amount)}
-                            className="px-3.5 py-1.5 rounded-xl bg-red-950/60 text-red-400 hover:bg-red-900 border border-red-500/30 font-bold text-xs transition-all cursor-pointer"
+                            className="px-2.5 py-1.5 rounded-xl bg-slate-900 text-slate-400 hover:bg-slate-800 border border-slate-700 font-bold text-xs transition-all cursor-pointer"
+                            title="Freeze escrow transaction for dispute review"
                           >
-                            Freeze Dispute
+                            Freeze
                           </button>
                         </div>
                       ) : (
-                        <span className="text-xs text-slate-400 font-bold">
-                          {tx.status === 'DISBURSED' ? 'Payout Disbursed ✅' : 'Frozen Under Review ❄️'}
-                        </span>
+                        <div className="text-right">
+                          {tx.status === 'DISBURSED' && (
+                            <span className="text-xs text-emerald-400 font-bold flex items-center gap-1">
+                              <Check className="w-3.5 h-3.5" />
+                              <span>Allowed & Credited to Profile ✅</span>
+                            </span>
+                          )}
+                          {tx.status === 'DISPROVED' && (
+                            <span className="text-xs text-rose-400 font-bold flex items-center gap-1">
+                              <X className="w-3.5 h-3.5" />
+                              <span>Disproved & Subtracted ❌ (No Profile Credit)</span>
+                            </span>
+                          )}
+                          {tx.status === 'DISPUTED_FROZEN' && (
+                            <span className="text-xs text-amber-400 font-bold">
+                              Dispute Lock Active ❄️
+                            </span>
+                          )}
+                        </div>
                       )}
                     </div>
                   </div>

@@ -27,7 +27,14 @@ import {
   Plus, 
   Check, 
   Info,
-  RotateCcw
+  RotateCcw,
+  Mic,
+  MicOff,
+  Paperclip,
+  Video,
+  FileText,
+  Copy,
+  Image as ImageIcon
 } from 'lucide-react';
 import { triggerCelebrationConfetti } from '../utils/confettiHelper';
 import { api } from '../services/api';
@@ -1302,11 +1309,47 @@ export default function MentorshipSection({ user, showToast }) {
  * Intelligent Client-Side Fallback for Mentor Chat
  * Ensures domain-aware, non-generic replies even if offline or if backend is unreachable.
  */
-function getClientMentorReply(message, mentor, booking, user) {
+function getClientMentorReply(message, mentor, booking, user, options = {}) {
   const text = (message || '').toLowerCase().trim();
   const domain = (mentor?.domain || '').toLowerCase();
   const slot = booking?.slot || mentor?.nextSlot || 'our scheduled session';
   const topic = booking?.topic || 'Portfolio & Strategy';
+  const hasImage = Boolean(options?.hasImageAttachment);
+  const lang = options?.preferredLanguage || 'EN';
+
+  // 0. Visual / Image Attachment Feedback
+  if (hasImage) {
+    if (lang === 'HI') {
+      return `मैंने आपका अटैच किया हुआ डिज़ाइन/प्रोजेक्ट प्रीव्यू देखा! 
+• **विज़ुअल बैलेंस (Visual Hierarchy):** मुख्य हेडिंग को सबटेक्स्ट से कम से कम 2.5x बड़ा रखें ताकि क्लाइंट का ध्यान सबसे पहले मुख्य मैसेज पर जाए।
+• **कंट्रास्ट और मार्जिन:** कैनवस के किनारों पर कम से कम 24px की खाली जगह रखें और टेक्स्ट को बैकग्राउंड पर आसानी से पढ़ने योग्य बनाएं।
+• **कॉल-टू-एक्शन (CTA):** बटन को ब्राइट एक्सेंट कलर दें ताकि यूज़र तुरंत एक्शन ले।
+हमारे ${slot} के सेशन में हम इसे क्लाइंट-रेडी फ़ाइनल टच देंगे!`;
+    }
+    return `I can see your uploaded preview! Here are 3 immediate design feedback points based on industry standards:
+• **Visual Hierarchy:** Ensure your primary heading is at least 2.5x larger than any subtext so the core value proposition is immediately visible.
+• **Breathing Room & Contrast:** Maintain at least 24px of clear padding around all canvas edges. Check that text contrast pops cleanly against the background colors.
+• **Call-To-Action (CTA):** Give your button or main link accent contrast (such as vibrant amber or brand purple) to guide the user's eye.
+We will pull up this exact creative during our session on **${slot}** to polish it to client-ready standards!`;
+  }
+
+  // Hindi / Hinglish Response branch
+  if (lang === 'HI') {
+    if (text.includes('rate') || text.includes('price') || text.includes('charge') || text.includes('inr') || text.includes('rupee')) {
+      return `भारत में फ्रीलांसिंग के लिए सही रेट तय करना बहुत जरूरी है:
+• **कैनवा सोशल मीडिया स्टार्टर किट:** 12 पोस्ट्स + 4 स्टोरीज़ के लिए ₹5,000 – ₹9,000।
+• **मंथली डिज़ाइन रिटेनर:** ₹12,000 – ₹20,000 प्रति माह।
+• **शॉपिफ़ाई स्टोर सेटअप:** ₹10,000 – ₹22,000 बेसिक स्टोर के लिए।
+कभी भी बिना 50% एडवांस या HerEarn Escrow के काम शुरू न करें। हमारे ${slot} के सेशन में हम आपकी कस्टमाइज्ड प्राइसिंग शीट बनाएंगे!`;
+    }
+    if (text.includes('portfolio') || text.includes('review') || text.includes('resume')) {
+      return `मैं आपके पोर्टफोलियो को ज़रूर रिव्यू करूँगी! हमारे ${slot} के सेशन के लिए:
+• 20 साधारण पोस्ट्स के बजाय केवल 3 बेहतरीन केस स्टडीज चुनें।
+• हर प्रोजेक्ट के साथ क्लाइंट का उद्देश्य और आपका सॉल्यूशन 2 लाइनों में लिखें।
+• अपना ड्राफ्ट लिंक यहाँ शेयर कर सकते हैं, मैं सेशन से पहले इसे देख लूँगी!`;
+    }
+    return `नमस्ते! ${mentor.name} के तौर पर मैं आपके '${topic}' सेशन (समय: ${slot}) के लिए तैयार हूँ। आप अपने प्रोजेक्ट, प्राइसिंग या क्लाइंट पिचिंग से जुड़ा कोई भी सवाल यहाँ बेझिझक पूछ सकते हैं!`;
+  }
 
   // 1. Portfolio Review
   if (text.includes('portfolio') || text.includes('review') || text.includes('resume') || text.includes('cv') || text.includes('github') || text.includes('behance') || text.includes('draft') || text.includes('sample')) {
@@ -1413,6 +1456,7 @@ I have noted this question down for our upcoming session on **${slot}** focused 
 /**
  * Interactive Mentor Chat Window Modal
  * Allows user to chat 1-on-1 dynamically with their assigned mentor via AI & domain-aware NLP.
+ * Features: Voice Mic Input, Image Attachments, Cal Sync, Video Room, Prep Sheet, and Language Switching.
  */
 function MentorChatModal({ mentor, booking, user, onClose, showToast }) {
   const chatStorageKey = `herearn_mentor_chat_${mentor.id}`;
@@ -1426,7 +1470,7 @@ function MentorChatModal({ mentor, booking, user, onClose, showToast }) {
       {
         id: 'msg-init-1',
         sender: 'mentor',
-        text: `Hello ${user?.name?.split(' ')[0] || 'there'}! 👋 I'm ${mentor.name}. Welcome to our 1-on-1 mentorship workspace. Our meeting is confirmed for ${booking?.slot || mentor.nextSlot || 'our scheduled time'} to focus on "${booking?.topic || 'Portfolio & Strategy'}". Feel free to share questions on portfolio drafts, pricing in ₹ INR, client pitches, or session prep below anytime!`,
+        text: `Hello ${user?.name?.split(' ')[0] || 'there'}! 👋 I'm ${mentor.name}. Welcome to our 1-on-1 mentorship workspace. Our meeting is confirmed for ${booking?.slot || mentor.nextSlot || 'our scheduled time'} to focus on "${booking?.topic || 'Portfolio & Strategy'}". Feel free to share questions, attach design mockups, ask about freelance pricing in ₹ INR, or prepare for our call below!`,
         time: 'Just now'
       }
     ];
@@ -1434,7 +1478,15 @@ function MentorChatModal({ mentor, booking, user, onClose, showToast }) {
 
   const [inputText, setInputText] = useState('');
   const [isTyping, setIsTyping] = useState(false);
+  const [isListening, setIsListening] = useState(false);
+  const [attachedImage, setAttachedImage] = useState(null);
+  const [preferredLanguage, setPreferredLanguage] = useState('EN'); // 'EN' | 'HI' | 'Hinglish'
+  const [showPrepSheet, setShowPrepSheet] = useState(false);
+  const [previewZoomImage, setPreviewZoomImage] = useState(null);
+
   const chatEndRef = useRef(null);
+  const fileInputRef = useRef(null);
+  const recognitionRef = useRef(null);
 
   useEffect(() => {
     try {
@@ -1444,6 +1496,81 @@ function MentorChatModal({ mentor, booking, user, onClose, showToast }) {
     }
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, chatStorageKey]);
+
+  // Handle Speech-to-Text Voice Input
+  const toggleListening = () => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      if (showToast) showToast('Voice input is not supported in this browser.', 'warning');
+      return;
+    }
+
+    if (isListening) {
+      try {
+        recognitionRef.current?.stop();
+      } catch {}
+      setIsListening(false);
+      return;
+    }
+
+    try {
+      const recognition = new SpeechRecognition();
+      recognition.continuous = false;
+      recognition.interimResults = false;
+      recognition.lang = preferredLanguage === 'HI' ? 'hi-IN' : 'en-IN';
+
+      recognition.onstart = () => setIsListening(true);
+      recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        setInputText(prev => (prev ? `${prev} ${transcript}` : transcript));
+        setIsListening(false);
+        if (showToast) showToast('Voice captured!', 'success');
+      };
+      recognition.onerror = () => setIsListening(false);
+      recognition.onend = () => setIsListening(false);
+
+      recognitionRef.current = recognition;
+      recognition.start();
+    } catch (err) {
+      console.warn('Speech recognition start error:', err);
+      setIsListening(false);
+    }
+  };
+
+  // Handle Image File Selection
+  const handleImageSelect = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 6 * 1024 * 1024) {
+      if (showToast) showToast('Please select an image file under 6MB', 'warning');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      setAttachedImage({
+        dataUrl: event.target.result,
+        name: file.name
+      });
+      if (showToast) showToast(`Attached: ${file.name}`, 'info');
+    };
+    reader.readAsDataURL(file);
+    e.target.value = '';
+  };
+
+  // Google Calendar Link
+  const handleAddToCalendar = () => {
+    const title = encodeURIComponent(`HerEarn Mentorship with ${mentor.name}: ${booking?.topic || 'Strategy'}`);
+    const details = encodeURIComponent(`1-on-1 Mentorship session on HerEarn with ${mentor.name} (${mentor.role} at ${mentor.company}).\nFocus: ${booking?.topic || 'Portfolio & Strategy'}\nDuration: ${booking?.duration || mentor.sessionDuration || '35 mins'}`);
+    const calUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&details=${details}&location=HerEarn+Online+Workspace`;
+    window.open(calUrl, '_blank');
+  };
+
+  // Direct Video Room Link
+  const handleJoinVideoRoom = () => {
+    const safeTopic = (booking?.topic || 'Mentorship').replace(/[^a-zA-Z0-9]/g, '');
+    const meetUrl = `https://meet.jit.si/HerEarn-${mentor.id}-${safeTopic}`;
+    window.open(meetUrl, '_blank');
+  };
 
   const handleClearChat = () => {
     const initMsg = [
@@ -1455,6 +1582,7 @@ function MentorChatModal({ mentor, booking, user, onClose, showToast }) {
       }
     ];
     setMessages(initMsg);
+    setAttachedImage(null);
     try {
       localStorage.setItem(chatStorageKey, JSON.stringify(initMsg));
     } catch {}
@@ -1463,16 +1591,19 @@ function MentorChatModal({ mentor, booking, user, onClose, showToast }) {
 
   const handleSend = async (textToSend = inputText) => {
     const trimmed = (typeof textToSend === 'string' ? textToSend : inputText).trim();
-    if (!trimmed || isTyping) return;
+    if ((!trimmed && !attachedImage) || isTyping) return;
 
     const userMsg = {
       id: `msg-${Date.now()}`,
       sender: 'user',
-      text: trimmed,
+      text: trimmed || (attachedImage ? `[Attached creative draft: ${attachedImage.name}]` : ''),
+      image: attachedImage?.dataUrl || null,
       time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     };
 
     setMessages(prev => [...prev, userMsg]);
+    const sentImage = attachedImage;
+    setAttachedImage(null);
     setInputText('');
     setIsTyping(true);
 
@@ -1487,11 +1618,17 @@ function MentorChatModal({ mentor, booking, user, onClose, showToast }) {
       bio: mentor.bio,
       topic: booking?.topic || 'Mentorship Strategy',
       slot: booking?.slot || mentor.nextSlot || 'Scheduled Session',
-      userName: user?.name || 'Learner'
+      userName: user?.name || 'Learner',
+      preferredLanguage,
+      hasImageAttachment: Boolean(sentImage)
     };
 
     try {
-      const res = await api.sendChatMessage(trimmed, sessionId, mentorContext);
+      const res = await api.sendChatMessage(
+        trimmed || 'Can you review this attached visual draft?', 
+        sessionId, 
+        mentorContext
+      );
       if (res && res.reply) {
         const mentorMsg = {
           id: `msg-${Date.now() + 1}`,
@@ -1509,7 +1646,13 @@ function MentorChatModal({ mentor, booking, user, onClose, showToast }) {
 
     // Dynamic, domain-aware fallback if backend is unreachable
     setTimeout(() => {
-      const replyText = getClientMentorReply(trimmed, mentor, booking, user);
+      const replyText = getClientMentorReply(
+        trimmed || 'Review my design draft', 
+        mentor, 
+        booking, 
+        user, 
+        { hasImageAttachment: Boolean(sentImage), preferredLanguage }
+      );
       const mentorMsg = {
         id: `msg-${Date.now() + 1}`,
         sender: 'mentor',
@@ -1569,12 +1712,118 @@ function MentorChatModal({ mentor, booking, user, onClose, showToast }) {
 
   return (
     <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4 animate-fade-in">
-      <div className="bg-white dark:bg-slate-900 border border-purple-200 dark:border-purple-500/30 rounded-3xl w-full max-w-2xl h-[90vh] sm:h-[680px] flex flex-col shadow-2xl overflow-hidden">
+      <div className="relative bg-white dark:bg-slate-900 border border-purple-200 dark:border-purple-500/30 rounded-3xl w-full max-w-2xl h-[92vh] sm:h-[700px] flex flex-col shadow-2xl overflow-hidden">
+        
+        {/* Session Prep Sheet Modal Overlay */}
+        {showPrepSheet && (
+          <div className="absolute inset-0 z-30 bg-slate-950/80 backdrop-blur-sm p-4 sm:p-6 flex flex-col justify-between animate-fade-in">
+            <div className="space-y-4 overflow-y-auto">
+              <div className="flex items-center justify-between pb-3 border-b border-purple-200/40 dark:border-slate-800">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-xl bg-purple-500/20 text-purple-600 dark:text-purple-400 flex items-center justify-center font-bold">
+                    <FileText className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h4 className="font-extrabold text-sm text-slate-900 dark:text-white">Session Preparation Checklist</h4>
+                    <p className="text-[11px] text-purple-600 dark:text-purple-400">Tailored for your 1-on-1 with {mentor.name}</p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowPrepSheet(false)}
+                  className="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-slate-800 dark:hover:text-white flex items-center justify-center cursor-pointer"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <div className="p-3.5 rounded-2xl bg-purple-50/80 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800 text-xs text-slate-700 dark:text-slate-200 space-y-2">
+                <div className="flex justify-between font-bold">
+                  <span>Topic:</span>
+                  <span className="text-purple-700 dark:text-purple-300">{booking?.topic || 'Portfolio & Strategy'}</span>
+                </div>
+                <div className="flex justify-between font-bold">
+                  <span>Scheduled Time:</span>
+                  <span className="text-purple-700 dark:text-purple-300">{booking?.slot || mentor.nextSlot || 'Confirmed Slot'}</span>
+                </div>
+                <div className="flex justify-between font-bold">
+                  <span>Mentor Domain:</span>
+                  <span className="text-purple-700 dark:text-purple-300">{mentor.domain}</span>
+                </div>
+              </div>
+
+              <div className="space-y-2 text-xs">
+                <h5 className="font-bold text-slate-900 dark:text-white uppercase tracking-wider text-[10px]">Action Items to Prepare:</h5>
+                <ul className="space-y-2.5 text-slate-600 dark:text-slate-300">
+                  <li className="flex items-start gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
+                    <span><strong>1. Curate 2-3 Best Work Samples:</strong> Have live links (Canva, GitHub, Behance, Shopify preview) open in browser tabs.</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
+                    <span><strong>2. Define Your Pricing Goal:</strong> Know your target monthly freelance income (e.g. ₹8,000–₹20,000/mo) to validate with {mentor.name.split(' ')[0]}.</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
+                    <span><strong>3. Pinpoint Your #1 Bottleneck:</strong> Whether client outreach, proposal pitching, or career gap confidence.</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
+                    <span><strong>4. Test Audio & Video:</strong> Ensure your mic and browser camera permissions are enabled for the video room.</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            <div className="pt-4 border-t border-purple-100 dark:border-slate-800 flex items-center justify-between gap-3">
+              <button
+                type="button"
+                onClick={() => {
+                  const checklistText = `HerEarn Mentorship Prep with ${mentor.name}\nTopic: ${booking?.topic || 'Strategy'}\nSlot: ${booking?.slot || mentor.nextSlot}\n\nChecklist:\n1. Curate 2-3 best work samples.\n2. Target income goal defined.\n3. Pinpoint #1 question/bottleneck.\n4. Mic and video tested.`;
+                  navigator.clipboard.writeText(checklistText);
+                  if (showToast) showToast('Checklist copied to clipboard!', 'success');
+                }}
+                className="flex-1 py-2.5 px-4 rounded-xl bg-purple-100 dark:bg-purple-900/60 hover:bg-purple-200 text-purple-700 dark:text-purple-300 font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
+              >
+                <Copy className="w-3.5 h-3.5" />
+                <span>Copy Checklist</span>
+              </button>
+              <button
+                type="button"
+                onClick={handleAddToCalendar}
+                className="flex-1 py-2.5 px-4 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer shadow-md hover:opacity-95 transition-opacity"
+              >
+                <Calendar className="w-3.5 h-3.5" />
+                <span>Add to Google Cal</span>
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Lightbox zoom modal for attached image */}
+        {previewZoomImage && (
+          <div 
+            className="fixed inset-0 z-60 bg-black/85 flex items-center justify-center p-4 cursor-pointer" 
+            onClick={() => setPreviewZoomImage(null)}
+          >
+            <div className="relative max-w-2xl max-h-[90vh]">
+              <img src={previewZoomImage} alt="Zoomed preview" className="max-w-full max-h-[80vh] rounded-2xl object-contain shadow-2xl border border-white/20" />
+              <button
+                type="button"
+                onClick={() => setPreviewZoomImage(null)}
+                className="absolute -top-3 -right-3 w-8 h-8 rounded-full bg-slate-900 text-white flex items-center justify-center cursor-pointer border border-white/30"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Chat Header */}
-        <div className="p-4 sm:p-5 border-b border-purple-100 dark:border-slate-800 bg-gradient-to-r from-purple-50 via-white to-pink-50 dark:from-slate-900 dark:via-purple-950/40 dark:to-slate-900 flex items-center justify-between shrink-0">
-          <div className="flex items-center gap-3">
+        <div className="p-3.5 sm:p-5 border-b border-purple-100 dark:border-slate-800 bg-gradient-to-r from-purple-50 via-white to-pink-50 dark:from-slate-900 dark:via-purple-950/40 dark:to-slate-900 flex items-center justify-between shrink-0">
+          <div className="flex items-center gap-2.5 sm:gap-3">
             <div className="relative">
-              <img src={mentor.avatar} alt={mentor.name} className="w-12 h-12 rounded-2xl object-cover border-2 border-purple-400 shadow-md" />
+              <img src={mentor.avatar} alt={mentor.name} className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl object-cover border-2 border-purple-400 shadow-md" />
               <span className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-emerald-500 border-2 border-white dark:border-slate-900 rounded-full" />
             </div>
             <div>
@@ -1584,46 +1833,94 @@ function MentorChatModal({ mentor, booking, user, onClose, showToast }) {
                   Mentor
                 </span>
               </div>
-              <p className="text-[11px] text-purple-600 dark:text-purple-400 font-semibold">{mentor.role}</p>
+              <p className="text-[11px] text-purple-600 dark:text-purple-400 font-semibold truncate max-w-[140px] sm:max-w-none">{mentor.role}</p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            <div className="hidden sm:flex flex-col items-end text-right">
-              <span className="text-[10px] font-bold text-slate-400 uppercase">Assigned Meeting</span>
-              <span className="text-xs font-black text-purple-700 dark:text-purple-300">{booking?.slot || mentor.nextSlot || 'Upcoming'}</span>
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            {/* Language Switcher */}
+            <div className="flex items-center bg-purple-100/70 dark:bg-slate-800 p-0.5 rounded-xl border border-purple-200 dark:border-slate-700 text-[10px] font-bold">
+              {['EN', 'HI', 'Hinglish'].map(lang => (
+                <button
+                  key={lang}
+                  type="button"
+                  onClick={() => setPreferredLanguage(lang)}
+                  className={`px-1.5 sm:px-2 py-0.5 rounded-lg cursor-pointer transition-all ${
+                    preferredLanguage === lang
+                      ? 'bg-purple-600 text-white shadow-xs'
+                      : 'text-slate-600 dark:text-slate-300 hover:text-purple-600'
+                  }`}
+                >
+                  {lang}
+                </button>
+              ))}
             </div>
+
+            {/* Prep Checklist Button */}
             <button
+              type="button"
+              onClick={() => setShowPrepSheet(true)}
+              title="Session preparation checklist"
+              className="h-8 px-2 sm:px-2.5 rounded-xl bg-purple-50 dark:bg-purple-950/60 hover:bg-purple-100 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800 font-bold text-xs flex items-center gap-1 cursor-pointer transition-colors"
+            >
+              <FileText className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Prep Sheet</span>
+            </button>
+
+            {/* Reset Chat Button */}
+            <button
+              type="button"
               onClick={handleClearChat}
               title="Reset conversation"
-              className="w-9 h-9 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-300 flex items-center justify-center cursor-pointer transition-colors"
+              className="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-300 flex items-center justify-center cursor-pointer transition-colors"
             >
-              <RotateCcw className="w-4 h-4" />
+              <RotateCcw className="w-3.5 h-3.5" />
             </button>
+
+            {/* Close Button */}
             <button
+              type="button"
               onClick={onClose}
-              className="w-9 h-9 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-300 flex items-center justify-center cursor-pointer transition-colors"
+              className="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-300 flex items-center justify-center cursor-pointer transition-colors"
             >
-              <X className="w-5 h-5" />
+              <X className="w-4 h-4" />
             </button>
           </div>
         </div>
 
-        {/* Meeting Banner in Chat */}
-        <div className="px-4 py-2.5 bg-purple-100/60 dark:bg-purple-950/50 border-b border-purple-200/50 dark:border-purple-800/30 flex items-center justify-between text-xs text-purple-900 dark:text-purple-200">
-          <div className="flex items-center gap-2 truncate">
-            <Calendar className="w-4 h-4 text-purple-600 dark:text-purple-400 shrink-0" />
+        {/* Meeting Banner with Live Calendar & Video Room buttons */}
+        <div className="px-3 sm:px-4 py-2 bg-purple-100/70 dark:bg-purple-950/50 border-b border-purple-200/50 dark:border-purple-800/30 flex flex-wrap items-center justify-between gap-2 text-xs text-purple-900 dark:text-purple-200">
+          <div className="flex items-center gap-1.5 truncate max-w-[60%] sm:max-w-none">
+            <Calendar className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400 shrink-0" />
             <span className="font-medium truncate">
-              Session Topic: <strong className="font-bold">{booking?.topic || 'General Strategy'}</strong>
+              Topic: <strong className="font-bold">{booking?.topic || 'General Strategy'}</strong> ({booking?.slot || mentor.nextSlot || 'Upcoming'})
             </span>
           </div>
-          <span className="text-[11px] font-bold bg-white/80 dark:bg-slate-900/80 px-2.5 py-0.5 rounded-full border border-purple-300 dark:border-purple-700 shrink-0">
-            {booking?.duration || mentor.sessionDuration || '35 mins'}
-          </span>
+
+          <div className="flex items-center gap-1.5 shrink-0">
+            <button
+              type="button"
+              onClick={handleAddToCalendar}
+              title="Add session to Google Calendar"
+              className="px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-lg bg-white/90 dark:bg-slate-900 hover:bg-white text-purple-700 dark:text-purple-300 border border-purple-300 dark:border-purple-700 text-[10px] sm:text-[11px] font-bold flex items-center gap-1 cursor-pointer transition-all shadow-2xs"
+            >
+              <Calendar className="w-3 h-3 text-purple-600" />
+              <span>Cal Sync</span>
+            </button>
+            <button
+              type="button"
+              onClick={handleJoinVideoRoom}
+              title="Open video meeting room"
+              className="px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-lg bg-purple-600 hover:bg-purple-700 text-white text-[10px] sm:text-[11px] font-bold flex items-center gap-1 cursor-pointer transition-all shadow-2xs"
+            >
+              <Video className="w-3 h-3" />
+              <span>Video Room</span>
+            </button>
+          </div>
         </div>
 
         {/* Message Feed */}
-        <div className="flex-1 p-4 sm:p-5 overflow-y-auto space-y-4 bg-slate-50/50 dark:bg-slate-950/50">
+        <div className="flex-1 p-3.5 sm:p-5 overflow-y-auto space-y-4 bg-slate-50/50 dark:bg-slate-950/50">
           {messages.map((m) => {
             const isUser = m.sender === 'user';
             return (
@@ -1638,6 +1935,17 @@ function MentorChatModal({ mentor, booking, user, onClose, showToast }) {
                       : 'bg-white dark:bg-slate-800 border border-purple-100 dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-bl-xs'
                   }`}
                 >
+                  {/* Attached image preview inside chat message */}
+                  {m.image && (
+                    <div 
+                      className="mb-2 rounded-xl overflow-hidden border border-white/20 shadow-xs cursor-pointer max-w-[220px]" 
+                      onClick={() => setPreviewZoomImage(m.image)}
+                    >
+                      <img src={m.image} alt="Attached draft" className="w-full h-auto object-cover max-h-40 hover:scale-105 transition-transform" />
+                      <span className="block bg-slate-900/80 text-[9px] text-white px-2 py-0.5 text-center font-bold">🔍 Click to zoom</span>
+                    </div>
+                  )}
+
                   <p className="whitespace-pre-wrap font-medium">{m.text}</p>
                   <span className={`block text-[9px] mt-1.5 font-bold ${isUser ? 'text-purple-200 text-right' : 'text-slate-400'}`}>
                     {m.time}
@@ -1676,22 +1984,77 @@ function MentorChatModal({ mentor, booking, user, onClose, showToast }) {
           ))}
         </div>
 
+        {/* Attached image preview banner */}
+        {attachedImage && (
+          <div className="px-3 sm:px-4 py-2 border-t border-purple-100 dark:border-slate-800 bg-purple-50/80 dark:bg-slate-950 flex items-center justify-between text-xs text-purple-900 dark:text-purple-200">
+            <div className="flex items-center gap-2">
+              <img src={attachedImage.dataUrl} alt="Thumbnail" className="w-8 h-8 rounded-lg object-cover border border-purple-300" />
+              <div className="truncate max-w-[200px] sm:max-w-xs">
+                <span className="font-bold text-xs truncate block">{attachedImage.name}</span>
+                <span className="text-[10px] text-purple-600 dark:text-purple-400">Ready for review</span>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => setAttachedImage(null)}
+              className="w-6 h-6 rounded-lg bg-white dark:bg-slate-800 text-slate-500 hover:text-rose-500 flex items-center justify-center cursor-pointer"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        )}
+
         {/* Input Bar */}
         <form
           onSubmit={(e) => { e.preventDefault(); handleSend(); }}
-          className="p-3 sm:p-4 border-t border-purple-100 dark:border-slate-800 bg-white dark:bg-slate-900 flex items-center gap-2"
+          className="p-2.5 sm:p-4 border-t border-purple-100 dark:border-slate-800 bg-white dark:bg-slate-900 flex items-center gap-1.5 sm:gap-2"
         >
+          {/* File attachment hidden input */}
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleImageSelect}
+            accept="image/*"
+            className="hidden"
+          />
+
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            title="Attach Canva creative, mockup, or image"
+            className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-purple-50 dark:bg-slate-800 hover:bg-purple-100 dark:hover:bg-slate-700 text-purple-600 dark:text-purple-400 flex items-center justify-center cursor-pointer transition-colors shrink-0"
+          >
+            <Paperclip className="w-4 h-4" />
+          </button>
+
+          <button
+            type="button"
+            onClick={toggleListening}
+            title={isListening ? "Stop listening" : "Speak your question (Hindi / English)"}
+            className={`w-9 h-9 sm:w-10 sm:h-10 rounded-2xl flex items-center justify-center cursor-pointer transition-colors shrink-0 ${
+              isListening
+                ? 'bg-rose-500 text-white animate-pulse'
+                : 'bg-purple-50 dark:bg-slate-800 hover:bg-purple-100 dark:hover:bg-slate-700 text-purple-600 dark:text-purple-400'
+            }`}
+          >
+            {isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+          </button>
+
           <input
             type="text"
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
-            placeholder={`Message ${mentor.name.split(' ')[0]} about your goals, questions, or portfolio...`}
-            className="flex-1 py-2.5 px-4 rounded-2xl bg-purple-50/50 dark:bg-slate-800 border border-purple-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-purple-500 font-medium"
+            placeholder={
+              isListening
+                ? 'Listening to voice...'
+                : `Message ${mentor.name.split(' ')[0]} about goals, rates, or attach draft...`
+            }
+            className="flex-1 py-2 sm:py-2.5 px-3 sm:px-4 rounded-2xl bg-purple-50/50 dark:bg-slate-800 border border-purple-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-purple-500 font-medium"
           />
           <button
             type="submit"
-            disabled={!inputText.trim()}
-            className="h-10 px-4 rounded-2xl bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 disabled:opacity-40 text-white font-bold text-xs flex items-center gap-1.5 cursor-pointer shadow-md transition-all shrink-0"
+            disabled={!inputText.trim() && !attachedImage}
+            className="h-9 sm:h-10 px-3.5 sm:px-4 rounded-2xl bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 disabled:opacity-40 text-white font-bold text-xs flex items-center gap-1.5 cursor-pointer shadow-md transition-all shrink-0"
           >
             <span>Send</span>
             <Send className="w-3.5 h-3.5" />

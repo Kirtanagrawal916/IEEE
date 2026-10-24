@@ -379,6 +379,26 @@ function AppContent() {
       };
       saveUserData(updatedUser);
 
+      // Record in local escrow ledger
+      try {
+        const rawStipend = targetGig?.stipend || '5000';
+        const parsedAmount = parseFloat(String(rawStipend).replace(/[^0-9.]/g, '')) || 5000;
+        const localTx = {
+          id: `ESC-${Date.now().toString().slice(-6)}${Math.floor(Math.random() * 90 + 10)}`,
+          dbId: `esc-${Date.now()}`,
+          gig: targetGig?.title || 'Micro-Gig Project',
+          client: targetGig?.company || 'Verified Client Partner',
+          freelancer: user?.name || user?.username || 'Learner',
+          amount: parsedAmount,
+          status: 'HELD_IN_ESCROW',
+          date: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
+        };
+        const currentLedger = JSON.parse(localStorage.getItem('herearn_escrow_ledger') || '[]');
+        localStorage.setItem('herearn_escrow_ledger', JSON.stringify([localTx, ...currentLedger]));
+      } catch (e) {
+        console.warn('[App] Local escrow record sync note:', e);
+      }
+
       // Show celebration toast for unlocking the course lectures
       showToast(
         "🎉 Course Lectures Unlocked!", 
@@ -405,6 +425,23 @@ function AppContent() {
         unlockedTrackIds: updatedUnlocked,
       };
       saveUserData(updatedUser);
+
+      try {
+        const rawStipend = targetGig?.stipend || '5000';
+        const parsedAmount = parseFloat(String(rawStipend).replace(/[^0-9.]/g, '')) || 5000;
+        const localTx = {
+          id: `ESC-${Date.now().toString().slice(-6)}${Math.floor(Math.random() * 90 + 10)}`,
+          dbId: `esc-${Date.now()}`,
+          gig: targetGig?.title || 'Micro-Gig Project',
+          client: targetGig?.company || 'Verified Client Partner',
+          freelancer: user?.name || user?.username || 'Learner',
+          amount: parsedAmount,
+          status: 'HELD_IN_ESCROW',
+          date: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
+        };
+        const currentLedger = JSON.parse(localStorage.getItem('herearn_escrow_ledger') || '[]');
+        localStorage.setItem('herearn_escrow_ledger', JSON.stringify([localTx, ...currentLedger]));
+      } catch (e) {}
 
       showToast(
         "🎉 Course Lectures Unlocked!", 
@@ -921,6 +958,7 @@ function AppContent() {
               <AdminPanel 
                 user={user}
                 onLoginSuccess={handleLoginSuccess}
+                onUpdateUser={saveUserData}
                 opportunities={opportunities} 
                 portfolios={portfolios} 
                 setOpportunities={setOpportunities}

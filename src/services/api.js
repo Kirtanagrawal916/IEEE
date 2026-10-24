@@ -211,6 +211,8 @@ export const api = {
   },
   getAdminEscrow: () => request('/api/admin/escrow'),
   releaseEscrow: (id) => request(`/api/admin/escrow/${id}/release`, { method: 'POST' }),
+  allowEscrow: (id) => request(`/api/admin/escrow/${id}/allow`, { method: 'POST' }),
+  disproveEscrow: (id) => request(`/api/admin/escrow/${id}/disprove`, { method: 'POST' }),
   freezeEscrow: (id) => request(`/api/admin/escrow/${id}/freeze`, { method: 'POST' }),
   getAdminSettings: () => request('/api/admin/settings'),
   updateAdminSettings: (settings) => request('/api/admin/settings', { method: 'PATCH', body: JSON.stringify(settings) }),
