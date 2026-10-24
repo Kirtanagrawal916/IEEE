@@ -251,7 +251,7 @@ export default function ChatBot() {
 
       {/* 2. Floating Chat Window */}
       {isOpen && (
-        <div className="w-[calc(100vw-2rem)] sm:w-[400px] h-[78vh] max-h-[580px] sm:h-[550px] bg-slate-900/95 border border-purple-500/30 rounded-3xl shadow-2xl backdrop-blur-xl flex flex-col overflow-hidden animate-fade-in text-white">
+        <div className="w-[calc(100vw-2rem)] sm:w-[400px] h-[78vh] max-h-[580px] sm:h-[550px] bg-slate-900/95 border border-purple-500/30 rounded-3xl shadow-2xl backdrop-blur-xl flex flex-col overflow-hidden modal-content-animate origin-bottom-right text-white">
           
           {/* Header */}
           <div className="bg-gradient-to-r from-purple-900 via-indigo-900 to-slate-900 p-4 border-b border-purple-500/20 flex items-center justify-between shrink-0">

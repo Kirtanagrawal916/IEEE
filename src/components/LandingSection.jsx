@@ -246,7 +246,7 @@ export default function LandingSection({ onNavigate, onOpenAuth, theme }) {
       {/* ========================================================
           2. STATS & TRUST STRIP
          ======================================================== */}
-      <section className="site-container" aria-label="Key Platform Facts">
+      <section className="site-container reveal-on-scroll" aria-label="Key Platform Facts">
         <div className="bg-white dark:bg-[#191026] border border-[#E5E7EB] dark:border-purple-900/40 rounded-2xl p-6 sm:p-8 shadow-sm">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
             {stats.map((item, idx) => {
@@ -280,7 +280,7 @@ export default function LandingSection({ onNavigate, onOpenAuth, theme }) {
       {/* ========================================================
           3. EXPLORE JOB CATEGORIES
          ======================================================== */}
-      <section className="site-container space-y-6" aria-labelledby="job-categories-heading">
+      <section className="site-container space-y-6 reveal-on-scroll" aria-labelledby="job-categories-heading">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 border-b border-[#E5E7EB] dark:border-purple-900/30 pb-4">
           <div>
             <span className="text-xs font-bold text-[#7C3AED] dark:text-purple-300 uppercase tracking-wider block">
@@ -334,7 +334,7 @@ export default function LandingSection({ onNavigate, onOpenAuth, theme }) {
       {/* ========================================================
           4. FEATURED JOBS SECTION (Verified, 100% Free)
          ======================================================== */}
-      <section className="site-container space-y-6" aria-labelledby="featured-jobs-heading">
+      <section className="site-container space-y-6 reveal-on-scroll" aria-labelledby="featured-jobs-heading">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 border-b border-[#E5E7EB] dark:border-purple-900/30 pb-4">
           <div>
             <span className="text-xs font-bold text-[#EA580C] uppercase tracking-wider block">
@@ -370,7 +370,7 @@ export default function LandingSection({ onNavigate, onOpenAuth, theme }) {
       {/* ========================================================
           5. FREE RESOURCES & SKILL TRACKS
          ======================================================== */}
-      <section className="site-container space-y-6" aria-labelledby="free-skills-heading">
+      <section className="site-container space-y-6 reveal-on-scroll" aria-labelledby="free-skills-heading">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 border-b border-[#E5E7EB] dark:border-purple-900/30 pb-4">
           <div>
             <span className="text-xs font-bold text-[#7C3AED] dark:text-purple-300 uppercase tracking-wider block">
@@ -474,7 +474,7 @@ export default function LandingSection({ onNavigate, onOpenAuth, theme }) {
       {/* ========================================================
           6. HOW IT WORKS (Empowering 3-Step Journey)
          ======================================================== */}
-      <section className="site-container space-y-8" aria-labelledby="how-it-works-heading">
+      <section className="site-container space-y-8 reveal-on-scroll" aria-labelledby="how-it-works-heading">
         <div className="text-center max-w-2xl mx-auto space-y-2">
           <span className="badge-plum text-xs">
             Simple 3-Step Process
@@ -531,7 +531,7 @@ export default function LandingSection({ onNavigate, onOpenAuth, theme }) {
       {/* ========================================================
           7. SUCCESS STORIES (Warm & Real Proof)
          ======================================================== */}
-      <section className="site-container space-y-6" aria-labelledby="success-stories-heading">
+      <section className="site-container space-y-6 reveal-on-scroll" aria-labelledby="success-stories-heading">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 border-b border-[#E5E7EB] dark:border-purple-900/30 pb-4">
           <div>
             <span className="text-xs font-bold text-[#16A34A] uppercase tracking-wider block">
@@ -606,7 +606,7 @@ export default function LandingSection({ onNavigate, onOpenAuth, theme }) {
       {/* ========================================================
           8. CALL TO ACTION BANNER (Empowering & Simple)
          ======================================================== */}
-      <section className="site-container">
+      <section className="site-container reveal-on-scroll">
         <div className="bg-gradient-to-r from-[#7C3AED] to-[#6D28D9] rounded-2xl p-8 sm:p-12 text-center text-white space-y-6 shadow-xl relative overflow-hidden">
           <div className="max-w-2xl mx-auto space-y-3 relative z-10">
             <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-white/20 text-white backdrop-blur-xs">

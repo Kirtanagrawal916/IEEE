@@ -705,7 +705,7 @@ export default function SignupPage({ onLoginSuccess, onNavigateToLogin, onNaviga
               <button
                 type="submit"
                 disabled={isLoading}
-                className="tap-target w-full py-3.5 px-6 rounded-2xl bg-[#7C3AED] hover:bg-[#6D28D9] text-white font-heading font-black text-sm sm:text-base shadow-sm transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 mt-2 min-h-[48px]"
+                className="tap-target w-full py-3.5 px-6 rounded-2xl bg-[#7C3AED] hover:bg-[#6D28D9] text-white font-heading font-black text-sm sm:text-base shadow-sm active:scale-[0.98] transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 mt-2 min-h-[48px]"
               >
                 {isLoading ? (
                   <span>Creating Account...</span>

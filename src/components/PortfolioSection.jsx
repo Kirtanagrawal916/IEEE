@@ -697,7 +697,7 @@ export default function PortfolioSection({ portfolios, onOpenSubmitModal, user, 
             return (
               <article 
                 key={portfolio.id}
-                className="group bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between hover:-translate-y-1"
+                className="group bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between hover:-translate-y-1 reveal-on-scroll"
               >
                 <div>
                   {/* Visual Header Image */}

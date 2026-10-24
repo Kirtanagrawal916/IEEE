@@ -181,7 +181,7 @@ export default function AboutPage({ onNavigate }) {
       {/* ========================================================
           2. PROBLEM SECTION
          ======================================================== */}
-      <section className="max-w-6xl mx-auto space-y-10">
+      <section className="max-w-6xl mx-auto space-y-10 reveal-on-scroll">
         <div className="text-center space-y-3">
           <h2 className="text-2xl sm:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight">
             The Barriers We Are Solving
@@ -215,7 +215,7 @@ export default function AboutPage({ onNavigate }) {
       {/* ========================================================
           3. SOLUTION SECTION (HEREARN LOOP)
          ======================================================== */}
-      <section className="max-w-6xl mx-auto space-y-12 bg-white/80 dark:bg-slate-900/40 border border-purple-200 dark:border-purple-500/20 p-8 sm:p-12 rounded-3xl relative overflow-hidden backdrop-blur-md shadow-md">
+      <section className="max-w-6xl mx-auto space-y-12 bg-white/80 dark:bg-slate-900/40 border border-purple-200 dark:border-purple-500/20 p-8 sm:p-12 rounded-3xl relative overflow-hidden backdrop-blur-md shadow-md reveal-on-scroll">
         
         {/* Decorative Glow */}
         <div className="absolute top-0 right-0 w-96 h-96 bg-purple-600/10 rounded-full blur-3xl pointer-events-none"></div>
@@ -277,7 +277,7 @@ export default function AboutPage({ onNavigate }) {
       {/* ========================================================
           4. IMPACT SECTION
          ======================================================== */}
-      <section className="max-w-6xl mx-auto space-y-10">
+      <section className="max-w-6xl mx-auto space-y-10 reveal-on-scroll">
         <div className="text-center space-y-3">
           <h2 className="text-2xl sm:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight">
             Built for Real-World Impact
@@ -310,7 +310,7 @@ export default function AboutPage({ onNavigate }) {
       {/* ========================================================
           5. WHY HEREARN SECTION
          ======================================================== */}
-      <section className="max-w-6xl mx-auto space-y-10">
+      <section className="max-w-6xl mx-auto space-y-10 reveal-on-scroll">
         <div className="text-center space-y-3">
           <h2 className="text-2xl sm:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight">
             Why HerEarn Platform
@@ -344,7 +344,7 @@ export default function AboutPage({ onNavigate }) {
       {/* ========================================================
           6. CALL TO ACTION SECTION
          ======================================================== */}
-      <section className="max-w-4xl mx-auto text-center bg-gradient-to-r from-purple-900/80 via-slate-900 to-pink-900/80 border border-purple-500/40 p-8 sm:p-12 rounded-3xl space-y-6 shadow-2xl relative overflow-hidden text-white">
+      <section className="max-w-4xl mx-auto text-center bg-gradient-to-r from-purple-900/80 via-slate-900 to-pink-900/80 border border-purple-500/40 p-8 sm:p-12 rounded-3xl space-y-6 shadow-2xl relative overflow-hidden text-white reveal-on-scroll">
         <div className="space-y-3 relative z-10">
           <h2 className="text-2xl sm:text-4xl font-extrabold text-white tracking-tight">
             Ready to Start Your Journey?

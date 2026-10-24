@@ -527,7 +527,7 @@ export default function LearnSection({ user, onCompleteLesson, onNavigateToPortf
                   return (
                     <div
                       key={t.id}
-                      className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-lg transition-all p-6 sm:p-8 space-y-6 text-slate-900 dark:text-white"
+                      className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-lg transition-all p-6 sm:p-8 space-y-6 text-slate-900 dark:text-white reveal-on-scroll"
                     >
                       {/* Top Header Row: Track Index, Category, Title, Meta */}
                       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-slate-100 dark:border-slate-800 pb-5">

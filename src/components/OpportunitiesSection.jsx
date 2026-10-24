@@ -345,7 +345,7 @@ export default function OpportunitiesSection({
               return (
                 <div
                   key={gig.id}
-                  className="bg-white dark:bg-slate-900 rounded-3xl border border-purple-100 dark:border-purple-900/40 p-6 flex flex-col justify-between shadow-sm hover:shadow-xl transition-all duration-300 relative overflow-hidden group"
+                  className="bg-white dark:bg-slate-900 rounded-3xl border border-purple-100 dark:border-purple-900/40 p-6 flex flex-col justify-between shadow-sm hover:shadow-xl transition-all duration-300 relative overflow-hidden group reveal-on-scroll"
                 >
                   {/* Top Purple Gradient Accent Strip */}
                   <div className="absolute top-0 inset-x-0 h-1.5 bg-gradient-to-r from-purple-600 via-pink-500 to-purple-600"></div>
@@ -401,7 +401,7 @@ export default function OpportunitiesSection({
                       type="button"
                       onClick={() => onApplyGig(gig)}
                       disabled={gig.applied}
-                      className={`w-full py-3 px-4 rounded-full font-extrabold text-xs text-center flex items-center justify-center gap-1.5 shadow-md transition-all cursor-pointer ${
+                      className={`w-full py-3 px-4 rounded-full font-extrabold text-xs text-center flex items-center justify-center gap-1.5 shadow-md active:scale-[0.98] transition-all cursor-pointer ${
                         gig.applied 
                           ? 'bg-slate-200 text-slate-500 cursor-not-allowed'
                           : 'bg-purple-600 hover:bg-purple-700 text-white hover:scale-[1.02]'
@@ -414,7 +414,7 @@ export default function OpportunitiesSection({
                     <button
                       type="button"
                       onClick={() => onViewDetails ? onViewDetails(gig) : navigate(`/opportunities/${gig.id}`)}
-                      className="w-full py-2.5 px-4 rounded-full bg-white dark:bg-slate-800 border border-purple-200 dark:border-purple-800 text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-950/40 font-extrabold text-xs text-center flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+                      className="w-full py-2.5 px-4 rounded-full bg-white dark:bg-slate-800 border border-purple-200 dark:border-purple-800 text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-950/40 active:scale-[0.98] font-extrabold text-xs text-center flex items-center justify-center gap-1.5 transition-all cursor-pointer"
                     >
                       <span>View Details</span>
                       <ExternalLink className="w-3 h-3" />

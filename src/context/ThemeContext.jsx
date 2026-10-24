@@ -21,9 +21,18 @@ export function ThemeProvider({ children }) {
     return 'light';
   });
 
+  const isInitialMount = React.useRef(true);
+
   useEffect(() => {
     const root = document.documentElement;
     const body = document.body;
+
+    // Apply temporary transition class only during user-initiated toggles, not on first paint
+    if (!isInitialMount.current) {
+      root.classList.add('theme-transition');
+      body.classList.add('theme-transition');
+    }
+
     if (theme === 'dark') {
       root.classList.add('dark');
       root.classList.remove('light');
@@ -35,10 +44,21 @@ export function ThemeProvider({ children }) {
       body.classList.add('light');
       body.classList.remove('dark');
     }
+
     try {
       localStorage.setItem('herearn_theme', theme);
     } catch (err) {
       console.warn('[ThemeContext] Storage warning:', err);
+    }
+
+    if (!isInitialMount.current) {
+      const transitionTimer = setTimeout(() => {
+        root.classList.remove('theme-transition');
+        body.classList.remove('theme-transition');
+      }, 300);
+      return () => clearTimeout(transitionTimer);
+    } else {
+      isInitialMount.current = false;
     }
   }, [theme]);
 

@@ -127,7 +127,7 @@ export default function JobCard({
           type="button"
           onClick={() => onApply && onApply(job)}
           disabled={job.applied}
-          className={`tap-target w-full rounded-xl font-bold font-heading text-sm px-4 py-3 flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+          className={`tap-target w-full rounded-xl font-bold font-heading text-sm px-4 py-3 flex items-center justify-center gap-1.5 active:scale-[0.98] transition-all cursor-pointer ${
             job.applied
               ? 'bg-[#E5E7EB] text-[#9CA3AF] cursor-not-allowed'
               : 'bg-[#7C3AED] hover:bg-[#6D28D9] text-white shadow-sm hover:shadow-md'
@@ -141,7 +141,7 @@ export default function JobCard({
         <button
           type="button"
           onClick={() => onViewDetails && onViewDetails(job)}
-          className="tap-target w-full rounded-xl font-bold font-heading text-sm px-4 py-3 bg-white dark:bg-[#191026] border border-[#E5E7EB] dark:border-purple-800/40 text-[#4B5563] dark:text-slate-200 hover:bg-[#F3E8FF] hover:text-[#6D28D9] hover:border-[#7C3AED]/30 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+          className="tap-target w-full rounded-xl font-bold font-heading text-sm px-4 py-3 bg-white dark:bg-[#191026] border border-[#E5E7EB] dark:border-purple-800/40 text-[#4B5563] dark:text-slate-200 hover:bg-[#F3E8FF] hover:text-[#6D28D9] hover:border-[#7C3AED]/30 active:scale-[0.98] transition-all flex items-center justify-center gap-1.5 cursor-pointer"
           aria-label={`View full details for ${job.title}`}
         >
           <span>View Details</span>

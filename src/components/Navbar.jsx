@@ -52,22 +52,10 @@ export default function Navbar({
   const [isLangOpen, setIsLangOpen] = useState(false);
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
   const [isWithdrawModalOpen, setIsWithdrawModalOpen] = useState(false);
-  const [scrollProgress, setScrollProgress] = useState(0);
 
   const menuRef = useRef(null);
   const careerRef = useRef(null);
   const langRef = useRef(null);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      const totalHeight = document.documentElement.scrollHeight - window.innerHeight;
-      if (totalHeight > 0) {
-        setScrollProgress(Math.min(100, Math.max(0, (window.scrollY / totalHeight) * 100)));
-      }
-    };
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
 
   useEffect(() => {
     function handleClickOutside(event) {
@@ -135,11 +123,6 @@ export default function Navbar({
 
   return (
     <nav className="glass-nav sticky top-0 z-50 shadow-md transition-colors w-full relative">
-      {/* Top Edge Reading & Scroll Progress Indicator */}
-      <div 
-        className="h-[3px] bg-gradient-to-r from-purple-600 via-pink-500 to-amber-400 transition-all duration-75 ease-out absolute top-0 left-0 z-50 pointer-events-none"
-        style={{ width: `${scrollProgress}%` }}
-      />
 
       <div className="max-w-[1440px] mx-auto w-full px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
@@ -188,7 +171,7 @@ export default function Navbar({
 
               {/* Career Opportunity Menu Popover */}
               {isCareerOpen && (
-                <div className="absolute left-0 mt-2 w-72 rounded-2xl bg-white dark:bg-slate-900 border border-purple-200 dark:border-purple-500/30 shadow-2xl p-2 z-50 animate-fade-in space-y-1">
+                <div className="absolute left-0 mt-2 w-72 rounded-2xl bg-white dark:bg-slate-900 border border-purple-200 dark:border-purple-500/30 shadow-2xl p-2 z-50 dropdown-animate space-y-1">
                   <div className="px-3 py-1.5 border-b border-purple-500/20 text-[10px] font-extrabold text-purple-500 uppercase tracking-wider">
                     Career Progression Hub
                   </div>
@@ -373,7 +356,7 @@ export default function Navbar({
 
               {isLangOpen && (
                 <div 
-                  className="notranslate absolute right-0 mt-2 w-64 rounded-2xl bg-white dark:bg-slate-900 border border-purple-200 dark:border-purple-500/40 shadow-2xl p-2.5 z-50 animate-fade-in space-y-1.5 max-h-80 overflow-y-auto"
+                  className="notranslate absolute right-0 mt-2 w-64 rounded-2xl bg-white dark:bg-slate-900 border border-purple-200 dark:border-purple-500/40 shadow-2xl p-2.5 z-50 dropdown-animate space-y-1.5 max-h-80 overflow-y-auto"
                   translate="no"
                 >
                   <div className="sticky top-0 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md px-3 py-1.5 border-b border-purple-500/20 text-[10px] font-extrabold text-purple-600 dark:text-purple-400 uppercase tracking-wider z-10 flex items-center justify-between notranslate" translate="no">
@@ -483,7 +466,7 @@ export default function Navbar({
 
               {/* Dropdown Menu Popup */}
               {isMenuOpen && (
-                <div className="absolute right-0 mt-3 w-72 rounded-2xl bg-white dark:bg-slate-950 border border-purple-200 dark:border-purple-500/40 shadow-2xl p-2.5 z-50 animate-fade-in text-slate-900 dark:text-white space-y-2">
+                <div className="absolute right-0 mt-3 w-72 rounded-2xl bg-white dark:bg-slate-950 border border-purple-200 dark:border-purple-500/40 shadow-2xl p-2.5 z-50 dropdown-animate text-slate-900 dark:text-white space-y-2">
                   
                   {/* 1. PROFILE SECTION (Visible at the top when logged in, as in picture) */}
                   {user && (

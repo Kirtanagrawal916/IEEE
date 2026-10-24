@@ -389,7 +389,7 @@ export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNaviga
               <button
                 type="button"
                 onClick={() => { setLoginType('user'); setError(''); setAdminError(''); }}
-                className={`py-2 px-2 sm:px-3 rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1 sm:gap-1.5 text-[11px] sm:text-xs ${
+                className={`py-2 px-2 sm:px-3 rounded-xl active:scale-[0.98] transition-all cursor-pointer flex items-center justify-center gap-1 sm:gap-1.5 text-[11px] sm:text-xs ${
                   loginType === 'user'
                     ? 'bg-white dark:bg-slate-800 text-purple-700 dark:text-white shadow-sm font-black'
                     : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
@@ -401,7 +401,7 @@ export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNaviga
               <button
                 type="button"
                 onClick={() => { setLoginType('recruiter'); setError(''); setAdminError(''); }}
-                className={`py-2 px-2 sm:px-3 rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1 sm:gap-1.5 text-[11px] sm:text-xs ${
+                className={`py-2 px-2 sm:px-3 rounded-xl active:scale-[0.98] transition-all cursor-pointer flex items-center justify-center gap-1 sm:gap-1.5 text-[11px] sm:text-xs ${
                   loginType === 'recruiter'
                     ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-md font-black'
                     : 'text-slate-500 hover:text-purple-600 dark:hover:text-purple-300'
@@ -413,7 +413,7 @@ export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNaviga
               <button
                 type="button"
                 onClick={() => { setLoginType('admin'); setError(''); setAdminError(''); }}
-                className={`py-2 px-2 sm:px-3 rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1 sm:gap-1.5 text-[11px] sm:text-xs ${
+                className={`py-2 px-2 sm:px-3 rounded-xl active:scale-[0.98] transition-all cursor-pointer flex items-center justify-center gap-1 sm:gap-1.5 text-[11px] sm:text-xs ${
                   loginType === 'admin'
                     ? 'bg-gradient-to-r from-purple-600 via-indigo-600 to-pink-600 text-white shadow-md font-black'
                     : 'text-slate-500 hover:text-purple-600 dark:hover:text-purple-300'
@@ -529,7 +529,7 @@ export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNaviga
                 <button
                   type="submit"
                   disabled={isAdminLoading || !adminKey.trim()}
-                  className="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-purple-600 via-indigo-600 to-pink-600 hover:from-purple-500 hover:via-indigo-500 hover:to-pink-500 text-white font-extrabold text-sm sm:text-base shadow-xl hover:shadow-2xl transition-all duration-300 flex items-center justify-center gap-2.5 cursor-pointer disabled:opacity-50 mt-2"
+                  className="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-purple-600 via-indigo-600 to-pink-600 hover:from-purple-500 hover:via-indigo-500 hover:to-pink-500 text-white font-extrabold text-sm sm:text-base shadow-xl hover:shadow-2xl active:scale-[0.98] transition-all duration-300 flex items-center justify-center gap-2.5 cursor-pointer disabled:opacity-50 mt-2"
                 >
                   {isAdminLoading ? (
                     <>
@@ -682,7 +682,7 @@ export default function LoginPage({ onLoginSuccess, onNavigateToSignup, onNaviga
                   <button
                     type="submit"
                     disabled={isLoading}
-                    className="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-purple-600 via-indigo-600 to-pink-600 hover:from-purple-500 hover:via-indigo-500 hover:to-pink-500 text-white font-extrabold text-sm sm:text-base shadow-xl hover:shadow-2xl transition-all duration-300 flex items-center justify-center gap-2.5 cursor-pointer disabled:opacity-50 mt-3"
+                    className="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-purple-600 via-indigo-600 to-pink-600 hover:from-purple-500 hover:via-indigo-500 hover:to-pink-500 text-white font-extrabold text-sm sm:text-base shadow-xl hover:shadow-2xl active:scale-[0.98] transition-all duration-300 flex items-center justify-center gap-2.5 cursor-pointer disabled:opacity-50 mt-3"
                   >
                     {isLoading ? (
                       <>
